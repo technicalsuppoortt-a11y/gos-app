@@ -6,7 +6,7 @@ import { showToast as authToast } from '../../utils/toast';
 import { useUILanguage, translateText, localizeNode } from '../../i18n/display';
 import React, { useEffect, useRef, useState } from 'react';
 import { Navigate, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { Activity, BarChart3, Bell, CreditCard, Globe, Landmark, Layers, LayoutDashboard, LogOut, Puzzle, Search, Settings, Users, ShieldCheck, Menu, X, Grid2X2, MessageCircle } from 'lucide-react';
+import { Activity, BarChart3, Bell, CreditCard, Globe, PanelsTopLeft, Landmark, Layers, LayoutDashboard, LogOut, Puzzle, Search, Settings, Users, ShieldCheck, Menu, X, Grid2X2, MessageCircle } from 'lucide-react';
 import { matchesLocalizedSearch } from '../../utils/arabicSearch';
 import { useSelector } from 'react-redux';
 import type { RootState } from '../../store';
@@ -187,6 +187,7 @@ export const SuperAdminLayout: React.FC = () => {
           )}
         </div>
         {role === 'SUPER_ADMIN' && <GetAppButton/>}<div className="sa-preferences"><LanguageSwitcher/><ThemeToggle/></div>
+        <NavLink to="/" end className="sa-support-shortcut sa-landing-shortcut" aria-label={translateText("View Landing Page")} title={translateText("View Landing Page")}><PanelsTopLeft size={17}/></NavLink>
         {canOpen('/super-admin/support') && <NavLink to="/super-admin/support" className="sa-support-shortcut" aria-label={translateText("Support")} title={translateText("Support")}><MessageCircle size={17}/></NavLink>}
         {canOpen('/super-admin/logs') && <button className="sa-notifications" aria-label={translateText("Notifications")} onClick={() => navigate('/super-admin/logs')}><Bell size={17}/><i/></button>}
         <button className="sa-account" onClick={() => navigate('/super-admin/users')} disabled={!canOpen('/super-admin/users')}><span>{name.trim().split(/\s+/).slice(0, 2).map(part => part[0]).join('').toUpperCase()}</span><b>{name}</b></button>
@@ -195,3 +196,4 @@ export const SuperAdminLayout: React.FC = () => {
     </main>
   </div>;
 };
+

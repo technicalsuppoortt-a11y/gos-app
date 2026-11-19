@@ -352,3 +352,11 @@ html.dark .login-theme-btn,
   background: #161b35 !important;
   border-color: rgba(167, 139, 250, 0.24) !important;
 }
+
+/* Landing page shortcut shares the theme button chrome, with a neutral/accent icon colour. */
+.login-landing-btn { color: #475569; text-decoration: none; }
+.login-landing-btn:hover, .login-landing-btn:focus-visible { color: var(--ws-accent, #7C3AED); }
+html.dark .login-landing-btn,
+.dark .login-landing-btn { color: #cbd5e1 !important; }
+html.dark .login-landing-btn:hover,
+.dark .login-landing-btn:hover { color: #c4b5fd !important; }

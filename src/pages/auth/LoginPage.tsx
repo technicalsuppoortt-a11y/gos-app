@@ -2,7 +2,7 @@ import { useUILanguage, translateText, localizeNode } from '../../i18n/display';
 import React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Activity, ArrowRight, ArrowUpRight, BadgeCheck, CalendarDays, Check, Eye, EyeOff, LayoutDashboard, LoaderCircle, LockKeyhole, Mail, Moon, Shield, Sparkles, Sun, Users } from 'lucide-react';
+import { Activity, ArrowRight, ArrowUpRight, BadgeCheck, CalendarDays, Check, Eye, EyeOff, Globe, LayoutDashboard, LoaderCircle, LockKeyhole, Mail, Moon, Shield, Sparkles, Sun, Users } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { consumeAuthNotice, login, logoutFirebase, SessionError, sessionErrorMessage, type SessionErrorCode } from '../../backend/session';
 import { resolveCustomerPrimaryPortalPath } from '../../backend/customerPortal';
@@ -258,6 +258,10 @@ export const LoginPage: React.FC = () => {
 
         {/* Top Controls: Language Switcher (EN/AR) & Dark/Light Mode Switcher */}
         <div className="login-controls flex items-center gap-2">
+          {/* Landing page shortcut */}
+          <Link to="/" className="login-theme-btn login-landing-btn grid h-8 w-8 place-items-center rounded-xl border border-slate-200 bg-slate-50/90 text-slate-600 hover:bg-slate-100 dark:border-slate-700/80 dark:bg-[#191a27] dark:text-slate-300 dark:hover:bg-slate-800 shadow-sm transition-all active:scale-95" aria-label={translateText("View Landing Page")} title={translateText("View Landing Page")}>
+            <Globe size={16} aria-hidden="true" />
+          </Link>
           {/* Language Switcher */}
           <div className="login-lang-switch flex items-center p-1 rounded-xl border border-slate-200 bg-slate-50/90 dark:border-slate-700/80 dark:bg-[#191a27] shadow-sm" role="group" aria-label="Language selection">
             <button

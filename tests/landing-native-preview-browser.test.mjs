@@ -13,6 +13,8 @@ try {
   const page = await browser.newPage({ viewport: { width: 1440, height: 1000 }, reducedMotion: 'reduce' }); page.setDefaultTimeout(30000);
   const errors = [], previewRequests = [];
   page.on('pageerror', e => { errors.push(e.message); console.error('Page error:', e.message); });
+  // Pin the English baseline this test asserts against (fresh visitors may default to Arabic).
+  await page.addInitScript(() => { try { if (!localStorage.getItem('i18nextLng')) localStorage.setItem('i18nextLng', 'en'); } catch { /* storage unavailable */ } });
   page.on('request', r => { if (/\/landing-preview\.html|\/assets\/landingPreview-/.test(r.url())) previewRequests.push(r.url()); });
   await page.route(/https:\/\/(connect.facebook.net|www.googletagmanager.com|www.google-analytics.com|www.facebook.com)\//, r => r.fulfill({body:'',contentType:'text/javascript'}));
   await page.route('https://fonts.googleapis.com/**', r => r.fulfill({ body: '', contentType: 'text/css' }));
@@ -30,7 +32,7 @@ try {
   const outerBefore = await page.locator('.lp-hero__copy').boundingBox();
   const artifacts = `artifacts/landing-native-preview/rich-static-${Date.now()}`;
   await mkdir(artifacts, { recursive: true });
-  const ids = ['dashboard','copilot','funnels','inbox','crm','follow-up','booking','products','analytics','marketing-tracking','settings'];
+  const ids = ['copilot','dashboard','funnels','inbox','crm','contacts','automation','follow-up','booking','products','analytics','settings'];
   for (const [i, id] of ids.entries()) {
     await page.locator(`#lp-mock-tab-${i}`).click();
     await preview.locator(`[data-demo-screen="${id}"]`).waitFor();
@@ -43,12 +45,12 @@ try {
     assert.deepEqual(await page.locator('.lp-hero__copy').boundingBox(), outerBefore, `Changing ${id} moved the hero copy`);
     console.log(`PASS: ${id}`);
   }
-  await page.locator('#lp-mock-tab-8').focus(); await page.keyboard.press('ArrowDown'); await preview.locator('[data-demo-screen="marketing-tracking"]').waitFor();
-  await page.locator('#lp-mock-tab-0').click();
+  await page.locator('#lp-mock-tab-10').focus(); await page.keyboard.press('ArrowDown'); await preview.locator('[data-demo-screen="settings"]').waitFor();
+  await page.locator('#lp-mock-tab-1').click();
   await page.locator('.lp-header__inner').getByRole('button',{name:/dark mode|الوضع الداكن/i}).click();
   await preview.locator('.lp-static-document.dark').waitFor();
   assert.equal(await preview.locator('[data-dashboard-section="tools"]').evaluate(el=>getComputedStyle(el).backgroundColor),'rgb(21, 26, 39)');
-  assert.equal(await page.locator('.lp-mock__logo img:visible').getAttribute('src'),'/upclick-logo-light.svg');
+  assert.equal(await page.locator('.lp-mock__logo img:visible').getAttribute('src'),'/upclick-mark.svg');
   assert.equal(await preview.evaluate(element => getComputedStyle(element).getPropertyValue('--lp-bg').trim()), '#0f0e21');
   await page.locator('.lp-mock').screenshot({ path: `${artifacts}/dark.png` });
   await page.setViewportSize({ width: 390, height: 844 });

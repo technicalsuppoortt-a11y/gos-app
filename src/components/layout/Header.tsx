@@ -2,7 +2,7 @@ import { logoutFirebase } from '../../backend/session';
 import { useUILanguage, translateText, localizeNode } from '../../i18n/display';
 import React, { useState, useRef, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { ArrowLeft, ChevronDown, Menu, Search, Sparkles, User, Settings, LogOut, Globe } from 'lucide-react';
+import { ArrowLeft, ChevronDown, Menu, Search, Sparkles, User, Settings, LogOut, PanelsTopLeft } from 'lucide-react';
 import { matchesLocalizedSearch } from '../../utils/arabicSearch';
 import { useDispatch, useSelector } from 'react-redux';
 import type { RootState } from '../../store';
@@ -270,7 +270,7 @@ export const Header: React.FC<HeaderProps> = ({ title, onMenu }) => {
           </AnimatePresence>
         </div>
       ))}
-      {((location.pathname.startsWith('/admin') || role === 'ADMIN') || (location.pathname.startsWith('/dashboard') && agency)) && (
+      {/* Public landing page shortcut - shown in every dashboard topbar (user, admin/agency). */}
         <button 
           type="button" 
           onClick={() => navigate('/')} 
@@ -278,9 +278,9 @@ export const Header: React.FC<HeaderProps> = ({ title, onMenu }) => {
           title={translateText("View Landing Page")}
           aria-label={translateText("View Landing Page")}
         >
-          <Globe size={16} />
+          <PanelsTopLeft size={16} />
         </button>
-      )}
+
       <GetAppButton/>
       <div className="layout-preference-controls"><CurrencySelector/><LanguageSwitcher/><ThemeToggle/></div>
       <DemoAccountControl/><div className="layout-balance-badges"><CreditBadge/><WalletBadge/></div>

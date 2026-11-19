@@ -8,7 +8,6 @@ import { setLanguage, toggleTheme } from '../../../store/slices/uiSlice';
 import { NativeWorkspace } from './NativeWorkspace';
 import { DashboardPage } from '../../DashboardPage';
 import { AICopilot } from '../../AICopilot';
-import { MarketingTracking } from '../../MarketingTracking';
 import { SettingsWorkspace } from '../../settings/SettingsWorkspace';
 import { makeLead, mainPipeline } from '../../crm/model';
 import { newProduct, formatPrice } from '../../commerce/model';
@@ -16,6 +15,7 @@ import { blankPage } from '../../booking/model';
 import { createBuilderDocument } from '../../BuilderWorkspace';
 import { seedDemo } from './adapters/workspace';
 import { previewScreens } from './screens';
+import { TOOL_IDS } from '../../../../functions/billing-engine.js';
 import i18n from '../../../i18n/i18n';
 import '../../../index.css';
 import '../../../layout-shell.css';
@@ -55,7 +55,11 @@ const document = createBuilderDocument('funnel', 'Discovery Call Funnel', '/dash
 seedDemo('gos.assets.workspace.v1', { assets: [{ id: 'demo-funnel', kind: 'funnel', name: 'Discovery Call Funnel', domain: '', image: '/dashboard/funnel-consultation.png', updated: daysAgo(1), document, description: 'Demo funnel', settings: { seo: 'Discovery Call', navigation: '', color: '#7C3AED' } }], domains: [] });
 seedDemo('entity:assets', [{ id: 'demo-funnel', name: 'Discovery Call Funnel', kind: 'funnel', document }]);
 
-const router = createMemoryRouter([{ element: <NativeWorkspace/>, children: previewScreens.map(screen => ({ path: screen.path, element: screen.id === 'settings' ? <SettingsWorkspace/> : screen.id === 'marketing-tracking' ? <MarketingTracking/> : screen.id === 'copilot' ? <AICopilot/> : <DashboardPage page={screen.page!}/> })) }], { initialEntries: ['/dashboard'] });
+// The demo workspace is a subscribed account (read-only adapters), so the captured shell shows the
+// normal user dashboard instead of redirecting to the plans paywall, which is outside this memory router.
+seedDemo('demo:doc:billingSubscriptions/landing-demo', { status: 'active', plan: { id: 'landing-demo', name: 'Pro', tools: [...TOOL_IDS] }, extraTools: [] });
+
+const router = createMemoryRouter([{ element: <NativeWorkspace/>, children: previewScreens.map(screen => ({ path: screen.path, element: screen.id === 'settings' ? <SettingsWorkspace/> : screen.id === 'copilot' ? <AICopilot/> : <DashboardPage page={screen.page!}/> })) }], { initialEntries: ['/dashboard'] });
 window.addEventListener('message', event => {
   if (event.source !== parent || event.origin !== window.location.origin || event.data?.type !== 'gos-demo-view') return;
   const screen = previewScreens.find(item => item.id === event.data.screen);

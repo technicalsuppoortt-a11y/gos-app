@@ -228,23 +228,18 @@
     },
     {
       "file": "src/pages/auth/LoginPage.tsx",
-      "line": 269,
+      "line": 273,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/auth/LoginPage.tsx",
-      "line": 281,
+      "line": 285,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/auth/LoginPage.tsx",
-      "line": 311,
+      "line": 315,
       "utility": "text-slate-500"
-    },
-    {
-      "file": "src/pages/auth/LoginPage.tsx",
-      "line": 336,
-      "utility": "text-slate-400"
     },
     {
       "file": "src/pages/auth/LoginPage.tsx",
@@ -253,22 +248,27 @@
     },
     {
       "file": "src/pages/auth/LoginPage.tsx",
-      "line": 340,
+      "line": 344,
       "utility": "text-slate-400"
     },
     {
       "file": "src/pages/auth/LoginPage.tsx",
-      "line": 364,
+      "line": 344,
+      "utility": "text-slate-400"
+    },
+    {
+      "file": "src/pages/auth/LoginPage.tsx",
+      "line": 368,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/auth/LoginPage.tsx",
-      "line": 367,
+      "line": 371,
       "utility": "text-slate-400"
     },
     {
       "file": "src/pages/auth/LoginPage.tsx",
-      "line": 376,
+      "line": 380,
       "utility": "text-slate-100"
     },
     {

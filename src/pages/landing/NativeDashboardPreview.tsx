@@ -67,7 +67,9 @@ export function NativeDashboardPreview({ tab, ar, title }: { tab: number; ar: bo
     canvas.dir = ar ? 'rtl' : 'ltr';
     canvas.lang = ar ? 'ar' : 'en';
     canvas.inert = true;
-    canvas.innerHTML = `<div class="lp-static-body"><div class="lp-static-app">${expandImages(snapshots.screens[key])}</div></div>`;
+    const screens = snapshots.screens as Record<string, string>;
+    const markup = screens[key] ?? screens[`${ar ? 'ar' : 'en'}-${theme}-dashboard`] ?? '';
+    canvas.innerHTML = `<div class="lp-static-body"><div class="lp-static-app">${expandImages(markup)}</div></div>`;
     const fit = () => {
       const scale = host.current!.clientWidth / snapshots.width;
       const height = scale > 0 ? host.current!.clientHeight / scale : snapshots.height;

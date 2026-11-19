@@ -1,18 +1,15 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import {
-  ArrowRight, ArrowUp, BadgeDollarSign, BarChart3, BriefcaseBusiness, Building2, CalendarCheck, CalendarDays, Check, ChevronDown,
-  CreditCard, Globe, GraduationCap, House, Inbox, Layers, LayoutGrid, Lightbulb, ListChecks, Menu, MessageCircle,
-  MessageCircleOff, MessagesSquare, Pause, Play, Presentation, Quote, RotateCcw, Search, Settings,
-  ShoppingCart, Shuffle, SlidersHorizontal, Sparkles, Star, Stethoscope, Store, Tag, Timer, TrendingUp, TriangleAlert,
-  UserPlus, Users, Workflow, X, Zap, Bot, Send, ShieldCheck, MessageSquare, UserRound, Filter, Radio, Bell, Download,
-} from 'lucide-react';
+import { ArrowRight, ArrowUp, BarChart3, BriefcaseBusiness, Building2, CalendarCheck, CalendarDays, Check, CreditCard, Globe, GraduationCap, House, Layers, LayoutGrid, Lightbulb, ListChecks, Menu, MessageCircle, MessageCircleOff, Pause, Play, Presentation, Quote, RotateCcw, Search, Settings, ShoppingCart, Shuffle, SlidersHorizontal, Sparkles, Star, Stethoscope, Store, Tag, Timer, TrendingUp, TriangleAlert, UserPlus, Users, Workflow, X, Zap, Bot, Send, ShieldCheck, MessageSquare, UserRound, Filter, Bell, Download, Contact, Crown } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import type { RootState } from '../../store';
 import { setLanguage, type Language } from '../../store/slices/uiSlice';
 import i18n from '../../i18n/i18n';
+import { translateTextForLanguage } from '../../i18n/display';
 import { type LandingCopy } from './landing-content';
+import { whiteLabelContent } from './white-label/white-label-content';
+import { WhiteLabelJourney } from './white-label/WhiteLabelJourney';
 import { cmsEvent, readCMS } from './cms';
 import { isDefaultBrandLogo, useWorkspacePreferences } from '../../backend/workspacePreferences';
 import { usePhoenixBrand, type PhoenixConfiguration } from '../../backend/phoenixBrand';
@@ -28,8 +25,6 @@ const painIcons: LucideIcon[] = [Timer, MessageCircleOff, Tag, Shuffle, Layers];
 const engineStepIcons: LucideIcon[] = [Search, MessageSquare, UserRound, CalendarDays, Users];
 const stageIcons: LucideIcon[] = [UserPlus, ListChecks, Lightbulb, CalendarCheck];
 const howIcons: LucideIcon[] = [Search, SlidersHorizontal, Zap, TrendingUp];
-const toolIcons: LucideIcon[] = [Sparkles, MessagesSquare, Inbox, Users, CalendarDays, CreditCard, BarChart3];
-const toolTones = ['violet', 'indigo', 'blue', 'teal', 'green', 'amber', 'pink'] as const;
 const perkIcons: LucideIcon[] = [LayoutGrid, ListChecks, TrendingUp];
 const avatars = ['/landing/avatar-1.png', '/landing/avatar-2.png', '/landing/avatar-3.png'];
 
@@ -64,7 +59,7 @@ function Logo({ brand }: { brand: PreviewBrand | null }) {
 function SectionBadge({ children, num, tone = 'default' }: React.PropsWithChildren<{ num: string; tone?: 'default' | 'light' }>) {
   return (
     <span className={`lp-badge lp-badge--${tone}`}>
-      <i aria-hidden="true">{num}</i>
+
       {children}
     </span>
   );
@@ -166,25 +161,32 @@ function Header({ copy, language, onLanguage, activeId, brand }: { copy: Landing
 
 /* ---------- Hero ---------- */
 
+/* Mirrors the current user sidebar (UserLayout → userItems): same order, icons and catalog labels. */
+const heroNavItems: { name: string; Icon: LucideIcon; dividerBefore?: boolean }[] = [
+  { name: 'AI Copilot', Icon: Sparkles },
+  { name: 'Dashboard', Icon: MessageSquare },
+  { name: 'Funnel & Website', Icon: Filter },
+  { name: 'Inbox', Icon: MessageCircle },
+  { name: 'CRM & Leads', Icon: Users },
+  { name: 'Contacts', Icon: Contact },
+  { name: 'Automation & Campaign', Icon: Zap },
+  { name: 'AI Follow-Up', Icon: Send },
+  { name: 'Booking & Calendar', Icon: CalendarDays },
+  { name: 'Products & Payments', Icon: CreditCard },
+  { name: 'Analytics', Icon: BarChart3 },
+  { name: 'Settings', Icon: Settings, dividerBefore: true },
+];
+const HERO_DEFAULT_TAB = 1; // Dashboard
+
 function HeroMock({ copy, brand }: { copy: LandingCopy; brand: PreviewBrand | null }) {
   const [ref] = useInView<HTMLDivElement>(0.2);
   // Local, self-contained tab state: switching tabs swaps the inner view, never the route.
-  const [activeTab, setActiveTab] = useState(0);
+  const [activeTab, setActiveTab] = useState(HERO_DEFAULT_TAB);
   const tabRefs = useRef<(HTMLButtonElement | null)[]>([]);
   const ar = /[\u0600-\u06ff]/.test(copy.mock.title);
-  const navItems = [
-    { label: ar ? 'لوحة التحكم' : 'Dashboard', Icon: MessageSquare },
-    { label: copy.mock.nav[0], Icon: Sparkles },
-    { label: ar ? 'المواقع والأقماع' : 'Funnel & Website', Icon: Filter },
-    { label: copy.mock.nav[2], Icon: Inbox },
-    { label: copy.mock.nav[3], Icon: Users },
-    { label: copy.mock.nav[1], Icon: Send },
-    { label: copy.mock.nav[4], Icon: CalendarDays },
-    { label: copy.mock.nav[5], Icon: CreditCard },
-    { label: copy.mock.nav[6], Icon: BarChart3 },
-    { label: ar ? 'تتبع التسويق' : 'Marketing Tracking', Icon: Radio },
-    { label: copy.mock.nav[7], Icon: Settings },
-  ];
+  const lang = ar ? 'ar' : 'en';
+  const navItems = heroNavItems.map(item => ({ ...item, label: translateTextForLanguage(item.name, lang) }));
+  const supportLabel = translateTextForLanguage('Support', lang);
   const tabCount = navItems.length;
   const selectTab = (index: number, focus = false) => {
     const next = (index + tabCount) % tabCount;
@@ -207,18 +209,17 @@ function HeroMock({ copy, brand }: { copy: LandingCopy; brand: PreviewBrand | nu
 
       <div className="lp-mock lp-mock-replica" role="group" aria-label={copy.mock.title} data-live="false">
         <aside className="lp-mock__side">
-          <div className="lp-mock__logo" role="img" aria-label={brand?.brand.name ?? 'Upklick'}>
+          <div className="lp-mock__logo lp-mock__logo--current" role="img" aria-label={brand?.brand.name ?? 'Upklick'}>
             {brand ? <PreviewBrandMark brand={brand} /> : <>
-              <img className="lp-preview-logo lp-preview-logo-dark" src="/upclick-logo.svg" width="84" height="27" alt=""/>
-              <img className="lp-preview-logo lp-preview-logo-light" src="/upclick-logo-light.svg" width="84" height="27" alt=""/>
+              <img className="lp-mock__brand-icon" src="/upclick-mark.svg" width="22" height="23" alt=""/>
+              <span className="lp-mock__brand-copy"><b>Upklick</b><small>{translateTextForLanguage('Ideas to impact', lang)}</small></span>
             </>}
-            <span>WORKSPACE</span>
           </div>
           <ul role="tablist" aria-orientation="vertical" aria-label={brand?.brand.name ?? 'Upklick'}>
-            {navItems.map(({ label: item, Icon }, index) => {
+            {navItems.map(({ label: item, Icon, dividerBefore }, index) => {
               const selected = activeTab === index;
               return (
-                <li key={item} role="presentation">
+                <li key={item} role="presentation" className={dividerBefore ? 'lp-mock__divider' : undefined}>
                   <button
                     ref={node => { tabRefs.current[index] = node; }}
                     id={`lp-mock-tab-${index}`}
@@ -238,9 +239,19 @@ function HeroMock({ copy, brand }: { copy: LandingCopy; brand: PreviewBrand | nu
               );
             })}
           </ul>
+          <div className="lp-mock__support" aria-hidden="true"><MessageCircle size={12} strokeWidth={2.2} /><span>{supportLabel}</span></div>
+          <div className="lp-mock__profile" aria-hidden="true">
+            <em>MJ</em>
+            <span><b>{translateTextForLanguage('Mohamed Joe', lang)}</b><small>{translateTextForLanguage('Business Owner', lang)}</small></span>
+            <i><Crown size={7} />{translateTextForLanguage(' Pro', lang)}</i>
+          </div>
         </aside>
         <div className="lp-mock__main" id="lp-mock-panel" role="tabpanel" aria-labelledby={`lp-mock-tab-${activeTab}`}>
-          <div className="lp-replica-topbar"><span><Menu size={10}/> {ar ? 'مساحة العمل' : 'Workspace'} <i>/</i> <b>{navItems[activeTab].label}</b></span><span><Download size={10}/><Bell size={10}/><em>MJ</em></span></div>
+          <div className="lp-replica-topbar lp-replica-topbar--current">
+            <span className="lp-replica-topbar__crumb"><Menu size={10}/> {translateTextForLanguage('Workspace', lang)} <i>/</i> <b>{navItems[activeTab].label}</b></span>
+            <span className="lp-replica-topbar__search" aria-hidden="true"><Search size={8}/>{translateTextForLanguage('Search...', lang)}<kbd>⌘ K</kbd></span>
+            <span className="lp-replica-topbar__tools" aria-hidden="true"><Globe size={10}/><Download size={10}/><Bell size={10}/><em>MJ</em></span>
+          </div>
           <NativeDashboardPreview tab={activeTab} ar={ar} title={navItems[activeTab].label}/>
         </div>
       </div>
@@ -257,7 +268,42 @@ function HeroMock({ copy, brand }: { copy: LandingCopy; brand: PreviewBrand | nu
   );
 }
 
-function Hero({ copy, onVideo, brand }: { copy: LandingCopy; onVideo: () => void; brand: PreviewBrand | null }) {
+function BusinessStrip({ copy }: { copy: LandingCopy }) {
+  const [ref, inView] = useInView<HTMLDivElement>(0.25);
+  const [active, setActive] = useState(0);
+  const [paused, setPaused] = useState(false);
+  const total = copy.hero.businesses.length;
+
+  useEffect(() => {
+    if (!inView || paused || prefersReducedMotion()) return;
+    const timer = window.setInterval(() => setActive(index => (index + 1) % total), 2600);
+    return () => window.clearInterval(timer);
+  }, [inView, paused, total]);
+
+  return (
+    <div ref={ref} className="lp-container lp-business lp-reveal" onMouseLeave={() => setPaused(false)}>
+      <p className="lp-business__title">{copy.hero.builtFor}</p>
+      <ul className="lp-business__list lp-reveal lp-stagger">
+        {copy.hero.businesses.map((name, index) => {
+          const Icon = businessIcons[index];
+          return (
+            <li
+              key={name}
+              className={index === active ? 'is-active' : undefined}
+              onMouseEnter={() => { setPaused(true); setActive(index); }}
+              onClick={() => { setPaused(true); setActive(index); }}
+            >
+              <span><Icon size={18} strokeWidth={1.9} /></span>
+              <small>{name}</small>
+            </li>
+          );
+        })}
+      </ul>
+    </div>
+  );
+}
+
+function Hero({ copy, brand }: { copy: LandingCopy; brand: PreviewBrand | null }) {
   return (
     <section className="lp-hero" id="top" aria-labelledby="lp-hero-title">
       <div className="lp-container lp-hero__grid">
@@ -272,22 +318,13 @@ function Hero({ copy, onVideo, brand }: { copy: LandingCopy; onVideo: () => void
           </ul>
           <div className="lp-hero__ctas">
             <BookButton id="lp-hero-book" label={copy.hero.primary} size="lg" />
-            <VideoButton id="lp-hero-video" label={copy.hero.video} onClick={onVideo} />
           </div>
           <p className="lp-hero__note"><ShieldCheck size={13} aria-hidden="true" />{copy.hero.note}</p>
         </div>
         <HeroMock copy={copy} brand={brand} />
       </div>
 
-      <div className="lp-container lp-business lp-reveal">
-        <p className="lp-business__title">{copy.hero.builtFor}</p>
-        <ul className="lp-business__list lp-reveal lp-stagger">
-          {copy.hero.businesses.map((name, index) => {
-            const Icon = businessIcons[index];
-            return <li key={name}><span><Icon size={18} strokeWidth={1.9} /></span><small>{name}</small></li>;
-          })}
-        </ul>
-      </div>
+      <BusinessStrip copy={copy} />
     </section>
   );
 }
@@ -596,44 +633,6 @@ function HowItWorks({ copy }: { copy: LandingCopy }) {
   );
 }
 
-/* ---------- Toolkit ---------- */
-
-function Toolkit({ copy }: { copy: LandingCopy }) {
-  const [active, setActive] = useState(1);
-  return (
-    <section className="lp-section lp-tools" id="features" aria-labelledby="lp-tools-title">
-      <div className="lp-container">
-        <div className="lp-section-head lp-reveal">
-          <SectionBadge num="07">{copy.tools.badge}</SectionBadge>
-          <h2 id="lp-tools-title" className="lp-h2">{copy.tools.title}</h2>
-          <p className="lp-lead">{copy.tools.text}</p>
-        </div>
-        <ul className="lp-tools__grid lp-reveal lp-stagger" onMouseLeave={() => setActive(1)}>
-          {copy.tools.items.map((tool, index) => {
-            const Icon = toolIcons[index];
-            const route = ['/dashboard/copilot', '/dashboard/follow-up', '/dashboard/inbox', '/dashboard/crm', '/dashboard/booking', '/dashboard/products', '/dashboard/analytics'][index] || '/dashboard';
-            return (
-              <li key={tool.title}>
-                <Link
-                  id={`lp-tool-${index}`}
-                  to={route}
-                  className={`lp-tool tone-${toolTones[index]}${active === index ? ' is-active' : ''} cursor-pointer hover:border-primary-500 hover:-translate-y-1 hover:shadow-md transition-all duration-200`}
-                  onMouseEnter={() => setActive(index)}
-                  onFocus={() => setActive(index)}
-                >
-                  <span className="lp-tool__icon"><Icon size={18} strokeWidth={2.1} /></span>
-                  <b>{tool.title}</b>
-                  <small>{tool.text}</small>
-                </Link>
-              </li>
-            );
-          })}
-        </ul>
-      </div>
-    </section>
-  );
-}
-
 /* ---------- Testimonials ---------- */
 
 function Testimonials({ copy }: { copy: LandingCopy }) {
@@ -659,104 +658,6 @@ function Testimonials({ copy }: { copy: LandingCopy }) {
               </div>
             </li>
           ))}
-        </ul>
-      </div>
-    </section>
-  );
-}
-
-/* ---------- FAQ ---------- */
-
-function Faq({ copy }: { copy: LandingCopy }) {
-  const [open, setOpen] = useState<number | null>(null);
-  const [showAll, setShowAll] = useState(false);
-  const items = showAll ? copy.faq.items : copy.faq.items.slice(0, 6);
-
-  return (
-    <section className="lp-section lp-faq" id="faq" aria-labelledby="lp-faq-title">
-      <div className="lp-container">
-        <div className="lp-faq__head lp-reveal">
-          <div className="lp-section-head">
-            <SectionBadge num="09">{copy.faq.badge}</SectionBadge>
-            <h2 id="lp-faq-title" className="lp-h2">{copy.faq.title}</h2>
-            <p className="lp-lead">{copy.faq.text}</p>
-          </div>
-          <button id="lp-faq-all" type="button" className="lp-btn lp-btn--primary lp-btn--sm" onClick={() => setShowAll(value => !value)} aria-expanded={showAll}>
-            <span>{showAll ? copy.faq.showLess : copy.faq.viewAll}</span>
-            <ArrowRight size={14} strokeWidth={2.4} className={showAll ? 'lp-rotate-up' : 'lp-flip'} aria-hidden="true" />
-          </button>
-        </div>
-        <div className="lp-faq__grid lp-reveal lp-stagger">
-          {items.map((item, index) => {
-            const isOpen = open === index;
-            return (
-              <div key={item.q} className={`lp-faq__item${isOpen ? ' is-open' : ''}`}>
-                <button id={`lp-faq-q-${index}`} type="button" aria-expanded={isOpen} aria-controls={`lp-faq-a-${index}`} onClick={() => setOpen(isOpen ? null : index)}>
-                  <span>{item.q}</span>
-                  <ChevronDown size={16} strokeWidth={2.4} aria-hidden="true" />
-                </button>
-                <div id={`lp-faq-a-${index}`} role="region" aria-labelledby={`lp-faq-q-${index}`} className="lp-faq__answer">
-                  <div><p>{item.a}</p></div>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-/* ---------- Final CTA ---------- */
-
-/** Layered dark-blue wave graphics for the outer edges of the final banner (mirrored on the right). */
-function CtaWaves({ side }: { side: 'start' | 'end' }) {
-  const id = `lp-wave-${side}`;
-  return (
-    <svg className={`lp-cta__waves lp-cta__waves--${side}`} viewBox="0 0 420 400" preserveAspectRatio="none" aria-hidden="true">
-      <defs>
-        <linearGradient id={`${id}-a`} x1="0" y1="0" x2="1" y2="0">
-          <stop offset="0" stopColor="#05041f" stopOpacity="0.9" />
-          <stop offset="1" stopColor="#05041f" stopOpacity="0" />
-        </linearGradient>
-        <linearGradient id={`${id}-b`} x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0" stopColor="#7C3AED" stopOpacity="0.75" />
-          <stop offset="1" stopColor="#7C3AED" stopOpacity="0" />
-        </linearGradient>
-        <linearGradient id={`${id}-c`} x1="0" y1="1" x2="1" y2="0">
-          <stop offset="0" stopColor="#7C3AED" stopOpacity="0.45" />
-          <stop offset="1" stopColor="#7C3AED" stopOpacity="0" />
-        </linearGradient>
-      </defs>
-      <path d="M0 0 H230 C150 80 270 170 180 260 C120 320 170 370 220 400 H0 Z" fill={`url(#${id}-a)`} />
-      <path d="M0 40 C110 100 60 200 140 280 C190 330 160 375 130 400 H0 Z" fill={`url(#${id}-b)`} />
-      <path d="M0 220 C80 230 120 300 210 330 C260 348 300 380 320 400 H0 Z" fill={`url(#${id}-c)`} />
-      <path className="lp-cta__wave-line" d="M0 120 C80 150 70 250 150 315 C185 343 190 378 175 400" />
-      <path className="lp-cta__wave-line is-faint" d="M0 10 C150 60 220 160 150 245 C105 300 190 360 260 400" />
-      <path className="lp-cta__wave-line is-faint" d="M0 300 C90 300 160 340 230 400" />
-    </svg>
-  );
-}
-
-function FinalCta({ copy, onVideo }: { copy: LandingCopy; onVideo: () => void }) {
-  return (
-    <section className="lp-cta" id="get-started" aria-labelledby="lp-cta-title">
-      <div className="lp-cta__glow" aria-hidden="true" />
-      <CtaWaves side="start" />
-      <CtaWaves side="end" />
-      <div className="lp-container lp-cta__inner lp-reveal">
-        <SectionBadge num="10" tone="light">{copy.cta.badge}</SectionBadge>
-        <h2 id="lp-cta-title" className="lp-cta__title">{copy.cta.title}</h2>
-        <p className="lp-cta__text">{copy.cta.text}</p>
-        <div className="lp-cta__buttons">
-          <BookButton id="lp-cta-book" label={copy.cta.primary} size="lg" />
-          <VideoButton id="lp-cta-video" label={copy.cta.video} onClick={onVideo} inverted />
-        </div>
-        <ul className="lp-cta__perks lp-reveal lp-stagger">
-          {copy.cta.perks.map((perk, index) => {
-            const Icon = perkIcons[index];
-            return <li key={perk}><span><Icon size={13} strokeWidth={2.3} /></span>{perk}</li>;
-          })}
         </ul>
       </div>
     </section>
@@ -861,6 +762,73 @@ function VideoModal({ copy, onClose }: { copy: LandingCopy; onClose: () => void 
   );
 }
 
+/* ---------- Footer ---------- */
+
+const footerCopy = {
+  en: {
+    tagline: 'The AI growth operating system that answers fast, follows up automatically and books appointments — so no lead is ever lost.',
+    explore: 'Explore', account: 'Get started', legal: 'Legal',
+    terms: 'Terms of Service', privacy: 'Privacy Policy', deletion: 'Data Deletion', legalLabel: 'Legal',
+  },
+  ar: {
+    tagline: 'نظام تشغيل النمو بالذكاء الاصطناعي اللي بيرد بسرعة ويتابع تلقائياً ويحجز المواعيد — عشان مفيش عميل محتمل يضيع.',
+    explore: 'استكشف', account: 'ابدأ الآن', legal: 'قانوني',
+    terms: 'شروط الخدمة', privacy: 'سياسة الخصوصية', deletion: 'حذف البيانات', legalLabel: 'روابط قانونية',
+  },
+} as const;
+
+function LandingFooter({ copy, language, brand, links }: { copy: LandingCopy; language: Language; brand: PreviewBrand | null; links: { id: string; label: string }[] }) {
+  const text = footerCopy[language === 'ar' ? 'ar' : 'en'];
+  const loginUrl = readCMS(new URLSearchParams(window.location.search).get('cms-preview') === '1').loginUrl;
+  const go = (event: React.MouseEvent<HTMLAnchorElement>, id: string) => {
+    event.preventDefault();
+    document.getElementById(id)?.scrollIntoView({ behavior: prefersReducedMotion() ? 'auto' : 'smooth', block: 'start' });
+  };
+  const legal = [
+    { to: '/terms-of-service', label: text.terms },
+    { to: '/privacy', label: text.privacy },
+    { to: '/data-deletion', label: text.deletion },
+  ];
+  return (
+    <footer className="lp-site-footer" aria-labelledby="lp-footer-title">
+      <h2 id="lp-footer-title" className="lp-sr-only">{brand?.brand.name ?? 'Upklick'}</h2>
+      <div className="lp-container lp-site-footer__grid">
+        <div className="lp-site-footer__brand">
+          <a href="#top" className="lp-site-footer__logo" onClick={event => go(event, 'top')}><Logo brand={brand} /></a>
+          <p>{text.tagline}</p>
+          <BookButton id="lp-footer-book" label={copy.nav.book} size="sm" />
+        </div>
+        <nav className="lp-site-footer__col" aria-label={text.explore}>
+          <b>{text.explore}</b>
+          <ul>{links.map(link => <li key={link.id}><a href={`#${link.id}`} onClick={event => go(event, link.id)}>{link.label}</a></li>)}</ul>
+        </nav>
+        <nav className="lp-site-footer__col" aria-label={text.account}>
+          <b>{text.account}</b>
+          <ul>
+            <li><Link to={loginUrl}>{copy.nav.login}</Link></li>
+            <li><a href="#get-started" onClick={event => go(event, 'get-started')}>{copy.nav.book}</a></li>
+          </ul>
+        </nav>
+        <nav className="lp-site-footer__col" aria-label={text.legal}>
+          <b>{text.legal}</b>
+          <ul>{legal.map(item => <li key={item.to}><Link to={item.to}>{item.label}</Link></li>)}</ul>
+        </nav>
+      </div>
+      <div className="lp-container lp-site-footer__bottom">
+        <p className="lp-cms-footer">{copy.footer.rights}</p>
+        <nav className="lp-site-footer__legal" aria-label={text.legalLabel}>
+          {legal.map((item, index) => (
+            <React.Fragment key={item.to}>
+              {index > 0 && <span aria-hidden="true">•</span>}
+              <Link to={item.to}>{item.label}</Link>
+            </React.Fragment>
+          ))}
+        </nav>
+      </div>
+    </footer>
+  );
+}
+
 /* ---------- Page ---------- */
 
 export const LandingPage: React.FC = () => {
@@ -882,11 +850,16 @@ export const LandingPage: React.FC = () => {
     ) : original;
     return { ...content, nav: { ...content.nav, links: content.nav.links.filter(link => link.id !== 'pricing') } };
   }, [cms, language, brandName]);
+  // The reseller (white-label) chapter is Upklick's own pitch — never shown on a tenant's branded preview.
+  const whiteLabel = brand ? null : whiteLabelContent[language === 'ar' ? 'ar' : 'en'];
+  const visibleLinks = copy.nav.links.filter(link => !['features', 'faq', 'get-started'].includes(link.id));
+  const navLinks = useMemo(() => whiteLabel ? [...visibleLinks, { id: 'white-label', label: whiteLabel.nav }] : visibleLinks, [copy, whiteLabel]);
+  const headerCopy = useMemo(() => ({ ...copy, nav: { ...copy.nav, links: navLinks } }), [copy, navLinks]);
   const dir = language === 'ar' ? 'rtl' : 'ltr';
   const rootRef = useRef<HTMLDivElement | null>(null);
   const [videoOpen, setVideoOpen] = useState(false);
   const [activeId, setActiveId] = useState('');
-  const sectionIds = useMemo(() => copy.nav.links.map(link => link.id), [copy]);
+  const sectionIds = useMemo(() => navLinks.map(link => link.id), [navLinks]);
 
   const toggleLanguage = useCallback(() => {
     const next: Language = language === 'ar' ? 'en' : 'ar';
@@ -906,18 +879,51 @@ export const LandingPage: React.FC = () => {
   useEffect(() => {
     const root = rootRef.current;
     if (!root) return;
-    const nodes = Array.from(root.querySelectorAll('.lp-reveal'));
-    if (typeof IntersectionObserver === 'undefined' || prefersReducedMotion()) { nodes.forEach(node => node.classList.add('is-in')); return; }
+    // Observe cohesive visual blocks and staggered list items for smooth, unhurried scroll entrance.
+    const entriesWithDelay = new Map<HTMLElement, number>();
+    let blockIndex = 0;
+    root.querySelectorAll<HTMLElement>('.lp-reveal, .lp-stagger').forEach(group => {
+      const children = Array.from(group.children).filter((child): child is HTMLElement => child instanceof HTMLElement);
+      if (group.classList.contains('lp-stagger')) {
+        children.forEach((child, childIndex) => {
+          if (!child.classList.contains('lp-reveal') && !child.classList.contains('lp-stagger')) {
+            entriesWithDelay.set(child, Math.min(childIndex * 75, 450));
+          }
+        });
+      } else if (children.some(child => child.classList.contains('lp-reveal') || child.classList.contains('lp-stagger'))) {
+        children.forEach(child => {
+          if (!child.classList.contains('lp-reveal') && !child.classList.contains('lp-stagger')) {
+            entriesWithDelay.set(child, 0);
+          }
+        });
+      } else {
+        const isHeroCopy = group.classList.contains('lp-hero__copy');
+        entriesWithDelay.set(group, isHeroCopy ? 0 : (blockIndex++ % 2) * 80);
+      }
+    });
+    const nodes = new Set<HTMLElement>(entriesWithDelay.keys());
+    const motion = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const revealAll = () => nodes.forEach(node => node.classList.add('is-drawn'));
+    if (typeof IntersectionObserver === 'undefined' || motion.matches) { revealAll(); return; }
+    entriesWithDelay.forEach((delay, node) => {
+      node.classList.add('lp-draw');
+      node.style.setProperty('--lp-draw-delay', `${delay}ms`);
+    });
     const observer = new IntersectionObserver(entries => {
-      entries.forEach(entry => { if (entry.isIntersecting) { entry.target.classList.add('is-in'); observer.unobserve(entry.target); } });
-    }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
-    nodes.forEach(node => observer.observe(node));
-    // Safety net: never leave a section invisible (e.g. full-page captures, print, or very fast jumps).
-    const revealAll = () => nodes.forEach(node => node.classList.add('is-in'));
-    const fallback = window.setTimeout(revealAll, 2500);
+      entries.forEach(entry => { if (entry.isIntersecting) { entry.target.classList.add('is-drawn'); observer.unobserve(entry.target); } });
+    }, { threshold: 0, rootMargin: '0px 0px -28px 0px' });
+    nodes.forEach(node => { if (!node.classList.contains('is-drawn')) observer.observe(node); });
+    root.classList.add('lp-scroll-ready');
+    const onMotion = () => { if (motion.matches) revealAll(); };
+    const onFocus = (event: FocusEvent) => {
+      const target = event.target as HTMLElement;
+      target.closest('.lp-draw')?.classList.add('is-drawn');
+    };
+    motion.addEventListener('change', onMotion);
+    root.addEventListener('focusin', onFocus);
     window.addEventListener('beforeprint', revealAll);
-    return () => { observer.disconnect(); window.clearTimeout(fallback); window.removeEventListener('beforeprint', revealAll); };
-  }, []);
+    return () => { observer.disconnect(); root.classList.remove('lp-scroll-ready'); motion.removeEventListener('change', onMotion); root.removeEventListener('focusin', onFocus); window.removeEventListener('beforeprint', revealAll); };
+  }, [language, cms, brand]);
 
   useEffect(() => {
     if (typeof IntersectionObserver === 'undefined') return;
@@ -933,21 +939,19 @@ export const LandingPage: React.FC = () => {
 
   return (
     <div ref={rootRef} className="lp" dir={dir} lang={language} data-launch-brand={brand?.brand.theme ? '' : undefined}>
-      <Header copy={copy} language={language} onLanguage={toggleLanguage} activeId={activeId} brand={brand} />
+      <Header copy={headerCopy} language={language} onLanguage={toggleLanguage} activeId={activeId} brand={brand} />
       <main>
         {preview && <div className="lp-cms-preview">{language === 'ar' ? 'معاينة المسودة — لم ينشر هذا المحتوى بعد' : 'Draft preview — this content has not been published'}</div>}
-        <Hero copy={copy} onVideo={openVideo} brand={brand} />
+        <Hero copy={copy} brand={brand} />
         <Problem copy={copy} />
         <Solution copy={copy} />
         <Demo copy={copy} />
         <Compare copy={copy} />
         <HowItWorks copy={copy} />
-        <Toolkit copy={copy} />
         <Testimonials copy={copy} />
-        <Faq copy={copy} />
-        <FinalCta copy={copy} onVideo={openVideo} />
+        {whiteLabel && <WhiteLabelJourney copy={whiteLabel} bookingUrl={cms.bookingUrl} />}
       </main>
-      <footer className="lp-cms-footer lp-container">{copy.footer.rights}</footer>
+      <LandingFooter copy={copy} language={language} brand={brand} links={navLinks} />
       {videoOpen && <VideoModal copy={copy} onClose={closeVideo} />}
       <ScrollTopButton label={copy.nav.top} />
     </div>
