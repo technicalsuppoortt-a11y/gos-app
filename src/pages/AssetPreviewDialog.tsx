@@ -1,31 +1,26 @@
 import { useUILanguage, localizeNode, translateText } from '../i18n/display';
 import { useEffect, useId, useRef, useState } from 'react';
 import { Monitor, Tablet, Smartphone, X, Sun, Moon } from 'lucide-react';
-import { useSelector } from 'react-redux';
-import type { RootState } from '../store';
 import { AssetSelect } from './AssetControls';
 import { PagePreview, isColorDark } from './AssetViews';
 import type { Asset } from './asset-model';
 
 export function AssetPreviewDialog({ asset, pageId, close }: { asset: Asset; pageId?: string; close: () => void }) {
   useUILanguage();
-  const globalTheme = useSelector((state: RootState) => state.ui.theme);
-  const isSystemDark = globalTheme === 'dark';
 
   const [selected, setSelected] = useState(pageId ?? asset.document.pages[0]?.id), [device, setDevice] = useState('Desktop');
   const root = useRef<HTMLDivElement>(null), closeRef = useRef(close), titleId = useId();
   closeRef.current = close;
   const page = asset.document.pages.find(item => item.id === selected) ?? asset.document.pages[0];
 
-  const isPageWhite = !page?.backgroundColor || ['#ffffff', '#fff', 'white', 'rgb(255, 255, 255)', 'rgb(255,255,255)'].includes(page.backgroundColor.trim().toLowerCase());
   const isCustomDark = Boolean(page?.backgroundColor && isColorDark(page.backgroundColor));
 
-  // Canvas theme state: default to 'auto', which syncs with global theme / page background
+  // Canvas theme state: default to 'auto', which respects the page's actual background color
   const [canvasTheme, setCanvasTheme] = useState<'auto' | 'dark' | 'light'>('auto');
 
   // Resolved effective theme for preview canvas
   const effectiveDark = canvasTheme === 'auto'
-    ? (isCustomDark || (isSystemDark && isPageWhite))
+    ? isCustomDark
     : (canvasTheme === 'dark');
 
   useEffect(() => {

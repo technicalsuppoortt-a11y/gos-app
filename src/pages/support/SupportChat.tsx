@@ -9,8 +9,34 @@ import { db, storage, callBackend, backendError } from '../../backend/firebase';
 import { useUILanguage } from '../../i18n/display';
 import { SupportDialog } from './SupportDialog';
 import { SupportMedia } from './SupportMedia';
-import { formatDuration, inspectAudio, roleLabel, roomKey, type Contact, type Attachment, type Message, type Room } from './support-model';
+import { formatDuration, inspectAudio, roleLabel, roomKey, tokenizeSupportLinks, type Contact, type Attachment, type Message, type Room } from './support-model';
 import './support.css';
+
+function SupportLinkedText({ text }: { text: string }) {
+  const parts = tokenizeSupportLinks(text);
+  if (!parts.some(part => part.kind === 'link')) return <>{text}</>;
+  return (
+    <>
+      {parts.map((part, index) =>
+        part.kind === 'link' ? (
+          <a
+            key={`${index}-${part.href}`}
+            className="support-message-link"
+            dir="ltr"
+            href={part.href}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={e => e.stopPropagation()}
+          >
+            {part.value}
+          </a>
+        ) : (
+          <span key={index}>{part.value}</span>
+        )
+      )}
+    </>
+  );
+}
 
 const request = <T,>(data: Record<string, unknown>) => callBackend<T>('supportChat', data);
 const emojis = ['👍', '❤️', '😂', '🎉', '🙏', '👀'];
@@ -172,7 +198,7 @@ export function SupportChat() {
       {listContacts.map(c => { const r = getRoom(c), unread = !!r?.lastAuthorId && r.lastAuthorId !== user?.id && r?.updatedAt && (!r.readAt?.[user!.id] || r.updatedAt.toMillis() > r.readAt[user!.id].toMillis()); return <button key={c.id} disabled={busy || recording} className={selected?.id === c.id ? 'active' : ''} onClick={() => choose(c)}><span className="support-avatar">{c.name.slice(0, 2)}</span><span><b>{c.name}</b><span className={`support-role-badge role-${c.role.toLowerCase()}`}>{roleLabel(c.role, ar)}</span><small>{r?.hiddenPreviewFor?.includes(user!.id) ? '' : r?.lastMessage}</small></span>{unread && <i className="support-unread"/>}</button>; })}
     </aside>
     <div className="support-thread">{selected ? <><header><button type="button" aria-label={t('Back to contacts', 'عودة')} onClick={() => setSelected(null)} disabled={busy || recording}><ArrowLeft size={18}/></button><span className="support-avatar">{selected.name.slice(0, 2)}</span><div><b>{selected.name}</b><small>{t('Private support conversation', 'محادثة دعم خاصة')}</small></div><span className={`support-role-badge role-${selected.role.toLowerCase()}`}>{roleLabel(selected.role, ar)}</span></header>
-      {visiblePins.length > 0 && <details className="support-pins" key={roomId}><summary><Pin size={14}/>{t('Pinned messages', 'الرسائل المثبتة')} ({visiblePins.length})</summary><div className="support-pins-list">{visiblePins.map(m => <div className="support-pin-item" key={m.id}><b>{m.authorName}</b>{m.text && <p>{m.text}</p>}{m.files.map(file => <SupportMedia key={file.path} file={file}/>)}<button type="button" disabled={busy} onClick={() => void mutate('pin', m, { pinned: false })}><PinOff size={14}/>{t('Unpin message', 'إلغاء تثبيت الرسالة')}</button></div>)}</div></details>}
+      {visiblePins.length > 0 && <details className="support-pins" key={roomId}><summary><Pin size={14}/>{t('Pinned messages', 'الرسائل المثبتة')} ({visiblePins.length})</summary><div className="support-pins-list">{visiblePins.map(m => <div className="support-pin-item" key={m.id}><b>{m.authorName}</b>{m.text && <p><SupportLinkedText text={m.text}/></p>}{m.files.map(file => <SupportMedia key={file.path} file={file}/>)}<button type="button" disabled={busy} onClick={() => void mutate('pin', m, { pinned: false })}><PinOff size={14}/>{t('Unpin message', 'إلغاء تثبيت الرسالة')}</button></div>)}</div></details>}
       <div ref={list} className="support-messages" role="log" aria-label={t('Messages', 'الرسائل')}>
         {messages.length >= messageLimit && <button type="button" className="support-load-older" onClick={() => { if (list.current) olderScroll.current = { top: list.current.scrollTop, height: list.current.scrollHeight }; setMessageLimit(n => n + 100); }}>{t('Load earlier messages', 'تحميل الرسائل السابقة')}</button>}
         {!messages.length && roomId && <p className="support-first-message">{t('Start your conversation. Messages are private to this support thread.', 'ابدأ محادثتك. الرسائل خاصة بجهات الاتصال في هذه المحادثة.')}</p>}
@@ -180,7 +206,7 @@ export function SupportChat() {
           {m.pinned && !m.deleted && <small className="support-pinned-label"><Pin size={12}/>{t('Pinned', 'مثبتة')}</small>}
           {m.forwarded && <small className="support-forwarded"><Forward size={12}/>{t('Forwarded', 'رسالة محوّلة')}</small>}
           {m.replyContext && !m.deleted && <button type="button" className="support-quote" onClick={() => { const parentNode = document.getElementById(`message-${m.replyContext!.id}`); if (parentNode) { parentNode.scrollIntoView({ block: 'center', behavior: 'smooth' }); parentNode.classList.add('support-highlight'); setTimeout(() => parentNode.classList.remove('support-highlight'), 1400); } else { if (list.current) olderScroll.current = { top: list.current.scrollTop, height: list.current.scrollHeight }; setMessageLimit(n => n + 100); setNotice(t('Loading earlier messages. Select the reply again to jump to its parent.', 'جار تحميل الرسائل السابقة. اضغط الرد مجددًا للانتقال للرسالة الأصلية.')); } }}><b>{m.replyContext.authorName}</b>{parent?.deleted || parent?.hiddenFor?.includes(user!.id) ? t('Message unavailable', 'الرسالة غير متاحة') : parent?.text ?? m.replyContext.text}</button>}
-          {editing === m.id ? <form className="support-inline-edit" onSubmit={e => { e.preventDefault(); void mutate('edit', m, { text: editText }); }}><textarea autoFocus aria-label={t('Edit message', 'تعديل الرسالة')} maxLength={5000} value={editText} onChange={e => setEditText(e.target.value)} disabled={busy}/><div><button type="button" disabled={busy} onClick={() => setEditing(null)}>{t('Cancel', 'إلغاء')}</button><button type="submit" disabled={busy || (!editText.trim() && !m.files.length)}>{t('Save edit', 'حفظ التعديل')}</button></div></form> : <p>{m.deleted ? t('Message deleted', 'تم حذف الرسالة') : m.text}</p>}
+          {editing === m.id ? <form className="support-inline-edit" onSubmit={e => { e.preventDefault(); void mutate('edit', m, { text: editText }); }}><textarea autoFocus aria-label={t('Edit message', 'تعديل الرسالة')} maxLength={5000} value={editText} onChange={e => setEditText(e.target.value)} disabled={busy}/><div><button type="button" disabled={busy} onClick={() => setEditing(null)}>{t('Cancel', 'إلغاء')}</button><button type="submit" disabled={busy || (!editText.trim() && !m.files.length)}>{t('Save edit', 'حفظ التعديل')}</button></div></form> : <p>{m.deleted ? t('Message deleted', 'تم حذف الرسالة') : <SupportLinkedText text={m.text}/>}</p>}
           {!m.deleted && m.files.map(f => <SupportMedia file={f} key={f.path}/>)}
           {!m.deleted && Object.keys(m.reactions ?? {}).length > 0 && <div className="support-reactions">{Array.from(new Set(Object.values(m.reactions ?? {}))).map(emoji => <button type="button" key={emoji} aria-label={`${t('React', 'تفاعل')} ${emoji}`} aria-pressed={m.reactions?.[user!.id] === emoji} disabled={busy} onClick={() => void mutate('react', m, { emoji })}>{emoji} <span>{Object.values(m.reactions ?? {}).filter(e => e === emoji).length}</span></button>)}</div>}
           <footer>{m.editedAt && !m.deleted && <span>{t('edited', 'معدّلة')}</span>}<time dir="ltr">{m.createdAt?.toDate().toLocaleTimeString(ar ? 'ar-EG-u-nu-latn' : 'en-US', { hour: '2-digit', minute: '2-digit' })}</time>{own && <CheckCheck size={14} className={peerRead && m.createdAt && peerRead >= m.createdAt.toMillis() ? 'read' : ''}/>}{!m.deleted && <button type="button" aria-label={t('Reply', 'رد')} disabled={busy} onClick={() => setReply(m)}><Reply size={14}/></button>}<button type="button" aria-label={t('Message actions', 'إجراءات الرسالة')} disabled={busy} onClick={e => { e.stopPropagation(); const bottom = list.current?.getBoundingClientRect().bottom ?? innerHeight; setMenu(menu?.id === m.id ? null : { id: m.id, above: e.currentTarget.getBoundingClientRect().bottom + 300 > bottom }); setReactionId(''); }}><MoreHorizontal size={16}/></button></footer>

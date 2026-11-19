@@ -1,0 +1,3 @@
+/* Keep the decorative art behind the greeting, without clipping the create menu. */
+.gos-home-dashboard [data-dashboard-section="hero"] { isolation: isolate; }
+.gos-home-dashboard [data-dashboard-section="hero"] > .pointer-events-none { display: block; }

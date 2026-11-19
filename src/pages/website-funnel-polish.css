@@ -70,19 +70,19 @@ html.dark .aw-preview-close:hover{background:#1e293b;color:#f8fafc;border-color:
 }
 
 /* Headings in Light Preview */
-.aw-preview-site:not(.dark) :is(h1, h2, h3, h4, h5, h6, .fb-custom-heading, [data-element-part$="::title"]):not(.aw-preview-hero *):not(.fb-hero-section *),
-.aw-preview-site.light :is(h1, h2, h3, h4, h5, h6, .fb-custom-heading, [data-element-part$="::title"]):not(.aw-preview-hero *):not(.fb-hero-section *) {
+.aw-preview-site:not(.dark) :is(h1, h2, h3, h4, h5, h6, .fb-custom-heading, [data-element-part$="::title"]):not(.aw-preview-hero *):not(.fb-hero-section *):not(.tb-block *):not(.tb-form-showcase *):not(.sys-pro-step *),
+.aw-preview-site.light :is(h1, h2, h3, h4, h5, h6, .fb-custom-heading, [data-element-part$="::title"]):not(.aw-preview-hero *):not(.fb-hero-section *):not(.tb-block *):not(.tb-form-showcase *):not(.sys-pro-step *) {
   color: #0f172a !important;
 }
 
 /* Body / Paragraphs / Subheadings in Light Preview */
-.aw-preview-site:not(.dark) :is(p, .fb-custom-text, [data-element-part$="::body"]):not(.aw-preview-hero *):not(.fb-hero-section *),
-.aw-preview-site.light :is(p, .fb-custom-text, [data-element-part$="::body"]):not(.aw-preview-hero *):not(.fb-hero-section *) {
+.aw-preview-site:not(.dark) :is(p, .fb-custom-text, [data-element-part$="::body"]):not(.aw-preview-hero *):not(.fb-hero-section *):not(.tb-block *):not(.tb-form-showcase *):not(.sys-pro-step *),
+.aw-preview-site.light :is(p, .fb-custom-text, [data-element-part$="::body"]):not(.aw-preview-hero *):not(.fb-hero-section *):not(.tb-block *):not(.tb-form-showcase *):not(.sys-pro-step *) {
   color: #334155 !important;
 }
 
-.aw-preview-site:not(.dark) :is(small, span:not(.fb-section-eyebrow):not(.fb-hero-kicker *)):not(.aw-preview-hero *):not(.fb-hero-section *),
-.aw-preview-site.light :is(small, span:not(.fb-section-eyebrow):not(.fb-hero-kicker *)):not(.aw-preview-hero *):not(.fb-hero-section *) {
+.aw-preview-site:not(.dark) :is(small, span:not(.fb-section-eyebrow):not(.fb-hero-kicker *)):not(.aw-preview-hero *):not(.fb-hero-section *):not(.tb-block *):not(.tb-form-showcase *):not(.sys-pro-step *),
+.aw-preview-site.light :is(small, span:not(.fb-section-eyebrow):not(.fb-hero-kicker *)):not(.aw-preview-hero *):not(.fb-hero-section *):not(.tb-block *):not(.tb-form-showcase *):not(.sys-pro-step *) {
   color: #64748b !important;
 }
 
@@ -166,19 +166,19 @@ html.dark .aw-preview-close:hover{background:#1e293b;color:#f8fafc;border-color:
 }
 
 /* Forms in Light Preview */
-.aw-preview-site:not(.dark) :is(form label, .fb-lead-form-card label),
-.aw-preview-site.light :is(form label, .fb-lead-form-card label) {
+.aw-preview-site:not(.dark) :is(form label, .fb-lead-form-card label):not(.tb-block *):not(.tb-form-showcase *),
+.aw-preview-site.light :is(form label, .fb-lead-form-card label):not(.tb-block *):not(.tb-form-showcase *) {
   color: #334155 !important;
 }
 
-.aw-preview-site:not(.dark) :is(form input, form textarea, form select, .fb-lead-form-card input),
-.aw-preview-site.light :is(form input, form textarea, form select, .fb-lead-form-card input) {
+.aw-preview-site:not(.dark) :is(form input, form textarea, form select, .fb-lead-form-card input):not(.tb-block *):not(.tb-form-showcase *),
+.aw-preview-site.light :is(form input, form textarea, form select, .fb-lead-form-card input):not(.tb-block *):not(.tb-form-showcase *) {
   background: #ffffff !important;
   border: 1px solid #cbd5e1 !important;
   color: #0f172a !important;
 }
 
-.aw-preview-site:not(.dark) :is(.aw-preview-content, .fb-canvas-section) {
+.aw-preview-site:not(.dark) :is(.aw-preview-content, .fb-canvas-section:not(.has-template-layout):not(.has-form-showcase)) {
   color: #334155 !important;
 }
 
@@ -190,15 +190,15 @@ html.dark .aw-preview-close:hover{background:#1e293b;color:#f8fafc;border-color:
   color: #f8fafc !important;
 }
 
-.aw-preview-site.dark :is(h1, h2, h3, h4, h5, h6, .fb-custom-heading, [data-element-part$="::title"]):not(.aw-preview-hero *):not(.fb-hero-section *) {
+.aw-preview-site.dark :is(h1, h2, h3, h4, h5, h6, .fb-custom-heading, [data-element-part$="::title"]):not(.aw-preview-hero *):not(.fb-hero-section *):not(.tb-block *):not(.tb-form-showcase *):not(.sys-pro-step *) {
   color: #f8fafc !important;
 }
 
-.aw-preview-site.dark :is(p, .fb-custom-text, [data-element-part$="::body"]):not(.aw-preview-hero *):not(.fb-hero-section *) {
+.aw-preview-site.dark :is(p, .fb-custom-text, [data-element-part$="::body"]):not(.aw-preview-hero *):not(.fb-hero-section *):not(.tb-block *):not(.tb-form-showcase *):not(.sys-pro-step *) {
   color: #94a3b8 !important;
 }
 
-.aw-preview-site.dark :is(small, span:not(.fb-section-eyebrow):not(.fb-hero-kicker *)):not(.aw-preview-hero *):not(.fb-hero-section *) {
+.aw-preview-site.dark :is(small, span:not(.fb-section-eyebrow):not(.fb-hero-kicker *)):not(.aw-preview-hero *):not(.fb-hero-section *):not(.tb-block *):not(.tb-form-showcase *):not(.sys-pro-step *) {
   color: #64748b !important;
 }
 
@@ -269,14 +269,20 @@ html.dark .aw-preview-close:hover{background:#1e293b;color:#f8fafc;border-color:
 }
 
 /* Forms in Dark Preview */
-.aw-preview-site.dark :is(form label, .fb-lead-form-card label) {
+.aw-preview-site.dark :is(form label, .fb-lead-form-card label):not(.tb-block *):not(.tb-form-showcase *) {
   color: #cbd5e1 !important;
 }
 
-.aw-preview-site.dark :is(form input, form textarea, form select, .fb-lead-form-card input) {
+.aw-preview-site.dark :is(form input, form textarea, form select, .fb-lead-form-card input):not(.tb-block *):not(.tb-form-showcase *) {
   background: #1e293b !important;
   border: 1px solid #334155 !important;
   color: #f8fafc !important;
+}
+
+.aw-preview-site .tb-block form,
+.aw-preview-site .tb-form-showcase form {
+  max-width: none;
+  margin: 0;
 }
 
 /* 3. Explicit Background Inversion Safeguards */

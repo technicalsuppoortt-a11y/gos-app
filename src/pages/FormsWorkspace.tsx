@@ -1,4 +1,5 @@
 import { BookingSelect as DashboardSelect } from './booking/BookingSelect';
+import { TemplateFormShowcase, isHalfWidthFormField } from './TemplateBlocks';
 import { resolveFormTheme } from './form-theme';
 import { useUILanguage, translateText, localizeNode, formatDisplayMessage } from '../i18n/display';
 import React, { useState, useMemo } from 'react';
@@ -280,7 +281,10 @@ export function FormsWorkspace({ workspace, save, go, initialSelected, onComplet
   }, [location.search]);
 
   // Read query params for selection, action & builder return
-  const querySelected = useMemo(() => searchParams.get('selected') || '', [searchParams]);
+  const querySelected = useMemo(
+    () => searchParams.get('selected') || (typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('selected') || '' : ''),
+    [searchParams]
+  );
   const actionParam = useMemo(() => searchParams.get('action') || (location.state as any)?.action || '', [searchParams, location.state]);
   const returnToBuilder = useMemo(() => searchParams.get('returnToBuilder') === 'true' || Boolean((location.state as any)?.returnToBuilder), [searchParams, location.state]);
   const returnUrl = useMemo(() => searchParams.get('returnUrl') || (location.state as any)?.returnUrl || '', [searchParams, location.state]);
@@ -387,7 +391,7 @@ export function FormsWorkspace({ workspace, save, go, initialSelected, onComplet
     }));
   };
 
-  const updateFormContent = (key: 'title' | 'button' | 'successMessage', value: string) => {
+  const updateFormContent = (key: string, value: string) => {
     return updateAsset(a => ({
       ...a,
       updated: new Date().toISOString(),
@@ -952,6 +956,38 @@ export function FormsWorkspace({ workspace, save, go, initialSelected, onComplet
                 borderRadius: 16
               }}
             >
+              {block?.content.formLayout && (
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 14, padding: '12px 16px', marginBottom: 14, borderRadius: 14, background: isDarkCanvas ? 'rgba(30,41,59,0.75)' : '#ffffff', border: '1px solid var(--form-border)' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 12, minWidth: 0 }}>
+                    {block.content.image && (
+                      <img src={block.content.image} alt="" style={{ width: 52, height: 52, borderRadius: 10, objectFit: 'cover', flexShrink: 0 }} />
+                    )}
+                    <div style={{ minWidth: 0 }}>
+                      <span style={{ display: 'inline-block', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: '#7C3AED' }}>
+                        {block.content.eyebrow || translateText("Template Showcase Layout")}
+                      </span>
+                      <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--form-text)', marginTop: 2 }}>
+                        {block.content.formLayout === 'trainer-split'
+                          ? translateText("Personal Trainer Split Gold Card")
+                          : block.content.formLayout === 'architecture-split'
+                            ? translateText("Architecture Studio Split Card")
+                            : translateText("Editorial Estimate Sheet")}
+                      </div>
+                      {block.content.body && (
+                        <input
+                          style={{ width: '100%', fontSize: 12, color: 'var(--form-text-muted)', background: 'transparent', border: 'none', outline: 'none', marginTop: 2 }}
+                          value={block.content.body}
+                          onChange={e => void updateFormContent('body', e.target.value)}
+                          placeholder={translateText("Subtitle / supporting description...")}
+                        />
+                      )}
+                    </div>
+                  </div>
+                  <button type="button" className="aw-secondary" onClick={() => { setActiveTab('preview'); setPreviewSubmitted(false); }} style={{ flexShrink: 0 }}>
+                    <Eye size={14} /> {translateText("Preview")}
+                  </button>
+                </div>
+              )}
               {/* Form Title & Subtitle Card */}
               <div className="form-canvas-header-card">
                 <div>
@@ -1431,6 +1467,139 @@ export function FormsWorkspace({ workspace, save, go, initialSelected, onComplet
           /* =========================================================================
              VIEW: LIVE INTERACTIVE PREVIEW
              ========================================================================= */
+          block?.content.formLayout ? (
+            <div
+              data-form-theme={isDarkCanvas ? 'dark' : 'light'}
+              style={{
+                ...formTheme.variables,
+                flex: 1,
+                width: '100%',
+                minHeight: '80vh',
+                background: currentBg,
+                padding: '40px 16px',
+                transition: 'background 0.3s ease',
+              }}
+            >
+              <TemplateFormShowcase
+                item={block}
+                customFormBody={
+                  previewSubmitted ? (
+                    <div style={{ textAlign: 'center', padding: '36px 18px' }} role="status">
+                      <CheckCircle2 size={46} color="#10b981" style={{ margin: '0 auto 12px' }} />
+                      <h3 style={{ fontSize: 20, fontWeight: 800, color: '#0f172a', margin: '0 0 6px' }}>{translateText("Submission Received!")}</h3>
+                      <p style={{ fontSize: 14, color: '#475569', margin: 0 }}>{successMsg}</p>
+                      <button
+                        type="button"
+                        className="aw-secondary"
+                        style={{ marginTop: 14 }}
+                        onClick={() => {
+                          setPreviewValues({});
+                          setPreviewSubmitted(false);
+                        }}
+                      >
+                        {translateText("Test Again (Reset Form)")}
+                      </button>
+                    </div>
+                  ) : (
+                    <form onSubmit={handlePreviewSubmit} className="fb-demo-form fb-custom-form" style={{ maxWidth: '100%', width: '100%', margin: 0 }}>
+                      <div className="tb-form-fields-grid">
+                        {fields.map(f => {
+                          const issue = previewErrors[f.id];
+                          const error = issue === 'required'
+                            ? formatDisplayMessage('Please complete {{0}}', f.label)
+                            : issue === 'email' ? translateText('Enter a valid email address') : '';
+                          const half = isHalfWidthFormField(f, block.content.formLayout || '');
+                          const wrapClass = half ? '' : 'tb-form-field-span-2';
+                          if (f.type === 'checkbox') {
+                            return (
+                              <div key={f.id} className={wrapClass}>
+                                <label className="fb-custom-field is-checkbox">
+                                  <input
+                                    type="checkbox"
+                                    checked={previewValues[f.id] === 'true'}
+                                    onChange={e => setPreviewValues(prev => ({ ...prev, [f.id]: e.target.checked ? 'true' : '' }))}
+                                  />
+                                  <span>{f.label}{f.required ? ' *' : ''}</span>
+                                </label>
+                                {error && <small style={{ color: '#EF4444', fontSize: 12 }}>{error}</small>}
+                              </div>
+                            );
+                          }
+                          if (f.type === 'radio') {
+                            return (
+                              <div key={f.id} className={`fb-custom-field ${wrapClass}`}>
+                                <span className="fb-field-label">{f.label}{f.required ? ' *' : ''}</span>
+                                <div className="fb-custom-radio-group">
+                                  {(f.options || []).map((opt, i) => (
+                                    <label key={i} className="fb-radio-option">
+                                      <input
+                                        type="radio"
+                                        name={f.id}
+                                        value={opt}
+                                        checked={previewValues[f.id] === opt}
+                                        onChange={() => setPreviewValues(prev => ({ ...prev, [f.id]: opt }))}
+                                      />
+                                      <span>{opt}</span>
+                                    </label>
+                                  ))}
+                                </div>
+                                {error && <small style={{ color: '#EF4444', fontSize: 12 }}>{error}</small>}
+                              </div>
+                            );
+                          }
+                          return (
+                            <label key={f.id} className={`fb-custom-field ${wrapClass}`}>
+                              <span className="fb-field-label">
+                                {f.label}
+                                {f.required ? <em style={{ color: '#dc2626', fontStyle: 'normal' }}> *</em> : null}
+                              </span>
+                              {f.type === 'textarea' ? (
+                                <textarea
+                                  placeholder={f.placeholder || ''}
+                                  value={previewValues[f.id] || ''}
+                                  onChange={e => setPreviewValues(prev => ({ ...prev, [f.id]: e.target.value }))}
+                                />
+                              ) : f.type === 'select' ? (
+                                <select
+                                  value={previewValues[f.id] ?? (f.defaultValue || '')}
+                                  onChange={e => setPreviewValues(prev => ({ ...prev, [f.id]: e.target.value }))}
+                                >
+                                  <option value="">{f.placeholder || translateText('Choose an option...')}</option>
+                                  {(f.options || []).map((opt, i) => (
+                                    <option key={i} value={opt}>{opt}</option>
+                                  ))}
+                                </select>
+                              ) : (
+                                <input
+                                  type={f.type}
+                                  placeholder={f.placeholder || ''}
+                                  value={previewValues[f.id] || ''}
+                                  onChange={e => setPreviewValues(prev => ({ ...prev, [f.id]: e.target.value }))}
+                                />
+                              )}
+                              {error && <small style={{ color: '#EF4444', fontSize: 12 }}>{error}</small>}
+                            </label>
+                          );
+                        })}
+                      </div>
+                      <button
+                        className={
+                          block.content.formLayout === 'trainer-split'
+                            ? 'tb-form-submit-trainer'
+                            : block.content.formLayout === 'architecture-split'
+                              ? 'tb-form-submit-arch'
+                              : 'tb-form-submit-flooring'
+                        }
+                        type="submit"
+                      >
+                        {submitBtnText}
+                      </button>
+                    </form>
+                  )
+                }
+              />
+            </div>
+          ) : (
           <div
             data-form-theme={isDarkCanvas ? 'dark' : 'light'}
             style={{
@@ -1577,6 +1746,7 @@ export function FormsWorkspace({ workspace, save, go, initialSelected, onComplet
             )}
           </div>
         </div>
+          )
       )}
 
         {/* MODAL: CRM ROUTING */}

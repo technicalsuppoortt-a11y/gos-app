@@ -1,5 +1,6 @@
 import builtInArabic from '../../../functions/seed-data/template-metadata-ar.json';
 import builtInCopy from '../../../functions/seed-data/template-content-ar.json';
+import builtInDesignCopy from '../../../functions/seed-data/template-design-copy-ar.json';
 import { translateTemplateCopy } from '../../../functions/template-arabic.js';
 import type { Template } from '../system-template-data';
 import type { BuilderDocument } from '../BuilderWorkspace';
@@ -44,7 +45,14 @@ export function templateCategoryLabel(category: string, arabic: boolean) {
 }
 
 const builtInMetadata = builtInArabic as Record<string, { name: string; title_ar: string; description_ar: string }>;
-const builtInDictionaries = builtInCopy as Record<string, Record<string, string>>;
+const rawBuiltInCopy = builtInCopy as Record<string, Record<string, string>>;
+const rawBuiltInDesignCopy = builtInDesignCopy as Record<string, Record<string, string>>;
+const builtInDictionaries: Record<string, Record<string, string>> = Object.fromEntries(
+  Array.from(new Set([...Object.keys(rawBuiltInCopy), ...Object.keys(rawBuiltInDesignCopy)])).map(id => [
+    id,
+    { ...(rawBuiltInDesignCopy[id] || {}), ...(rawBuiltInCopy[id] || {}) },
+  ])
+);
 
 function matchingPreset(template: ManagedTemplate) {
   const preset = template.source === 'official' && !('ownerUid' in template) ? builtInMetadata[template.id] : undefined;

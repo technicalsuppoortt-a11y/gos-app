@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import "./home-dashboard.css";
 import "./home-compact.css";
+import "./welcome-art.css";
 import { useSelector } from 'react-redux';
 import type { RootState } from '../../store';
 import { usePhoenixBrand } from '../../backend/phoenixBrand';
@@ -806,7 +807,7 @@ function HeroBanner() {
     <section
       aria-labelledby="dash-greeting"
       data-dashboard-section="hero"
-      className="relative z-30 shrink-0 rounded-2xl border border-[#e7e1ff] bg-[linear-gradient(100deg,#ffffff_0%,#f7f4ff_40%,#e8e0ff_100%)] rtl:bg-[linear-gradient(260deg,#ffffff_0%,#f7f4ff_40%,#e8e0ff_100%)] shadow-sm dark:border-white/10 dark:bg-[linear-gradient(100deg,#121829_0%,#17163a_45%,#241a52_100%)] rtl:dark:bg-[linear-gradient(260deg,#121829_0%,#17163a_45%,#241a52_100%)] min-h-[120px]"
+      className="relative z-30 shrink-0 rounded-2xl border border-[#e7e1ff] bg-[linear-gradient(100deg,#ffffff_0%,#f7f4ff_40%,#e8e0ff_100%)] rtl:bg-[linear-gradient(260deg,#ffffff_0%,#f7f4ff_40%,#e8e0ff_100%)] shadow-sm dark:border-white/10 dark:bg-[linear-gradient(100deg,#121829_0%,#17163a_45%,#241a52_100%)] rtl:dark:bg-[linear-gradient(260deg,#121829_0%,#17163a_45%,#241a52_100%)] min-h-[92px]"
     >
       {/* Landscape art and veil clipped within rounded container */}
       <div className="pointer-events-none absolute inset-0 overflow-hidden rounded-2xl -z-10">
@@ -828,12 +829,12 @@ function HeroBanner() {
       </figure>
 
       {/* Floating Create New menu on right */}
-      <div className="relative z-40 px-5 pt-3 sm:px-6 md:absolute md:end-4 md:top-1/2 md:-translate-y-1/2 md:p-0">
+      <div className="relative z-40 px-4 pt-2.5 sm:px-5 md:absolute md:end-4 md:top-1/2 md:-translate-y-1/2 md:p-0">
         <CreateNewMenu />
       </div>
 
       {/* Greeting copy and stat pills */}
-      <div className="relative flex flex-col justify-center px-5 py-4 sm:px-6 md:min-h-[120px] md:pe-[180px] text-start">
+      <div className="relative flex flex-col justify-center px-4 py-2.5 sm:px-5 md:min-h-[92px] md:pe-[180px] text-start">
         <h1
           id="dash-greeting"
           className="text-lg font-extrabold leading-tight tracking-tight text-[#0f1535] sm:text-xl dark:text-white"
@@ -844,18 +845,18 @@ function HeroBanner() {
           {phoenix?.brand.tagline || phoenix?.brand.description || translateText("Here’s what’s happening with your business today.")}
         </p>
 
-        <div className="mt-3 flex flex-wrap gap-2">
+        <div className="mt-2 flex flex-wrap gap-1.5">
           {localizeNode(pills.map((p) => (
             <div
               key={p.key}
-              className="flex items-center gap-2 rounded-xl border border-white/80 bg-white/95 px-2.5 py-1 shadow-sm ring-1 ring-[#ece7ff] transition hover:-translate-y-0.5 hover:shadow-md dark:border-white/10 dark:bg-[#161d31]/95 dark:ring-white/5"
+              className="flex items-center gap-1.5 rounded-xl border border-white/80 bg-white/95 px-2.5 py-0.5 shadow-sm ring-1 ring-[#ece7ff] transition hover:-translate-y-0.5 hover:shadow-md dark:border-white/10 dark:bg-[#161d31]/95 dark:ring-white/5"
             >
               {localizeNode(p.node)}
               <div className="leading-tight text-start">
-                <span className="block whitespace-nowrap text-xs font-bold text-slate-900 dark:text-white">
+                <span className="block whitespace-nowrap text-[11.5px] font-bold text-slate-900 dark:text-white">
                   {localizeNode(p.title)}
                 </span>
-                <span className="block whitespace-nowrap text-[10.5px] text-slate-500 dark:text-slate-400">
+                <span className="block whitespace-nowrap text-[10px] text-slate-500 dark:text-slate-400">
                   {localizeNode(p.sub)}
                 </span>
               </div>
@@ -880,20 +881,20 @@ function KpiRow() {
     <section
       aria-label={translateText("Key metrics")}
       data-dashboard-section="metrics"
-      className="grid shrink-0 grid-cols-2 gap-2.5 xl:grid-cols-4"
+      className="grid shrink-0 grid-cols-2 gap-2 xl:grid-cols-4"
     >
       {localizeNode(KPIS.map((k) => (
         <article
           key={k.label}
-          className={`${CARD} group relative flex items-center gap-2.5 overflow-hidden px-4 py-4 min-h-[90px] transition hover:-translate-y-0.5 hover:shadow-sm`}
+          className={`${CARD} group relative flex items-center gap-2.5 overflow-hidden px-3.5 py-2.5 min-h-[68px] transition hover:-translate-y-0.5 hover:shadow-sm`}
         >
-          <IconTile icon={k.icon} tone={k.tone} size="xs" />
+          <IconTile icon={k.icon} tone={k.tone} size="sm" />
           <div className="flex-1 min-w-0 text-start">
-            <div className={`truncate pe-[30%] text-[10px] font-medium leading-none ${MUTED}`}>
+            <div className={`truncate pe-[28%] text-[11px] font-medium leading-tight ${MUTED}`}>
               {localizeNode(k.label)}
             </div>
             <div className="flex items-baseline gap-1.5 mt-0.5">
-              <span dir="ltr" className={`whitespace-nowrap text-[24px] font-extrabold tracking-tight leading-none tabular-nums ${H}`}>
+              <span dir="ltr" className={`whitespace-nowrap text-[21px] font-extrabold tracking-tight leading-none tabular-nums ${H}`}>
                 {localizeNode(k.value)}
               </span>
               <span className="inline-flex items-center gap-0.5 font-semibold text-[10px] text-emerald-600 dark:text-emerald-400 leading-none">
@@ -905,7 +906,7 @@ function KpiRow() {
           <Sparkline
             points={k.points}
             color={TONES[k.tone].stroke}
-            className="sparkline pointer-events-none absolute end-2.5 top-2 ltr:right-2.5 ltr:left-auto rtl:left-2.5 rtl:right-auto h-6 w-[26%] max-w-[80px] transition-transform duration-300 group-hover:scale-[1.03]"
+            className="sparkline pointer-events-none absolute end-2.5 top-2 ltr:right-2.5 ltr:left-auto rtl:left-2.5 rtl:right-auto h-5 w-[25%] max-w-[74px] transition-transform duration-300 group-hover:scale-[1.03]"
           />
         </article>
       )))}
@@ -917,11 +918,18 @@ function QuickActions() {
   useUILanguage();
   const navigate = useNavigate();
   return (
-    <section data-dashboard-section="quick-actions" aria-label={translateText("Quick Actions")} className={`${CARD} shrink-0 px-3 py-1.5`}>
+    <section
+      data-dashboard-section="quick-actions"
+      aria-label={translateText("Quick Actions")}
+      className={`${CARD} gos-quick-actions-bar shrink-0 px-3 py-1.5`}
+    >
       <div className="flex items-center justify-between gap-2.5">
-        <div className="hidden sm:flex items-center gap-2 shrink-0">
-          <span className={`text-xs font-bold whitespace-nowrap ${H}`}>{translateText("Quick Actions")}</span>
-          <span className="text-slate-300 dark:text-slate-700">|</span>
+        <div className="hidden sm:flex items-center gap-2 shrink-0 ps-0.5">
+          <span className="gos-qa-accent" aria-hidden="true" />
+          <span className={`text-[11.5px] font-bold tracking-tight whitespace-nowrap ${H}`}>
+            {translateText("Quick Actions")}
+          </span>
+          <span className="gos-qa-divider" aria-hidden="true" />
         </div>
         <div className="grid grid-cols-2 gap-1.5 flex-1 sm:grid-cols-3 lg:grid-cols-6">
           {localizeNode(QUICK_ACTIONS.map((a) => {
@@ -932,12 +940,12 @@ function QuickActions() {
                 id={`quick-${a.label.toLowerCase().replace(/\s+/g, "-")}`}
                 type="button"
                 onClick={() => navigate(a.to)}
-                className={`group gos-quick-action flex items-center justify-center gap-1.5 rounded-lg border px-2 py-1 transition duration-150 hover:-translate-y-0.5 hover:shadow-sm focus:outline-none focus-visible:ring-1 focus-visible:ring-purple-300 ${t.tile}`}
+                className="group gos-quick-action flex items-center justify-center gap-2 rounded-xl border px-2.5 py-1 focus:outline-none"
               >
-                <span className={`shrink-0 transition-transform duration-150 group-hover:scale-110 ${t.text}`}>
+                <span className={`gos-qa-icon grid h-6 w-6 shrink-0 place-items-center rounded-lg ${t.soft} ${t.text}`}>
                   <a.icon size={12} />
                 </span>
-                <span className={`text-xs font-semibold leading-snug ${H}`}>
+                <span className={`gos-qa-label truncate text-[12px] font-semibold leading-snug ${H}`}>
                   {translateText(a.label)}
                 </span>
               </button>
@@ -953,25 +961,25 @@ function ToolsGrid() {
   useUILanguage();
   const navigate = useNavigate();
   return (
-    <section data-dashboard-section="tools" className={`${CARD} flex flex-col p-3.5 h-full min-h-0`}>
+    <section data-dashboard-section="tools" className={`${CARD} flex flex-col p-3 h-full min-h-0`}>
       <SectionHeader
         title={translateText("Your Tools & Products")}
         subtitle={translateText("Access and manage all your business tools in one place.")}
       />
-      <div className="grid flex-1 grid-cols-2 sm:grid-cols-3 gap-2.5 mt-2.5 auto-rows-fr min-h-0">
+      <div className="grid flex-1 grid-cols-2 sm:grid-cols-3 gap-2 mt-2 auto-rows-fr min-h-0">
         {localizeNode(TOOLS.map((t) => (
           <button
             key={t.name}
             type="button"
             onClick={() => navigate(t.to)}
-            className="group flex items-center gap-2.5 rounded-xl border border-slate-100 bg-white p-2.5 text-start transition hover:-translate-y-0.5 hover:border-purple-200 hover:shadow-sm dark:border-white/10 dark:bg-white/[0.02] dark:hover:border-purple-500/40"
+            className="group flex items-center gap-2 rounded-xl border border-slate-100 bg-white px-2.5 py-1.5 text-start transition hover:-translate-y-0.5 hover:border-purple-200 hover:shadow-sm dark:border-white/10 dark:bg-white/[0.02] dark:hover:border-purple-500/40 min-h-0"
           >
             <IconTile icon={t.icon} tone={t.tone} size="sm" />
             <span className="flex-1 min-w-0 text-start">
-              <span className={`block truncate text-xs font-bold leading-snug ${H}`}>
+              <span className={`block truncate text-xs font-bold leading-tight ${H}`}>
                 {localizeNode(t.name)}
               </span>
-              <span className={`block truncate text-[10.5px] font-medium leading-snug mt-0.5 ${MUTED}`}>
+              <span className={`block truncate text-[10px] font-medium leading-tight mt-0.5 ${MUTED}`}>
                 {localizeNode(t.meta)}
               </span>
             </span>
@@ -1026,14 +1034,14 @@ function RevenueOverview() {
     .join(" ");
   const activeDatum = activeIndex !== -1 ? data[activeIndex] : null;
   return (
-    <section data-dashboard-section="revenue" className={`${CARD} flex flex-col p-3.5 h-full min-h-0`}>
+    <section data-dashboard-section="revenue" className={`${CARD} flex flex-col p-3 h-full min-h-0`}>
       <div className="flex items-start justify-between gap-3 shrink-0">
         <div className="min-w-0 text-start">
           <h2 className={`text-xs font-bold leading-none ${H}`}>{translateText("Revenue Overview")}</h2>
           <div className="mt-1 flex flex-wrap items-baseline gap-x-2.5 gap-y-0.5">
             <span
               dir="ltr"
-              className={`text-xl font-extrabold tracking-tight leading-none tabular-nums ${H}`}
+              className={`text-lg font-extrabold tracking-tight leading-none tabular-nums ${H}`}
             >
               {localizeNode(m.money(total))}
             </span>
@@ -1089,8 +1097,8 @@ function RevenueOverview() {
         </div>
       </div>
 
-      {/* Chart canvas: balanced h-36 / max-h-40 container matching ToolsGrid height */}
-      <div className="analytics-chart mt-2 flex h-36 max-h-40 flex-1 gap-2 [direction:ltr] min-h-0">
+      {/* Chart canvas: fluidly adapts to row height without vertical overflow */}
+      <div className="analytics-chart mt-1.5 flex flex-1 gap-2 [direction:ltr] min-h-[86px]">
         {/* Y axis */}
         <div className="relative w-8 shrink-0 text-[10px] font-medium text-slate-400 tabular-nums">
           <div className="absolute inset-x-0 bottom-[18px] top-1.5">
@@ -1201,20 +1209,20 @@ function RecentActivity() {
   useUILanguage();
   const navigate = useNavigate();
   return (
-    <section data-dashboard-section="activity" className={`${CARD} flex flex-col p-3.5 h-full min-h-0`}>
+    <section data-dashboard-section="activity" className={`${CARD} flex flex-col p-3 h-full min-h-0 overflow-hidden`}>
       <SectionHeader
         title={translateText("Recent Activity")}
         action="View All"
         onAction={() => navigate("/dashboard/activity")}
       />
-      <ul className="mt-2 flex flex-1 flex-col justify-between divide-y divide-slate-100 dark:divide-white/5 min-h-0">
-        {!ACTIVITY.length && <li className="py-4 text-xs text-slate-500">{translateText("No activity yet. Your recent changes will appear here.")}</li>}{ACTIVITY.slice(0, 4).map((a) => (
-          <li key={a.id} className="flex items-center gap-2.5 py-1.5 first:pt-0 last:pb-0">
+      <ul className="mt-1.5 flex flex-1 flex-col justify-between divide-y divide-slate-100 dark:divide-white/5 min-h-0 overflow-hidden">
+        {!ACTIVITY.length && <li className="py-2.5 text-xs text-slate-500">{translateText("No activity yet. Your recent changes will appear here.")}</li>}{ACTIVITY.slice(0, 4).map((a) => (
+          <li key={a.id} className="flex items-center gap-2 py-1 first:pt-0 last:pb-0 min-h-0">
             <IconTile icon={a.icon} tone={a.tone} size="xs" />
-            <span className={`min-w-0 flex-1 truncate text-[11.5px] font-medium leading-tight ${H} text-start`}>
+            <span className={`min-w-0 flex-1 truncate text-[11px] font-medium leading-tight ${H} text-start`}>
               {localizeNode(a.text)}
             </span>
-            <time className="shrink-0 whitespace-nowrap text-[10.5px] text-slate-400">
+            <time className="shrink-0 whitespace-nowrap text-[10px] text-slate-400">
               {localizeNode(a.time)}
             </time>
           </li>
@@ -1242,22 +1250,22 @@ function TopFunnels() {
   useUILanguage();
   const navigate = useNavigate();
   return (
-    <section data-dashboard-section="funnels" className={`${CARD} flex flex-col p-3.5 h-full min-h-0`}>
+    <section data-dashboard-section="funnels" className={`${CARD} flex flex-col p-3 h-full min-h-0 overflow-hidden`}>
       <SectionHeader
         title={translateText("Top Funnels")}
         action="View All"
         onAction={() => navigate("/dashboard/funnels")}
       />
-      <ul className="mt-2 flex flex-1 flex-col justify-between min-h-0 space-y-0.5">
-        {!FUNNELS.length && <li className="py-4 text-xs text-slate-500">{translateText("Create your first funnel to see its results here.")}</li>}{FUNNELS.slice(0, 3).map((f, i) => {
+      <ul className="mt-1.5 flex flex-1 flex-col justify-between min-h-0 space-y-0.5 overflow-hidden">
+        {!FUNNELS.length && <li className="py-2.5 text-xs text-slate-500">{translateText("Create your first funnel to see its results here.")}</li>}{FUNNELS.slice(0, 3).map((f, i) => {
           const up = f.trend >= 0;
           return (
             <li
               key={f.name}
-              className="flex items-center gap-2 rounded-lg px-1.5 py-1.5 transition hover:bg-slate-50 dark:hover:bg-white/5"
+              className="flex items-center gap-2 rounded-lg px-1.5 py-1 transition hover:bg-slate-50 dark:hover:bg-white/5"
             >
               <RankBadge n={i + 1} />
-              <span className="relative h-7 w-11 shrink-0 overflow-hidden rounded-md bg-slate-900 ring-1 ring-black/5">
+              <span className="relative h-6 w-10 shrink-0 overflow-hidden rounded-md bg-slate-900 ring-1 ring-black/5">
                 <img
                   src={f.img}
                   alt={formatDisplayMessage('{{0}} preview', f.name)}
@@ -1270,7 +1278,7 @@ function TopFunnels() {
                 />
               </span>
               <span className="flex-1 min-w-0 leading-tight text-start">
-                <span className={`block truncate text-[11.5px] font-semibold ${H}`}>
+                <span className={`block truncate text-[11px] font-semibold ${H}`}>
                   {f.name}
                 </span>
                 <span className={`block truncate text-[10px] mt-0.5 ${MUTED}`}>
@@ -1301,27 +1309,27 @@ function TopProducts() {
   useUILanguage();
   const navigate = useNavigate();
   return (
-    <section data-dashboard-section="products" className={`${CARD} flex flex-col p-3.5 h-full min-h-0`}>
+    <section data-dashboard-section="products" className={`${CARD} flex flex-col p-3 h-full min-h-0 overflow-hidden`}>
       <SectionHeader
         title={translateText("Top Products")}
         action="View All"
         onAction={() => navigate("/dashboard/products")}
       />
-      <ul className="mt-2 flex flex-1 flex-col justify-between min-h-0 space-y-0.5">
-        {!PRODUCTS.length && <li className="py-4 text-xs text-slate-500">{translateText("Create a product to start tracking sales.")}</li>}{PRODUCTS.slice(0, 3).map((p, i) => (
+      <ul className="mt-1.5 flex flex-1 flex-col justify-between min-h-0 space-y-0.5 overflow-hidden">
+        {!PRODUCTS.length && <li className="py-2.5 text-xs text-slate-500">{translateText("Create a product to start tracking sales.")}</li>}{PRODUCTS.slice(0, 3).map((p, i) => (
           <li
             key={p.name}
-            className="flex items-center gap-2 rounded-lg px-1.5 py-1.5 transition hover:bg-slate-50 dark:hover:bg-white/5"
+            className="flex items-center gap-2 rounded-lg px-1.5 py-1 transition hover:bg-slate-50 dark:hover:bg-white/5"
           >
             <RankBadge n={i + 1} />
             <img
               src={p.img}
               alt={p.name}
               loading="lazy"
-              className="h-7 w-7 shrink-0 rounded-lg object-cover ring-1 ring-black/5"
+              className="h-6 w-6 shrink-0 rounded-lg object-cover ring-1 ring-black/5"
             />
             <span className="flex-1 min-w-0 leading-tight text-start">
-              <span className={`block truncate text-[11.5px] font-semibold ${H}`}>
+              <span className={`block truncate text-[11px] font-semibold ${H}`}>
                 {p.name}
               </span>
               <span className={`block truncate text-[10px] mt-0.5 ${MUTED}`}>
@@ -1342,15 +1350,15 @@ export function HomeDashboard() {
 
   return (
     <div
-      className="gos-home-dashboard flex origin-top-left rtl:origin-top-right flex-col gap-2.5 bg-slate-50/50 font-sans dark:bg-transparent w-full flex-1 min-h-0"
+      className="gos-home-dashboard flex origin-top-left rtl:origin-top-right flex-col gap-2 bg-slate-50/50 font-sans dark:bg-transparent w-full flex-1 min-h-0"
     >
       <div className="home-command-section"><HeroBanner /><QuickActions /></div>
       <KpiRow />
-      <div className="gos-row grid grid-cols-1 lg:grid-cols-2 items-stretch gap-2.5 flex-1 min-h-0">
+      <div className="gos-row gos-row--middle grid grid-cols-1 lg:grid-cols-2 items-stretch gap-2 flex-1 min-h-0">
         <ToolsGrid />
         <RevenueOverview />
       </div>
-      <div className="gos-row grid grid-cols-1 md:grid-cols-3 items-stretch gap-2.5 flex-1 min-h-0">
+      <div className="gos-row gos-row--bottom grid grid-cols-1 md:grid-cols-3 items-stretch gap-2 flex-1 min-h-0">
         <RecentActivity />
         <TopFunnels />
         <TopProducts />

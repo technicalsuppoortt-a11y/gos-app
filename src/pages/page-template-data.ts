@@ -142,6 +142,39 @@ export type PageTemplate = {
 
 export type TemplateDesignDocument = { html: string; css: string };
 
+export const TEMPLATE_PHOTOS = {
+  framingHero: 'https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=1400&q=85',
+  framingTeam: 'https://images.unsplash.com/photo-1541888946425-d81bb19240f5?auto=format&fit=crop&w=900&q=85',
+  insuranceFamily1: 'https://images.unsplash.com/photo-1511895426328-dc8714191300?auto=format&fit=crop&w=600&q=85',
+  insuranceFamily2: 'https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?auto=format&fit=crop&w=600&q=85',
+  insuranceFamily3: 'https://images.unsplash.com/photo-1609220136736-443140cffec6?auto=format&fit=crop&w=600&q=85',
+  insuranceFamily4: 'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&w=600&q=85',
+  insuranceHero: 'https://images.unsplash.com/photo-1600880292203-757bb62b4baf?auto=format&fit=crop&w=1400&q=85',
+  pharmacyHero: 'https://images.unsplash.com/photo-1587854692152-cbe660dbde88?auto=format&fit=crop&w=1400&q=85',
+  pharmacyConsult: 'https://images.unsplash.com/photo-1576091160550-2173dba999ef?auto=format&fit=crop&w=900&q=85',
+  mortgageHome: 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=1400&q=85',
+  brakeMechanic: 'https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?auto=format&fit=crop&w=1400&q=85',
+  locksmithKeys: 'https://images.unsplash.com/photo-1558002038-1055907df827?auto=format&fit=crop&w=1400&q=85',
+  locksmithDoor: 'https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format&fit=crop&w=900&q=85',
+  locksmithVan: 'https://images.unsplash.com/photo-1619642751034-765dfdf7c58e?auto=format&fit=crop&w=900&q=85',
+  trainerAthlete: 'https://images.unsplash.com/photo-1583454110551-21f2fa2afe61?auto=format&fit=crop&w=1000&q=85',
+  architectStudio: 'https://images.unsplash.com/photo-1503387762-592deb58ef4e?auto=format&fit=crop&w=1000&q=85',
+  saasSellHero: 'https://images.unsplash.com/photo-1551434678-e076c223a692?auto=format&fit=crop&w=1400&q=85',
+  audienceCreatorHero: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=1400&q=85',
+  bizDevOffice: 'https://images.unsplash.com/photo-1542744173-8e7e53415bb0?auto=format&fit=crop&w=1200&q=85',
+  bizDevSmilingMan: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=800&q=85',
+  softCoding: 'https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=600&q=80',
+  softPhoto: 'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?auto=format&fit=crop&w=600&q=80',
+  softTravel: 'https://images.unsplash.com/photo-1501555088652-021faa106b9b?auto=format&fit=crop&w=600&q=80',
+  b2bAvatar1: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=400&q=80',
+  b2bAvatar2: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=400&q=80',
+  b2bAvatar3: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=400&q=80',
+  medDoctorsLab: 'https://images.unsplash.com/photo-1579684385127-1ef15d508118?auto=format&fit=crop&w=1400&q=85',
+  medWomanMask: 'https://images.unsplash.com/photo-1584634731339-252c581abfc5?auto=format&fit=crop&w=900&q=85',
+  coachWomanBlazer: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=900&q=85',
+  coachWomanCoffee: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=800&q=85',
+} as const;
+
 const sec = (
   id: string,
   type: BuilderSection['type'],
@@ -192,7 +225,8 @@ function buildFormDoc(
   cardBg: string,
   cardBorder: string,
   textColor: string,
-  presetId: string
+  presetId: string,
+  extraContent: Record<string, string> = {}
 ): BuilderDocument {
   const page: BuilderPage = {
     id: `${id}-page`,
@@ -228,6 +262,7 @@ function buildFormDoc(
           themeCardBorder: cardBorder,
           themeTextColor: textColor,
           successMessage: 'Thank you! Your details have been received and a specialist will follow up shortly.',
+          ...extraContent,
         },
         { backgroundColor: cardBg, padding: '32' }
       ),
@@ -283,36 +318,38 @@ const framingWebsiteDoc: BuilderDocument = {
       featuredImage: '/template-thumbnails/ghl-website-framing-construction-hero.jpg',
       backgroundColor: '#ffffff',
       sections: [
-        sec('framing-hero', 'Hero', 'Building Strong Foundations for Every Project', 'Precision structural wood & steel framing, custom residential shells, and commercial developments engineered to pass inspection the first time.', {
-          button: 'Request a Project Bid',
+        sec('framing-hero', 'Hero', 'Building Strong Foundations for Every Project', 'Precision wood & light-gauge steel structural framing for custom residences, multi-family podiums, and commercial developments.', {
+          templateLayout: 'framing-hero',
+          brandName: 'Framing Construction',
+          phoneLabel: '✉ estimating@framingpro.com | ☎ (512) 555-0194',
+          eyebrow: 'Licensed Structural Contractors',
+          src: TEMPLATE_PHOTOS.framingHero,
+          button: 'Request a Project Bid →',
+          secondaryButton: 'View Completed Frames',
           destinationType: 'Scroll to Section',
           destination: 'framing-bid-form',
-        }, { backgroundColor: '#0B1D3A', padding: '44' }),
-        sec('framing-stats', 'Stats', 'Proven Structural Track Record', 'Trusted by premier custom builders and commercial general contractors.', {
-          items: '480+ Structures Framed · 99.4% On-Schedule Delivery · 25+ Years Field Experience · Zero OSHA Lost-Time Incidents',
-        }, { backgroundColor: '#F8FAFC', padding: '28' }),
-        sec('framing-story', 'Brand Story', 'Crafting Strong Foundations With Precision And Pride', 'From blueprint takeoff to roof truss dry-in, our dedicated framing crews deliver plumb walls, laser-level subfloors, and clean job sites that keep every downstream trade ahead of schedule.', {
-          image: '/template-thumbnails/ghl-website-framing-construction-hero.jpg',
-          alt: 'Structural framing crew inspecting blueprints on site',
-        }),
-        cols3('framing-pillars', [
-          ['Residential Custom Framing', 'Complex architectural rooflines, vaulted timber ceilings, and luxury custom home shells framed to millimeter tolerances.'],
-          ['Commercial & Multi-Family', 'High-velocity podium, townhome, and light-gauge steel structural framing backed by dedicated site superintendents.'],
-          ['Turnkey Truss & Lumber Takeoff', 'Complete engineered lumber packages, crane scheduling, and value-engineered structural takeoffs before mobilization.'],
-        ], '#FFF7ED'),
-        sec('framing-services-cards', 'Program Cards', 'Building Excellence, One Frame At A Time', 'Comprehensive structural scopes engineered for speed, safety, and code compliance.', {
-          eyebrow: 'Our Services Overview',
-          media: 'numbered',
-          items: 'Wood & Timber Framing · Light-Gauge Steel Studs · Engineered Roof & Floor Trusses',
-          specs: 'Dedicated crew lead · Laser-leveled plates · Full structural hardware schedule',
-          button: 'Explore Scopes',
-        }),
-        sec('framing-testimonials', 'Testimonials', 'What General Contractors Say', '', {
-          testimonials: JSON.stringify([
-            { id: 'fc-t1', author: 'Marcus Vance', role: 'VP of Construction, Apex Custom Homes', quote: 'Their framing crew dried in our 6,400 sq. ft. custom build four days ahead of schedule. Every wall was dead plumb—our drywall and cabinetry subs noticed immediately.', rating: 5, avatar: '' },
-            { id: 'fc-t2', author: 'Elena Rostova', role: 'Senior Project Manager, Crestline Commercial', quote: 'Accurate lumber takeoffs, clean safety compliance, and zero change-order surprises across three multi-family phases.', rating: 5, avatar: '' },
+        }, { backgroundColor: '#0B1D3A', padding: '0' }),
+        sec('framing-about', 'Brand Story', 'Crafting Strong Foundations With Precision And Pride', '', {
+          templateLayout: 'framing-about-split',
+          eyebrow: '● About Our Crews',
+          image: TEMPLATE_PHOTOS.framingTeam,
+          badge: '25+ Years · 480+ Structures Framed',
+          cards: JSON.stringify([
+            { title: 'Precision Blueprint Framing', body: 'Laser-leveled plates, dead-plumb walls, and engineered roof trusses ready for first-pass inspection.' },
+            { title: 'Schedule & Safety Discipline', body: 'Dedicated site superintendents and OSHA-certified crews keeping downstream trades ahead of schedule.' },
+            { title: 'Turnkey Lumber & Takeoff', body: 'Complete structural hardware, LVL/Glulam beams, and crane coordination handled end-to-end.' },
           ]),
-        }, { backgroundColor: '#F8FAFC', padding: '32' }),
+        }, { backgroundColor: '#ffffff', padding: '0' }),
+        sec('framing-services-cards', 'Program Cards', 'Building Excellence, One Frame At A Time', '', {
+          templateLayout: 'dark-4-services',
+          eyebrow: '● Our Services Overview',
+          cards: JSON.stringify([
+            { title: 'Residential Framing', body: 'Custom estates, vaulted timber ceilings & complex rooflines.' },
+            { title: 'Commercial Shells', body: 'Light-gauge steel studs, retail build-outs & structural mezzanines.' },
+            { title: 'Multi-Family Builds', body: 'High-velocity townhome & apartment framing packages.' },
+            { title: 'Truss & Beam Retrofits', body: 'Engineered floor/roof trusses and load-bearing beam installs.' },
+          ]),
+        }, { backgroundColor: '#091931', padding: '0' }),
         sec('framing-bid-form', 'Form', 'Submit Plans & Request a Framing Estimate', 'Share your project location, square footage, and target mobilization window—our estimating desk responds within 24 business hours.', {
           button: 'Request Project Estimate',
           fields: JSON.stringify(['Name', 'Email', 'Phone', 'Message']),
@@ -422,37 +459,39 @@ const lifeInsuranceWebsiteDoc: BuilderDocument = {
       featuredImage: '/template-thumbnails/ghl-website-life-insurance-hero.jpg',
       backgroundColor: '#ffffff',
       sections: [
-        sec('ins-hero', 'Hero', 'Secure Your Future With Ease.', 'Protect the people who matter most with transparent, A+ rated term life, whole life, and wealth-transfer strategies designed around every stage of life.', {
+        sec('ins-hero', 'Hero', 'Secure Your Future With Ease.', 'Independent fiduciary protection across 30+ A+ rated life & retirement carriers—built around the people who count on you.', {
+          templateLayout: 'insurance-circles-hero',
           button: 'Get My Free Quote',
           destinationType: 'Scroll to Section',
           destination: 'ins-quote-form',
-        }, { backgroundColor: '#072A5E', padding: '44' }),
-        sec('ins-stats', 'Stats', 'Backed by A+ Rated Financial Strength', 'Independent fiduciary guidance across 30+ top-rated national carriers.', {
-          items: '50,000+ Families Protected · A+ Superior Rated Carriers · 10-Min No-Exam Options · 99.1% Claims Satisfaction',
-        }, { backgroundColor: '#FDF6EC', padding: '28' }),
-        cols3('ins-services-row1', [
-          ['Term Life Insurance', 'Affordable 10, 20, and 30-year level-premium protection engineered to safeguard income and family milestones.'],
-          ['Whole & Universal Life', 'Lifelong coverage with guaranteed cash-value accumulation and tax-advantaged legacy planning.'],
-          ['Mortgage & Income Shield', 'Ensure your family keeps their home and standard of living if the unexpected ever happens.'],
-        ], '#ffffff'),
-        cols3('ins-services-row2', [
-          ['Retirement & Fixed Annuities', 'Principal-protected income streams built for predictable, market-resilient retirement confidence.'],
-          ['Key Person & Buy-Sell Cover', 'Continuity policies designed for founders, medical practices, and closely held partnerships.'],
-          ['Children’s Head-Start Policies', 'Lock in lifelong insurability and early compounding cash value for children and grandchildren.'],
-        ], '#FDF6EC'),
-        sec('ins-steps', 'Program Cards', 'Secure Tomorrow, Enjoy Today', 'Three clear steps from side-by-side carrier comparison to active family protection.', {
-          eyebrow: 'How It Works',
-          media: 'numbered',
-          items: '1. Compare 30+ A+ Carriers · 2. Customize Coverage & Riders · 3. Instant Digital Approval',
-          specs: 'Zero broker fees · Living benefits included · Annual policy checkups',
-          button: 'Compare Rates Now',
-        }),
-        sec('ins-testimonials', 'Testimonials', 'Trusted by Families Across Every Chapter', '', {
-          testimonials: JSON.stringify([
-            { id: 'ins-t1', author: 'David & Claire Bennett', role: 'Homeowners & Parents of Two', quote: 'In one 20-minute call we locked in $1.5M of 30-year term coverage with living benefits for less than we expected—without medical-exam delays.', rating: 5, avatar: '' },
-            { id: 'ins-t2', author: 'Dr. Nadia Mansour', role: 'Clinic Founder', quote: 'Our advisor structured both our family estate policy and our clinic buy-sell coverage with total clarity and zero pressure.', rating: 5, avatar: '' },
+          cards: JSON.stringify([
+            { title: 'Family Protection', image: TEMPLATE_PHOTOS.insuranceFamily1 },
+            { title: 'Advisor Guidance', image: TEMPLATE_PHOTOS.insuranceFamily2 },
+            { title: 'Generational Wealth', image: TEMPLATE_PHOTOS.insuranceFamily3 },
+            { title: 'Peace of Mind', image: TEMPLATE_PHOTOS.insuranceFamily4 },
           ]),
-        }, { backgroundColor: '#F8FAFC', padding: '32' }),
+        }, { backgroundColor: '#042454', padding: '0' }),
+        sec('ins-services', 'Program Cards', 'We Provide Best Services', '', {
+          templateLayout: 'insurance-6-grid',
+          eyebrow: 'Tailored Coverage Architecture',
+          cards: JSON.stringify([
+            { title: 'Term Life Protection', body: '10, 20 & 30-year level-premium family income protection with living benefits.' },
+            { title: 'Whole & Universal Life', body: 'Guaranteed lifelong coverage with tax-advantaged cash value growth.' },
+            { title: 'Mortgage Shield', body: 'Keep your family home paid off and protected against life’s uncertainties.' },
+            { title: 'Critical Illness Riders', body: 'Tax-free living benefit advances when health challenges arise.' },
+            { title: 'Business Key-Person', body: 'Buy-sell funding and executive continuity plans for founders.' },
+            { title: 'Fixed Annuities', body: 'Principal-protected lifetime retirement income with zero market downside.' },
+          ]),
+        }, { backgroundColor: '#ffffff', padding: '0' }),
+        sec('ins-steps', 'Program Cards', 'Secure tomorrow, enjoy today.', '', {
+          templateLayout: 'navy-3-steps',
+          items: '50K+ Families Insured · A+ Superior Carriers · 99.1% Claims Paid · 10-Min Approval',
+          cards: JSON.stringify([
+            { title: 'Compare 30+ Carriers', body: 'Instant side-by-side quotes with zero hard inquiry.' },
+            { title: 'Tailor Policy Riders', body: 'Customize term length, coverage & living benefits.' },
+            { title: 'Same-Day Coverage', body: 'No-exam digital approval available for most applicants.' },
+          ]),
+        }, { backgroundColor: '#072A5E', padding: '0' }),
         sec('ins-quote-form', 'Form', 'Request Your Personalized Coverage Comparison', 'Tell us your coverage goals and our licensed advisor will prepare side-by-side rates from A+ rated carriers.', {
           button: 'See My Personalized Rates',
           fields: JSON.stringify(['Name', 'Email', 'Phone', 'Message']),
@@ -564,33 +603,41 @@ const pharmacyWebsiteDoc: BuilderDocument = {
       featuredImage: '/template-thumbnails/ghl-website-pharmacy-hero.jpg',
       backgroundColor: '#ffffff',
       sections: [
-        sec('rx-hero', 'Hero', 'Prescriptions made simple. Care that feels personal.', 'Refill in seconds, transfer prescriptions without calling your old pharmacy, and enjoy free same-day courier delivery from pharmacists who know you by name.', {
-          button: 'Transfer a Prescription',
+        sec('rx-hero', 'Hero', 'Prescriptions made simple. Care that feels personal.', 'Refill in seconds, transfer prescriptions seamlessly without calling your old chain store, and enjoy free same-day local delivery.', {
+          templateLayout: 'pharmacy-split-hero',
+          eyebrow: '● Your Neighborhood Clinical Pharmacy',
+          button: 'Refill Prescription',
+          secondaryButton: 'Transfer Rx in 60s',
+          src: TEMPLATE_PHOTOS.pharmacyConsult,
           destinationType: 'Scroll to Section',
           destination: 'rx-transfer-form',
-        }, { backgroundColor: '#0F5132', padding: '44' }),
-        cols3('rx-quick-actions', [
-          ['60-Second Rx Transfer', 'Share your current pharmacy details once—our clinical team handles every doctor and insurance call for you.'],
-          ['Free Same-Day Delivery', 'Temperature-safe courier delivery straight to your doorstep at zero extra cost on eligible prescriptions.'],
-          ['1-on-1 Pharmacist Guidance', 'Direct medication reviews, copay savings lookups, and proactive refill synchronization every month.'],
-        ], '#ECFDF5'),
-        sec('rx-services', 'Program Cards', 'Everything You Need In One Neighborhood Pharmacy', 'Clinical precision paired with warm, unhurried patient support.', {
-          eyebrow: 'Pharmacy Services',
-          media: 'numbered',
-          items: 'Auto-Sync Monthly Refills · Walk-In Immunizations · Custom Medication Compounding',
-          specs: 'All major insurance & Medicare Part D accepted · Blister compliance packaging · Text refill alerts',
-          button: 'Explore Clinical Services',
-        }),
-        sec('rx-story', 'Brand Story', 'A Pharmacy That Treats You Like A Neighbor', 'Tired of 45-minute hold times and out-of-stock surprises at big-box chains? Most prescriptions are filled in under 12 minutes, and our pharmacists proactively check manufacturer copay cards to lower your out-of-pocket cost.', {
-          image: '/template-thumbnails/ghl-website-pharmacy-hero.jpg',
-          alt: 'Pharmacist consulting warmly with patient at counter',
-        }, { backgroundColor: '#F8FAFC', padding: '32' }),
-        sec('rx-testimonials', 'Testimonials', 'Loved by Local Patients & Physicians', '', {
-          testimonials: JSON.stringify([
-            { id: 'rx-t1', author: ' Margaret Holloway', role: 'Local Patient', quote: 'Switching all four of my family’s prescriptions took two minutes online, and they saved me $68 a month on my inhaler copay on day one!', rating: 5, avatar: '' },
-            { id: 'rx-t2', author: 'Dr. Amir Soliman, MD', role: 'Internal Medicine Physician', quote: 'My patients rave about their Med-Sync blister packs and free home delivery. Adherence has improved dramatically.', rating: 5, avatar: '' },
+          cards: JSON.stringify([
+            { title: 'Refill Prescription', body: 'Ready in under 12 minutes with SMS pickup alerts.' },
+            { title: 'Transfer Prescription', body: 'We handle every call with your doctor & old pharmacy.' },
+            { title: 'Ask a Pharmacist', body: 'Direct 1-on-1 copay savings & interaction checks.' },
+            { title: 'Free Local Delivery', body: 'Same-day doorstep courier service at $0 extra cost.' },
           ]),
-        }),
+        }, { backgroundColor: '#ffffff', padding: '0' }),
+        sec('rx-services', 'Program Cards', 'Everything you need in one place.', '', {
+          templateLayout: 'pharmacy-mint-grid',
+          eyebrow: 'CLINICAL SERVICES',
+          caption: 'View all services →',
+          cards: JSON.stringify([
+            { title: 'Med-Sync Packs', body: 'All monthly refills aligned to one simple delivery day.' },
+            { title: 'Immunizations', body: 'Walk-in Flu, RSV, Shingles & travel vaccines.' },
+            { title: 'Custom Compounding', body: 'Tailored pediatric, dermatology & pet formulations.' },
+            { title: 'Medicare Part D', body: 'Annual plan reviews to lower your out-of-pocket costs.' },
+          ]),
+        }, { backgroundColor: '#F0FDF7', padding: '0' }),
+        sec('rx-story', 'Brand Story', 'A pharmacy that treats you like a neighbor.', '', {
+          templateLayout: 'pharmacy-neighbor-grid',
+          eyebrow: 'WHY PATIENTS SWITCH',
+          cards: JSON.stringify([
+            { title: '12-Minute Average Fill', body: 'Skip long retail lines with express counter & drive-thru care.' },
+            { title: 'Automatic Copay Lookup', body: 'We apply manufacturer savings cards automatically.' },
+            { title: 'All Major Plans Accepted', body: 'Commercial, Medicare Part D, and competitive cash pricing.' },
+          ]),
+        }, { backgroundColor: '#ffffff', padding: '0' }),
         sec('rx-transfer-form', 'Form', 'Transfer or Refill Your Prescription Online', 'Enter your contact info and current pharmacy name—our licensed pharmacist will verify insurance and text you as soon as your medication is ready.', {
           button: 'Start Free Rx Transfer',
           fields: JSON.stringify(['Name', 'Email', 'Phone', 'Message']),
@@ -711,28 +758,43 @@ const mortgageFunnelDoc: BuilderDocument = {
       backgroundColor: '#ffffff',
       isFunnelStep: true,
       sections: [
-        sec('mort-hero', 'Hero', 'Get Your Free Mortgage Pre-Qualification.', 'Understand what you can comfortably afford and shop homes with verified buying power — $0 cost, 3 minutes to complete, and zero impact on your credit score.', {
-          button: 'Get Pre-Qualified Now',
+        sec('mort-hero', 'Hero', 'Get Your Free Mortgage Pre-Qualification.', 'Understand what you can comfortably afford and take the first step toward buying a home — with personalized rate guidance from senior mortgage specialists.', {
+          templateLayout: 'mortgage-split-hero',
+          brandName: 'CLEARPATH MORTGAGE',
+          items: '✓ NMLS Licensed Lenders · ✓ Zero Hard Credit Inquiry · ✓ Verified Offer Letters',
+          button: 'Get Pre-Qualified →',
+          src: TEMPLATE_PHOTOS.mortgageHome,
           destinationType: 'Next Step',
           destination: 'mortgage-quiz',
-        }, { backgroundColor: '#0F1F38', padding: '44' }),
-        sec('mort-stats', 'Stats', 'Fast, Transparent Home Financing', 'Designed for clarity before you ever tour a property or make an offer.', {
-          items: '$0 Application Cost · 3 Mins To Complete · No Hard Credit Pull · Same-Day Pre-Qual Letter',
-        }, { backgroundColor: '#FFFBEB', padding: '26' }),
-        cols3('mort-afford', [
-          ['See Your True Price Range', 'Calculate comfortable monthly principal, taxes, and insurance across Conventional, FHA, VA, and Jumbo programs.'],
-          ['Unlock Down-Payment Programs', 'Check eligibility for 3% down conventional options and local first-time buyer closing-cost grants.'],
-          ['Win Competitive Offers', 'Sellers take your offer seriously when backed by a verified local lender pre-qualification letter.'],
-        ], '#ffffff'),
-        sec('mort-steps-band', 'Program Cards', 'Getting Started Is Simple', 'Three streamlined steps from estimate to keys in hand.', {
-          eyebrow: 'The Process',
-          media: 'numbered',
-          items: '01 Complete 3-Min Profile · 02 Review Rate & Payment Scenarios · 03 Receive Verified Pre-Qual Letter',
-          specs: 'Zero obligation · Soft credit check only · Direct NMLS-licensed loan advisor',
-          button: 'Start Step 1 →',
+          cards: JSON.stringify([
+            { title: '$0', body: 'To get pre-qualified' },
+            { title: '3 mins', body: 'To complete online' },
+            { title: 'No Pull', body: 'Zero score impact' },
+          ]),
+        }, { backgroundColor: '#ffffff', padding: '0' }),
+        sec('mort-afford', 'Program Cards', 'Know What You May Be Able to Afford', 'Before touring homes, unlock an accurate monthly payment range across Conventional, FHA, VA, and Jumbo loan options.', {
+          templateLayout: 'cards-4-grid',
+          eyebrow: 'BUYING POWER CLARITY',
+          cards: JSON.stringify([
+            { title: 'See Your Range', body: 'Clear price & monthly PITI estimate tailored to your comfort zone.' },
+            { title: 'Compare Loan Types', body: 'Side-by-side Conventional, FHA 3.5%, and VA 0%-down scenarios.' },
+            { title: 'Down-Payment Aid', body: 'Check local closing-cost grants and first-time buyer incentives.' },
+            { title: 'Stronger Offers', body: 'Stand out to listing agents with a verified local pre-qual letter.' },
+          ]),
+        }, { backgroundColor: '#F8FAFC', padding: '0' }),
+        sec('mort-steps-band', 'Program Cards', 'Getting Started Is Simple', '', {
+          templateLayout: 'dark-4-steps',
+          eyebrow: 'THE PROCESS',
+          caption: '4 streamlined steps · Zero obligation',
           destinationType: 'Next Step',
           destination: 'mortgage-quiz',
-        }, { backgroundColor: '#F8FAFC', padding: '32' }),
+          cards: JSON.stringify([
+            { title: 'Complete the Form', body: 'Answer 6 quick home & budget questions in under 3 minutes.' },
+            { title: 'Connect With a Pro', body: 'A dedicated loan officer reviews your goals—never a call center.' },
+            { title: 'Review Options', body: 'Compare custom rate locks, down payments & monthly totals.' },
+            { title: 'Shop With Confidence', body: 'Receive your pre-qualification letter ready for weekend tours.' },
+          ]),
+        }, { backgroundColor: '#0F1F38', padding: '0' }),
       ],
     },
     {
@@ -864,25 +926,36 @@ const brakeMufflerFunnelDoc: BuilderDocument = {
       backgroundColor: '#ffffff',
       isFunnelStep: true,
       sections: [
-        sec('brake-hero', 'Hero', 'FREE BRAKE INSPECTION — $0 COST, ZERO OBLIGATION', 'Grinding, squeaking, or soft pedal? Let our ASE-certified brake & exhaust specialists inspect your complete braking system today and show you exact pad & rotor measurements before you spend a dime.', {
+        sec('brake-hero', 'Hero', 'FREE BRAKE INSPECTION', 'Grinding, squeaking, or soft pedal? Don’t guess with safety. Our ASE-certified techs check your full brake & exhaust system and show you exact measurements—at $0 cost.', {
+          templateLayout: 'brake-split-hero',
+          brandName: 'APEX BRAKE & MUFFLER',
+          phoneLabel: '☎ (555) 890-2400',
+          badge: 'LIMITED LOCAL VOUCHER · $0 INSPECTION',
           button: 'Schedule My Free Inspection',
+          caption: '★★★★★ 4.9 Rating (480+ Local Drivers) · ASE Certified Shop',
+          src: TEMPLATE_PHOTOS.brakeMechanic,
+          calloutTitle: '$0 Multi-Point Inspection',
+          calloutBody: '35–45 Min Express Bay',
           destinationType: 'Next Step',
           destination: 'brake-booking',
-        }, { backgroundColor: '#111827', padding: '44' }),
-        sec('brake-stats', 'Stats', 'Local Drivers Trust Our Honest Shop Guarantee', 'No surprise shop fees. No high-pressure upsells—ever.', {
-          items: '$0 Complete Brake Check · 4.9★ (480+ Verified Reviews) · 45-Min Express Inspection · 24-Month / 24k-Mile Warranty',
-        }, { backgroundColor: '#FEF2F2', padding: '26' }),
-        cols3('brake-check-points', [
-          ['Pads, Shoes & Rotor Micrometer Check', 'Exact millimeter thickness measurement on all four wheels with digital photo proof sent to your phone.'],
-          ['Calipers, Lines & Brake Fluid Test', 'Full hydraulic pressure check, master cylinder inspection, and moisture-boiling-point fluid test.'],
-          ['Muffler, Catalytic & Exhaust Hangers', 'Undercarriage lift check for exhaust leaks, rusted flanges, and rattling heat shields while on the rack.'],
-        ], '#ffffff'),
-        sec('brake-pricing', 'Pricing', 'Transparent Local Brake & Muffler Specials', 'Need service after your free inspection? Lock in upfront coupon pricing today.', {
-          plans: JSON.stringify([
-            { id: 'bm-1', name: 'Complete Brake Inspection', price: '0', period: 'voucher', features: ['4-Wheel Pad & Rotor Measurement', 'Hydraulic & Fluid Safety Check', 'Exhaust & Undercarriage Lookover', 'Written Digital Estimate'], button: 'Claim $0 Inspection', highlighted: true },
-            { id: 'bm-2', name: 'Ceramic Brake Pad Special', price: '149', period: 'per axle', features: ['Premium Low-Dust Ceramic Pads', 'Rotor Resurfacing / Machining Check', 'Hardware & Caliper Slide Lube', '24-Month Nationwide Warranty'], button: 'Lock Special Rate', highlighted: false },
-          ]),
-        }, { backgroundColor: '#F8FAFC', padding: '32' }),
+        }, { backgroundColor: '#FAFAFA', padding: '0' }),
+        sec('brake-voucher', 'Program Cards', 'A COMPLETE BRAKE CHECK — AT NO COST.', 'Zero shop fee · Written estimate before any wrench turns', {
+          templateLayout: 'brake-voucher-split',
+          eyebrow: 'HONEST WRITTEN DIAGNOSTICS',
+          items: 'Front & rear brake pad millimeter measurement · Rotor surface, runout & caliper slide inspection · Brake fluid moisture & hydraulic line safety test · Complete muffler, exhaust hanger & leak check',
+          button: 'Claim Your Free Inspection',
+          badge: 'VOUCHER PRICE TODAY',
+          secondaryButton: 'Reserve Express Lift Bay',
+          destinationType: 'Next Step',
+          destination: 'brake-booking',
+        }, { backgroundColor: '#ffffff', padding: '0' }),
+        sec('brake-strip', 'Stats', 'WHY DRIVERS TRUST OUR SHOP', '', {
+          templateLayout: 'brake-5-strip',
+          items: 'ASE Certified Techs · Same-Day Service · Upfront Written Quote · 24k-Mile Warranty · Zero Upsell Pressure',
+          eyebrow: '5-POINT SAFETY PROTOCOL',
+          subtitle: 'WHAT WE CHECK ON THE LIFT',
+          specs: 'Brake Pads & Shoes · Rotors & Drums · Calipers & Hoses · Master Cylinder · Exhaust & Muffler',
+        }, { backgroundColor: '#ffffff', padding: '0' }),
       ],
     },
     {
@@ -972,28 +1045,40 @@ const locksmithFunnelDoc: BuilderDocument = {
       showFooter: false,
       footer: 'Minimal footer',
       featuredImage: '/template-thumbnails/ghl-funnel-locksmith-hero.jpg',
-      backgroundColor: '#0B1324',
+      backgroundColor: '#ffffff',
       isFunnelStep: true,
       sections: [
-        sec('lock-hero', 'Hero', "Locked out? We'll get you back in — fast.", '24/7 emergency mobile vans on standby right now. Call (214) 555-5555 or request instant GPS technician callback below — upfront flat-rate quote before we roll.', {
-          button: 'Dispatch Nearest Tech (~15 Min) →',
+        sec('lock-hero', 'Hero', "Locked out? We'll get you back in — fast.", '24/7 damage-free emergency lockout rescue for vehicles, homes, and offices. Licensed mobile vans with flat upfront pricing.', {
+          templateLayout: 'locksmith-bento-hero',
+          brandName: 'RAPIDKEY 24/7',
+          badge: '● Techs On Standby · 24/7 Dispatch',
+          eyebrow: 'EMERGENCY MOBILE LOCKSMITH',
+          button: 'Dispatch Nearest Tech →',
+          calloutTitle: '24/7 Direct Dispatch',
+          phoneLabel: '(214) 555-5555',
+          calloutBody: 'Tap to call · Live dispatcher answers in 5s',
+          subtitle: 'Upfront Flat Quote',
+          description: 'Exact price confirmed before our van rolls.',
+          src: TEMPLATE_PHOTOS.locksmithKeys,
           destinationType: 'Next Step',
           destination: 'lock-form',
-        }, { backgroundColor: '#0B1324', padding: '44' }),
-        sec('lock-stats', 'Stats', 'Rapid Damage-Free Entry — Day, Night & Holidays', 'State-licensed, background-checked, and fully insured mobile technicians.', {
-          items: '~15 Min Avg Arrival · 4.9★ (1,240+ Rescues) · 100% Damage-Free Pick Tools · Upfront Flat Pricing',
-        }, { backgroundColor: '#111C33', padding: '26' }),
-        cols3('lock-services', [
-          ['Car Lockouts & Smart Key Fobs', 'All makes, push-to-start transponders, trunk lockouts, and on-site laser key cutting without dealer towing.'],
-          ['Home Lockouts & Same-Day Rekey', 'Deadbolt entry, broken key extraction, smart keypad installs, and instant multi-door rekeying.'],
-          ['Commercial & Storefront Security', 'Panic bars, master-key systems, high-security cylinders, and 24/7 emergency commercial lock repair.'],
-        ], '#ffffff'),
-        sec('lock-testimonials', 'Testimonials', 'Verified Local Rescue Reviews', '', {
-          testimonials: JSON.stringify([
-            { id: 'lk-1', author: ' Chris Delgado', role: 'Car Lockout at Airport Garage', quote: 'Tech arrived in 14 minutes at 11:30 PM, unlocked my SUV without a scratch, and charged the exact flat price quoted on the phone.', rating: 5, avatar: '' },
-            { id: 'lk-2', author: 'Priya Nair', role: 'Homeowner Rekey & Smart Lock', quote: 'Rekeyed six exterior locks and installed our Schlage Encode smart deadbolt in under an hour. Super professional.', rating: 5, avatar: '' },
+          cards: JSON.stringify([
+            { title: '~15 min', body: 'Average local arrival time' },
+            { title: '4.9 ★', body: '1,240+ verified rescues' },
           ]),
-        }, { backgroundColor: '#F8FAFC', padding: '32' }),
+        }, { backgroundColor: '#0A1122', padding: '0' }),
+        sec('lock-services', 'Program Cards', "Whatever you're locked out of, we open it.", '', {
+          templateLayout: 'locksmith-open-grid',
+          eyebrow: 'DAMAGE-FREE ENTRY & REKEY',
+          image: TEMPLATE_PHOTOS.locksmithDoor,
+          subtitle: 'Home Lockouts & Rekey',
+          description: 'Deadbolts, smart locks & instant key changes.',
+          cards: JSON.stringify([
+            { title: 'Car Lockouts & Key Fobs', body: 'All makes & push-to-start transponders opened and programmed on-site without towing.' },
+            { title: 'Office & Storefront', body: 'Commercial cylinders, panic bars & master keys.' },
+            { title: 'Broken Key Rescue', body: 'Clean extraction & fresh laser-cut replacement.' },
+          ]),
+        }, { backgroundColor: '#ffffff', padding: '0' }),
       ],
     },
     {
@@ -1098,61 +1183,44 @@ const flagshipSellFunnelDoc: BuilderDocument = {
       templateSelected: true,
       stepCategory: 'Sales',
       sections: [
-        sec('sell-hero', 'Hero', 'Launch & Scale Digital Revenue With One Conversion System.', 'Replace 8 disconnected marketing tools with one battle-tested sales architecture — complete with conversion copy, instant checkout, and automated follow-up.', {
+        sec('sell-hero', 'Hero', 'Launch & Scale Digital Revenue With One Conversion System.', 'Turn cold visitors into verified buyers with a persuasive offer stack, two-step SSL Order Form checkout, and automated Thank You onboarding.', {
+          templateLayout: 'flagship-sell-hero',
+          badge: 'FLASH FOUNDING OFFER · PRE-LINKED SALES + ORDER FORM + THANK YOU',
+          caption: 'Offer Reserved · 00 : 14 : 59',
+          eyebrow: 'ALL-IN-ONE DIRECT SALE FUNNEL',
           button: 'Claim Founding Access — $97 →',
+          items: '✓ 256-Bit SSL Checkout · ✓ 14-Day Guarantee · ✓ 4.9/5 (2,840+ Buyers)',
+          src: TEMPLATE_PHOTOS.saasSellHero,
+          calloutTitle: '$97',
+          calloutBody: 'SAVE 67% TODAY',
+          subtitle: 'Includes 6 Action Modules + 12 Ready-to-Deploy Funnel Templates',
           destinationType: 'Next Step',
           destination: 'sell-order-form',
-        }, { backgroundColor: '#1E1B4B', padding: '44' }),
-        sec('sell-urgency-stats', 'Stats', 'Limited Founding Offer · Instant Lifetime Access', 'Protected by our 14-day no-questions-asked satisfaction guarantee.', {
-          items: '14:59 Offer Reserved · 2,840+ Active Customers · 4.9/5 Verified Score · 14-Day Money-Back Guarantee',
-        }, { backgroundColor: '#EEF2FF', padding: '26' }),
-        cols3('sell-pillars', [
-          ['Conversion-Engineered Architecture', 'Structured visual hierarchy with above-the-fold clarity, social proof anchors, and zero-friction mobile checkout.'],
-          ['Pre-Built Offer & Bonus Stack', 'Showcase core deliverables, bonus playbooks, and clear value comparisons that lift average order conversion up to 3.4x.'],
-          ['Automated Post-Purchase Onboarding', 'Every completed order triggers instant receipt confirmation, CRM buyer tagging, and direct member portal access.'],
-        ], '#ffffff'),
-        sec('sell-curriculum', 'Program Cards', 'Everything Included in Your Founding Bundle', 'Six actionable modules plus ready-to-launch funnel assets valued at $591 — yours today for $97.', {
-          eyebrow: 'What You Unlock Today',
-          media: 'numbered',
-          items: '01 Irresistible Offer Blueprint · 02 High-Converting Checkout Templates · 03 Automated WhatsApp & Email Follow-Up',
-          specs: 'Instant lifetime access · Bilingual EN & AR ready · 24/7 priority support',
-          button: 'Proceed to Secure Order Form →',
+        }, { backgroundColor: '#0F172A', padding: '0' }),
+        sec('sell-stack', 'Program Cards', 'Everything You Need To Convert Clicks Into Customers', '', {
+          templateLayout: 'value-stack-split',
+          eyebrow: 'COMPLETE VALUE STACK INCLUDED',
+          subtitle: 'Express Order Form · Step 2',
+          items: 'Full Name — Alex Morgan · Work Email — alex@company.com · Phone / WhatsApp — +1 (555) 234-5678 · Card — •••• 4242 (Stripe Secure)',
+          button: 'Complete Secure Order ($97) →',
+          caption: 'Protected by our 14-Day 100% Money-Back Guarantee',
           destinationType: 'Next Step',
           destination: 'sell-order-form',
-        }, { backgroundColor: '#F8FAFC', padding: '32' }),
+          cards: JSON.stringify([
+            { title: '6 Step-by-Step Implementation Modules', body: 'Offer architecture, funnel launch & traffic scaling', tag: '$297 Value' },
+            { title: '12 High-Converting Funnel & Order Templates', body: 'Ready to customize in English & Arabic', tag: '$197 Value' },
+            { title: 'Automated WhatsApp & Email Follow-Up Pack', body: 'Recover abandoned carts & onboard buyers 24/7', tag: '$97 Value' },
+            { title: 'Instant Member Portal + Lifetime Updates', body: 'Delivered automatically on the Thank You step', tag: 'FREE Bonus' },
+          ]),
+        }, { backgroundColor: '#ffffff', padding: '0' }),
         sec('sell-reviews', 'Testimonials', 'Trusted by 2,840+ Founders & Digital Creators', '', {
-          testimonials: JSON.stringify([
-            { id: 'sf-r1', author: 'Nadia Al-Mansoor', role: 'Founder, Elevate Digital Academy', quote: 'We switched our flagship course launch to this exact funnel layout and generated $18,400 in our first 72 hours with a 6.8% checkout conversion rate.', rating: 5, avatar: '' },
-            { id: 'sf-r2', author: 'Daniel Mercer', role: 'B2B SaaS Growth Lead', quote: 'Cleanest order flow we have ever deployed. Mobile buyers complete checkout in under 60 seconds without drop-off.', rating: 5, avatar: '' },
+          templateLayout: 'flagship-sell-proof',
+          cards: JSON.stringify([
+            { tag: '★★★★★ 5.0 VERIFIED', body: '"Generated $18,400 in our first 72 hours with a 6.8% checkout conversion rate."', title: 'Nadia Al-Mansoor · Digital Academy' },
+            { tag: '★★★★★ 5.0 VERIFIED', body: '"Mobile buyers finish the Order Form in under 60 seconds with zero drop-off."', title: 'Daniel Mercer · SaaS Growth Lead' },
+            { tag: '3 PRE-LINKED STEPS', body: 'Step 1 Sales Offer → Step 2 Secure Order Form → Step 3 Instant Thank You Portal.', title: '100% Responsive · AR & EN' },
           ]),
-        }, { backgroundColor: '#ffffff', padding: '32' }),
-        sec('sell-pricing', 'Pricing', 'Lock In 67% Off Founding Member Pricing', 'One-time payment. Zero recurring fees. Instant access to every module and bonus.', {
-          plans: JSON.stringify([
-            {
-              id: 'sf-plan-1',
-              name: 'Complete Growth System + Bonuses',
-              price: '$97',
-              period: 'one-time',
-              features: [
-                '6 Step-by-Step Video Implementation Modules ($297 Value)',
-                '12 High-Converting Funnel & Checkout Templates ($197 Value)',
-                'Automated Follow-Up & Recovery Swipe Files ($97 Value)',
-                '14-Day 100% Money-Back Guarantee',
-              ],
-              button: 'Continue to Order Form →',
-              highlighted: true,
-            },
-          ]),
-          destinationType: 'Next Step',
-          destination: 'sell-order-form',
-        }, { backgroundColor: '#F8FAFC', padding: '36' }),
-        sec('sell-faq', 'FAQ', 'Frequently Asked Questions Before You Enroll', '', {
-          questions: JSON.stringify([
-            { id: 'sf-q1', question: 'How fast do I receive access after completing the order form?', answer: 'Immediately! The moment your order is submitted on the next step, you are redirected to your confirmation page and receive login credentials by email.' },
-            { id: 'sf-q2', question: 'What if it is not the right fit for my business?', answer: 'You are protected by a full 14-day 100% money-back guarantee. Simply message support within 14 days for a prompt refund.' },
-            { id: 'sf-q3', question: 'Does this work on mobile and in both Arabic and English?', answer: 'Yes — every step, form, and checkout card is 100% responsive across desktop, tablet, and mobile in both English (LTR) and Arabic (RTL).' },
-          ]),
-        }, { backgroundColor: '#ffffff', padding: '32' }),
+        }, { backgroundColor: '#0F172A', padding: '0' }),
       ],
     },
     {
@@ -1278,34 +1346,47 @@ const flagshipAudienceFunnelDoc: BuilderDocument = {
       templateSelected: true,
       stepCategory: 'Opt-in',
       sections: [
-        sec('aud-hero', 'Hero', 'Get the Free 7-Figure Audience & Funnel Playbook.', 'Discover the exact 3-step system 18,400+ founders and creators use to turn cold social traffic into daily email & WhatsApp subscribers in 15 minutes a day.', {
-          button: 'Unlock Free Playbook Now →',
-          destinationType: 'Scroll to Section',
-          destination: 'aud-optin-form',
-        }, { backgroundColor: '#064E3B', padding: '44' }),
-        sec('aud-stats', 'Stats', '100% Free Instant Download · Zero Fluff', 'Actionable templates you can copy and deploy in under 30 minutes.', {
-          items: '18,400+ Subscribers · 4.9/5 Reader Rating · 28-Page Action PDF · 19:59 Bonus Checklist Window',
-        }, { backgroundColor: '#ECFDF5', padding: '24' }),
-        sec('aud-optin-form', 'Form', 'Where Should We Send Your Free Playbook?', 'Enter your name and best email below for instant access to the PDF guide + bonus swipe file.', {
-          template: 'lead-capture',
+        sec('aud-hero', 'Form', 'Get the Free 7-Figure Audience & Funnel Playbook.', 'Join 18,400+ founders, coaches, and creators using our 3-step squeeze architecture to capture qualified daily subscribers in 15 minutes a day.', {
+          templateLayout: 'flagship-audience-hero',
+          badge: 'FREE 28-PAGE PLAYBOOK · OPT-IN SQUEEZE + INSTANT THANK YOU DOWNLOAD',
+          caption: 'Bonus Checklist · 00 : 19 : 59',
+          eyebrow: 'BUILD AN AUDIENCE & EMAIL LIST',
+          calloutTitle: '100% FREE INSTANT ACCESS',
+          subtitle: 'Unlock Your Free Starter Playbook',
+          description: 'Enter your details below and jump straight to your instant PDF download page.',
+          items: 'Your First Name · Best Email Address · WhatsApp Number (Optional Bonus)',
           fields: JSON.stringify(['Name', 'Email', 'Phone']),
           button: 'Send Me the Free Playbook →',
+          calloutBody: '🔒 Zero spam · Unsubscribe in 1 click · Instant Step 2 redirect',
           successMessage: 'Playbook unlocked! Redirecting to your download page...',
           nextPage: 'aud-thank-you',
           destinationType: 'Next Step',
           destination: 'aud-thank-you',
-        }, { backgroundColor: '#ffffff', padding: '32' }),
-        cols3('aud-pillars', [
-          ['01 · High-Converting Hook Templates', '15 proven headline and curiosity hooks that lift squeeze-page opt-in rates past 42% on cold traffic.'],
-          ['02 · 5-Day Welcome & Trust Sequence', 'Copy-and-paste email and WhatsApp follow-up scripts that turn new subscribers into booked calls and buyers.'],
-          ['03 · Organic & Paid Traffic Checklist', 'Our 15-minute daily distribution checklist across Instagram, LinkedIn, YouTube, and Meta ads.'],
-        ], '#ffffff'),
-        sec('aud-reviews', 'Testimonials', 'What 18,400+ Readers Say About the Playbook', '', {
-          testimonials: JSON.stringify([
-            { id: 'af-r1', author: 'Layla Haddad', role: 'Executive Coach & Creator', quote: 'I applied the headline and squeeze layout from page 6 and grew my email list by 1,420 subscribers in 3 weeks without spending an extra dollar on ads.', rating: 5, avatar: '' },
-            { id: 'af-r2', author: 'Ryan Kowalski', role: 'Founder, ScaleBrief', quote: 'Pure signal, zero filler. The 5-day welcome sequence paid for itself 20x over on our very first newsletter cohort.', rating: 5, avatar: '' },
+          cards: JSON.stringify([
+            { title: '18,400+', body: 'Active Readers' },
+            { title: '42.8%', body: 'Avg Opt-In Rate' },
+            { title: '$0', body: 'Instant PDF Guide' },
           ]),
-        }, { backgroundColor: '#F8FAFC', padding: '32' }),
+        }, { backgroundColor: '#064E3B', padding: '0' }),
+        sec('aud-pillars', 'Brand Story', 'Three Proven Frameworks You Can Deploy Today', '', {
+          templateLayout: 'photo-bullets-split',
+          eyebrow: 'INSIDE YOUR FREE PLAYBOOK',
+          image: TEMPLATE_PHOTOS.audienceCreatorHero,
+          badge: '28 Pages · Swipe Files + Checklists',
+          cards: JSON.stringify([
+            { title: '01 · Curiosity & Value Hook Formulas', body: '15 tested headline structures that convert cold social clicks into eager subscribers.' },
+            { title: '02 · Automated 5-Day Welcome Sequence', body: 'Ready-to-send email & WhatsApp templates that build trust on autopilot.' },
+            { title: '03 · Instant Thank-You Resource Delivery', body: 'Pre-linked Step 2 Thank You page with one-click PDF download and next steps.' },
+          ]),
+        }, { backgroundColor: '#ffffff', padding: '0' }),
+        sec('aud-reviews', 'Testimonials', 'What 18,400+ Readers Say About the Playbook', '', {
+          templateLayout: 'emerald-proof-strip',
+          cards: JSON.stringify([
+            { tag: '★★★★★ 4.9/5 READER SCORE', body: '"Added 1,420 new email subscribers in 3 weeks using the exact page-6 squeeze layout."', title: 'Layla Haddad · Executive Coach' },
+            { tag: '★★★★★ VERIFIED CREATOR', body: '"The 5-day welcome sequence turned cold leads into 19 booked strategy calls in week one."', title: 'Ryan Kowalski · ScaleBrief' },
+            { tag: '2 PRE-LINKED STEPS', body: 'Step 1 High-Converting Squeeze Page → Step 2 Instant Resource Download Thank You Page.', title: '100% Responsive · AR & EN' },
+          ]),
+        }, { backgroundColor: '#064E3B', padding: '0' }),
       ],
     },
     {
@@ -1388,33 +1469,42 @@ const bizDevFunnelDoc: BuilderDocument = {
       showFooter: false,
       footer: 'Minimal footer',
       featuredImage: '/template-thumbnails/upklick-funnel-business-development-hero.jpg',
-      backgroundColor: '#F8F9FB',
+      backgroundColor: '#ffffff',
       isFunnelStep: true,
       templateSelected: true,
       stepCategory: 'Sales',
       sections: [
         sec('bd-hero', 'Hero', 'You have Laid the Foundation – Now Let It Grow Without You.', 'Refine Your Margins. Implement Strong Systems. Build A Solid Team. Scale With Purpose.', {
+          templateLayout: 'vsl-light-hero',
+          brandName: 'LOGO NAME',
+          brandSlogan: 'SLOGAN HERE',
+          caption: '🔊 WATCH TO LEARN MORE ABOUT OUR MISSION, HOW WE TRANSFORM LIVES',
+          badge: '🔇 Enable sound',
+          src: TEMPLATE_PHOTOS.bizDevOffice,
+          subtitle: "If Your Business Is In The $1M–$10M Revenue Range, You're Caught Up In The Day-To-Day, And It Feels Like Everything Relies On YOU...",
+          description: "You're Not Alone — But You Can't Scale This Way.",
           button: 'Apply for Your Scale Diagnostic →',
           destinationType: 'Next Step',
           destination: 'bd-apply-page',
-        }, { backgroundColor: '#0A0D1E', padding: '44' }),
-        sec('bd-stats', 'Stats', 'Built for Founders in the $1M–$10M Revenue Range', 'You are not alone — install the operational cadence that lets your company scale without relying on you.', {
-          items: '$1M–$10M Target Range · 3,977+ Operators Scaled · +34% Avg Margin Lift · 90-Day System Rollout',
-        }, { backgroundColor: '#FFF5F2', padding: '24' }),
-        cols3('bd-pillars', [
-          ['Eliminate Micromanagement', 'Replace ad-hoc Slack interruptions with clear KPI ownership and SOP accountability across every department.'],
-          ['Expand Net Profit Margins', 'Audit offer pricing, delivery utilization, and unit economics so top-line growth translates into cash flow.'],
-          ['Step Away With Confidence', 'Install leadership scorecards and weekly operating rhythms so the business compounds even when you unplug.'],
-        ], '#ffffff'),
-        sec('bd-cta-band', 'Program Cards', "I Hear You. You've Created Something Remarkable.", 'Our Result Speaks for Themselves — fix narrow margins, unoptimized offers, and missing operational processes.', {
-          eyebrow: 'Most Importantly: Track the Metrics That Move the Needle',
-          media: 'numbered',
-          items: '01 Margin & Offer Optimization · 02 Autonomous Team Systems · 03 Executive Accountability Cadence',
-          specs: 'Tailored for $1M–$10M founders · 1-on-1 diagnostic · Actionable 90-day roadmap',
-          button: 'Continue to Executive Diagnostic →',
+        }, { backgroundColor: '#F7F8FA', padding: '0' }),
+        sec('bd-cta-band', 'Brand Story', "I Hear You. You've Created Something Remarkable.", '', {
+          templateLayout: 'dark-authority-split',
+          subtitle: "Revenue Is Coming In. You've Built A Team. You're Gaining Momentum...",
+          description: 'But If You Were Gone Tomorrow, Your Business Would Fall Apart In A Month.',
+          image: TEMPLATE_PHOTOS.bizDevSmilingMan,
+          eyebrow: 'Our Result Speaks for Themselves',
+          cards: JSON.stringify([
+            { title: 'Micromanaging Projects And Staff' },
+            { title: 'Dealing With Narrow Margins' },
+            { title: 'Not Sure If Your Offer Is Fully Optimized' },
+            { title: 'Missing The Processes That Would Let You Step Away' },
+            { title: 'Away For Any Length Of Time' },
+          ]),
+          calloutTitle: 'Most Importantly:',
+          calloutBody: "You're not being held accountable to what actually matters—the metrics that move the needle.",
           destinationType: 'Next Step',
           destination: 'bd-apply-page',
-        }, { backgroundColor: '#09090B', padding: '34' }),
+        }, { backgroundColor: '#ffffff', padding: '0' }),
       ],
     },
     {
@@ -1512,24 +1602,39 @@ const softwarePlatformFunnelDoc: BuilderDocument = {
       showFooter: false,
       footer: 'Minimal footer',
       featuredImage: '/template-thumbnails/upklick-funnel-software-platform-hero.jpg',
-      backgroundColor: '#FAF5FF',
+      backgroundColor: '#ffffff',
       isFunnelStep: true,
       templateSelected: true,
       stepCategory: 'Opt-in',
       sections: [
         sec('sp-hero', 'Hero', 'Instant Contact Verification For Smarter Outreach', 'Our advanced Verification Tool helps you instantly validate emails and phone numbers so you can focus on real connections, not wasted outreach. With real-time accuracy.', {
+          templateLayout: 'pastel-saas-mock',
+          items: 'About · Features · Use Cases · Testimonials',
           button: 'Get Started For Free',
+          eyebrow: 'Featured Lists',
+          specs: 'SaaS Decision Makers · Enterprise VP Sales · Verified Tech Founders · Inbound Demo Leads',
+          badge: 'Verified',
           destinationType: 'Next Step',
           destination: 'sp-signup-page',
-        }, { backgroundColor: '#1E1348', padding: '44' }),
-        sec('sp-stats', 'Stats', 'Trusted by 60,000+ Businesses Worldwide', 'Accelerate outbound sales and unlock new revenue streams with verified CRM data.', {
-          items: '60,000+ Active Teams · 99.8% Accuracy · <120ms Real-Time Check · Zero Bounce Guarantee',
-        }, { backgroundColor: '#F3E8FF', padding: '24' }),
-        cols3('sp-pillars', [
-          ['Eliminate Outdated B2B Data', 'Automatically purge catch-all traps, deactivated inboxes, and stale records slowing down your sales reps.'],
-          ['Clean Direct List Imports', 'Validate CSV uploads and lead enrichment lists in bulk before a single campaign sequence goes live.'],
-          ['Real-Time CRM Sync', 'Ensure every contact entering HubSpot, Salesforce, or your native CRM is 100% verified and deliverable.'],
-        ], '#ffffff'),
+          cards: JSON.stringify([
+            { title: 'Sales & Customer Success Manager', body: '99.8% Deliverable · Real-Time SMTP', tag: 'Verified' },
+            { title: 'Marketing Data Enrichment', body: 'Zero Bounce · Phone + Domain Check', tag: 'Verified' },
+            { title: 'Software Quality Assurance Lead', body: 'CRM Synced · Duplicate Filtered', tag: 'Verified' },
+          ]),
+        }, { backgroundColor: '#ffffff', padding: '0' }),
+        sec('sp-stats', 'Stats', 'Trusted by 60,000+ businesses to accelerate outbound sales and unlock new revenue streams', '', {
+          templateLayout: 'logo-trust-bar',
+          items: 'Logoipsum · logoipsum · LogoCloud · Logoipsum · LogoSync',
+        }, { backgroundColor: '#ffffff', padding: '0' }),
+        sec('sp-pillars', 'Program Cards', 'Verify Leads Fast, Eliminate Duplicates, Boost ROI', "Stop wasting time and ad spend on bad data. Our verification tool instantly checks and validates contact details like emails, phone numbers, and more—so you're only reaching real, qualified leads. Say goodbye to duplicates and fake entries, and start converting with confidence.", {
+          templateLayout: 'saas-feature-collage',
+          items: 'Outdated B2B Data Slows Down Your Sales Process. · Direct List Imports Often Contain Invalid Leads. · Ensure Every Contact In Your CRM Is Verified.',
+          cards: JSON.stringify([
+            { title: 'Programming', body: 'Public Group · 18 members', tag: 'View Group', image: TEMPLATE_PHOTOS.softCoding },
+            { title: 'Photography', body: 'Public Group · 9 members', tag: 'View Group', image: TEMPLATE_PHOTOS.softPhoto },
+            { title: 'Backpackers Club', body: 'Public Group · 12 members', tag: 'View Group', image: TEMPLATE_PHOTOS.softTravel },
+          ]),
+        }, { backgroundColor: '#ffffff', padding: '0' }),
       ],
     },
     {
@@ -1627,24 +1732,41 @@ const pmAiFunnelDoc: BuilderDocument = {
       showFooter: false,
       footer: 'Minimal footer',
       featuredImage: '/template-thumbnails/upklick-funnel-project-management-ai-hero.jpg',
-      backgroundColor: '#F4FAFF',
+      backgroundColor: '#ffffff',
       isFunnelStep: true,
       templateSelected: true,
       stepCategory: 'Sales',
       sections: [
         sec('pm-hero', 'Hero', 'The Methodical Approach to Project Management', 'Every step of your funnel follows a structured, results-driven process. From planning to execution, AI keeps campaigns organized, efficient, and aligned with your business goals.', {
+          templateLayout: 'sky-ai-dashboard',
+          brandName: 'Logoipsum',
           button: 'GET STARTED NOW',
+          secondaryButton: 'WATCH DEMO',
+          caption: '● Active AI Sync',
+          items: 'Q4 Funnel Roadmap | Done · AI Resource Allocation | Live · Automated Client QA | 98% · Sprint Milestone Sync | Active',
           destinationType: 'Next Step',
           destination: 'pm-demo-page',
-        }, { backgroundColor: '#0C4A6E', padding: '44' }),
-        sec('pm-stats', 'Stats', 'Live AI Execution Metrics Across Every Sprint', 'Plan smarter, track progress clearly, and scale operations without losing control.', {
-          items: '52% Faster Delivery · 18,346 Automated Tasks · 23 Active AI Workflows · 99.4% On-Time SLA',
-        }, { backgroundColor: '#E0F2FE', padding: '24' }),
-        cols3('pm-pillars', [
-          ['Streamlined Customer Service', 'Cut response wait times and give your support team instant AI context to make every interaction effortless.'],
-          ['Smart Sprint Automation', 'Automated task routing and bottleneck alerts keep your team focused on high-impact client relationships.'],
-          ['Real-Time Engagement Overview', 'Visualize interaction breakdowns, team utilization, and campaign milestones in one unified executive view.'],
-        ], '#ffffff'),
+          cards: JSON.stringify([
+            { title: '52%', body: 'Velocity Lift' },
+            { title: '18,346', body: 'Tasks Automated' },
+            { title: '23', body: 'Active Sprints' },
+            { title: '99.4%', body: 'On-Time SLA' },
+          ]),
+        }, { backgroundColor: '#ffffff', padding: '0' }),
+        sec('pm-stats', 'Brand Story', 'Use Our Resources to Deliver Fantastic Customer Service', 'Our tools give your team the support they need to respond quickly, solve problems effectively, and keep customers happy.', {
+          templateLayout: 'split-engagement-wave',
+          items: 'Streamlined processes cut wait times and make every interaction effortless. · Smart automation keeps your team focused on building strong relationships.',
+          button: 'GET STARTED NOW',
+          eyebrow: 'Engagement Overview',
+          caption: 'Interaction Breakdown · Mon – Sun',
+          specs: 'Website Visits · AI Workflows · Resolved Tickets',
+          destinationType: 'Next Step',
+          destination: 'pm-demo-page',
+        }, { backgroundColor: '#ffffff', padding: '0' }),
+        sec('pm-pillars', 'Program Cards', "The Features You'll Need to Expand Your Business", 'Strategic management tools that help you plan smarter, track progress clearly, and scale operations without losing control.', {
+          templateLayout: 'feature-pills-band',
+          items: '01 — Automated AI Sprint Planning · 02 — Real-Time Funnel Bottleneck Alerts · 03 — Cross-Team Executive Dashboards',
+        }, { backgroundColor: '#ffffff', padding: '0' }),
       ],
     },
     {
@@ -1742,30 +1864,41 @@ const b2bSaasFunnelDoc: BuilderDocument = {
       showFooter: false,
       footer: 'Minimal footer',
       featuredImage: '/template-thumbnails/upklick-funnel-b2b-saas-hero.jpg',
-      backgroundColor: '#F6F9FC',
+      backgroundColor: '#ffffff',
       isFunnelStep: true,
       templateSelected: true,
       stepCategory: 'Sales',
       sections: [
         sec('b2b-hero', 'Hero', 'Boost Your B2B SaaS', 'What We Do Best Is Attract Traffic To Your Website And Convert It Into Contented, Paying Customers.', {
+          templateLayout: 'b2b-saas-hero',
+          badge: 'Limited Time: Save BIG With Our SaaS Marketing Agency Funnels',
+          brandName: 'Logoipsum',
+          specs: 'Services · Features · FAQs',
+          eyebrow: "Afraid You Won't Be Able To Get A Regular Flow Of Customers?",
           button: 'Begin Your Free Trial Today!',
+          secondaryButton: '▶ Watch Free Demo Videos',
+          caption: 'Cancel Anytime • No Contracts',
+          subtitle: 'Zero Computer Skills Needed · For Every Type Of Business · Market, Sell, And Deliver',
+          items: 'Sales Funnels · Landing Pages · Lead Capture · Conversion Tools · Revenue Growth · Marketing Funnels',
           destinationType: 'Next Step',
           destination: 'b2b-trial-page',
-        }, { backgroundColor: '#311B6B', padding: '44' }),
-        sec('b2b-stats', 'Stats', 'Zero Computer Skills Needed · Cancel Anytime · No Contracts', 'Rated 4.9 out of 5 based on 1,312 verified entrepreneur reviews.', {
-          items: '4.9/5 Excellent Rating · 1,312+ Verified Reviews · 6 Conversion Modules · $0 Free 14-Day Trial',
-        }, { backgroundColor: '#ECFDF5', padding: '24' }),
-        cols3('b2b-pillars', [
-          ['Sales & Marketing Funnels', 'Launch high-converting B2B landing pages and multi-step demo funnels without writing a single line of code.'],
-          ['Automated Lead Capture', 'Convert cold traffic into qualified SQLs with built-in forms, lead scoring, and instant pipeline routing.'],
-          ['Predictable Revenue Growth', 'Cut hours of manual admin work with smart automation so your team focuses on closing recurring contracts.'],
-        ], '#ffffff'),
-        sec('b2b-reviews', 'Testimonials', 'World Class Entrepreneurs Attract Traffic To Their Website', '', {
-          testimonials: JSON.stringify([
-            { id: 'b2b-r1', author: 'John Doe', role: 'Verified Client', quote: 'This platform made the entire process smooth and reliable. Setting things up was easy, and I immediately noticed how much faster my workflow became.', rating: 5, avatar: '' },
-            { id: 'b2b-r2', author: 'Jane Doe', role: 'Verified Client', quote: 'From the first day, I could see how much efficiency this solution brought to my team. Smart automation gave us more time to focus on clients.', rating: 5, avatar: '' },
+        }, { backgroundColor: '#ffffff', padding: '0' }),
+        sec('b2b-reviews', 'Testimonials', 'World Class Entrepreneur Attract Traffic To Your Website', '', {
+          templateLayout: 'avatar-reviews-band',
+          eyebrow: 'Meet people who know us...',
+          button: 'Begin Your Free Trial Today!',
+          caption: 'Your Company Is Rated Excellent · 4.9 out of 5 based on 1,312 reviews',
+          footerTitle: 'Building Strong Foundations for Growth',
+          footerNote: 'Clear strategies help transform pipeline challenges into predictable recurring ARR opportunities.',
+          badge: 'SaaS Growth Engine · +312% Pipeline ✈',
+          destinationType: 'Next Step',
+          destination: 'b2b-trial-page',
+          cards: JSON.stringify([
+            { title: 'John Doe', tag: 'Verified Client', body: 'This platform made the entire process smooth and reliable. Setting things up was easy, and I immediately noticed how much faster my workflow became. The tools are simple to use, yet powerful enough to handle complex needs.', image: TEMPLATE_PHOTOS.b2bAvatar1 },
+            { title: 'Mark Vance', tag: 'Verified Client', body: 'The features are designed with users in mind, making every task feel intuitive and straightforward. I was able to cut down hours of manual work and focus more on growing my business. Support has also been excellent throughout.', image: TEMPLATE_PHOTOS.b2bAvatar2 },
+            { title: 'Jane Doe', tag: 'Verified Client', body: 'From the first day, I could see how much efficiency this solution brought to my team. Managing multiple projects became less stressful, and the smart automation gave us more time to focus on clients instead of admin work.', image: TEMPLATE_PHOTOS.b2bAvatar3 },
           ]),
-        }, { backgroundColor: '#F8FAFC', padding: '32' }),
+        }, { backgroundColor: '#ffffff', padding: '0' }),
       ],
     },
     {
@@ -1863,24 +1996,42 @@ const medicalSolutionFunnelDoc: BuilderDocument = {
       showFooter: false,
       footer: 'Minimal footer',
       featuredImage: '/template-thumbnails/upklick-funnel-medical-solution-hero.jpg',
-      backgroundColor: '#F4F8FB',
+      backgroundColor: '#ffffff',
       isFunnelStep: true,
       templateSelected: true,
       stepCategory: 'Sales',
       sections: [
-        sec('med-hero', 'Hero', 'Grab Your N95 Mask Now Up to 70% Off!', 'Filter Efficiency Above 99% · High-performance 4-layer filter fabric · Captures airborne particles as small as 0.3 microns.', {
+        sec('med-hero', 'Hero', 'Grab Your N95 Mask Now Up to 70% Off!', '', {
+          templateLayout: 'medical-offer-hero',
+          brandName: 'Logoipsum',
+          specs: 'Features & Benefits · 100% Guarantee · Testimonials · FAQs',
+          eyebrow: 'Filter Efficiency Above 99%',
+          items: 'High-performance filter fabric · 99% particle filtration efficiency · Captures particles as small as 0.3 microns',
           button: 'Get Your N95 Mask Now!',
+          src: TEMPLATE_PHOTOS.medDoctorsLab,
+          badge: 'As Seen On',
+          caption: 'MedWatch · ⇄ Logoipsum · ✚ HealthPlus · ⚡ BioShield · ✺ CareStandard',
           destinationType: 'Next Step',
           destination: 'med-order-page',
-        }, { backgroundColor: '#0A1929', padding: '44' }),
-        sec('med-stats', 'Stats', 'The #1 Rated Protective N95 Mask for Your Family', 'Lab-tested clinical defense combined with lightweight all-day comfort.', {
-          items: '>99% Filtration Efficiency · 0.3 Micron Defense · 4-Stage HEPA Layer · Up to 70% Off Today',
-        }, { backgroundColor: '#ECFEFF', padding: '24' }),
-        cols3('med-pillars', [
-          ['Advanced 4-Stage Filtration', 'Multi-layered electrostatic melt-blown fabric blocks dust, pollutants, bacteria, and airborne droplets.'],
-          ['Ergonomic 3D Seal & Comfort', 'Contoured 3D shape creates a secure facial seal while leaving comfortable breathing room all day.'],
-          ['Soft Ear Loops & Breathability', 'Ultra-soft elastic ear bands prevent pressure fatigue during extended clinical, travel, or daily wear.'],
-        ], '#ffffff'),
+        }, { backgroundColor: '#07192D', padding: '0' }),
+        sec('med-stats', 'Program Cards', 'Take Care of You And Your Family', 'With our comprehensive plans, you can be sure your loved ones are covered. We offer reliable, flexible solutions designed to give you peace of mind in every season of life.', {
+          templateLayout: 'circle-badges-grid',
+          eyebrow: 'Protective N95 Mask',
+          cards: JSON.stringify([
+            { tag: 'HEPA', title: 'Advanced 4-Stage HEPA Filtration' },
+            { tag: '3D', title: 'Dust, Virus & Bacteria Protection' },
+            { tag: '🛡', title: 'Shaped for Comfort. Built for Safety.' },
+            { tag: '≈', title: 'Soft on Ears, Light on Your Face' },
+          ]),
+        }, { backgroundColor: '#F4F8FB', padding: '0' }),
+        sec('med-pillars', 'Brand Story', 'The #1 Rated Protective N95 Mask', 'Stay safe with the highest level of defense. Our N95 masks provide superior filtration, offering you and your family ultimate peace of mind.', {
+          templateLayout: 'medical-split-story',
+          eyebrow: 'Your Protection Starts with N95',
+          subtitle: 'Ultra-High Filtration Power',
+          description: 'Our advanced N95 masks are engineered with cutting-edge technology to provide maximum protection. Lightweight ergonomic contours ensure a snug, secure seal without discomfort—allowing optimal breathability all day long.',
+          badge: 'High-performance 4-layer filter fabric',
+          image: TEMPLATE_PHOTOS.medWomanMask,
+        }, { backgroundColor: '#ffffff', padding: '0' }),
       ],
     },
     {
@@ -1991,19 +2142,43 @@ const productDevFunnelDoc: BuilderDocument = {
       templateSelected: true,
       stepCategory: 'Sales',
       sections: [
-        sec('pd-hero', 'Hero', 'Product Development with Valuable Customer Insights', 'Our platform empowers you to capture meaningful insights from your customers, employees, or stakeholders in real time. Turn feedback into actionable strategies that drive measurable growth.', {
+        sec('pd-hero', 'Hero', 'Product Development with Valuable Customer Insights', 'Our platform empowers you to capture meaningful insights from your customers, employees, or stakeholders in real time. With advanced analytics and intuitive reporting, you can turn feedback into actionable strategies that drive growth.', {
+          templateLayout: 'obsidian-bento-hero',
+          badge: 'Get the insights you need—right when you need them. Learn more!',
+          brandName: 'Logoipsum',
+          button: 'Get Insights Now',
+          eyebrow: 'Transforming How Leading Companies Innovate with Customer Feedback',
+          items: 'Logoipsum · PulseLabs · CloudScale · MetricFlow · NovaStack',
+          caption: 'Adopted Feature Velocity',
+          specs: 'Feedback · Insights · Roadmap',
+          subtitle: 'Continuous Product Discovery',
+          description: 'Real-time sentiment & roadmap alignment',
+          destinationType: 'Next Step',
+          destination: 'pd-request-page',
+          cards: JSON.stringify([
+            { title: '2022', body: 'Centralized multi-channel user feedback intake.' },
+            { title: '2023', body: 'Automated AI theme clustering & sprint scoring.' },
+            { title: '2024', body: 'Predictive revenue impact & instant release loops.' },
+          ]),
+        }, { backgroundColor: '#100818', padding: '0' }),
+        sec('pd-stats', 'Stats', 'Prioritize Every Release With Real User Evidence', 'Eliminate roadmap guesswork by connecting live customer interviews, NPS signals, and feature requests directly to engineering sprints.', {
+          templateLayout: 'stats-2x2-split',
+          eyebrow: 'VERIFIED CUSTOMER FEEDBACK INSIGHTS',
           button: 'Get Insights Now',
           destinationType: 'Next Step',
           destination: 'pd-request-page',
-        }, { backgroundColor: '#180C26', padding: '44' }),
-        sec('pd-stats', 'Stats', 'Transforming How Leading Companies Innovate With Customer Feedback', 'Confident, data-driven product decisions backed by live user evidence.', {
-          items: '73% Adopted Feature Velocity · 3.4x Faster Validation · 94% Roadmap Alignment · 7+ Native Integrations',
-        }, { backgroundColor: '#FAF5FF', padding: '24' }),
-        cols3('pd-pillars', [
-          ['Real-Time Feedback Capture', 'Aggregate customer interviews, in-app surveys, support tickets, and NPS signals in one searchable hub.'],
-          ['AI Sentiment & Priority Scoring', 'Quantify revenue impact automatically so your product team ships what actually moves retention.'],
-          ['One Unified Action Workflow', 'Sync validated insights straight into Jira, Linear, Slack, and executive roadmaps in one click.'],
-        ], '#ffffff'),
+          cards: JSON.stringify([
+            { title: '3.4x', body: 'Faster Feature Validation' },
+            { title: '94%', body: 'Stakeholder Alignment' },
+            { title: '-48%', body: 'Wasted Sprint Cycles' },
+            { title: '24/7', body: 'Live Feedback Sync' },
+          ]),
+        }, { backgroundColor: '#ffffff', padding: '0' }),
+        sec('pd-pillars', 'Program Cards', 'Converting Customer Feedback into Actionable Strategies', 'Trusted by industry leaders, our platform enables you to make confident, data-driven product decisions that deliver measurable results.', {
+          templateLayout: 'obsidian-workflow-band',
+          eyebrow: 'SIMPLIFY',
+          subtitle: 'From Feedback to Action in One Unified Workflow',
+        }, { backgroundColor: '#100818', padding: '0' }),
       ],
     },
     {
@@ -2101,24 +2276,49 @@ const coachingCollectiveFunnelDoc: BuilderDocument = {
       showFooter: false,
       footer: 'Minimal footer',
       featuredImage: '/template-thumbnails/upklick-funnel-coaching-collective-hero.jpg',
-      backgroundColor: '#FCFCFF',
+      backgroundColor: '#ffffff',
       isFunnelStep: true,
       templateSelected: true,
       stepCategory: 'Opt-in',
       sections: [
         sec('cc-hero', 'Hero', 'Build a Smarter Coaching Business That Drives Real Results.', 'Led by an ICF-certified coach with 11 years in the field, The Compound Collective has trained 340+ independent operators. Last cohort averaged 3x higher client retention and 47% more revenue in under 90 days.', {
+          templateLayout: 'coaching-pill-hero',
+          brandName: 'The Compound Collective',
+          badge: 'NEW',
+          eyebrow: 'Cohort 09 · coaching that compounds',
           button: 'Send Me The Free Guide →',
+          secondaryButton: 'See how it works →',
+          src: TEMPLATE_PHOTOS.coachWomanBlazer,
           destinationType: 'Next Step',
           destination: 'cc-optin-page',
-        }, { backgroundColor: '#5B21B6', padding: '44' }),
-        sec('cc-stats', 'Stats', 'Trusted By Industry Leaders Across 9 Cohorts', 'Agencies, consultants, and coaching studios building their engine on the same repeatable framework.', {
-          items: '10K+ Students Trained · 47% Avg Revenue Lift · 42 hrs Back Per Month · $50M+ Client Revenue',
-        }, { backgroundColor: '#F5F3FF', padding: '24' }),
-        cols3('cc-pillars', [
-          ['An Offer That Compounds', 'Move beyond rolling 1:1 calls with a structured signature program that increases client transformation and LTV.'],
-          ['Repeatable Delivery System', 'Install curriculum assets, milestone check-ins, and async workflows that cut founder delivery hours by 40%.'],
-          ['Get Your Weekends Back', 'Systemize onboarding, renewals, and referrals so your revenue grows without a calendar that never closes.'],
-        ], '#ffffff'),
+          cards: JSON.stringify([
+            { title: '100+', body: 'COACHES TRAINED' },
+            { title: '47%', body: 'AVG REVENUE LIFT' },
+            { title: '42 hrs', body: 'BACK PER MONTH' },
+          ]),
+        }, { backgroundColor: '#FCFCFF', padding: '0' }),
+        sec('cc-stats', 'Stats', 'Trusted By Industry Leaders', 'Agencies, consultants, and coaching studios building their engine on the same framework.', {
+          templateLayout: 'partners-and-3stats',
+          eyebrow: 'TRUSTED BY',
+          items: 'Northwind · Brightpath · Apex Advisory · Crestline · Elevate Co',
+          cards: JSON.stringify([
+            { title: '10K+', body: 'Students trained across 9 cohorts' },
+            { title: 'Top 1%', body: 'Industry-ranked coaching programs' },
+            { title: '$50M+', body: 'Client revenue generated' },
+          ]),
+        }, { backgroundColor: '#ffffff', padding: '0' }),
+        sec('cc-pillars', 'Brand Story', "A coach who's been in your chair.", "22 clients on rolling calls, a calendar that never closed, revenue that flatlined the second a week off came up. Every scaling course said the same thing — post more, hustle harder, build another funnel.\n\nThe turning point wasn't a new tactic. It was a delivery system — a repeatable coaching framework that could be taught instead of performed. Six months later, hours dropped 40% and rates tripled.", {
+          templateLayout: 'coach-founder-story',
+          eyebrow: 'THE WHY BEHIND THE COLLECTIVE',
+          subtitle: 'Eight years ago this coaching practice looked successful on paper and felt like a trap every Monday morning.',
+          image: TEMPLATE_PHOTOS.coachWomanCoffee,
+          badge: '11 yrs',
+          caption: 'COACHING EXPERIENCE',
+          calloutTitle: 'CREDENTIALS',
+          calloutBody: 'ICF-certified · Formerly Head of Coaching, Brightpath Studio · 340+ operators trained',
+          brandName: 'Clara Vance',
+          brandSlogan: 'Founder · The Compound Collective',
+        }, { backgroundColor: '#F4F4F6', padding: '0' }),
       ],
     },
     {
@@ -2615,14 +2815,17 @@ export const pageTemplates: PageTemplate[] = [
       'Flooring Quote - Classic',
       'Get Your Free Flooring Quote',
       'Ready to transform your home or business with beautiful new flooring? Complete the form below and our team will prepare a customized, no-obligation quote tailored to your project.',
-      'Get My Free Flooring Quote',
+      'Get My Free Flooring Quote →',
       '#1E293B',
       flooringFields,
-      '#EDE8E3',
+      '#DED7CF',
       '#FFFFFF',
       '1px solid #E2DDD5',
       '#1C1917',
-      'warm-neutral'
+      'warm-neutral',
+      {
+        formLayout: 'flooring-sheet',
+      }
     ),
   },
   {
@@ -2641,22 +2844,29 @@ export const pageTemplates: PageTemplate[] = [
     popularity: 2181,
     tags: ['fitness', 'personal trainer', 'assessment', '8 fields'],
     backgroundPreset: 'warm-neutral',
-    backgroundColor: '#FEFCE8',
+    backgroundColor: '#F8FAFC',
     benefits: ['High-energy athletic visual branding', 'Injury & movement limitation screen', 'A2P-ready SMS consent checkboxes'],
     fields: personalTrainerFields,
     builderDocument: buildFormDoc(
       'ghl-form-personal-trainer',
       'Personal Trainer',
       "LET'S BUILD YOUR WORKOUT BLUEPRINT.",
-      'No generic templates. Tell us a bit about your current routine, your goals, and how your body feels today so we can design a training plan tailored exactly to you.',
+      'Tell us a bit about your current routine, your goals, and how your body feels today so we can design a training plan tailored exactly to you.',
       'REQUEST MY BASELINE ASSESSMENT',
       '#EAB308',
       personalTrainerFields,
-      '#FEFCE8',
+      '#F8FAFC',
       '#FFFFFF',
       '2px solid #FACC15',
       '#111827',
-      'warm-neutral'
+      'warm-neutral',
+      {
+        formLayout: 'trainer-split',
+        image: TEMPLATE_PHOTOS.trainerAthlete,
+        badge: 'No generic templates',
+        eyebrow: 'FITNESS',
+        caption: 'level up',
+      }
     ),
   },
   {
@@ -2690,7 +2900,11 @@ export const pageTemplates: PageTemplate[] = [
       '#FFFFFF',
       '1px solid #E5E2DC',
       '#111111',
-      'warm-neutral'
+      'warm-neutral',
+      {
+        formLayout: 'architecture-split',
+        image: TEMPLATE_PHOTOS.architectStudio,
+      }
     ),
   },
 ];

@@ -2,6 +2,7 @@ import { BuilderFormCaptureContext, sendBuilderLead, type PublicCaptureConfig } 
 import { executeButtonAction, BuilderActionPopupModal } from './button-actions';
 import './published-page.css';
 import './step-templates-pro.css';
+import './template-blocks.css';
 import { Menu, X, ArrowRight, ShieldCheck, Sparkles } from 'lucide-react';
 
 import { useEffect, useRef, useState, type CSSProperties } from 'react';
@@ -112,36 +113,41 @@ export function PublishedPage({ asset, pageId, onNavigate, capture, analytics = 
     });
   };
 
-  const formTheme = asset.formAsset ? resolveFormTheme(page, page.sections.find(section => ['Form', 'Contact Form'].includes(section.type))) : undefined;
+  const formSection = page.sections.find(section => ['Form', 'Contact Form'].includes(section.type));
+  const hasShowcaseForm = Boolean(asset.formAsset && formSection?.content.formLayout);
+  const formTheme = asset.formAsset && !hasShowcaseForm ? resolveFormTheme(page, formSection) : undefined;
   const isDarkBg = formTheme?.dark ?? Boolean(
     page.backgroundColor &&
     (page.backgroundColor.includes('#090d16') ||
      page.backgroundColor.includes('#0b0f19') ||
      page.backgroundColor.includes('#0f172a') ||
+     page.backgroundColor.includes('#161616') ||
      page.backgroundColor.includes('rgba(15, 23, 42') ||
      page.backgroundColor.includes('rgb(9, 13, 22)'))
   );
 
   const render = (items: BuilderSection[]): React.ReactNode => items.map(source => {
     const item = deviceElement(source, device);
-    const sectionTheme = asset.formAsset && ['Form', 'Contact Form'].includes(item.type) ? resolveFormTheme(page, item) : undefined;
+    const hasTemplateLayout = Boolean(item.content.templateLayout);
+    const hasFormShowcase = Boolean(item.content.formLayout);
+    const sectionTheme = asset.formAsset && !hasFormShowcase && ['Form', 'Contact Form'].includes(item.type) ? resolveFormTheme(page, item) : undefined;
     const style = {
-      background: item.content.themeCardBg || item.styles.backgroundColor,
-      border: item.content.themeCardBorder,
+      background: hasFormShowcase ? 'transparent' : (item.content.themeCardBg || item.styles.backgroundColor),
+      border: hasFormShowcase ? 'none' : item.content.themeCardBorder,
       color: item.content.themeTextColor,
       '--form-card-bg': item.content.themeCardBg,
       '--form-card-border': item.content.themeCardBorder,
       '--form-text': item.content.themeTextColor,
-      padding: `${item.styles.padding}px 22px`,
+      padding: hasTemplateLayout || hasFormShowcase ? 0 : `${item.styles.padding}px 22px`,
       textAlign: item.styles.textAlign.toLowerCase() as CSSProperties['textAlign'],
       ...elementStyle(item, device),
       ...(sectionTheme ? { ...sectionTheme.variables, ...sectionTheme.cardStyle } : {}),
       display: elementHidden(item, device) ? 'none' : undefined
     } as CSSProperties;
     if (sectionTheme) { delete style.borderColor; delete style.borderWidth; delete style.borderStyle; }
-    return <section key={item.id} id={thumbnail ? undefined : item.content.trackingId || item.id} data-section-id={item.id} className={`fb-canvas-section ${item.type === 'Hero' ? 'fb-hero-section' : ''} ${item.content.htmlClass || ''}`} style={style}>
+    return <section key={item.id} id={thumbnail ? undefined : item.content.trackingId || item.id} data-section-id={item.id} className={`fb-canvas-section ${item.type === 'Hero' && !hasTemplateLayout ? 'fb-hero-section' : ''} ${hasTemplateLayout ? 'has-template-layout' : ''} ${hasFormShowcase ? 'has-form-showcase' : ''} ${item.content.htmlClass || ''}`} style={style}>
       {['Columns', 'Section'].includes(item.type) ? <div className="fn-column-layout" style={{ display: 'grid', gridTemplateColumns: columnGrid(item), gap: `${item.content.gap || 16}px` }}>{Array.from({ length: columnCount(item) }, (_, col) => <div className="fn-column" key={col}>{render(item.children?.[col] ?? [])}</div>)}</div>
-        : item.type === 'Hero' ? <><EditableElementPart device={device} item={item} part="src" tag="img" className="fb-hero-image" src={item.content.src || page.featuredImage || asset.image} alt={item.content.alt || ''}/><span className="fb-hero-overlay"/><OrderedElementParts item={item}><div className="fb-hero-copy"><EditableElementPart device={device} item={item} part="title" tag="h1">{item.content.title}</EditableElementPart><EditableElementPart device={device} item={item} part="body" tag="p">{item.content.body}</EditableElementPart>{item.content.button && <EditableElementPart device={device} item={item} part="button" tag="button" className="fb-site-primary" onClick={() => action(findSection([item], item.id + '::button') ?? item)}>{item.content.button}</EditableElementPart>}</div></OrderedElementParts></>
+        : item.type === 'Hero' && !hasTemplateLayout ? <><EditableElementPart device={device} item={item} part="src" tag="img" className="fb-hero-image" src={item.content.src || page.featuredImage || asset.image} alt={item.content.alt || ''}/><span className="fb-hero-overlay"/><OrderedElementParts item={item}><div className="fb-hero-copy"><EditableElementPart device={device} item={item} part="title" tag="h1">{item.content.title}</EditableElementPart><EditableElementPart device={device} item={item} part="body" tag="p">{item.content.body}</EditableElementPart>{item.content.button && <EditableElementPart device={device} item={item} part="button" tag="button" className="fb-site-primary" onClick={() => action(findSection([item], item.id + '::button') ?? item)}>{item.content.button}</EditableElementPart>}</div></OrderedElementParts></>
           : <SectionPreview item={item} device={device} language={language} templateDesign={templateDesign} onAction={action} onImagePick={() => {}} onImageDrop={event => event.preventDefault()} onNotify={message => showToast.info(message)}/>}
     </section>;
   });
@@ -178,14 +184,14 @@ export function PublishedPage({ asset, pageId, onNavigate, capture, analytics = 
           ...(formTheme ? { ...formTheme.variables, background: formTheme.background } : {})
         } as CSSProperties}
       >
-        {asset.formAsset ? (
+        {asset.formAsset && !hasShowcaseForm ? (
           <header className="fb-standalone-form-header">
             <div className="fb-standalone-brand-pill">
               <span className="fb-brand-dot" />
               <span className="fb-brand-name">{asset.name}</span>
             </div>
           </header>
-        ) : page.showHeader ? (
+        ) : !asset.formAsset && page.showHeader ? (
           <header className="fb-live-page-nav">
             <button className="fb-live-wordmark" onClick={() => navigate(asset.document.pages[0].id)}>
               <span className="fb-nav-logo-mark"><Sparkles size={14} /></span>
@@ -221,7 +227,7 @@ export function PublishedPage({ asset, pageId, onNavigate, capture, analytics = 
           </header>
         ) : null}
 
-        <div className={asset.formAsset ? "fb-standalone-form-container" : "fb-live-page-body"}>
+        <div className={asset.formAsset && !hasShowcaseForm ? "fb-standalone-form-container" : "fb-live-page-body"}>
           {!(page.hideOnMobile && device === 'mobile') && render(page.sections)}
         </div>
 

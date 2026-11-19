@@ -15,14 +15,13 @@ import {PageTemplateCards} from './PageTemplateLibrary';
 import type {PageTemplate} from './page-templates';
 import { DomainExportDialog } from './DomainExportDialog';
 import { AssetSelect, AssetSearch, FilterChips } from './AssetControls';
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useLayoutEffect, useMemo, useRef } from 'react';
+import { PublishedPage } from './PublishedPage';
 import type { Dispatch, SetStateAction, ReactNode } from 'react';
 import { collection, doc, onSnapshot, setDoc } from 'firebase/firestore';
 import { db, backendError } from '../backend/firebase';
 import { SITE_DOMAINS, mapFirestoreDomainToModel, normalizeHost, updateSiteDomain, deleteSiteDomain, toggleSiteDomainStatus } from '../backend/siteDomains';
 import { Modal } from './settings/kit';
-import { useSelector } from 'react-redux';
-import type { RootState } from '../store';
 import { ArrowLeft, ArrowRight, CalendarDays, Check, ChevronDown, Download, ExternalLink, Eye, Filter, Globe, GripVertical, LayoutGrid, Layers, Link2, List, LoaderCircle, LockKeyhole, Monitor, Pencil, Plus, Settings, ShieldCheck, Smartphone, Sparkles, Tablet, Trash2 } from 'lucide-react';
 import { AssetOptionsMenu as OptionsMenu } from './AssetOptionsMenu';
 import { showToast } from '../utils/toast';
@@ -81,7 +80,7 @@ export function AssetHub({ installTemplate, assets, kind, section, query, setQue
  {localizeNode(kind === 'website' && <><div className="aw-heading"><span className="aw-heading-icon"><LayoutGrid size={26}/></span><div><h1>{translateText("Websites")}</h1><p>{translateText("Create and manage your websites. Choose a template or build your own.")}</p></div></div><section className="aw-panel aw-template-section"><header><span className="aw-heading-icon"><Layers size={22}/></span><div><h3>{translateText("Website Templates")}</h3><p>{translateText("Choose from starter templates or personalize your business website.")}</p></div><button className="aw-text-button" onClick={() => go(section+'?tab=templates')}>{translateText("View All Templates ")}<ArrowRight size={14}/></button></header><div className="aw-templates" id="aw-templates"><article className="aw-ai-template bg-gradient-to-br from-indigo-50 via-purple-50 to-indigo-100/60 border border-indigo-200/60"><span className="aw-ai-spark"><Sparkles size={28}/></span><h3>{translateText("Build with AI")}</h3><p>{translateText("Your business. Your brand. A head start in minutes.")}</p><ul className="aw-ai-features"><li><Check size={13}/>{translateText("Personalized page content")}</li><li><Check size={13}/>{translateText("Your goals and brand colors")}</li><li><Check size={13}/>{translateText("Fully editable layouts")}</li></ul><button className="aw-primary" onClick={() => open({ type: 'ai' })}>{translateText("Create with AI ✨")}</button></article><PageTemplateCards templates={pageTemplates.filter(template=>template.mode==='website')} install={installTemplate}/></div></section></>)}
  <section className={kind === 'website' ? 'aw-panel aw-my-websites' : ''}><div className="aw-controls">{localizeNode(kind === 'website' && <h3><LayoutGrid size={19}/>{translateText("My Websites ")}<span>({localizeNode(assets.length)})</span></h3>)}<AssetSearch value={query} onChange={setQuery} placeholder={translateText(`Search ${section}...`)} shortcut/><AssetSelect value={status} onChange={e => setStatus(e)} label={"Asset status"} options={[...['All Status', 'Published', 'Draft'].map(item => ({value:item,label:item}))]}/><AssetSelect value={sort} onChange={e => setSort(e)} label={"Sort assets"} options={[{value:"Last Updated",label:"Last Updated"},{value:"Name",label:"Name"}]}/><button className="aw-text-button" onClick={() => setArchived(!archived)}>{localizeNode(archived ? 'View active' : 'Archived')}</button><div className="aw-view-switch"><button className={!list ? 'active' : ''} aria-label={translateText("Grid view")} aria-pressed={!list} onClick={() => setList(false)}><LayoutGrid size={17}/></button><button className={list ? 'active' : ''} aria-label={translateText("List view")} aria-pressed={list} onClick={() => setList(true)}><List size={17}/></button></div></div>
  <FilterChips filters={filters} clear={()=>{setQuery('');setStatus('All Status');setSort('Last Updated');setArchived(false);}}/>
- <div className={`aw-asset-grid ${kind === 'website' ? 'websites' : ''} ${list ? 'list' : ''}`}>{localizeNode(assets.map(item => <article className="aw-asset-card" key={item.id}><button className="aw-asset-image" aria-label={formatDisplayMessage('Open {{0}}', item.name)} onClick={() => go(`${section}/${item.id}`)}><AssetThumbnail asset={item}/></button><div className="aw-card-body"><h3>{item.name}</h3>{localizeNode(kind === 'website' && <p>{item.description}</p>)}<div className="aw-card-meta"><span><Layers size={13}/>{localizeNode(item.document.pages.length)} {localizeNode(kind === 'funnel' ? 'Steps' : 'Pages')}</span>{localizeNode(item.domain ? <button className="aw-text-button fn-domain-badge" aria-label={formatDisplayMessage('Change domain for {{0}}', item.name)} onClick={() => open({ type: 'domain-select', assetId: item.id })}><Link2 size={13}/>{localizeNode(item.domain)}<ChevronDown size={11}/></button> : <button className="aw-text-button" onClick={() => open({ type: 'domain-select', assetId: item.id })}><Link2 size={13}/>{translateText("Connect domain")}</button>)}<Status value={item.document.funnel.status}/></div><PublishedAssetLink asset={item} showUrl/><small className="aw-updated"><CalendarDays size={11}/>{translateText("Last updated ")}{localizeNode(new Date(item.updated).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }))}</small><footer><button className="aw-edit" onClick={() => go(`${section}/${item.id}`)}><Pencil size={14}/>{localizeNode(kind === 'funnel' ? 'Edit' : 'Edit Website')}</button>{localizeNode(kind === 'funnel' && <button className="aw-secondary" onClick={() => open({ type: 'preview', assetId: item.id })}><Eye size={14}/>{translateText("Preview")}</button>)}<OptionsMenu label={formatDisplayMessage('Options for {{0}}', item.name)} actions={actions(item)}/></footer></div></article>))}</div>{localizeNode(!assets.length && <Empty title={translateText(archived ? 'No archived assets' : 'No matching ' + section)} description={translateText("Choose a different filter or create an asset to get started.")} action={<button className="aw-primary" onClick={() => open({ type: 'create' })}><Plus size={14}/>{translateText("Create ")}{localizeNode(kind)}</button>}/>)}</section>
+ <div className={`aw-asset-grid ${kind === 'website' ? 'websites' : ''} ${list ? 'list' : ''}`}>{localizeNode(assets.map(item => <article className="aw-asset-card" key={item.id}><div role="button" tabIndex={0} className="aw-asset-image" aria-label={formatDisplayMessage('Open {{0}}', item.name)} onClick={() => go(`${section}/${item.id}`)} onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); go(`${section}/${item.id}`); } }}><AssetThumbnail asset={item}/></div><div className="aw-card-body"><h3>{item.name}</h3>{localizeNode(kind === 'website' && <p>{item.description}</p>)}<div className="aw-card-meta"><span><Layers size={13}/>{localizeNode(item.document.pages.length)} {localizeNode(kind === 'funnel' ? 'Steps' : 'Pages')}</span>{localizeNode(item.domain ? <button className="aw-text-button fn-domain-badge" aria-label={formatDisplayMessage('Change domain for {{0}}', item.name)} onClick={() => open({ type: 'domain-select', assetId: item.id })}><Link2 size={13}/>{localizeNode(item.domain)}<ChevronDown size={11}/></button> : <button className="aw-text-button" onClick={() => open({ type: 'domain-select', assetId: item.id })}><Link2 size={13}/>{translateText("Connect domain")}</button>)}<Status value={item.document.funnel.status}/></div><PublishedAssetLink asset={item} showUrl/><small className="aw-updated"><CalendarDays size={11}/>{translateText("Last updated ")}{localizeNode(new Date(item.updated).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }))}</small><footer><button className="aw-edit" onClick={() => go(`${section}/${item.id}`)}><Pencil size={14}/>{localizeNode(kind === 'funnel' ? 'Edit' : 'Edit Website')}</button>{localizeNode(kind === 'funnel' && <button className="aw-secondary" onClick={() => open({ type: 'preview', assetId: item.id })}><Eye size={14}/>{translateText("Preview")}</button>)}<OptionsMenu label={formatDisplayMessage('Options for {{0}}', item.name)} actions={actions(item)}/></footer></div></article>))}</div>{localizeNode(!assets.length && <Empty title={translateText(archived ? 'No archived assets' : 'No matching ' + section)} description={translateText("Choose a different filter or create an asset to get started.")} action={<button className="aw-primary" onClick={() => open({ type: 'create' })}><Plus size={14}/>{translateText("Create ")}{localizeNode(kind)}</button>}/>)}</section>
  </>;
 }
 export function DomainsView({ workspace, setWorkspace, query, setQuery, status, setStatus, go, open }: {
@@ -375,9 +374,67 @@ export function AssetOverview({ asset, kind, section, tab, setTab, activePage, s
 export function AssetThumbnail({ asset }: {
     asset: Asset;
 }) {
-  useUILanguage();
-    const nutrition = asset.name.toLowerCase().includes('nutrition'), agency = asset.name.toLowerCase().includes('agency') || asset.name.toLowerCase().includes('consultation');
-    return <div className={`aw-thumbnail ${nutrition ? 'nutrition' : agency ? 'agency' : 'fitness'}`} aria-hidden="true"><div className="aw-thumb-nav"><b>{localizeNode(nutrition ? 'NutriPro' : agency ? 'CoachJoe' : 'FITZONE')}</b><span>{translateText("Home　 Programs　 About")}</span><i>{translateText("Book Now")}</i></div><div className="aw-thumb-hero"><img loading="lazy" decoding="async" {...thumbnailImageProps(asset.image)} src={asset.image} alt={translateText("")}/><div><h4>{localizeNode(nutrition ? 'Nutrition Made Simple' : agency ? 'Let’s Grow Your Business' : 'Transform Your Life')}</h4><p>{localizeNode(nutrition ? 'Custom nutrition plans for a healthier you.' : 'Personalized coaching. Real results.')}</p><b>{localizeNode(nutrition ? 'Get Started' : 'Book a Free Session')}</b></div></div></div>;
+  const lang = useUILanguage();
+  const frameRef = useRef<HTMLDivElement>(null);
+  const [width, setWidth] = useState(0);
+  const firstPage = useMemo(
+    () =>
+      asset.document.pages.find(p => p.sections?.length && p.templateSelected !== false) ??
+      asset.document.pages[0],
+    [asset.document.pages]
+  );
+  const hasLiveSections = Boolean(firstPage && firstPage.sections?.length && firstPage.templateSelected !== false);
+
+  useLayoutEffect(() => {
+    const node = frameRef.current;
+    if (!node || !hasLiveSections) return;
+    const observer = new ResizeObserver(([entry]) => setWidth(entry.contentRect.width));
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, [hasLiveSections]);
+
+  if (hasLiveSections && firstPage) {
+    return (
+      <div
+        ref={frameRef}
+        className="aw-thumbnail aw-live-asset-thumb"
+        style={{ background: firstPage.backgroundColor || '#ffffff' }}
+        aria-hidden="true"
+        inert
+      >
+        {width > 0 && (
+          <div
+            className="aw-live-asset-thumb-stage"
+            style={{
+              width: 1080,
+              zoom: width / 1080,
+            }}
+          >
+            <PublishedPage
+              asset={asset}
+              pageId={firstPage.id}
+              viewportWidth={1080}
+              viewportDevice="desktop"
+              language={lang}
+              thumbnail
+              readOnly
+            />
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  return (
+    <div className="aw-thumbnail aw-empty-asset-thumb" aria-hidden="true">
+      <span className="aw-empty-asset-icon"><Layers size={20} /></span>
+      <b>{asset.name}</b>
+      <small>
+        {localizeNode(asset.document.pages.length)}{' '}
+        {localizeNode(asset.kind === 'funnel' ? 'Steps' : 'Pages')}
+      </small>
+    </div>
+  );
 }
 export function isColorDark(color?: string): boolean {
   if (!color) return false;
@@ -407,10 +464,9 @@ export function PagePreview({ asset, page, device, onNavigate, isDark: explicitD
     isDark?: boolean;
 }) {
   useUILanguage();
-  const globalTheme = useSelector((state: RootState) => state.ui.theme);
   const isPageWhite = !page.backgroundColor || ['#ffffff', '#fff', 'white', 'rgb(255, 255, 255)', 'rgb(255,255,255)'].includes(page.backgroundColor.trim().toLowerCase());
   const isCustomDark = Boolean(page.backgroundColor && isColorDark(page.backgroundColor));
-  const isDark = explicitDark !== undefined ? explicitDark : (isCustomDark || (globalTheme === 'dark' && isPageWhite));
+  const isDark = explicitDark !== undefined ? explicitDark : isCustomDark;
 
   const canvasBg = page.backgroundColor && !isPageWhite ? page.backgroundColor : (isDark ? '#0f172a' : (page.backgroundColor ?? '#ffffff'));
 
@@ -432,10 +488,13 @@ export function PagePreview({ asset, page, device, onNavigate, isDark: explicitD
       {localizeNode(page.showHeader && <nav><b>{asset.name.split(' ')[0].toUpperCase()}</b><div>{localizeNode(asset.settings.navigation.split(',').map((label, i) => { const match = asset.document.pages.find(p => p.name.toLowerCase() === label.trim().toLowerCase()); return <button key={i} onClick={() => { if (match)
         onNavigate(match.id); }}>{label.trim()}</button>; }))}</div></nav>)}
       {page.hideOnMobile && device === 'Mobile' ? <Empty title={translateText("Hidden on mobile")} description={translateText("This page is hidden at this breakpoint.")}/> : page.sections.map(section => {
+        const hasTemplateLayout = Boolean(section.content.templateLayout);
+        const hasFormShowcase = Boolean(section.content.formLayout);
         const isWhiteSection = !section.styles.backgroundColor || ['#ffffff', '#fff', 'white', 'rgb(255, 255, 255)', 'rgb(255,255,255)'].includes(section.styles.backgroundColor.trim().toLowerCase());
-        const sectionBg = section.type === 'Hero' ? '#080e19' : (!isWhiteSection ? section.styles.backgroundColor : (isDark ? 'transparent' : (section.styles.backgroundColor || '#ffffff')));
-        return <section key={section.id} className={`fb-canvas-section ${section.type === 'Hero' ? 'aw-preview-hero fb-hero-section' : 'aw-preview-content'}`} style={{ backgroundColor: sectionBg, padding: section.styles.padding + 'px', textAlign: section.styles.textAlign.toLowerCase() as React.CSSProperties['textAlign'], display: section.styles.visibility === 'Hidden' || (section.styles.visibility === 'Desktop only' && device !== 'Desktop') || (section.styles.visibility === 'Tablet only' && device !== 'Tablet') || (section.styles.visibility === 'Mobile only' && device !== 'Mobile') ? 'none' : undefined }}>
-          {section.type === 'Hero' ? <><img loading="lazy" decoding="async" {...thumbnailImageProps(page.featuredImage || asset.image)} src={page.featuredImage || asset.image} alt={translateText("")}/><OrderedElementParts item={section}><div><small>{translateText("TRANSFORM YOUR LIFE")}</small><h2 data-element-part={section.id+'::title'}>{section.content.title}</h2><p data-element-part={section.id+'::body'}>{section.content.body}</p>{section.content.button && <button data-element-part={section.id+'::button'} onClick={()=>previewAction(section)}>{section.content.button}<ArrowRight size={14}/></button>}</div></OrderedElementParts></> : <SectionPreview device={device.toLowerCase()} item={section} isDark={isDark} onAction={previewAction} onImagePick={() => { }} onImageDrop={event => event.preventDefault()} onNotify={message => showToast.info(message)}/>}
+        const sectionDark = Boolean(section.styles.backgroundColor && isColorDark(section.styles.backgroundColor)) || (isWhiteSection && isDark);
+        const sectionBg = hasFormShowcase ? 'transparent' : (section.type === 'Hero' && !hasTemplateLayout ? '#080e19' : (!isWhiteSection ? section.styles.backgroundColor : (isDark ? 'transparent' : (section.styles.backgroundColor || '#ffffff'))));
+        return <section key={section.id} className={`fb-canvas-section ${section.type === 'Hero' && !hasTemplateLayout ? 'aw-preview-hero fb-hero-section' : hasTemplateLayout || hasFormShowcase ? '' : 'aw-preview-content'} ${hasTemplateLayout ? 'has-template-layout' : ''} ${hasFormShowcase ? 'has-form-showcase' : ''}`} style={{ backgroundColor: sectionBg, padding: hasTemplateLayout || hasFormShowcase ? 0 : section.styles.padding + 'px', textAlign: section.styles.textAlign.toLowerCase() as React.CSSProperties['textAlign'], display: section.styles.visibility === 'Hidden' || (section.styles.visibility === 'Desktop only' && device !== 'Desktop') || (section.styles.visibility === 'Tablet only' && device !== 'Tablet') || (section.styles.visibility === 'Mobile only' && device !== 'Mobile') ? 'none' : undefined }}>
+          {section.type === 'Hero' && !hasTemplateLayout ? <><img loading="lazy" decoding="async" {...thumbnailImageProps(page.featuredImage || asset.image)} src={page.featuredImage || asset.image} alt={translateText("")}/><OrderedElementParts item={section}><div><small>{translateText("FEATURED")}</small><h2 data-element-part={section.id+'::title'}>{section.content.title}</h2><p data-element-part={section.id+'::body'}>{section.content.body}</p>{section.content.button && <button data-element-part={section.id+'::button'} onClick={()=>previewAction(section)}>{section.content.button}<ArrowRight size={14}/></button>}</div></OrderedElementParts></> : <SectionPreview device={device.toLowerCase()} item={section} isDark={sectionDark} onAction={previewAction} onImagePick={() => { }} onImageDrop={event => event.preventDefault()} onNotify={message => showToast.info(message)}/>}
         </section>;
       })}
       {localizeNode(page.showFooter && <footer>{asset.name}{translateText(" · Built for your growth")}</footer>)}

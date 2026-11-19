@@ -34,7 +34,7 @@ export function loadTemplateSource(relative) {
     if (!id.startsWith('.')) return require(id);
     const base = path.resolve(path.dirname(filename), id);
     if (base === path.join(root, 'functions', 'template-arabic.js')) return { translateTemplateCopy };
-    if (['template-metadata-ar.json', 'template-content-ar.json'].some(name => base === path.join(root, 'functions', 'seed-data', name))) return require(base);
+    if (['template-metadata-ar.json', 'template-content-ar.json', 'template-design-copy-ar.json'].some(name => base === path.join(root, 'functions', 'seed-data', name))) return require(base);
     const target = [base, `${base}.ts`, `${base}.tsx`, `${base}.js`].find(candidate => fs.existsSync(candidate) && fs.statSync(candidate).isFile());
     if (!target || !target.startsWith(path.join(root, 'src'))) throw new Error(`Unexpected seed dependency: ${id}`);
     return loadTemplateSource(path.relative(root, target));

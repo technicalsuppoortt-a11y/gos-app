@@ -12,7 +12,14 @@ const publicProject = JSON.parse(fs.readFileSync(new URL('../src/backend/gos-pub
 if (projectId !== publicProject) throw new Error('Firebase CLI and application projects differ. Resolve configuration before migrating.');
 const records = JSON.parse(fs.readFileSync(new URL('../functions/seed-data/system-templates.json', import.meta.url), 'utf8'));
 const arabic = JSON.parse(fs.readFileSync(new URL('../functions/seed-data/template-metadata-ar.json', import.meta.url), 'utf8'));
-const arabicCopy = JSON.parse(fs.readFileSync(new URL('../functions/seed-data/template-content-ar.json', import.meta.url), 'utf8'));
+const arabicCopyRaw = JSON.parse(fs.readFileSync(new URL('../functions/seed-data/template-content-ar.json', import.meta.url), 'utf8'));
+const arabicDesignCopy = JSON.parse(fs.readFileSync(new URL('../functions/seed-data/template-design-copy-ar.json', import.meta.url), 'utf8'));
+const arabicCopy = Object.fromEntries(
+  Array.from(new Set([...Object.keys(arabicCopyRaw), ...Object.keys(arabicDesignCopy)])).map(id => [
+    id,
+    { ...(arabicDesignCopy[id] || {}), ...(arabicCopyRaw[id] || {}) },
+  ])
+);
 const translationsOnly = process.argv.includes('--translations-only');
 const designsOnly = process.argv.includes('--designs-only');
 const targets = designsOnly ? records.filter(template => arabicCopy[template.id]) : records;

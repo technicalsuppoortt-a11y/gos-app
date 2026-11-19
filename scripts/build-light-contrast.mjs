@@ -3,12 +3,12 @@ import path from 'node:path';
 import postcss from 'postcss';
 
 // Generate scoped corrections from authored CSS without changing dark tokens or site content.
-const excluded = ':where([data-public-asset],.aw-live-preview,.aw-asset-image,.aw-step-image,.fb-site-window,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,.quick-details,[role=switch],.af-switch,.aw-default,.bk-switch-track)';
+const excluded = ':where([data-public-asset],.tb-block,.tb-form-showcase,.aw-live-preview,.aw-asset-image,.aw-step-image,.fb-site-window,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,.quick-details,[role=switch],.af-switch,.aw-default,.bk-switch-track)';
 const guard = `:not([data-form-theme]):not([data-form-theme] *):not(${excluded}):not(${excluded} *)`;
 const chrome = '.layout-dashboard-shell,.role-shell,[role=dialog],.bk-dialog,.quick-details,.commerce-select-content';
 const scope = `:is(:where(${chrome}),:where(${chrome}) *)`;
 const files = [], findings = [], variableFindings = [], utilities = [], rules = new Map(), variableRules = new Map();
-function visit(dir) { for (const e of fs.readdirSync(dir, { withFileTypes: true })) { const p = path.join(dir, e.name); if (e.isDirectory()) visit(p); else if (p.endsWith('.css') && !/landing|auth|preview|theme-surfaces|theme-controls|light-contrast/.test(p)) files.push(p); } }
+function visit(dir) { for (const e of fs.readdirSync(dir, { withFileTypes: true })) { const p = path.join(dir, e.name); if (e.isDirectory()) visit(p); else if (p.endsWith('.css') && !/landing|auth|preview|template-blocks|theme-surfaces|theme-controls|light-contrast/.test(p)) files.push(p); } }
 visit('src');
 function scanUtilities(dir) {
   for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {

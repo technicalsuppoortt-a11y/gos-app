@@ -1,10 +1,10 @@
 {
-  "scannedStylesheets": 113,
+  "scannedStylesheets": 114,
   "correctedDeclarations": 870,
   "correctedVariables": 12,
   "referenceSurface": "#ffffff",
   "minimumRatio": 4.5,
-  "utilityOccurrences": 267,
+  "utilityOccurrences": 266,
   "utilities": [
     {
       "file": "src/components/common/PagePlaceholder.tsx",
@@ -188,17 +188,17 @@
     },
     {
       "file": "src/pages/AssetViews.tsx",
-      "line": 313,
+      "line": 312,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/AssetViews.tsx",
-      "line": 313,
+      "line": 312,
       "utility": "text-slate-400"
     },
     {
       "file": "src/pages/AssetViews.tsx",
-      "line": 313,
+      "line": 312,
       "utility": "text-slate-500"
     },
     {
@@ -803,32 +803,32 @@
     },
     {
       "file": "src/pages/BuilderWorkspace.tsx",
-      "line": 600,
+      "line": 601,
       "utility": "text-gray-500"
     },
     {
       "file": "src/pages/BuilderWorkspace.tsx",
-      "line": 603,
+      "line": 604,
       "utility": "text-gray-500"
     },
     {
       "file": "src/pages/BuilderWorkspace.tsx",
-      "line": 627,
+      "line": 628,
       "utility": "text-gray-500"
     },
     {
       "file": "src/pages/BuilderWorkspace.tsx",
-      "line": 701,
+      "line": 703,
       "utility": "text-slate-100"
     },
     {
       "file": "src/pages/BuilderWorkspace.tsx",
-      "line": 701,
+      "line": 703,
       "utility": "text-slate-400"
     },
     {
       "file": "src/pages/BuilderWorkspace.tsx",
-      "line": 701,
+      "line": 703,
       "utility": "text-slate-500"
     },
     {
@@ -853,77 +853,72 @@
     },
     {
       "file": "src/pages/dashboard/HomeDashboard.tsx",
-      "line": 29,
+      "line": 30,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/dashboard/HomeDashboard.tsx",
-      "line": 82,
+      "line": 83,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/dashboard/HomeDashboard.tsx",
-      "line": 716,
+      "line": 717,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/dashboard/HomeDashboard.tsx",
-      "line": 858,
+      "line": 859,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/dashboard/HomeDashboard.tsx",
-      "line": 924,
+      "line": 988,
+      "utility": "text-slate-400"
+    },
+    {
+      "file": "src/pages/dashboard/HomeDashboard.tsx",
+      "line": 1103,
+      "utility": "text-slate-400"
+    },
+    {
+      "file": "src/pages/dashboard/HomeDashboard.tsx",
+      "line": 1178,
+      "utility": "text-slate-400"
+    },
+    {
+      "file": "src/pages/dashboard/HomeDashboard.tsx",
+      "line": 1190,
+      "utility": "text-slate-400"
+    },
+    {
+      "file": "src/pages/dashboard/HomeDashboard.tsx",
+      "line": 1219,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/dashboard/HomeDashboard.tsx",
+      "line": 1225,
+      "utility": "text-slate-400"
+    },
+    {
+      "file": "src/pages/dashboard/HomeDashboard.tsx",
+      "line": 1239,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/dashboard/HomeDashboard.tsx",
+      "line": 1260,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/dashboard/HomeDashboard.tsx",
+      "line": 1286,
       "utility": "text-slate-300"
     },
     {
       "file": "src/pages/dashboard/HomeDashboard.tsx",
-      "line": 980,
-      "utility": "text-slate-400"
-    },
-    {
-      "file": "src/pages/dashboard/HomeDashboard.tsx",
-      "line": 1095,
-      "utility": "text-slate-400"
-    },
-    {
-      "file": "src/pages/dashboard/HomeDashboard.tsx",
-      "line": 1170,
-      "utility": "text-slate-400"
-    },
-    {
-      "file": "src/pages/dashboard/HomeDashboard.tsx",
-      "line": 1182,
-      "utility": "text-slate-400"
-    },
-    {
-      "file": "src/pages/dashboard/HomeDashboard.tsx",
-      "line": 1211,
-      "utility": "text-slate-500"
-    },
-    {
-      "file": "src/pages/dashboard/HomeDashboard.tsx",
-      "line": 1217,
-      "utility": "text-slate-400"
-    },
-    {
-      "file": "src/pages/dashboard/HomeDashboard.tsx",
-      "line": 1231,
-      "utility": "text-slate-500"
-    },
-    {
-      "file": "src/pages/dashboard/HomeDashboard.tsx",
-      "line": 1252,
-      "utility": "text-slate-500"
-    },
-    {
-      "file": "src/pages/dashboard/HomeDashboard.tsx",
-      "line": 1278,
-      "utility": "text-slate-300"
-    },
-    {
-      "file": "src/pages/dashboard/HomeDashboard.tsx",
-      "line": 1311,
+      "line": 1319,
       "utility": "text-slate-500"
     },
     {

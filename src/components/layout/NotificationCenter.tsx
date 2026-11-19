@@ -165,7 +165,7 @@ function NotificationCenterContent() {
     return withUniqueListIds(combined);
   }, [isUserWorkspace, legacyNotices, wsNotifications, events, readIds]);
 
-  const [position, setPosition] = React.useState({ top: 65, left: 0, width: 410 });
+  const [position, setPosition] = React.useState({ top: 65, left: 0, width: 410, maxHeight: 560 });
   const trigger = React.useRef<HTMLButtonElement>(null);
   const panel = React.useRef<HTMLElement>(null);
   const id = React.useId();
@@ -208,18 +208,41 @@ function NotificationCenterContent() {
   const unread = notices.filter(n => !n.read).length;
 
   React.useLayoutEffect(() => {
-    if (open && trigger.current) {
+    if (!open) return;
+    const place = () => {
+      if (!trigger.current) return;
       const r = trigger.current.getBoundingClientRect();
-      const width = Math.min(420, innerWidth - 24);
+      const viewport = window.visualViewport;
+      const leftEdge = (viewport?.offsetLeft ?? 0) + 12;
+      const topEdge = (viewport?.offsetTop ?? 0) + 12;
+      const rightEdge = leftEdge + (viewport?.width ?? innerWidth) - 24;
+      const bottomEdge = topEdge + (viewport?.height ?? innerHeight) - 24;
+      const width = Math.min(420, rightEdge - leftEdge);
+      const height = Math.min(560, bottomEdge - topEdge);
+      const below = bottomEdge - r.bottom - 12;
+      const above = r.top - 12 - topEdge;
+      const placeAbove = below < Math.min(320, height) && above > below;
+      const top = below >= Math.min(320, height)
+        ? r.bottom + 12
+        : above > below
+          ? Math.max(topEdge, r.top - 12 - height)
+          : Math.max(topEdge, bottomEdge - height);
       setPosition({
-        top: r.bottom + 12,
-        left: Math.max(
-          12,
-          Math.min(ar ? r.left : r.right - width, innerWidth - width - 12),
-        ),
+        top,
+        left: Math.max(leftEdge, Math.min(ar ? r.left : r.right - width, rightEdge - width)),
         width,
+        maxHeight: Math.min(height, placeAbove ? above : bottomEdge - top),
       });
-    }
+    };
+    place();
+    window.addEventListener('scroll', place, true);
+    window.visualViewport?.addEventListener('resize', place);
+    window.visualViewport?.addEventListener('scroll', place);
+    return () => {
+      window.removeEventListener('scroll', place, true);
+      window.visualViewport?.removeEventListener('resize', place);
+      window.visualViewport?.removeEventListener('scroll', place);
+    };
   }, [open, ar]);
 
   React.useEffect(() => {

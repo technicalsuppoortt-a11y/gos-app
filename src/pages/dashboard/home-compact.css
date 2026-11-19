@@ -1,24 +1,273 @@
-.gos-home-dashboard .home-command-section { display: grid; gap: 12px; }
-.gos-home-dashboard [data-dashboard-section="hero"] { min-height: 110px; background: var(--gos-surface, var(--bg-card)); border-color: var(--gos-border); box-shadow: none; }
-.gos-home-dashboard [data-dashboard-section="hero"] > .pointer-events-none,
-.gos-home-dashboard [data-dashboard-section="hero"] > figure { display: none; }
-.gos-home-dashboard #dash-greeting { font-size: 24px; line-height: 1.4; font-weight: 600; letter-spacing: normal; }
-.gos-home-dashboard [data-dashboard-section="hero"] p { font-size: 14px; line-height: 1.6; }
-.gos-home-dashboard [data-dashboard-section="quick-actions"] { padding: 10px 12px; box-shadow: none; background: var(--gos-surface); }
-.gos-home-dashboard .gos-quick-action { min-height: 38px; padding: 8px 10px; background: var(--gos-surface); border-color: var(--gos-border); transform: none; box-shadow: none; }
-.gos-home-dashboard .gos-quick-action:hover { background: var(--gos-soft); border-color: var(--gos-action); }
-.gos-home-dashboard [data-dashboard-section="metrics"] article { min-height: 100px; padding: 16px; box-shadow: none; transform: none; }
-.gos-home-dashboard [data-dashboard-section="metrics"] article .truncate { font-size: 13px; line-height: 1.5; }
-.gos-home-dashboard [data-dashboard-section="metrics"] article .tabular-nums { font-size: 26px; font-weight: 500; line-height: 1.4; }
-.gos-home-dashboard [data-dashboard-section="metrics"] article .sparkline { opacity: .65; }
-.gos-home-dashboard .gos-row { align-items: start; }
-.gos-home-dashboard .gos-row > section { height: auto; min-height: 260px; padding: 18px; }
-.gos-home-dashboard .gos-row > section h2 { font-size: 16px; font-weight: 600; line-height: 1.5; }
-@media(max-width:640px) {
-  .gos-home-dashboard #dash-greeting { font-size: 21px; }
-  .gos-home-dashboard [data-dashboard-section="metrics"] { grid-template-columns: repeat(2,minmax(0,1fr)); }
-  .gos-home-dashboard [data-dashboard-section="metrics"] article { padding: 12px; flex-wrap: wrap; }
-  .gos-home-dashboard [data-dashboard-section="metrics"] article .truncate { padding-inline-end: 0; white-space: normal; }
-  .gos-home-dashboard [data-dashboard-section="metrics"] .sparkline { display: none; }
+/* Balanced viewport-fitting dashboard proportions & refined Quick Actions */
+.gos-home-dashboard .home-command-section {
+  display: grid;
+  gap: 7px;
+  flex-shrink: 0;
 }
-@media(pointer:coarse) { .gos-home-dashboard .gos-quick-action { min-height: 44px; } }
+
+.gos-home-dashboard [data-dashboard-section="hero"] {
+  min-height: 88px;
+  box-shadow: 0 2px 10px -4px rgba(124, 58, 237, 0.08);
+}
+
+.gos-home-dashboard [data-dashboard-section="hero"] > figure {
+  display: none;
+}
+
+.gos-home-dashboard #dash-greeting {
+  font-size: 20px;
+  line-height: 1.28;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.gos-home-dashboard [data-dashboard-section="hero"] p {
+  font-size: 12.5px;
+  line-height: 1.4;
+}
+
+/* Polished Quick Actions Bar (`إجراءات سريعة`) */
+.gos-home-dashboard [data-dashboard-section="quick-actions"].gos-quick-actions-bar {
+  padding: 6px 10px;
+  border-radius: 13px;
+  background: rgba(255, 255, 255, 0.96);
+  border: 1px solid #e4e8f1;
+  box-shadow: 0 2px 8px -3px rgba(15, 23, 42, 0.05);
+}
+
+html.dark .gos-home-dashboard [data-dashboard-section="quick-actions"].gos-quick-actions-bar {
+  background: rgba(19, 23, 43, 0.94);
+  border-color: rgba(167, 139, 250, 0.16);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04), 0 10px 24px -16px rgba(3, 5, 16, 0.8);
+}
+
+.gos-home-dashboard .gos-qa-accent {
+  width: 3.5px;
+  height: 14px;
+  border-radius: 999px;
+  background: linear-gradient(180deg, var(--ws-accent, #7c3aed), #a78bfa);
+}
+
+.gos-home-dashboard .gos-qa-divider {
+  width: 1px;
+  height: 16px;
+  background: rgba(148, 163, 184, 0.35);
+  margin-inline-start: 2px;
+}
+
+.gos-home-dashboard .gos-quick-action {
+  min-height: 35px;
+  padding: 4px 10px;
+  border-radius: 10px;
+  background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.03);
+  transition:
+    transform 0.18s cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 0.18s ease,
+    background 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+.gos-home-dashboard .gos-quick-action:hover {
+  transform: translateY(-1.5px);
+  background: #ffffff;
+  border-color: rgba(124, 58, 237, 0.45);
+  box-shadow: 0 8px 18px -8px rgba(124, 58, 237, 0.24);
+}
+
+.gos-home-dashboard .gos-quick-action:active {
+  transform: translateY(0) scale(0.985);
+}
+
+html.dark .gos-home-dashboard .gos-quick-action {
+  background: rgba(255, 255, 255, 0.035);
+  border-color: rgba(255, 255, 255, 0.09);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
+}
+
+html.dark .gos-home-dashboard .gos-quick-action:hover {
+  background: rgba(124, 58, 237, 0.14);
+  border-color: rgba(167, 139, 250, 0.46);
+  box-shadow: 0 10px 20px -10px rgba(3, 5, 16, 0.72);
+}
+
+.gos-home-dashboard .gos-qa-icon {
+  transition: transform 0.18s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.gos-home-dashboard .gos-quick-action:hover .gos-qa-icon {
+  transform: scale(1.08);
+}
+
+/* KPI Cards — Compact & Balanced */
+.gos-home-dashboard [data-dashboard-section="metrics"] article {
+  min-height: 66px;
+  padding: 9px 14px;
+}
+
+.gos-home-dashboard [data-dashboard-section="metrics"] article .truncate {
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.gos-home-dashboard [data-dashboard-section="metrics"] article .tabular-nums {
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.gos-home-dashboard [data-dashboard-section="metrics"] article .sparkline {
+  opacity: 0.7;
+}
+
+/* Section Headers inside Middle & Bottom Rows */
+.gos-home-dashboard .gos-row > section h2 {
+  font-size: 13.5px;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+/* Desktop Single-Viewport Fit (All 8 sections cleanly visible without scrolling) */
+@media (min-width: 1024px) and (min-height: 650px) {
+  .layout-dashboard-shell:has(.gos-home-dashboard) .layout-workspace,
+  .layout-dashboard-shell.is-dashboard-route .layout-workspace:has(.gos-home-dashboard) {
+    height: 100vh;
+    max-height: 100vh;
+    overflow: hidden;
+  }
+
+  .layout-dashboard-shell:has(.gos-home-dashboard) .layout-main,
+  .layout-dashboard-shell.is-dashboard-route .layout-main:has(.gos-home-dashboard) {
+    height: calc(100vh - 54px);
+    max-height: calc(100vh - 54px);
+    padding: 6px 16px 8px;
+    gap: 6px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .layout-dashboard-shell:has(.gos-home-dashboard) .layout-route-content,
+  .layout-dashboard-shell.is-dashboard-route .layout-route-content:has(.gos-home-dashboard) {
+    height: 100%;
+    min-height: 0;
+    flex: 1 1 0%;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .layout-dashboard-shell .layout-main .gos-home-dashboard {
+    height: 100%;
+    min-height: 0;
+    flex: 1 1 0%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 7px;
+    overflow: hidden;
+  }
+
+  .layout-dashboard-shell .layout-main .gos-home-dashboard .gos-row {
+    align-items: stretch;
+    min-height: 0;
+    gap: 9px;
+  }
+
+  .layout-dashboard-shell .layout-main .gos-home-dashboard .gos-row--middle {
+    flex: 1.15 1 0%;
+  }
+
+  .layout-dashboard-shell .layout-main .gos-home-dashboard .gos-row--bottom {
+    flex: 0.92 1 0%;
+  }
+
+  .layout-dashboard-shell .layout-main .gos-home-dashboard .gos-row > section {
+    height: 100%;
+    min-height: 0;
+    padding: 11px 14px;
+  }
+}
+
+/* Short laptop viewports (e.g. 720p / 125% scale ~650-760px innerHeight): extra proportional tightening */
+@media (min-width: 1024px) and (min-height: 650px) and (max-height: 780px) {
+  .gos-home-dashboard .home-command-section {
+    gap: 5px;
+  }
+  .gos-home-dashboard [data-dashboard-section="hero"] {
+    min-height: 78px;
+  }
+  .gos-home-dashboard #dash-greeting {
+    font-size: 18px;
+  }
+  .gos-home-dashboard [data-dashboard-section="quick-actions"].gos-quick-actions-bar {
+    padding: 4px 8px;
+  }
+  .gos-home-dashboard .gos-quick-action {
+    min-height: 31px;
+    padding: 3px 8px;
+  }
+  .gos-home-dashboard [data-dashboard-section="metrics"] article {
+    min-height: 56px;
+    padding: 7px 12px;
+  }
+  .gos-home-dashboard [data-dashboard-section="metrics"] article .tabular-nums {
+    font-size: 19px;
+  }
+  .layout-dashboard-shell .layout-main .gos-home-dashboard {
+    gap: 5px;
+  }
+  .layout-dashboard-shell .layout-main .gos-home-dashboard .gos-row {
+    gap: 7px;
+  }
+  .layout-dashboard-shell .layout-main .gos-home-dashboard .gos-row > section {
+    padding: 9px 12px;
+  }
+}
+
+/* Ultra-short split-screen safety (< 650px height) & Tablet/Mobile */
+@media (max-width: 1023px), (max-height: 649px) {
+  .gos-home-dashboard .gos-row {
+    align-items: stretch;
+  }
+  .gos-home-dashboard .gos-row > section {
+    height: auto;
+    min-height: 180px;
+    padding: 14px;
+  }
+}
+
+@media (max-width: 640px) {
+  .gos-home-dashboard #dash-greeting {
+    font-size: 19px;
+  }
+  .gos-home-dashboard [data-dashboard-section="metrics"] {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .gos-home-dashboard [data-dashboard-section="metrics"] article {
+    padding: 10px;
+    flex-wrap: wrap;
+  }
+  .gos-home-dashboard [data-dashboard-section="metrics"] article .truncate {
+    padding-inline-end: 0;
+    white-space: normal;
+  }
+  .gos-home-dashboard [data-dashboard-section="metrics"] .sparkline {
+    display: none;
+  }
+}
+
+@media (pointer: coarse) {
+  .gos-home-dashboard .gos-quick-action {
+    min-height: 44px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gos-home-dashboard .gos-quick-action,
+  .gos-home-dashboard .gos-qa-icon {
+    transition: none !important;
+    transform: none !important;
+  }
+}

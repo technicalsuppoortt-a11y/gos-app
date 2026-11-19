@@ -782,7 +782,7 @@ export function FunnelStepWorkspace({
                       <article key={tpl.id} className="sys-tpl-card">
                         <div
                           className="sys-tpl-preview-box"
-                          style={{ background: tpl.accentBg || tpl.color || '#4f46e5' }}
+                          style={{ background: tpl.page?.backgroundColor || '#f8fafc' }}
                         >
                           <StepTemplateThumbnail tpl={tpl} language={lang} />
                           <div className="sys-tpl-hover-actions">

@@ -3,10 +3,20 @@ import { useSelector } from 'react-redux';
 import type { RootState } from '../../store';
 import { previewScreens } from './preview/screens';
 import { retryImport } from '../../router/chunkRecovery';
+import welcomeArtStyles from '../dashboard/welcome-art.css?inline';
 type Snapshots = typeof import('./preview/static-snapshots.json');
 import './native-dashboard-preview.css';
 
 const SHADOW_THEME_OVERRIDES = `
+.lp-static-document [data-demo-screen="dashboard"] .layout-main {
+  background: radial-gradient(ellipse at top right, color-mix(in srgb, var(--ws-accent, #7C3AED) 10%, transparent), transparent 65%), #f4f3fa;
+}
+.lp-static-document.dark [data-demo-screen="dashboard"] .layout-main {
+  background: radial-gradient(ellipse at top right, color-mix(in srgb, var(--ws-accent, #7C3AED) 15%, transparent), transparent 65%), #101424;
+}
+.lp-static-document [data-demo-screen="dashboard"] .gos-home-dashboard { background: transparent; }
+.lp-static-document [data-demo-screen="dashboard"] .gos-row { align-items: stretch; }
+.lp-static-document [data-demo-screen="dashboard"] .gos-row > section { height: 100%; }
 .lp-static-document {
   --upclick-primary: var(--ws-accent, #7C3AED) !important;
   --upclick-secondary: var(--ws-hover, #6D28D9) !important;
@@ -57,7 +67,7 @@ export function NativeDashboardPreview({ tab, ar, title }: { tab: number; ar: bo
     const shadow = host.current.shadowRoot ?? host.current.attachShadow({ mode: 'open' });
     if (!shadow.firstChild) {
       const sheet = document.createElement('style');
-      sheet.textContent = styles + '\n' + SHADOW_THEME_OVERRIDES;
+      sheet.textContent = styles + '\n' + SHADOW_THEME_OVERRIDES + '\n' + welcomeArtStyles;
       shadow.append(sheet);
     }
     let canvas = shadow.querySelector<HTMLDivElement>('.lp-static-document');
@@ -71,9 +81,13 @@ export function NativeDashboardPreview({ tab, ar, title }: { tab: number; ar: bo
     const markup = screens[key] ?? screens[`${ar ? 'ar' : 'en'}-${theme}-dashboard`] ?? '';
     canvas.innerHTML = `<div class="lp-static-body"><div class="lp-static-app">${expandImages(markup)}</div></div>`;
     const fit = () => {
-      const scale = host.current!.clientWidth / snapshots.width;
+      const isDashboard = screen.id === 'dashboard';
+      const scale = isDashboard
+        ? Math.min(host.current!.clientWidth / snapshots.width, host.current!.clientHeight / snapshots.height)
+        : host.current!.clientWidth / snapshots.width;
       const height = scale > 0 ? host.current!.clientHeight / scale : snapshots.height;
-      canvas!.style.cssText = `--lp-static-height:${height}px;position:absolute;top:0;left:0;width:${snapshots.width}px;height:${height}px;transform-origin:top left;transform:scale(${scale})`;
+      const left = isDashboard ? (host.current!.clientWidth - snapshots.width * scale) / 2 : 0;
+      canvas!.style.cssText = `--lp-static-height:${height}px;position:absolute;top:0;left:${left}px;width:${snapshots.width}px;height:${height}px;transform-origin:top left;transform:scale(${scale})`;
     };
     fit();
     const observer = new ResizeObserver(fit); observer.observe(host.current);
