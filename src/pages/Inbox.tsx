@@ -1,6 +1,7 @@
 import { useCloudState, useEntities } from '../backend/workspace';
 import { backendError } from '../backend/firebase';
 import { gosApi } from '../backend/gosApi';
+import { useGosAI } from '../backend/useGosAI';
 import { useGosInbox } from '../backend/useGosInbox';
 import { api as channelsApi } from './flow-builder/api';
 import { localDemoEnabled, useDemoState } from '../backend/localDemo';
@@ -123,6 +124,30 @@ const popIn = {
 
 const nowTime = () =>
   new Date().toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
+
+const formatInboxTime = (value: string | undefined, language: string) => {
+  if (!value) return "";
+  const raw = String(value).trim();
+  if (!/^\d{4}-\d{2}-\d{2}T/.test(raw)) return raw;
+  const ms = Date.parse(raw);
+  if (Number.isNaN(ms)) return raw;
+  const date = new Date(ms);
+  const now = new Date();
+  const isAr = language.startsWith("ar");
+  const locale = isAr ? "ar-EG" : "en-US";
+  const sameDay = date.toDateString() === now.toDateString();
+  if (sameDay) {
+    return date.toLocaleTimeString(locale, { hour: "numeric", minute: "2-digit" });
+  }
+  const yesterday = new Date(now);
+  yesterday.setDate(now.getDate() - 1);
+  if (date.toDateString() === yesterday.toDateString()) {
+    return isAr
+      ? `أمس ${date.toLocaleTimeString(locale, { hour: "numeric", minute: "2-digit" })}`
+      : `Yesterday ${date.toLocaleTimeString(locale, { hour: "numeric", minute: "2-digit" })}`;
+  }
+  return date.toLocaleString(locale, { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
+};
 
 const bytesLabel = (bytes: number) =>
   bytes < 1024 * 1024
@@ -430,9 +455,12 @@ export const Inbox: React.FC<Props> = ({ aiMode, setAiMode, setSent }) => {
   const liveTemplates = useEntities<{ title: string; prompt?: string; content?: string }>('templates').map(item => ({ title: item.title, body: item.prompt || item.content || '' }));
   const [apiSelectedId, setApiSelectedId] = useState('');
   const explicitDemo = import.meta.env.VITE_LOCAL_DEMO === 'true';
+  const gosAI = useGosAI();
   const inboxApi = useGosInbox(!explicitDemo, apiSelectedId);
   const initialConversations = inboxApi.conversations;
   const demoInbox = explicitDemo;
+  const isAr = language.startsWith('ar');
+  const [aiReplySending, setAiReplySending] = useState(false);
   const samples = useMemo(() => demoConversations(currentUser.name || 'Alex Morgan'), [currentUser.name]);
   const [localConversations, setLocalConversations] = useDemoState<Conversation[]>('inbox', samples);
   const replyTemplates = demoInbox && !liveTemplates.length ? demoReplyTemplates : liveTemplates;
@@ -593,7 +621,81 @@ export const Inbox: React.FC<Props> = ({ aiMode, setAiMode, setSent }) => {
 
   const active = conversations.find((c) => c.id === activeId) ?? conversations[0] ?? { id: '', name: '', initials: '', channel: 'webchat', preview: '', time: '', unread: 0, tags: [], stage: '', source: '', phone: '', email: '', location: '', assignee: '', aiAutoReply: false, takenOver: true, followUp: false, followUpRules: [], starred: false, messages: [], activity: [] } as Conversation;
   const activeMatchedLead = useMemo(() => (active.id ? matchLeadForConv(active) : undefined), [active, allCrmLeads]);
-  const aiReplying = aiMode && active.aiAutoReply && !active.takenOver;
+  const readyKnowledgeCount = useMemo(
+    () => gosAI.sources.filter((s) => s.status === 'ready' && s.type !== 'instructions').length,
+    [gosAI.sources],
+  );
+  const workspaceAiLive = demoInbox ? aiMode : Boolean(gosAI.assistant.live_enabled);
+  const activeChannelKey = active.channel === 'email' ? 'webchat' : active.channel;
+  const activeChannelLive = demoInbox ? true : Boolean(gosAI.assistant.channels?.[activeChannelKey]);
+  const aiReplying = workspaceAiLive && activeChannelLive && active.aiAutoReply && !active.takenOver;
+
+  useEffect(() => {
+    if (!demoInbox && !gosAI.loading && gosAI.assistant.live_enabled !== aiMode) {
+      setAiMode(Boolean(gosAI.assistant.live_enabled));
+    }
+  }, [demoInbox, gosAI.loading, gosAI.assistant.live_enabled]);
+
+  const toggleWorkspaceAi = async (value: boolean) => {
+    if (demoInbox) {
+      setAiMode(value);
+      showToast.success(value ? translateText("AI replies resumed across all channels.") : translateText("AI replies paused across all channels."));
+      return;
+    }
+    if (value && readyKnowledgeCount === 0) {
+      showToast.error(isAr ? 'ارفع ودرّب قاعدة المعرفة أولاً حتى يتمكن الذكاء الاصطناعي من الرد.' : 'Upload and train your Knowledge Base first before going live.');
+      return;
+    }
+    const ok = await gosAI.updateAssistant({ live_enabled: value });
+    if (ok) {
+      setAiMode(value);
+      showToast.success(
+        value
+          ? (isAr ? 'تم تفعيل الرد التلقائي بالذكاء الاصطناعي.' : 'AI auto-replies are now live across enabled channels.')
+          : (isAr ? 'تم إيقاف الرد التلقائي مؤقتاً.' : 'AI auto-replies paused workspace-wide.'),
+      );
+    }
+  };
+
+  const enableActiveChannelAi = async () => {
+    if (demoInbox) return;
+    try {
+      await gosApi.updateChannel(activeChannelKey, true);
+      const ok = await gosAI.updateAssistant({
+        live_enabled: true,
+        channels: { ...gosAI.assistant.channels, [activeChannelKey]: true },
+      });
+      if (ok) {
+        setAiMode(true);
+        showToast.success(isAr ? `تم تفعيل الرد التلقائي لقناة ${channelMeta[active.channel].label}.` : `AI auto-reply enabled for ${channelMeta[active.channel].label}.`);
+      }
+    } catch (error) {
+      showToast.error(backendError(error));
+    }
+  };
+
+  const triggerAiReplyNow = async () => {
+    if (!active.id || aiReplySending) return;
+    setAiReplySending(true);
+    try {
+      const res = await gosApi.triggerConversationAiReply(active.id);
+      if (res.outcome === 'handoff' || !res.message) {
+        showToast.info(
+          isAr
+            ? 'لم يجد الذكاء الاصطناعي إجابة مطابقة في قاعدة المعرفة لهذه الرسالة — أضف المعلومة لقاعدة المعرفة أو رد يدوياً.'
+            : 'No matching answer was found in your Knowledge Base for this message — add it to Knowledge or reply manually.',
+        );
+      } else {
+        updateActive({ aiAutoReply: true, takenOver: false, aiState: 'answered' });
+        showToast.success(isAr ? 'تم إرسال رد الذكاء الاصطناعي من قاعدة المعرفة!' : 'AI reply sent from your Knowledge Base!');
+      }
+      inboxApi.retry();
+    } catch (error) {
+      showToast.error(backendError(error));
+    } finally {
+      setAiReplySending(false);
+    }
+  };
 
   const channelCounts = useMemo(() => {
     const counts: Record<string, number> = { all: conversations.length };
@@ -863,9 +965,16 @@ export const Inbox: React.FC<Props> = ({ aiMode, setAiMode, setSent }) => {
     });
   };
 
-  const toggleTakeover = () => {
+  const toggleTakeover = async () => {
     const takingOver = !active.takenOver;
-    updateActive({ takenOver: takingOver, aiAutoReply: !takingOver });
+    updateActive({ takenOver: takingOver, aiAutoReply: !takingOver, aiState: takingOver ? 'human_takeover' : 'answered' });
+    if (!demoInbox && active.id && !active.id.startsWith('crm-')) {
+      try {
+        await gosApi.setConversationAi(active.id, !takingOver);
+      } catch (error) {
+        showToast.error(backendError(error));
+      }
+    }
     if (takingOver) {
       void routeRecord({
         trigger: 'handoff',
@@ -900,7 +1009,9 @@ export const Inbox: React.FC<Props> = ({ aiMode, setAiMode, setSent }) => {
     }
     logActivity("handoff", takingOver ? `${currentUser.name} took over` : "Conversation handed back to AI");
     showToast.success(
-      takingOver ? `You're now handling ${active.name.split(" ")[0]}'s conversation.` : "AI is handling this conversation again.",
+      takingOver
+        ? (isAr ? `أنت تتولى الرد على ${active.name.split(" ")[0]} الآن.` : `You're now handling ${active.name.split(" ")[0]}'s conversation.`)
+        : (isAr ? "تمت إعادة المحادثة للرد التلقائي بالذكاء الاصطناعي." : "AI is handling this conversation again."),
     );
     if (takingOver) inputRef.current?.focus();
   };
@@ -1009,13 +1120,11 @@ export const Inbox: React.FC<Props> = ({ aiMode, setAiMode, setSent }) => {
         </div>
         <div className="flex shrink-0 items-center gap-2.5 rounded-xl border border-purple-100 bg-gradient-to-r from-purple-50 to-white py-1.5 ps-3 pe-2 dark:border-purple-400/20 dark:from-purple-500/10 dark:to-transparent">
           <Sparkles size={15} className="text-[#7C3AED]" fill="currentColor" />
-          <span className="hidden sm:inline text-[13px] font-semibold text-slate-800 dark:text-slate-100">{translateText(demoInbox ? 'Local demo' : 'AI Active')}</span>
+          <span className="hidden sm:inline text-[13px] font-semibold text-slate-800 dark:text-slate-100">{translateText(demoInbox ? 'Local demo' : workspaceAiLive ? 'AI Active' : 'AI Paused')}</span>
           <Toggle
-            checked={aiMode}
-            onChange={(value) => {
-              setAiMode(value);
-              showToast.success(value ? "AI replies resumed across all channels." : "AI replies paused across all channels.");
-            }}
+            checked={workspaceAiLive}
+            disabled={gosAI.saving}
+            onChange={(value) => void toggleWorkspaceAi(value)}
             label="Toggle AI across the inbox"
           />
         </div>
@@ -1151,7 +1260,7 @@ export const Inbox: React.FC<Props> = ({ aiMode, setAiMode, setSent }) => {
                       </span>
                     </span>
                     <span className="flex shrink-0 flex-col items-end gap-1 pt-0.5">
-                      <span className={`whitespace-nowrap text-[10.5px] leading-4 ${SUBTLE}`}>{localizeNode(c.time)}</span>
+                      <span className={`whitespace-nowrap text-[10.5px] leading-4 ${SUBTLE}`}>{formatInboxTime(c.time, language)}</span>
                       <span className="flex h-[18px] items-center gap-1">
                         {localizeNode(c.starred && <Star size={11} className="text-amber-400" fill="currentColor" />)}
                         <ChannelIcon channel={c.channel} size={15} />
@@ -1203,6 +1312,10 @@ export const Inbox: React.FC<Props> = ({ aiMode, setAiMode, setSent }) => {
               {localizeNode(aiReplying ? (
                 <span className="inline-flex h-[22px] items-center gap-1 rounded-md border border-emerald-200 bg-emerald-50 px-2 text-[11px] font-semibold text-emerald-600 dark:border-emerald-400/25 dark:bg-emerald-500/15 dark:text-emerald-300">
                   <Sparkles size={11} fill="currentColor" />{translateText(" AI Active")}</span>
+              ) : active.aiState === 'handoff' ? (
+                <span className="inline-flex h-[22px] items-center gap-1 rounded-md border border-amber-200 bg-amber-50 px-2 text-[11px] font-semibold text-amber-700 dark:border-amber-400/25 dark:bg-amber-500/15 dark:text-amber-300">
+                  <CircleAlert size={11} /> {isAr ? 'بانتظار رد الفريق' : 'Needs Human'}
+                </span>
               ) : (
                 <span className="inline-flex h-[22px] items-center gap-1 rounded-md border border-slate-200 bg-slate-50 px-2 text-[11px] font-semibold text-slate-500 dark:border-white/10 dark:bg-white/10 dark:text-slate-300">
                   <UserRound size={11} />{' '}
@@ -1284,6 +1397,63 @@ export const Inbox: React.FC<Props> = ({ aiMode, setAiMode, setSent }) => {
               </AnimatePresence>
             </div>
           </header>
+
+          {/* Live AI & Knowledge Base status banner */}
+          {!demoInbox && active.id && (readyKnowledgeCount === 0 || !workspaceAiLive || !activeChannelLive || active.aiState === 'handoff') && (
+            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-amber-200/70 bg-amber-50/70 px-4 py-2 text-[12px] text-amber-900 dark:border-amber-400/20 dark:bg-amber-500/10 dark:text-amber-100">
+              <div className="flex items-center gap-2 min-w-0">
+                <Sparkles size={14} className="shrink-0 text-amber-600 dark:text-amber-300" />
+                <span className="truncate">
+                  {readyKnowledgeCount === 0
+                    ? (isAr ? 'قاعدة المعرفة غير مدرّبة بعد — ارفع ملفاتك أو نصوصك حتى يبدأ الذكاء الاصطناعي في الرد تلقائياً.' : 'Knowledge Base is not trained yet — upload sources so AI can reply automatically.')
+                    : !workspaceAiLive
+                      ? (isAr ? 'الرد التلقائي بالذكاء الاصطناعي متوقف حالياً على مستوى مساحة العمل.' : 'AI auto-reply is currently paused workspace-wide.')
+                      : !activeChannelLive
+                        ? (isAr ? `الرد التلقائي متوقف على قناة ${channelMeta[active.channel].label}.` : `AI auto-reply is paused on ${channelMeta[active.channel].label}.`)
+                        : (isAr ? 'تم تحويل آخر رسالة للفريق لعدم تطابقها مع قاعدة المعرفة — يمكنك الرد يدوياً أو تجربة رد الذكاء الاصطناعي الآن.' : 'Last message was handed off to your team — reply manually or let AI answer from your Knowledge Base now.')}
+                </span>
+              </div>
+              <div className="flex shrink-0 items-center gap-2">
+                {readyKnowledgeCount === 0 ? (
+                  <button
+                    type="button"
+                    onClick={() => navigate('/dashboard/follow-up')}
+                    className="rounded-lg bg-amber-600 px-2.5 py-1 text-[11px] font-semibold text-white hover:bg-amber-700"
+                  >
+                    {isAr ? 'فتح قاعدة المعرفة' : 'Open Knowledge'}
+                  </button>
+                ) : !workspaceAiLive ? (
+                  <button
+                    type="button"
+                    disabled={gosAI.saving}
+                    onClick={() => void toggleWorkspaceAi(true)}
+                    className="rounded-lg bg-[#7C3AED] px-2.5 py-1 text-[11px] font-semibold text-white hover:bg-purple-700 disabled:opacity-60"
+                  >
+                    {isAr ? 'تفعيل الرد التلقائي' : 'Turn AI On'}
+                  </button>
+                ) : !activeChannelLive ? (
+                  <button
+                    type="button"
+                    disabled={gosAI.saving}
+                    onClick={() => void enableActiveChannelAi()}
+                    className="rounded-lg bg-[#7C3AED] px-2.5 py-1 text-[11px] font-semibold text-white hover:bg-purple-700 disabled:opacity-60"
+                  >
+                    {isAr ? `تفعيل ${channelMeta[active.channel].label}` : `Enable ${channelMeta[active.channel].label}`}
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    disabled={aiReplySending}
+                    onClick={() => void triggerAiReplyNow()}
+                    className="inline-flex items-center gap-1 rounded-lg bg-[#7C3AED] px-2.5 py-1 text-[11px] font-semibold text-white hover:bg-purple-700 disabled:opacity-60"
+                  >
+                    {aiReplySending ? <LoaderCircle size={12} className="animate-spin" /> : <Sparkles size={12} />}
+                    <span>{aiReplySending ? (isAr ? 'جارٍ الرد…' : 'Replying…') : (isAr ? 'رد بالذكاء الاصطناعي' : 'Reply with AI')}</span>
+                  </button>
+                )}
+              </div>
+            </div>
+          )}
 
           {/* message thread */}
           <div ref={threadRef} className="inbox-scroll inbox-thread-bg min-h-0 flex-1 overflow-y-auto px-5 py-4 2xl:px-8">
@@ -1370,10 +1540,16 @@ export const Inbox: React.FC<Props> = ({ aiMode, setAiMode, setSent }) => {
                         <span className={`mt-1 flex items-center gap-1 px-1 text-[10.5px] ${SUBTLE}`}>
                           {localizeNode(m.sender === "ai" && (
                             <>
-                              <Sparkles size={10} className="text-purple-400" fill="currentColor" />{translateText(" AI Assistant ·")}</>
+                              <Sparkles size={10} className="text-purple-400" fill="currentColor" />{translateText(" AI Assistant ·")}
+                              {(m.citationsCount ?? 0) > 0 && (
+                                <span className="rounded bg-purple-100/80 px-1.5 py-0.5 text-[9.5px] font-semibold text-purple-700 dark:bg-purple-500/20 dark:text-purple-200">
+                                  {isAr ? 'من قاعدة المعرفة' : 'Knowledge Base'}
+                                </span>
+                              )}
+                            </>
                           ))}
                           {localizeNode(m.sender === "agent" && <>{currentUser.name} ·</>)}
-                          {localizeNode(m.time)}
+                          {formatInboxTime(m.time, language)}
                           {m.status === 'sending' ? (
                             <span className="inline-flex items-center gap-1 text-slate-400"><Clock3 size={12} />{translateText("Sending…")}</span>
                           ) : m.status === 'failed' ? (
@@ -1493,9 +1669,16 @@ export const Inbox: React.FC<Props> = ({ aiMode, setAiMode, setSent }) => {
                 <Toggle
                   size="sm"
                   checked={active.aiAutoReply && !active.takenOver}
-                  disabled={!aiMode}
-                  onChange={(value) => {
-                    updateActive({ aiAutoReply: value, takenOver: value ? false : active.takenOver });
+                  disabled={!workspaceAiLive}
+                  onChange={async (value) => {
+                    updateActive({ aiAutoReply: value, takenOver: !value, aiState: value ? 'answered' : 'human_takeover' });
+                    if (!demoInbox && active.id && !active.id.startsWith('crm-')) {
+                      try {
+                        await gosApi.setConversationAi(active.id, value);
+                      } catch (error) {
+                        showToast.error(backendError(error));
+                      }
+                    }
                     logActivity(value ? "ai" : "handoff", value ? "AI auto-reply enabled" : "AI auto-reply disabled");
                   }}
                   label="AI auto-reply for this conversation"
@@ -1504,7 +1687,7 @@ export const Inbox: React.FC<Props> = ({ aiMode, setAiMode, setSent }) => {
                   onClick={() => navigate("/dashboard/follow-up")}
                   className={`hidden sm:flex items-center gap-0.5 text-[12px] font-medium transition hover:text-purple-600 ${MUTED}`}
                 >
-                  {localizeNode(!aiMode ? "AI paused workspace-wide" : aiReplying ? "AI will reply automatically" : "AI auto-reply off")}
+                  {localizeNode(!workspaceAiLive ? "AI paused workspace-wide" : aiReplying ? "AI will reply automatically" : "AI auto-reply off")}
                   <ChevronRight size={14} />
                 </button>
               </div>
@@ -1836,7 +2019,7 @@ export const Inbox: React.FC<Props> = ({ aiMode, setAiMode, setSent }) => {
               </dd>
 
               <dt className={MUTED}>{translateText("Last Activity")}</dt>
-              <dd className={`font-medium ${HEADING}`}>{localizeNode(active.time)}</dd>
+              <dd className={`font-medium ${HEADING}`}>{formatInboxTime(active.time, language)}</dd>
             </dl>
           </div>
 
@@ -1846,31 +2029,46 @@ export const Inbox: React.FC<Props> = ({ aiMode, setAiMode, setSent }) => {
               <h3 className={`text-[13.5px] font-bold ${HEADING}`}>{translateText("AI Follow-Up")}</h3>
               <span
                 className={`rounded-md border px-2 py-[1px] text-[10.5px] font-semibold ${
-                  active.followUp
+                  aiReplying
                     ? "border-emerald-200 bg-emerald-50 text-emerald-600 dark:border-emerald-400/25 dark:bg-emerald-500/15 dark:text-emerald-300"
                     : "border-slate-200 bg-slate-50 text-slate-500 dark:border-white/10 dark:bg-white/10 dark:text-slate-400"
                 }`}
               >
-                {localizeNode(active.followUp ? "Active" : "Paused")}
+                {localizeNode(aiReplying ? "Active" : "Paused")}
               </span>
               <span className="ms-auto">
                 <Toggle
-                  checked={active.followUp}
-                  onChange={(value) => {
-                    updateActive({ followUp: value });
+                  checked={aiReplying}
+                  disabled={!workspaceAiLive}
+                  onChange={async (value) => {
+                    updateActive({ followUp: value, aiAutoReply: value, takenOver: !value, aiState: value ? 'answered' : 'human_takeover' });
+                    if (!demoInbox && active.id && !active.id.startsWith('crm-')) {
+                      try {
+                        await gosApi.setConversationAi(active.id, value);
+                      } catch (error) {
+                        showToast.error(backendError(error));
+                      }
+                    }
                     logActivity("ai", value ? "AI follow-up activated" : "AI follow-up paused");
                   }}
                   label="Toggle AI follow-up"
                 />
               </span>
             </div>
-            <ul className={`mt-2.5 space-y-1.5 transition-opacity ${active.followUp ? "" : "opacity-50"}`}>
+            {!demoInbox && (
+              <p className={`mt-1.5 text-[11px] ${MUTED}`}>
+                {isAr
+                  ? `قاعدة المعرفة: ${readyKnowledgeCount} مصدر جاهز · ${channelMeta[active.channel].label}`
+                  : `Knowledge Base: ${readyKnowledgeCount} ready ${readyKnowledgeCount === 1 ? 'source' : 'sources'} · ${channelMeta[active.channel].label}`}
+              </p>
+            )}
+            <ul className={`mt-2.5 space-y-1.5 transition-opacity ${aiReplying ? "" : "opacity-50"}`}>
               {localizeNode(followUpRuleLabels.map((label, index) => {
                 const on = active.followUpRules[index];
                 return (
                   <li key={label}>
                     <button
-                      disabled={!active.followUp}
+                      disabled={!aiReplying}
                       onClick={() =>
                         updateActive((c) => ({
                           followUpRules: c.followUpRules.map((r, i) => (i === index ? !r : r)),

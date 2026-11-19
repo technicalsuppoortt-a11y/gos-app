@@ -30,6 +30,8 @@ export type Message = {
   status?: 'sending' | 'failed' | 'unconfirmed';
   /** Why a reply failed or could not be confirmed. */
   error?: string;
+  /** Number of Knowledge Base citations used to generate an AI reply. */
+  citationsCount?: number;
 };
 
 export type Activity = { id: string; kind: ActivityKind; text: string; time: string };
@@ -51,6 +53,7 @@ export type Conversation = {
   location: string;
   assignee: string;
   aiAutoReply: boolean;
+  aiState?: string;
   takenOver: boolean;
   followUp: boolean;
   followUpRules: boolean[];
