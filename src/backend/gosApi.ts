@@ -10,7 +10,9 @@ const gosTokenProvider = async (refresh?: boolean) => {
 };
 
 export const gosRequest = createGosTransport(gosBaseUrl, gosTokenProvider, fetch, checkGosToolPolicy);
-export const gosStreamRequest = createGosStreamTransport(gosBaseUrl, gosTokenProvider, fetch, checkGosToolPolicy);
+export const gosStreamRequest = typeof createGosStreamTransport === 'function'
+  ? createGosStreamTransport(gosBaseUrl, gosTokenProvider, fetch, checkGosToolPolicy)
+  : (async () => { throw new Error('Stream transport unavailable.'); });
 
 async function meteredRequest<T>(request: MeteredGosRequest, signal?: AbortSignal): Promise<T> {
   signal?.throwIfAborted();
@@ -59,6 +61,98 @@ export type CopilotHistoryMessage = { id?: string; role: 'user' | 'assistant'; t
 export type CopilotInput = { text: string; conversationId?: string; webSearch?: boolean; deepResearch?: boolean; thinkingLevel?: CopilotThinkingLevel; uiLanguage?: string; isNewConversation?: boolean; history?: CopilotHistoryMessage[] };
 export type CopilotResponse = { text?: string; grounded?: boolean; followUps?: string[]; conversationId?: string; leads?: ApiRecord[]; href?: string; hrefLabel?: string; form?: CopilotForm | null; draft?: ApiRecord | null; conversation?: ApiRecord };
 export type CopilotActionInput = { kind: CopilotFormKind; values: Record<string, string>; conversationId?: string; formId?: string; record?: ApiRecord; requestId?: string; uiLanguage?: string };
+export type TrackId = 'bookings' | 'products' | 'funnels' | 'meta' | 'copilot' | 'webchat';
+export type TrackChannelMode = 'auto' | 'whatsapp' | 'email' | 'meta_dm';
+export type TrackConfig = {
+  enabled: boolean;
+  channel: TrackChannelMode;
+  whatsapp_template: string;
+  whatsapp_language: string;
+};
+export type LeadTrackingSettings = {
+  enabled: boolean;
+  business_name: string;
+  reply_to_email: string;
+  default_language: 'auto' | 'ar' | 'en';
+  tone: string;
+  max_attempts: number;
+  first_delay_minutes: number;
+  second_delay_hours: number;
+  third_delay_hours: number;
+  booking_reminder_24h: boolean;
+  booking_reminder_1h: boolean;
+  tracks: Record<TrackId, TrackConfig>;
+  updated_at?: string;
+};
+export type TrackedLeadHistoryEntry = {
+  id: string;
+  at: string;
+  kind: string;
+  channel: string;
+  status: 'sent' | 'failed';
+  excerpt: string;
+  error?: string | null;
+};
+export type TrackedLead = {
+  id: string;
+  primary_lead_id: string;
+  linked_lead_ids: string[];
+  name: string;
+  email: string;
+  email_normalized: string | null;
+  phone: string;
+  phone_normalized: string | null;
+  primary_track: TrackId;
+  tracks: TrackId[];
+  sources: string[];
+  stage: string;
+  booking_status: string;
+  appointment_at: string | null;
+  appointment_service: string | null;
+  appointment_location: string | null;
+  product_name: string | null;
+  order_status: string | null;
+  value: number;
+  currency: string;
+  interest: string;
+  meta_channel: string | null;
+  meta_thread_id: string | null;
+  last_inbound_at: string | null;
+  status: 'scheduled' | 'active' | 'reminded' | 'replied' | 'converted' | 'paused' | 'completed' | 'unreachable';
+  attempts: number;
+  next_action_kind: string;
+  next_follow_up_at: string | null;
+  reminder_24h_sent_at: string | null;
+  reminder_1h_sent_at: string | null;
+  last_contacted_at: string | null;
+  last_channel: string | null;
+  last_message_excerpt: string | null;
+  last_error: string | null;
+  history: TrackedLeadHistoryEntry[];
+  created_at: string;
+  updated_at: string;
+};
+export type LeadTrackingOverview = {
+  settings: LeadTrackingSettings;
+  channels: {
+    email: { provider: string; mode: string; configured: boolean; from_address: string; region: string; smtp_host: string };
+    whatsapp: { connected: boolean; name?: string | null };
+    instagram: { connected: boolean; name?: string | null };
+    messenger: { connected: boolean; name?: string | null };
+    whatsapp_templates: Array<{ name: string; language: string; category: string }>;
+  };
+  summary: {
+    total_tracked: number;
+    scheduled: number;
+    contacted: number;
+    reminded: number;
+    replied: number;
+    converted: number;
+    paused: number;
+  };
+  track_stats: Record<TrackId, { total: number; scheduled: number; contacted: number; replied: number; converted: number }>;
+  leads: TrackedLead[];
+};
 type InboxSimulationInput = { channel: string; external_thread_id: string; external_message_id: string; customer_name: string; phone?: string; body: string };
 type FileSourceInput = { type: 'file'; name: string; file: { name: string; mime: string; data: string } };
 type MeteredGosRequest =
@@ -101,6 +195,14 @@ export const gosApi = {
   updateAssistant: (body: Partial<GosAssistant>) => body.live_enabled === true
     ? meteredRequest<{ assistant: GosAssistant }>({ action: 'liveEnable', payload: { ...body, live_enabled: true } })
     : gosRequest<{ assistant: GosAssistant }>('/ai/assistant', { method: 'PUT', body }),
+  leadTracking: (sync = true, signal?: AbortSignal) => gosRequest<LeadTrackingOverview>(`/ai/lead-tracking?sync=${sync ? '1' : '0'}`, { signal }),
+  updateLeadTrackingSettings: (body: Record<string, any>) => gosRequest<LeadTrackingOverview>('/ai/lead-tracking/settings', { method: 'PUT', body }),
+  syncLeadTracking: () => gosRequest<LeadTrackingOverview>('/ai/lead-tracking/sync', { method: 'POST', body: {} }),
+  enrollTrackedLead: (body: { name?: string; phone?: string; email?: string; source?: string; interest?: string; send_now?: boolean }) => gosRequest<{ lead: TrackedLead; overview: LeadTrackingOverview }>('/ai/lead-tracking/leads', { method: 'POST', body }),
+  sendTrackedLeadNow: (trackingId: string) => gosRequest<{ lead: TrackedLead | null; overview: LeadTrackingOverview }>(`/ai/lead-tracking/leads/${id(trackingId)}/send-now`, { method: 'POST', body: {} }),
+  pauseTrackedLead: (trackingId: string) => gosRequest<{ lead: TrackedLead; overview: LeadTrackingOverview }>(`/ai/lead-tracking/leads/${id(trackingId)}/pause`, { method: 'POST', body: {} }),
+  resumeTrackedLead: (trackingId: string) => gosRequest<{ lead: TrackedLead; overview: LeadTrackingOverview }>(`/ai/lead-tracking/leads/${id(trackingId)}/resume`, { method: 'POST', body: {} }),
+  sendLeadTrackingTestEmail: (to: string) => gosRequest<{ delivery: { ok: boolean; message_id?: string | null; provider: string; error?: string | null } }>('/ai/lead-tracking/test-email', { method: 'POST', body: { to } }),
   simulateCustomer: (body: InboxSimulationInput) => gosRequest<{ outcome: string; conversation: ApiRecord; inbound?: ApiRecord; reply: ApiRecord | null; action?: { type: string; label: string; detail?: string; lead_id?: string | null } | null }>('/inbox/messages', { method: 'POST', body }),
   playground: (signal?: AbortSignal) => gosRequest<{ tests: PlaygroundTest[] }>('/ai/playground', { signal }),
   ask: (question: string, context: PlaygroundContext = {}) => meteredRequest<{ test: PlaygroundTest; session_id?: string; source_id?: string }>({ action: 'playground', payload: { question, ...context } }),

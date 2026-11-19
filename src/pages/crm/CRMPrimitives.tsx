@@ -40,11 +40,15 @@ export function SourceBadge({ source }: { source?: string }) {
   const normalized = safeSource.toLowerCase();
   const channel = normalized.includes('instagram') ? { tone: 'instagram', label: 'Instagram', icon: Instagram }
     : normalized.includes('whatsapp') ? { tone: 'whatsapp', label: 'WhatsApp', icon: MessageCircle }
+    : normalized.includes('facebook') || normalized.includes('messenger') ? { tone: 'website', label: 'Facebook', icon: MessageCircle }
+    : normalized.includes('website chat') || normalized.includes('webchat') ? { tone: 'whatsapp', label: 'Website Chat', icon: MessageCircle }
+    : normalized.includes('booking') || normalized.includes('calendar') ? { tone: 'website', label: 'Booking', icon: Calendar }
+    : normalized.includes('copilot') || normalized.includes('ai agent') ? { tone: 'website', label: 'AI Agent', icon: Sparkles }
     : normalized.includes('email') ? { tone: 'email', label: 'Email', icon: Mail }
     : normalized.includes('linkedin') ? { tone: 'linkedin', label: 'LinkedIn', icon: Linkedin }
     : normalized.includes('call') ? { tone: 'call', label: 'Call', icon: Phone }
     : normalized.includes('referral') ? { tone: 'referral', label: 'Referral', icon: BadgeCheck }
-    : { tone: 'website', label: /^(checkout|service|services)$/i.test(safeSource) ? 'Services' : /website|funnel|landing/i.test(safeSource) ? 'Website' : safeSource, icon: Globe };
+    : { tone: 'website', label: /^(checkout|service|services)$/i.test(safeSource) ? 'Services' : /^forms?$/i.test(safeSource) ? 'Forms' : /website|funnel|landing/i.test(safeSource) ? 'Website' : safeSource, icon: Globe };
   return <span className={`crm-source crm-source-${channel.tone}`}><span className="crm-source-symbol"><channel.icon size={10} strokeWidth={2}/></span>{localizeNode(channel.label)}</span>;
 }
 
@@ -62,6 +66,7 @@ export function TagBadge({ tag }: { tag: string }) {
 
 function followUp(lead: CanonicalLead): { label: string; tone: string } {
   if (!lead.nextFollowUp && !lead.nextFollowUpAt) return { label: 'No follow-up', tone: 'none' };
+  if (/completed/i.test(lead.nextFollowUp ?? '')) return { label: 'Follow-up completed', tone: 'scheduled' };
   if (/tomorrow/i.test(lead.nextFollowUp ?? '')) return { label: 'Follow up tomorrow', tone: 'tomorrow' };
   if (/today/i.test(lead.nextFollowUp ?? '')) return { label: 'Follow up today', tone: 'today' };
   if (lead.nextFollowUpAt) {
@@ -76,7 +81,19 @@ function followUp(lead: CanonicalLead): { label: string; tone: string } {
 
 function compactActivity(activity?: string) {
   if (!activity) return 'Recently';
-  return String(activity).replace(/(\d+)\s*min(?:ute)?s? ago/i, '$1m ago')
+  const raw = String(activity).trim();
+  const parsed = /^\d{4}-\d{2}-\d{2}T/.test(raw) ? Date.parse(raw) : Number.NaN;
+  if (!Number.isNaN(parsed)) {
+    const diffMins = Math.max(0, Math.floor((Date.now() - parsed) / 60000));
+    if (diffMins < 2) return 'Just now';
+    if (diffMins < 60) return `${diffMins}m ago`;
+    const diffHours = Math.floor(diffMins / 60);
+    if (diffHours < 24) return `${diffHours}h ago`;
+    const diffDays = Math.floor(diffHours / 24);
+    if (diffDays < 7) return `${diffDays}d ago`;
+    return new Date(parsed).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  }
+  return raw.replace(/(\d+)\s*min(?:ute)?s? ago/i, '$1m ago')
     .replace(/(\d+)\s*hours? ago/i, '$1h ago')
     .replace(/(\d+)\s*days? ago/i, '$1d ago')
     .replace('Yesterday', '1d ago');

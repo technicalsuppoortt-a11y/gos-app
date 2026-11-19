@@ -85,6 +85,7 @@ import type { RootState, AppDispatch } from "../store";
 import "./ai-followup.css";
 import { MenuSelect, WorkflowActionField, WorkflowMessageField, WorkflowTimeline, WorkflowTriggerFields } from './follow-up-workflow-fields';
 import { WORKFLOWS_KEY, type SequenceStep, type Workflow as SavedWorkflow } from './follow-up-workflow';
+import { LeadTrackingPanel } from './LeadTrackingPanel';
 
 // Loaded only when the tab opens, so React Flow stays out of the main bundle.
 const FlowBuilderTab = React.lazy(() => import("./flow-builder/FlowBuilder").then(module => ({ default: module.FlowBuilderTab })));
@@ -94,6 +95,7 @@ const WaTemplatesTab = React.lazy(() => import("./templates/WaTemplates").then(m
 type Props = { notify?: (message: string) => void; section?: "follow-up" | "automation" };
 type Tab =
   | "Overview"
+  | "Track Leads"
   | "Conversations"
   | "AI Assistants"
   | "Knowledge"
@@ -328,6 +330,7 @@ const AssistantRobot = () => { useUILanguage(); return ((
 )); };
 const tabs: Tab[] = [
   "Overview",
+  "Track Leads",
   "AI Assistants",
   "Knowledge",
   "Automations",
@@ -338,6 +341,7 @@ const tabs: Tab[] = [
 ];
 const tabIcons: Record<Tab, React.ElementType | null> = {
   Overview: null,
+  "Track Leads": Target,
   Conversations: MessageSquareMore,
   "AI Assistants": UserCheck,
   Knowledge: Archive,
@@ -350,9 +354,10 @@ const tabIcons: Record<Tab, React.ElementType | null> = {
   "Settings & Analysis": BarChart3,
 };
 // Automation & Campaign page: same screens, grouped under its own tabs.
-const automationTabs: Tab[] = ["Flow Builder", "Campaign", "Automations", "Templates", "Settings & Analysis"];
+const automationTabs: Tab[] = ["Flow Builder", "Track Leads", "Campaign", "Automations", "Templates", "Settings & Analysis"];
 const automationTabMeta: Partial<Record<Tab, { label: string; icon: React.ElementType; bg: string; fg: string }>> = {
   "Flow Builder": { label: "Automation", icon: Zap, bg: "#FFEDD5", fg: "#EA580C" },
+  "Track Leads": { label: "Track Leads", icon: Target, bg: "#F3E8FF", fg: "#7C3AED" },
   Campaign: { label: "Campaign", icon: Megaphone, bg: "#FCE7F3", fg: "#DB2777" },
   Automations: { label: "Follow Up", icon: Send, bg: "#DCFCE7", fg: "#16A34A" },
   Templates: { label: "Templates", icon: LayoutGrid, bg: "#EDE9FE", fg: "#7C3AED" },
@@ -620,6 +625,7 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent, section = "f
   const query = new URLSearchParams(window.location.search);
   const initialTab = query.get("tab");
   const [tab, setTab] = React.useState<Tab>(() => {
+    if (initialTab === "track-leads" || initialTab === "tracks") return "Track Leads";
     if (initialTab === "campaigns") return "Campaign";
     return initialTab === "flows" || initialTab === "channels" || isAutomation ? "Flow Builder" : "Overview";
   });
@@ -2172,6 +2178,15 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent, section = "f
           </div>
         </section>
       );
+    if (tab === "Track Leads")
+      return (
+        <LeadTrackingPanel
+          onConnectChannel={(channel) => {
+            setSelectedChannel(channel);
+            setModal("channel");
+          }}
+        />
+      );
     if (tab === "Knowledge") return null;
     // Automation & Campaign: Templates holds WhatsApp (Meta) templates; the AI response templates live under Follow Up.
     if (tab === "Templates" && isAutomation)
@@ -2238,7 +2253,7 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent, section = "f
   };
 
   return (
-    <main className={`af-page flex w-full min-w-0 flex-1 flex-col ${tab === 'Knowledge' ? 'af-page-knowledge min-h-full h-auto overflow-visible' : 'h-full min-h-0 overflow-hidden'}`}>
+    <main className={`af-page flex w-full min-w-0 flex-1 flex-col ${tab === 'Knowledge' || tab === 'Track Leads' ? 'af-page-knowledge min-h-full h-auto overflow-visible' : 'h-full min-h-0 overflow-hidden'}`}>
       {api.error && <div className="af-safety-note" role="alert">{api.error}<button className="af-button-secondary" onClick={api.retry}>{translateText("Retry")}</button></div>}
       {agentConfig.error && <div className="af-safety-note" role="alert">{agentConfig.error}<button className="af-button-secondary" onClick={agentConfig.retry}>{translateText("Retry assistant settings")}</button></div>}
       <div className="af-page-title">
@@ -2247,7 +2262,15 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent, section = "f
             {isAutomation ? <Zap size={21} /> : <Sparkles size={21} />}{translateText(isAutomation ? " Automation & Campaign" : " AI Follow-Up")}</h1>
           <p>{translateText(isAutomation ? "Automations, campaigns, follow-ups and templates in one place" : "Conversations, follow up with leads and turn them into customers")}</p>
         </div>
-        <div className="module-header-actions"><a className="af-button-secondary" href="/dashboard/follow-up?tab=templates">{translateText("Automation templates")} <ArrowRight size={14}/></a>
+        <div className="module-header-actions">
+          <button
+            type="button"
+            className="af-button-primary"
+            onClick={() => setTab("Track Leads")}
+          >
+            <Target size={15} /> {translateText("Track Leads")}
+          </button>
+          <a className="af-button-secondary" href="/dashboard/follow-up?tab=templates">{translateText("Automation templates")} <ArrowRight size={14}/></a>
         {/* Underlying assistant creation handler preserved */}
         {/*
         <button

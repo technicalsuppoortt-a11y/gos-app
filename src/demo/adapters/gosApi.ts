@@ -61,6 +61,194 @@ export async function gosRequest<T>(input: string, options: { method?: string; b
     }
     if (parts[1] === 'channels') { const current = read('assistant', { live_enabled: false, channels: { whatsapp: true, instagram: true, webchat: true } }); if (method === 'PUT' && parts[2]) write('assistant', { ...current, channels: { ...current.channels, [parts[2]]: !!body.enabled } }); return { channels: read('assistant', { live_enabled: false, channels: { whatsapp: true, instagram: true, webchat: true } }).channels } as T; }
     if (parts[1] === 'assistant') { if (method !== 'GET') write('assistant', { ...read('assistant', { live_enabled: false, channels: {} }), ...body }); return { assistant: read('assistant', { live_enabled: false, channels: { whatsapp: true, instagram: true } }) } as T; }
+    if (parts[1] === 'lead-tracking') {
+      const trackIds = ['bookings', 'products', 'funnels', 'meta', 'copilot', 'webchat'] as const;
+      const defaultTracks = Object.fromEntries(trackIds.map(t => [t, { enabled: true, channel: 'auto', whatsapp_template: '', whatsapp_language: 'ar' }]));
+      const settings = read('leadTracking.settings', {
+        enabled: true,
+        business_name: 'UpKlick Demo Studio',
+        reply_to_email: 'hello@upklick.net',
+        default_language: 'auto',
+        tone: 'Friendly and professional',
+        max_attempts: 3,
+        first_delay_minutes: 5,
+        second_delay_hours: 24,
+        third_delay_hours: 72,
+        booking_reminder_24h: true,
+        booking_reminder_1h: true,
+        tracks: defaultTracks,
+      });
+      const classify = (src: string) => {
+        const s = String(src || '').toLowerCase();
+        if (s.includes('book') || s.includes('calendar')) return 'bookings';
+        if (s.includes('service') || s.includes('product') || s.includes('checkout')) return 'products';
+        if (s.includes('copilot') || s.includes('agent')) return 'copilot';
+        if (s.includes('webchat') || s.includes('website chat')) return 'webchat';
+        if (s.includes('instagram') || s.includes('whatsapp') || s.includes('facebook')) return 'meta';
+        return 'funnels';
+      };
+      const buildOverview = () => {
+        const stored = read<any[]>('leadTracking.leads', []);
+        const byKey = new Map<string, any>(stored.map(item => [item.id, item]));
+        for (const l of rows('leads') as any[]) {
+          const key = `trk-${String(l.email || l.phone || l.id).toLowerCase().replace(/[^a-z0-9]/g, '')}`;
+          if (!byKey.has(key)) {
+            const trk = classify(l.source || 'Website');
+            byKey.set(key, {
+              id: key,
+              primary_lead_id: l.id,
+              linked_lead_ids: [l.id],
+              name: l.name || 'Lead',
+              email: l.email || '',
+              email_normalized: l.email ? String(l.email).toLowerCase() : null,
+              phone: l.phone || '',
+              phone_normalized: l.phone || null,
+              primary_track: trk,
+              tracks: [trk],
+              sources: [l.source || 'Website'],
+              stage: l.lifecycleStage || l.stage || 'LEAD_CAPTURED',
+              booking_status: l.bookingStatus || 'Not Scheduled',
+              appointment_at: null,
+              appointment_service: null,
+              appointment_location: null,
+              product_name: null,
+              order_status: null,
+              value: Number(l.value || 0),
+              currency: 'USD',
+              interest: l.interest || '',
+              meta_channel: null,
+              meta_thread_id: null,
+              last_inbound_at: null,
+              status: 'scheduled',
+              attempts: 0,
+              next_action_kind: 'welcome',
+              next_follow_up_at: new Date(Date.now() + 5 * 60000).toISOString(),
+              reminder_24h_sent_at: null,
+              reminder_1h_sent_at: null,
+              last_contacted_at: null,
+              last_channel: null,
+              last_message_excerpt: null,
+              last_error: null,
+              history: [],
+              created_at: l.createdAt || new Date().toISOString(),
+              updated_at: new Date().toISOString(),
+            });
+          }
+        }
+        const list = [...byKey.values()];
+        write('leadTracking.leads', list);
+        const track_stats: Record<string, any> = Object.fromEntries(trackIds.map(t => [t, { total: 0, scheduled: 0, contacted: 0, replied: 0, converted: 0 }]));
+        const summary = { total_tracked: list.length, scheduled: 0, contacted: 0, reminded: 0, replied: 0, converted: 0, paused: 0 };
+        for (const item of list) {
+          const st = track_stats[item.primary_track] || track_stats.funnels;
+          st.total++;
+          if (item.status === 'scheduled' || item.next_follow_up_at) { summary.scheduled++; st.scheduled++; }
+          if (item.attempts > 0) { summary.contacted++; st.contacted++; }
+          if (item.status === 'reminded') summary.reminded++;
+          if (item.status === 'replied') { summary.replied++; st.replied++; }
+          if (item.status === 'converted') { summary.converted++; st.converted++; }
+          if (item.status === 'paused') summary.paused++;
+        }
+        return {
+          settings: read('leadTracking.settings', settings),
+          channels: {
+            email: { provider: 'ses', mode: 'ses_smtp', configured: true, from_address: 'noreply@upklick.net', region: 'eu-north-1', smtp_host: 'email-smtp.eu-north-1.amazonaws.com' },
+            whatsapp: { connected: true, name: 'UpKlick WhatsApp' },
+            instagram: { connected: true, name: '@upklick' },
+            messenger: { connected: false, name: null },
+            whatsapp_templates: [{ name: 'welcome_followup', language: 'ar', category: 'UTILITY' }],
+          },
+          summary,
+          track_stats,
+          leads: list,
+        };
+      };
+      if (parts[2] === 'settings' && method === 'PUT') {
+        const merged = { ...settings, ...body, tracks: { ...settings.tracks, ...(body.tracks || {}) } };
+        write('leadTracking.settings', merged);
+        return buildOverview() as T;
+      }
+      if (parts[2] === 'test-email' && method === 'POST') {
+        return { delivery: { ok: true, message_id: 'demo-ses-msg', provider: 'ses_smtp', error: null } } as T;
+      }
+      if (parts[2] === 'leads' && method === 'POST' && !parts[3]) {
+        const now = new Date().toISOString();
+        const trk = classify(body.source || 'WhatsApp');
+        const crmLead = makeLead({ name: body.name || 'New Lead', email: body.email || 'lead@upklick.net', phone: body.phone || '', source: body.source || 'WhatsApp', interest: body.interest || '', nextFollowUp: 'Follow up today', nextFollowUpAt: now });
+        entityMutation('leads', crmLead.id, crmLead);
+        const item = {
+          id: `trk-${crypto.randomUUID().slice(0, 8)}`,
+          primary_lead_id: crmLead.id,
+          linked_lead_ids: [crmLead.id],
+          name: crmLead.name,
+          email: body.email || '',
+          email_normalized: body.email ? String(body.email).toLowerCase() : null,
+          phone: body.phone || '',
+          phone_normalized: body.phone || null,
+          primary_track: trk,
+          tracks: [trk],
+          sources: [body.source || 'WhatsApp'],
+          stage: 'LEAD_CAPTURED',
+          booking_status: 'Not Scheduled',
+          appointment_at: null,
+          appointment_service: null,
+          appointment_location: null,
+          product_name: null,
+          order_status: null,
+          value: 0,
+          currency: 'USD',
+          interest: body.interest || '',
+          meta_channel: null,
+          meta_thread_id: null,
+          last_inbound_at: null,
+          status: body.send_now ? 'active' : 'scheduled',
+          attempts: body.send_now ? 1 : 0,
+          next_action_kind: body.send_now ? 'followup_2' : 'welcome',
+          next_follow_up_at: new Date(Date.now() + (body.send_now ? 86400000 : 300000)).toISOString(),
+          reminder_24h_sent_at: null,
+          reminder_1h_sent_at: null,
+          last_contacted_at: body.send_now ? now : null,
+          last_channel: body.send_now ? (body.phone ? 'whatsapp' : 'email') : null,
+          last_message_excerpt: body.send_now ? `Welcome ${crmLead.name}! How can we help you get started?` : null,
+          last_error: null,
+          history: body.send_now ? [{ id: crypto.randomUUID(), at: now, kind: 'welcome', channel: body.phone ? 'whatsapp' : 'email', status: 'sent', excerpt: `Welcome ${crmLead.name}! How can we help you get started?` }] : [],
+          created_at: now,
+          updated_at: now,
+        };
+        const cur = read<any[]>('leadTracking.leads', []);
+        write('leadTracking.leads', [item, ...cur]);
+        return { lead: item, overview: buildOverview() } as T;
+      }
+      if (parts[2] === 'leads' && parts[3] && parts[4]) {
+        const cur = read<any[]>('leadTracking.leads', []);
+        const now = new Date().toISOString();
+        const nextList = cur.map(item => {
+          if (item.id !== parts[3]) return item;
+          if (parts[4] === 'pause') return { ...item, status: 'paused', next_follow_up_at: null, updated_at: now };
+          if (parts[4] === 'resume') return { ...item, status: 'scheduled', next_follow_up_at: new Date(Date.now() + 120000).toISOString(), updated_at: now };
+          if (parts[4] === 'send-now') {
+            const ch = item.phone ? 'whatsapp' : 'email';
+            const excerpt = `Hi ${item.name}, following up on your inquiry with ${settings.business_name}!`;
+            return {
+              ...item,
+              status: 'active',
+              attempts: (item.attempts || 0) + 1,
+              last_contacted_at: now,
+              last_channel: ch,
+              last_message_excerpt: excerpt,
+              next_action_kind: 'followup_2',
+              next_follow_up_at: new Date(Date.now() + 86400000).toISOString(),
+              history: [{ id: crypto.randomUUID(), at: now, kind: item.next_action_kind || 'welcome', channel: ch, status: 'sent', excerpt }, ...(item.history || [])],
+              updated_at: now,
+            };
+          }
+          return item;
+        });
+        write('leadTracking.leads', nextList);
+        return { lead: nextList.find(i => i.id === parts[3]) ?? null, overview: buildOverview() } as T;
+      }
+      return buildOverview() as T;
+    }
     if (parts[1] === 'sources') {
       if (method === 'POST') { const values = body instanceof FormData ? Object.fromEntries(body.entries()) : body; const source = { ...created(values), status: 'ready', chunk_count: 3, content: values.content ?? 'Demo file content' }; entityMutation('knowledge', source.id, source); return { source } as T; }
       if (method === 'DELETE') entityMutation('knowledge', parts[2]);

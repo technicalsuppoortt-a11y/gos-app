@@ -453,6 +453,13 @@ export function CRMLeads({ notify, isContactsPage }: { notify: (message: string)
           {!isContactsOnly && (
             <button
               className="crm2-btn-secondary"
+              onClick={() => navigate("/dashboard/follow-up?tab=track-leads")}
+            >
+              <Workflow size={14} />{translateText("Track Leads")}</button>
+          )}
+          {!isContactsOnly && (
+            <button
+              className="crm2-btn-secondary"
               onClick={() => setDialog("settings")}
             >
               <Settings2 size={14} />{translateText("Pipeline Settings")}</button>
