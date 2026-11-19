@@ -249,7 +249,7 @@ export async function preloadInitialRoute(pathname: string, search = '') {
       await Promise.all([
         UserLayout.preload(),
         DashboardPage.preload(),
-        import('../pages/DashboardPage').then(mod => mod.preloadDashboardSubpage('home')),
+        import('../pages/DashboardPage').then(async mod => { await mod.preloadDashboardSubpage('home'); }),
       ]);
       return;
     }
