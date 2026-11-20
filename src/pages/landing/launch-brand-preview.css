@@ -35,6 +35,8 @@
 
 /* Preview colors use the active Launch Brand palette exposed by ThemeProvider. */
 html[data-theme] body .lp[data-launch-brand][dir] {
+  --lp-font: var(--gp-body-font, 'Inter', 'DM Sans', system-ui, sans-serif);
+  --lp-heading-font: var(--gp-heading-font, 'Manrope', 'Inter', system-ui, sans-serif);
   --lp-primary: var(--gp-primary) !important;
   --lp-primary-600: var(--gp-primary) !important;
   --lp-primary-700: var(--gp-primary) !important;
@@ -54,6 +56,11 @@ html[data-theme] body .lp[data-launch-brand][dir] {
   --lp-hero-start: 85%;
   --lp-hero-end: 5%;
   background: var(--lp-bg) !important;
+  font-family: var(--lp-font) !important;
+}
+
+html[data-theme] body .lp[data-launch-brand][dir] :is(h1, h2, h3, h4, .lp-business__title) {
+  font-family: var(--lp-heading-font) !important;
 }
 
 html[data-theme] body .lp[data-launch-brand][dir='rtl'] {

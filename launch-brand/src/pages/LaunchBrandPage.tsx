@@ -30,7 +30,7 @@ export default function LaunchBrandPage() {
   if (!isAuthLoading && isStaffRole(role)) return <Navigate to="/admin" replace />;
 
   return <div className={`launch-brand-page${preview ? ' launch-brand-page--preview' : ''}${displayTheme === 'dark' ? ' dark' : ''}`} dir={isAr ? 'rtl' : 'ltr'}>
-    <header className="launch-brand-header" hidden={preview}>
+    <header className="launch-brand-header" hidden={preview || isWorkspacePreview(readWorkspaceView(search))}>
       <Link className="launch-brand-back" to="/" aria-label={isAr ? 'الرجوع للوحة التحكم' : 'Back to Dashboard'}>
         {isAr ? <ArrowRight size={18} aria-hidden="true" /> : <ArrowLeft size={18} aria-hidden="true" />}
         <span dir="auto">{isAr ? 'الرجوع للوحة التحكم' : 'Back to Dashboard'}</span>

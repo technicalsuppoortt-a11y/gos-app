@@ -73,6 +73,7 @@ export function GosLiveFrame({
   const box = useRef<HTMLDivElement>(null);
   const [size, setSize] = useState({ width: width ?? 0, height: height ?? 0 });
   const [status, setStatus] = useState<"loading" | "slow" | "error" | "ready">("loading");
+  const [frameLoaded, setFrameLoaded] = useState(false);
   const [attempt, setAttempt] = useState(0);
   const message = JSON.stringify(configuration);
   const config = previewConfigHash(message);
@@ -120,6 +121,7 @@ export function GosLiveFrame({
 
   useLayoutEffect(() => {
     setStatus("loading");
+    setFrameLoaded(false);
     const timeout = window.setTimeout(() => {
       setStatus(current => current === "loading" ? "slow" : current);
     }, 20000);
@@ -178,7 +180,10 @@ export function GosLiveFrame({
 
   const snapshotScale = snapshot && layoutWidth ? (layoutWidth / snapshot.width) * scale : scale;
   const snapshotHeight = snapshot && layoutWidth ? Math.round(layoutHeight * snapshot.width / layoutWidth) : 0;
-  const showSnapshot = Boolean(snapshot) && status !== "ready";
+  // A saved snapshot is only a fast placeholder. Once the live Demo Account
+  // document loads, always show that document so older captured page content
+  // cannot remain in front of the current landing page.
+  const showSnapshot = Boolean(snapshot) && status !== "ready" && !frameLoaded;
 
   return (
     <div
@@ -192,9 +197,9 @@ export function GosLiveFrame({
         name={GOS_DEMO_WINDOW}
         title={title}
         src={source}
-        onLoad={() => sendBrand(frame.current?.contentWindow)}
+        onLoad={() => { setFrameLoaded(true); sendBrand(frame.current?.contentWindow); }}
         onError={() => setStatus("error")}
-        style={{ border: 0, display: "block", width: frameWidth, height: frameHeight, transform: scale === 1 ? undefined : `scale(${scale})`, transformOrigin: isAr ? "top right" : "top left", position: scale === 1 ? undefined : "absolute", top: 0, [isAr ? "right" : "left"]: 0, opacity: status === "ready" ? 1 : 0 }}
+        style={{ border: 0, display: "block", width: frameWidth, height: frameHeight, transform: scale === 1 ? undefined : `scale(${scale})`, transformOrigin: isAr ? "top right" : "top left", position: scale === 1 ? undefined : "absolute", top: 0, [isAr ? "right" : "left"]: 0, opacity: status === "ready" || frameLoaded ? 1 : 0 }}
       />
       {showSnapshot && snapshot && <iframe title={`${title} snapshot`} srcDoc={snapshot.html}
         sandbox="allow-same-origin" aria-hidden="true" tabIndex={-1}

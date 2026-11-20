@@ -59,7 +59,7 @@ interface HeaderProps {
 
 export const Header: React.FC<HeaderProps> = ({ title, onMenu }) => {
   const ar = useUILanguage().startsWith('ar');
-  const workspaceBackLabel = ar ? 'الرجوع للمساحة' : 'Back to workspace';
+  const workspaceBackLabel = ar ? 'الرجوع إلى مساحة العمل' : 'Back to Workspace';
   const dispatch = useDispatch();
   const currentUser = useSelector((state: RootState) => state.auth.user);
   const role = useSelector((state: RootState) => state.auth.role);

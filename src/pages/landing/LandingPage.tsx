@@ -782,6 +782,7 @@ const footerCopy = {
 
 function LandingFooter({ copy, language, brand, links }: { copy: LandingCopy; language: Language; brand: PreviewBrand | null; links: { id: string; label: string }[] }) {
   const text = footerCopy[language === 'ar' ? 'ar' : 'en'];
+  const brandTagline = brand?.brand.tagline?.trim() || brand?.brand.description?.trim();
   const loginUrl = readCMS(new URLSearchParams(window.location.search).get('cms-preview') === '1').loginUrl;
   const go = (event: React.MouseEvent<HTMLAnchorElement>, id: string) => {
     event.preventDefault();
@@ -798,7 +799,7 @@ function LandingFooter({ copy, language, brand, links }: { copy: LandingCopy; la
       <div className="lp-container lp-site-footer__grid">
         <div className="lp-site-footer__brand">
           <a href="#top" className="lp-site-footer__logo" onClick={event => go(event, 'top')}><Logo brand={brand} /></a>
-          <p>{text.tagline}</p>
+          <p>{brandTagline || text.tagline}</p>
           <BookButton id="lp-footer-book" label={copy.nav.book} size="sm" />
         </div>
         <nav className="lp-site-footer__col" aria-label={text.explore}>
@@ -851,8 +852,14 @@ export const LandingPage: React.FC = () => {
         ? value.replace(/\bUpklick\b/gi, () => brandName)
         : value,
     ) : original;
-    return { ...content, nav: { ...content.nav, links: content.nav.links.filter(link => link.id !== 'pricing') } };
-  }, [cms, language, brandName]);
+    const brandDescription = brand?.brand.description?.trim();
+    const brandedContent = brandDescription ? {
+      ...content,
+      meta: { ...content.meta, description: brandDescription },
+      hero: { ...content.hero, lead: brandDescription },
+    } : content;
+    return { ...brandedContent, nav: { ...brandedContent.nav, links: brandedContent.nav.links.filter(link => link.id !== 'pricing') } };
+  }, [cms, language, brandName, brand?.brand.description]);
   // The reseller (white-label) chapter is Upklick's own pitch — never shown on a tenant's branded preview.
   const whiteLabel = brand ? null : whiteLabelContent[language === 'ar' ? 'ar' : 'en'];
   const visibleLinks = copy.nav.links.filter(link => !['features', 'faq', 'get-started'].includes(link.id));
