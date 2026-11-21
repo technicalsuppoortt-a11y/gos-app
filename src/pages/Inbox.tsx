@@ -62,6 +62,7 @@ import type { Lead } from "../types/business";
 import { showToast } from "../utils/toast";
 import { Select } from "../components/ui/Select";
 import { ChannelIcon } from "./inbox/ChannelIcons";
+import { RemoteAttachment } from "./inbox/RemoteAttachment";
 import {
   channelMeta,
   channelOrder,
@@ -1499,7 +1500,9 @@ export const Inbox: React.FC<Props> = ({ aiMode, setAiMode, setSent }) => {
                           {localizeNode(m.attachments && (
                             <div className={`flex flex-wrap gap-2 ${m.text || m.voice ? "mt-2.5" : ""}`}>
                               {localizeNode(m.attachments.map((file) =>
-                                file.isImage ? (
+                                file.remote ? (
+                                  <RemoteAttachment key={file.id} file={file} />
+                                ) : file.isImage ? (
                                   <a key={file.id} href={file.url} target="_blank" rel="noreferrer" className="block overflow-hidden rounded-xl ring-1 ring-black/5">
                                     <img src={file.url} alt={file.name} className="h-32 w-44 object-cover" />
                                   </a>

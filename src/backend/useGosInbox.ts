@@ -1,6 +1,21 @@
 import { useCallback, useEffect, useState } from 'react';
 import { gosApi, type ApiRecord } from './gosApi';
-import type { Conversation } from '../pages/inbox/inboxData';
+import type { Attachment, Conversation } from '../pages/inbox/inboxData';
+
+const MEDIA_LABEL = /^\[(Image|Video|Voice message|Document|Sticker|Media)\]$/;
+
+function mediaAttachment(message: ApiRecord): Attachment {
+  const mime = String(message.media.mime || '');
+  return {
+    id: `${message.id}-media`,
+    name: MEDIA_LABEL.test(message.body || '') || !message.body ? (mime.split('/')[0] || 'file') : String(message.body).slice(0, 60),
+    size: Number(message.media.size) || 0,
+    url: '',
+    isImage: mime.startsWith('image/'),
+    remote: String(message.media.url),
+    mime,
+  };
+}
 
 export function normalizeConversation(row: ApiRecord, messages: ApiRecord[] = row.messages ?? []): Conversation {
   const name = row.customer_name || row.name || 'Customer';
@@ -20,7 +35,9 @@ export function normalizeConversation(row: ApiRecord, messages: ApiRecord[] = ro
     followUp: !aiPaused && aiState !== 'paused', followUpRules: [true, true, true], starred: false, activity: [],
     messages: messages.map(message => ({
       id: message.id,
-      text: message.body || '',
+      // A media label such as "[Image]" only stands in for the file; hide it once the file is there.
+      text: message.media?.url && MEDIA_LABEL.test(message.body || '') ? '' : message.body || '',
+      ...(message.media?.url ? { attachments: [mediaAttachment(message)] } : {}),
       time: message.created_at || '',
       sender: message.actor === 'agent' ? 'agent' : message.role === 'assistant' || ['ai', 'assistant'].includes(message.sender) || ['ai', 'assistant'].includes(message.sender_type) || message.direction === 'outbound' ? 'ai' : 'customer',
       citationsCount: Array.isArray(message.citations) ? message.citations.length : 0,
