@@ -44,6 +44,7 @@ export function stripeCredentialPaths({ scope, ownerId }) {
   if (scope === 'super_admin') return ['paymentGatewayConfigurations/stripe', 'tenants/platform/integrations/paymentGateway_stripe'];
   return [
     ...ids.map(id => `paymentGatewayConfigurations/${scope}_${id}_stripe`),
+    ...ids.map(id => `workspaces/${id}/privateIntegrations/paymentGateway_stripe`),
     ...ids.map(id => `tenants/${id}/integrations/paymentGateway_stripe`),
   ];
 }
@@ -103,7 +104,7 @@ function sessionUserId(session) {
  * Records the verified payment and attaches it to the related billing request (if any).
  * Plan activation stays with the existing billing approval flow.
  */
-export async function fulfillCheckoutSession(db, session) {
+export async function fulfillCheckoutSession(db, session, extra = {}) {
   if (session?.payment_status !== 'paid') return { success: false, paid: false, status: session?.payment_status ?? 'unknown' };
   const ref = db.doc(`${SESSIONS}/${session.id}`);
   const txResult = await db.runTransaction(async tx => {
@@ -112,8 +113,10 @@ export async function fulfillCheckoutSession(db, session) {
     const metadata = session.metadata ?? {};
     const kind = record.kind || metadata.kind || '';
     const domainOrderId = record.domainOrderId || metadata.domainOrderId || '';
+    const productOrderId = record.productOrderId || metadata.productOrderId || '';
+    const productTenantId = record.productTenantId || metadata.productTenantId || '';
     if (record.fulfilled) {
-      return { success: true, alreadyProcessed: true, sessionId: session.id, planId: record.planId ?? '', planName: record.planName ?? '', kind, domainOrderId };
+      return { success: true, alreadyProcessed: true, sessionId: session.id, planId: record.planId ?? '', planName: record.planName ?? '', kind, domainOrderId, productOrderId, productTenantId };
     }
     const now = new Date().toISOString();
     const userId = record.userId || sessionUserId(session);
@@ -128,7 +131,7 @@ export async function fulfillCheckoutSession(db, session) {
       verifiedAt: now,
     };
     let requestRef = null;
-    if (requestId && /^[\w-]{1,150}$/.test(requestId)) {
+    if (requestId && /^[\w-]{1,150}$/.test(requestId) && kind !== 'product') {
       const candidate = db.doc(`billingRequests/${requestId}`);
       const requestDoc = await tx.get(candidate);
       const owner = requestDoc.data()?.requesterId ?? requestDoc.data()?.userId;
@@ -146,13 +149,15 @@ export async function fulfillCheckoutSession(db, session) {
       requestId,
       ...(kind ? { kind } : {}),
       ...(domainOrderId ? { domainOrderId } : {}),
+      ...(productOrderId ? { productOrderId } : {}),
+      ...(productTenantId ? { productTenantId } : {}),
       status: 'paid',
       fulfilled: true,
       fulfilledAt: now,
       payment,
     }, { merge: true });
     if (requestRef) tx.set(requestRef, { gatewayPayment: payment, stripeSessionId: session.id }, { merge: true });
-    return { success: true, alreadyProcessed: false, sessionId: session.id, planId: record.planId || metadata.planId || '', planName: record.planName || metadata.planName || '', kind, domainOrderId };
+    return { success: true, alreadyProcessed: false, sessionId: session.id, planId: record.planId || metadata.planId || '', planName: record.planName || metadata.planName || '', kind, domainOrderId, productOrderId, productTenantId };
   });
 
   if (txResult.kind === 'domain' && txResult.domainOrderId && /^[\w-]{1,150}$/.test(txResult.domainOrderId)) {
@@ -174,25 +179,69 @@ export async function fulfillCheckoutSession(db, session) {
     return { ...txResult, domainFulfillment };
   }
 
+  if (txResult.kind === 'product' && txResult.productOrderId && txResult.productTenantId && /^[\w-]{1,150}$/.test(txResult.productOrderId) && /^[\w-]{1,150}$/.test(txResult.productTenantId)) {
+    const paidAt = new Date().toISOString();
+    const bareTenant = txResult.productTenantId.replace(/^workspace-/, '');
+    const candidateTenants = [...new Set([txResult.productTenantId, bareTenant, `workspace-${bareTenant}`].filter(Boolean))];
+    for (const sc of candidateTenants) {
+      const mirrorRef = db.doc(`settings/checkoutRequests_${sc}/items/${txResult.productOrderId}`);
+      const mirrorSnap = await mirrorRef.get().catch(() => null);
+      if (mirrorSnap?.exists) {
+        await mirrorRef.set({ status: 'Approved', stripeSessionId: session.id, reviewedAt: paidAt }, { merge: true }).catch(() => null);
+      }
+      const reqRef = db.doc(`tenants/${sc}/checkoutRequests/${txResult.productOrderId}`);
+      const reqSnap = await reqRef.get().catch(() => null);
+      if (reqSnap?.exists) {
+        await reqRef.set({ status: 'Approved', stripeSessionId: session.id, reviewedAt: paidAt }, { merge: true }).catch(() => null);
+      }
+      const orderRef = db.doc(`tenants/${sc}/orders/${txResult.productOrderId}`);
+      const orderSnap = await orderRef.get().catch(() => null);
+      if (orderSnap?.exists) {
+        await orderRef.set({ status: 'Paid', stripeSessionId: session.id, paidAt }, { merge: true }).catch(() => null);
+      }
+      const txDocRef = db.doc(`tenants/${sc}/transactions/${txResult.productOrderId}`);
+      const txDocSnap = await txDocRef.get().catch(() => null);
+      if (txDocSnap?.exists) {
+        await txDocRef.set({ status: 'Paid', stripeSessionId: session.id, paidAt }, { merge: true }).catch(() => null);
+      }
+    }
+    if (typeof extra.fulfillProductPurchase === 'function') {
+      await extra.fulfillProductPurchase({
+        tenantId: txResult.productTenantId,
+        orderId: txResult.productOrderId,
+        session,
+      }).catch(() => null);
+    }
+  }
+
   return txResult;
 }
 
+function normalizeUserRole(user) {
+  const raw = String(user?.role || '').trim().toUpperCase();
+  if (raw === 'OWNER') return 'USER';
+  if (raw) return raw;
+  return user?.uid ? 'USER' : '';
+}
+
 function canManageScope(user, owner) {
-  if (MANAGER_ROLES[owner.scope].includes(user.role)) return true;
-  const own = [user.uid, user.tenantId].filter(Boolean);
+  const role = normalizeUserRole(user);
+  if (MANAGER_ROLES[owner.scope].includes(role)) return true;
+  const bareUserTenant = String(user.tenantId || '').replace(/^workspace-/, '');
+  const own = [user.uid, user.tenantId, bareUserTenant].filter(Boolean);
   const bare = owner.ownerId.replace(/^workspace-/, '');
-  if (owner.scope === 'admin') return user.role === 'ADMIN' && (own.includes(owner.ownerId) || own.includes(bare));
-  if (owner.scope === 'user') return user.role === 'USER' && (own.includes(owner.ownerId) || own.includes(bare));
+  if (owner.scope === 'admin') return role === 'ADMIN' && (own.includes(owner.ownerId) || own.includes(bare));
+  if (owner.scope === 'user') return role === 'USER' && (own.includes(owner.ownerId) || own.includes(bare));
   return false;
 }
 
-export async function stripeGatewayRequest(request, { actor, db, fetcher = fetch }) {
-  const user = await actor(request);
+export async function stripeGatewayRequest(request, { actor, db, fetcher = fetch, extra = {} }) {
   const data = request.data ?? {};
   const operation = data.operation;
   if (!['test', 'createCheckout', 'verifySession'].includes(operation)) throw new HttpsError('invalid-argument', 'Invalid Stripe request.');
 
   if (operation === 'test') {
+    const user = await actor(request);
     const owner = stripeOwner(data.scope, data.tenantId || data.ownerId);
     if (!canManageScope(user, owner)) throw new HttpsError('permission-denied', 'You do not have permission to test this Stripe account.');
     const stored = (await readStripeCredentials(db, owner)) ?? {};
@@ -209,6 +258,23 @@ export async function stripeGatewayRequest(request, { actor, db, fetcher = fetch
   }
 
   if (operation === 'createCheckout') {
+    let user;
+    if (data.kind === 'product') {
+      try {
+        user = await actor(request);
+      } catch (err) {
+        if (err?.code !== 'unauthenticated') throw err;
+        const guestId = String(data.buyerSessionId || data.productOrderId || 'guest').replace(/[^\w-]/g, '').slice(0, 80) || 'guest';
+        user = {
+          uid: `guest_${guestId}`,
+          email: String(data.customerEmail || '').trim().toLowerCase(),
+          role: 'GUEST',
+          isGuest: true,
+        };
+      }
+    } else {
+      user = await actor(request);
+    }
     const owner = stripeOwner(data.scope, data.ownerId);
     const credentials = await readStripeCredentials(db, owner);
     const origin = request.rawRequest?.headers?.origin;
@@ -218,6 +284,10 @@ export async function stripeGatewayRequest(request, { actor, db, fetcher = fetch
     const planId = String(data.planId || '').slice(0, 150);
     const credits = Math.max(0, Math.round(Number(data.credits) || 0));
     const requestId = typeof data.requestId === 'string' && /^[\w-]{1,150}$/.test(data.requestId) ? data.requestId : '';
+    const kind = data.kind === 'product' ? 'product' : '';
+    const productOrderId = kind === 'product' && typeof data.productOrderId === 'string' && /^[\w-]{1,150}$/.test(data.productOrderId) ? data.productOrderId : '';
+    const productTenantId = kind === 'product' && typeof data.tenantId === 'string' && /^[\w-]{1,150}$/.test(data.tenantId) ? data.tenantId : '';
+    const customerEmail = String(data.customerEmail || user.email || '').trim();
     const fallbackLink = data.interval === 'year' ? credentials?.paymentLinkAnnual || credentials?.paymentLink : credentials?.paymentLink;
     const fallback = () => {
       if (!fallbackLink) return null;
@@ -233,7 +303,19 @@ export async function stripeGatewayRequest(request, { actor, db, fetcher = fetch
     const unitAmount = toMinorUnits(data.amount, currency);
     const successUrl = safeReturnUrl(data.successUrl, origin, '/dashboard/settings/billing?payment=success&session_id={CHECKOUT_SESSION_ID}');
     const cancelUrl = safeReturnUrl(data.cancelUrl, origin, '/dashboard/settings/billing?payment=cancelled');
-    const metadata = { userId: user.uid, ownerScope: owner.scope, ownerId: owner.ownerId, planId, planName, credits: String(credits), currency, requestId };
+    const metadata = {
+      userId: user.uid,
+      ownerScope: owner.scope,
+      ownerId: owner.ownerId,
+      planId,
+      planName,
+      credits: String(credits),
+      currency,
+      requestId,
+      ...(kind ? { kind } : {}),
+      ...(productOrderId ? { productOrderId } : {}),
+      ...(productTenantId ? { productTenantId } : {}),
+    };
     const form = {
       mode: 'payment',
       'line_items[0][price_data][currency]': currency,
@@ -244,7 +326,7 @@ export async function stripeGatewayRequest(request, { actor, db, fetcher = fetch
       success_url: successUrl,
       cancel_url: cancelUrl,
       ...Object.fromEntries(Object.entries(metadata).map(([key, value]) => [`metadata[${key}]`, value])),
-      ...(user.email ? { customer_email: String(user.email) } : {}),
+      ...(customerEmail ? { customer_email: customerEmail } : {}),
     };
     let session;
     try {
@@ -258,6 +340,10 @@ export async function stripeGatewayRequest(request, { actor, db, fetcher = fetch
     await db.doc(`${SESSIONS}/${session.id}`).set({
       sessionId: session.id, userId: user.uid, ownerScope: owner.scope, ownerId: owner.ownerId,
       planId, planName, credits, amount: Number(data.amount), currency: currency.toUpperCase(), requestId,
+      ...(kind ? { kind } : {}),
+      ...(productOrderId ? { productOrderId } : {}),
+      ...(productTenantId ? { productTenantId } : {}),
+      ...(customerEmail ? { customerEmail } : {}),
       mode: credentials.mode ?? 'sandbox', status: 'open', fulfilled: false, createdAt: new Date().toISOString(),
     }, { merge: true });
     return { url: session.url, sessionId: session.id };
@@ -268,14 +354,24 @@ export async function stripeGatewayRequest(request, { actor, db, fetcher = fetch
   if (!/^cs_[A-Za-z0-9_]+$/.test(sessionId)) throw new HttpsError('invalid-argument', 'Invalid Stripe session.');
   const record = (await db.doc(`${SESSIONS}/${sessionId}`).get()).data();
   if (!record) throw new HttpsError('not-found', 'Stripe session not found.');
-  if (record.userId !== user.uid) throw new HttpsError('permission-denied', 'This payment belongs to another account.');
-  if (record.fulfilled) return { success: true, alreadyProcessed: true, planId: record.planId ?? '', planName: record.planName ?? '', credits: record.credits ?? 0 };
+  let user = null;
+  if (record.kind === 'product') {
+    try {
+      user = await actor(request);
+    } catch (err) {
+      if (err?.code !== 'unauthenticated') throw err;
+    }
+  } else {
+    user = await actor(request);
+  }
+  if (record.kind !== 'product' && record.userId !== user.uid) throw new HttpsError('permission-denied', 'This payment belongs to another account.');
+  if (record.fulfilled) return { success: true, alreadyProcessed: true, planId: record.planId ?? '', planName: record.planName ?? '', credits: record.credits ?? 0, productOrderId: record.productOrderId ?? '' };
   const credentials = await readStripeCredentials(db, stripeOwner(record.ownerScope, record.ownerId));
   if (!credentials?.secretKey) throw new HttpsError('failed-precondition', 'Stripe is not configured for this account.');
   const session = await stripeFetch(fetcher, credentials.secretKey, `/checkout/sessions/${encodeURIComponent(sessionId)}`);
-  if (sessionUserId(session) !== user.uid) throw new HttpsError('permission-denied', 'This payment belongs to another account.');
+  if (record.kind !== 'product' && sessionUserId(session) !== user.uid) throw new HttpsError('permission-denied', 'This payment belongs to another account.');
   if (session.payment_status !== 'paid') return { success: false, paid: false, status: session.payment_status };
-  return { ...(await fulfillCheckoutSession(db, session)), credits: record.credits ?? 0 };
+  return { ...(await fulfillCheckoutSession(db, session, extra)), credits: record.credits ?? 0, productOrderId: record.productOrderId ?? '' };
 }
 
 /** Verifies a Stripe-Signature header (t=...,v1=...) against the raw payload. */
@@ -289,7 +385,7 @@ export function verifyStripeSignature(rawBody, header, secret, toleranceSeconds 
   return signatures.some(signature => signature.length === expected.length && timingSafeEqual(Buffer.from(signature), Buffer.from(expected)));
 }
 
-export function createStripeWebhookHandler({ db, fetcher = fetch }) {
+export function createStripeWebhookHandler({ db, fetcher = fetch, extra = {} }) {
   return async (req, res) => {
     if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
     const rawBody = Buffer.isBuffer(req.rawBody) ? req.rawBody.toString('utf8') : typeof req.body === 'string' ? req.body : JSON.stringify(req.body ?? {});
@@ -307,7 +403,7 @@ export function createStripeWebhookHandler({ db, fetcher = fetch }) {
       }
       // Always trust Stripe's copy of the session, never the posted payload.
       const session = await stripeFetch(fetcher, credentials.secretKey, `/checkout/sessions/${encodeURIComponent(String(object.id || ''))}`);
-      const result = await fulfillCheckoutSession(db, session);
+      const result = await fulfillCheckoutSession(db, session, extra);
       return res.status(200).json({ received: true, ...result });
     } catch (error) {
       return res.status(400).json({ error: error?.message || 'Webhook processing failed' });

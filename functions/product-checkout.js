@@ -85,15 +85,34 @@ async function buildQuote(read, db, root, data, now, verifiedEmail) {
   if (!product?.config || !isPublicProduct(product)) throw new HttpsError('not-found', 'This product is not available.');
   const c = product.config, checkout = c.experience?.checkout || {};
   if (checkout.secure === false) throw new HttpsError('failed-precondition', 'Checkout is disabled for this product.');
+  const bareTenantId = data.tenantId ? String(data.tenantId).replace(/^workspace-/, '') : '';
   const tenantPaymentSnap = await read(root.collection('paymentMethods').doc('config'));
   const mirrorPaymentSnap = !tenantPaymentSnap.exists && data.tenantId ? await read(db.doc(`settings/paymentMethods_user_${data.tenantId}`)) : null;
+  const bareTenantPaymentSnap = !tenantPaymentSnap.exists && !mirrorPaymentSnap?.exists && bareTenantId && bareTenantId !== data.tenantId
+    ? await read(db.doc(`tenants/${bareTenantId}/paymentMethods/config`))
+    : null;
+  const bareMirrorPaymentSnap = !tenantPaymentSnap.exists && !mirrorPaymentSnap?.exists && !bareTenantPaymentSnap?.exists && bareTenantId && bareTenantId !== data.tenantId
+    ? await read(db.doc(`settings/paymentMethods_user_${bareTenantId}`))
+    : null;
   const settings = tenantPaymentSnap.exists
     ? tenantPaymentSnap.data()
     : mirrorPaymentSnap?.exists
       ? mirrorPaymentSnap.data()
-      : (await read(db.doc('settings/paymentMethods'))).data();
-  const methods = (settings?.methods || []).filter(method => method.enabled && method.type === 'manual' && validId(method.id) && text(method.name, 60) && text(method.account, 150))
-    .map(({ id, provider, name, account, instructions }) => ({ id, provider: provider || id, name, account, instructions }));
+      : bareTenantPaymentSnap?.exists
+        ? bareTenantPaymentSnap.data()
+        : bareMirrorPaymentSnap?.exists
+          ? bareMirrorPaymentSnap.data()
+          : (await read(db.doc('settings/paymentMethods'))).data();
+  const methods = (settings?.methods || []).flatMap(method => {
+    if (!method?.enabled || !validId(method.id) || !text(method.name, 60)) return [];
+    if (method.type === 'manual' && text(method.account, 150)) {
+      return [{ id: method.id, provider: method.provider || method.id, type: 'manual', name: method.name, account: method.account, instructions: method.instructions }];
+    }
+    if (method.type === 'gateway' && (!method.status || method.status === 'Connected' || method.status === 'Configured')) {
+      return [{ id: method.id, provider: method.provider || method.id, type: 'gateway', name: method.name }];
+    }
+    return [];
+  });
   const addOnId = checkout.bumpEnabled && checkout.bumpProductId;
   const addOn = validId(addOnId) && addOnId !== data.productId ? (await read(root.collection('products').doc(addOnId))).data() : null;
   const bump = addOn?.status === 'Active' && addOn.config?.currency === c.currency && addOn.config?.billing === 'One-time'
@@ -118,10 +137,11 @@ function receiptFile(receipt) {
   return { type, name, content };
 }
 
-export async function productCheckoutRequest(request, { db, workspace, bucket, fulfillPaidCheckout, portal, now = Date.now }) {
+export async function productCheckoutRequest(request, { db, workspace, bucket, fulfillPaidCheckout, portal, sendDecisionEmail, now = Date.now }) {
   const data = request.data || {};
-  if (['sync_portal_access', 'syncPortalAccess'].includes(data.action)) return syncPortalAccess(request, { db, workspace, portal });
-  if (['review', 'receipt'].includes(data.action)) return reviewCheckout(request, { db, workspace, bucket, fulfillPaidCheckout, now });
+  if (data.action === 'notify_decision') return notifyCheckoutDecision(request, { workspace, sendDecisionEmail });
+  if (['sync_portal_access', 'syncPortalAccess'].includes(data.action)) return syncPortalAccess(request, { db, workspace, portal, sendDecisionEmail });
+  if (['review', 'receipt'].includes(data.action)) return reviewCheckout(request, { db, workspace, bucket, fulfillPaidCheckout, sendDecisionEmail, now });
   if (!validId(data.tenantId) || !validId(data.productId)) throw new HttpsError('invalid-argument', 'Choose a valid product.');
   const root = db.doc(`tenants/${data.tenantId}`);
   const at = now();
@@ -130,7 +150,7 @@ export async function productCheckoutRequest(request, { db, workspace, bucket, f
   if (data.action === 'quote') return (await buildQuote(ref => ref.get(), db, root, data, at, verifiedEmail)).quote;
   if (data.action !== 'submit' || !/^[a-f0-9-]{36}$/i.test(data.submissionId || '')) throw new HttpsError('invalid-argument', 'Invalid checkout request.');
   const customer = { name: text(data.name, 150), email: text(data.email, 254).toLowerCase(), phone: text(data.phone, 50) };
-  if (!customer.name || !emailPattern.test(customer.email) || customer.phone.replace(/\D/g, '').length < 5) throw new HttpsError('invalid-argument', 'Enter your name, email address and phone number.');
+  if (!customer.name || !emailPattern.test(customer.email)) throw new HttpsError('invalid-argument', 'Enter your name and email address.');
   const id = hash(JSON.stringify([data.productId, data.submissionId]));
   const ref = root.collection('checkoutRequests').doc(id);
   const existing = (await ref.get()).data();
@@ -149,12 +169,16 @@ export async function productCheckoutRequest(request, { db, workspace, bucket, f
     return { method, fields: fields.map(({ label, value }) => ({ label, value })).filter(field => field.value) };
   };
   const initial = await buildQuote(ref => ref.get(), db, root, data, at, verifiedEmail);
+  if (initial.product?.config?.experience?.checkout?.requirePhone && customer.phone.replace(/\D/g, '').length < 5) {
+    throw new HttpsError('invalid-argument', 'Enter your name, email address and phone number.');
+  }
   checkQuote(initial);
   const limitRef = root.collection('checkoutSubmissionLimits').doc(hash(String(request.rawRequest?.ip || customer.email)));
   const currentLimit = (await limitRef.get()).data();
   if (currentLimit && at - currentLimit.at < 60000 && currentLimit.count >= 8) throw new HttpsError('resource-exhausted', 'Too many submissions. Please wait a minute and try again.');
   const contactQuery = root.collection('contacts').where('email', '==', customer.email).limit(1);
-  const receipt = initial.quote.totals.dueToday > 0 ? receiptFile(data.receipt) : null;
+  const initialMethod = initial.quote.totals.dueToday > 0 ? initial.quote.methods.find(item => item.id === data.methodId) : null;
+  const receipt = initial.quote.totals.dueToday > 0 && initialMethod?.type !== 'gateway' ? receiptFile(data.receipt) : null;
   const attachment = receipt && { name: receipt.name, type: receipt.type, path: `checkoutReceipts/${root.id}/${id}/${randomUUID()}` };
   const object = attachment ? bucket.file(attachment.path) : null;
   if (object) await object.save(receipt.content, { resumable: false, contentType: receipt.type, preconditionOpts: { ifGenerationMatch: 0 } });
@@ -177,8 +201,10 @@ export async function productCheckoutRequest(request, { db, workspace, bucket, f
     const items = [{ productId: data.productId, productName: product.name, amount: primaryAmount, quantity: 1 }];
     if (data.bump && quote.bump) items.push({ productId: quote.bump.id, productName: quote.bump.name, amount: quote.totals.bumpTotal, quantity: 1 });
     const isFreeInstant = quote.totals.dueToday === 0 && product.config.delivery !== 'After approval';
+    const ownerId = root.id.replace(/^workspace-/, '');
     const record = {
-      id, orderId: id, source: 'Product checkout', productId: data.productId, productName: product.name, items, contactId: contactRef.id,
+      id, orderId: id, tenantId: root.id, workspaceId: root.id, ownerId,
+      source: 'Product checkout', productId: data.productId, productName: product.name, items, contactId: contactRef.id,
       customerName: customer.name, customerEmail: customer.email, customerPhone: customer.phone,
       currency: quote.totals.currency, amount: quote.totals.dueToday, total: quote.totals.dueToday,
       discountCode: text(data.discountCode, 100), discount: quote.totals.discount,
@@ -247,16 +273,55 @@ export async function productCheckoutRequest(request, { db, workspace, bucket, f
   return { id };
 }
 
-async function syncPortalAccess(request, { db, workspace, portal }) {
-  const { root, user, canConfirmLegacyCheckout } = await workspace(request, 'products');
+async function notifyCheckoutDecision(request, { workspace, sendDecisionEmail }) {
+  const { root } = await workspace(request, 'products');
+  const data = request.data || {};
+  const decision = data.decision;
+  const email = text(data.email, 254).toLowerCase();
+  if (!['approve', 'reject'].includes(decision) || !emailPattern.test(email)) {
+    throw new HttpsError('invalid-argument', 'Valid recipient email and decision are required.');
+  }
+  const sent = await sendDecisionEmail?.({
+    root,
+    decision,
+    id: text(data.requestId || data.id, 180) || randomUUID(),
+    email,
+    customerName: text(data.customerName, 150),
+    productId: text(data.productId, 150),
+    productName: text(data.productName, 180) || 'Purchased Product',
+    reviewNote: text(data.note || data.reviewNote, 1000),
+    portalUrl: text(data.portalUrl, 2000),
+    loginUrl: text(data.loginUrl, 2000),
+    initialPassword: text(data.initialPassword, 64) || '12345678',
+  });
+  return { ok: true, emailSent: Boolean(sent) };
+}
+
+async function syncPortalAccess(request, { db, workspace, portal, sendDecisionEmail }) {
+  const { root: primaryRoot, user, canConfirmLegacyCheckout } = await workspace(request, 'products');
   const { requestId } = request.data;
   if (typeof requestId !== 'string' || !/^[\w-]{1,310}$/.test(requestId)) {
     throw new HttpsError('invalid-argument', 'Invalid checkout request.');
   }
-  const requestRef = root.collection('checkoutRequests').doc(requestId);
-  const canonical = (await requestRef.get()).data();
-  const legacyRef = db.doc(`settings/checkoutRequests_${root.id}/items/${requestId}`);
-  const legacy = canonical ? undefined : (await legacyRef.get()).data();
+  let root = primaryRoot;
+  let requestRef = root.collection('checkoutRequests').doc(requestId);
+  let canonical = (await requestRef.get()).data();
+  let legacyRef = db.doc(`settings/checkoutRequests_${root.id}/items/${requestId}`);
+  let legacy = canonical ? undefined : (await legacyRef.get()).data();
+  if (!canonical && !legacy && canConfirmLegacyCheckout && user?.uid && (root.id === user.uid || root.id === `workspace-${user.uid}`)) {
+    const altScope = root.id === user.uid ? `workspace-${user.uid}` : user.uid;
+    const altRoot = db.doc(`tenants/${altScope}`);
+    const altCanonical = (await altRoot.collection('checkoutRequests').doc(requestId).get()).data();
+    const altLegacyRef = db.doc(`settings/checkoutRequests_${altScope}/items/${requestId}`);
+    const altLegacy = altCanonical ? undefined : (await altLegacyRef.get()).data();
+    if (altCanonical || altLegacy) {
+      root = altRoot;
+      requestRef = altRoot.collection('checkoutRequests').doc(requestId);
+      canonical = altCanonical;
+      legacyRef = altLegacyRef;
+      legacy = altLegacy;
+    }
+  }
   const checkout = canonical || legacy;
   if (!checkout) throw new HttpsError('not-found', 'Checkout request not found.');
   if (!/^(approved|paid)$/i.test(checkout.status || '')) {
@@ -337,50 +402,107 @@ async function syncPortalAccess(request, { db, workspace, portal }) {
     sourcePath: source.path, approvedCheckoutSource, relatedPaymentRefs: orderRefs, catalogProductName,
   })));
   if (!results.every(Boolean)) throw new HttpsError('failed-precondition', 'Customer portal access could not be synced.');
+  if (sendDecisionEmail) {
+    const cleanEmail = text(order.customerEmail || order.customer_email || order.email || order.customer?.email, 254).toLowerCase();
+    for (const product of products) {
+      await sendDecisionEmail({
+        root,
+        decision: 'approve',
+        id: source.id,
+        email: cleanEmail,
+        customerName: text(order.customerName || order.customer?.name, 150),
+        productId: product.id,
+        productName: product.name || order.productName || 'Purchased Product',
+      }).catch(() => null);
+    }
+  }
   return { ok: true };
 }
 
-function queueRequestEmail(tx, root, record, kind, createdAt) {
-  tx.set(root.collection('commerceDeliveries').doc(`${record.orderId}-${kind}`), { kind, email: record.customerEmail, productId: record.productId, orderId: record.orderId, status: 'queued', createdAt });
+function queueRequestEmail(tx, root, record, kind, createdAt, extra = {}) {
+  tx.set(root.collection('commerceDeliveries').doc(`${record.orderId}-${kind}`), {
+    kind,
+    email: record.customerEmail,
+    customerName: record.customerName || '',
+    productId: record.productId,
+    productName: record.productName || '',
+    orderId: record.orderId,
+    ...extra,
+    status: 'queued',
+    createdAt,
+  });
 }
 
-async function reviewCheckout(request, { db, workspace, bucket, fulfillPaidCheckout, now }) {
-  const { user, root } = await workspace(request, 'products');
+async function reviewCheckout(request, { db, workspace, bucket, fulfillPaidCheckout, sendDecisionEmail, now }) {
+  const { user, root: primaryRoot, canConfirmLegacyCheckout } = await workspace(request, 'products');
   const { id, action, decision } = request.data;
-  if (typeof id !== 'string' || !/^[a-f0-9]{64}$/.test(id)) throw new HttpsError('invalid-argument', 'Invalid checkout request.');
-  const ref = root.collection('checkoutRequests').doc(id);
+  if (typeof id !== 'string' || !/^[\w-]{8,310}$/.test(id)) throw new HttpsError('invalid-argument', 'Invalid checkout request.');
   if (action === 'receipt') {
-    const receipt = (await ref.get()).data()?.receipt;
-    if (!receipt?.path?.startsWith(`checkoutReceipts/${root.id}/${id}/`)) throw new HttpsError('not-found', 'No receipt was submitted.');
+    if (!/^[a-f0-9]{64}$/.test(id)) throw new HttpsError('not-found', 'No receipt was submitted.');
+    const receipt = (await primaryRoot.collection('checkoutRequests').doc(id).get()).data()?.receipt;
+    if (!receipt?.path?.startsWith(`checkoutReceipts/${primaryRoot.id}/${id}/`)) throw new HttpsError('not-found', 'No receipt was submitted.');
     const [url] = await bucket.file(receipt.path).getSignedUrl({ action: 'read', expires: now() + 5 * 60000, version: 'v4', responseDisposition: 'inline', responseType: receipt.type });
     return { url };
   }
   const reviewNote = text(request.data.note, 1000);
   if (!['approve', 'reject'].includes(decision) || decision === 'reject' && !reviewNote) throw new HttpsError('invalid-argument', 'Enter a reason to reject this request.');
   const status = decision === 'approve' ? 'Approved' : 'Rejected';
+  let root = primaryRoot;
+  let ref = root.collection('checkoutRequests').doc(id);
+  let mirrorRef = null;
+  if (!(await ref.get()).exists && canConfirmLegacyCheckout) {
+    const candidateScopes = [root.id];
+    if (user?.uid && (root.id === user.uid || root.id === `workspace-${user.uid}`)) {
+      candidateScopes.push(root.id === user.uid ? `workspace-${user.uid}` : user.uid);
+    }
+    for (const scope of candidateScopes) {
+      const candidateRoot = db.doc(`tenants/${scope}`);
+      const candidateRef = candidateRoot.collection('checkoutRequests').doc(id);
+      if ((await candidateRef.get()).exists) {
+        root = candidateRoot;
+        ref = candidateRef;
+        break;
+      }
+      const candidateMirror = db.doc(`settings/checkoutRequests_${scope}/items/${id}`);
+      if ((await candidateMirror.get()).exists) {
+        root = candidateRoot;
+        ref = candidateRef;
+        mirrorRef = candidateMirror;
+        break;
+      }
+    }
+  }
+  let reviewedRecord = null;
+  let reviewedProductName = '';
   const result = await db.runTransaction(async tx => {
-    const record = (await tx.get(ref)).data();
+    const canonicalSnap = await tx.get(ref);
+    const mirrorSnap = !canonicalSnap.exists && mirrorRef ? await tx.get(mirrorRef) : null;
+    const record = canonicalSnap.data() || mirrorSnap?.data();
     if (!record) throw new HttpsError('not-found', 'Checkout request not found.');
     if (record.status === status) return { status };
-    if (record.status !== 'Pending') throw new HttpsError('failed-precondition', 'This request has already been reviewed.');
+    if (record.status && record.status !== 'Pending') throw new HttpsError('failed-precondition', 'This request has already been reviewed.');
     const counterRef = decision === 'reject' && record.couponCounter ? db.doc(record.couponCounter) : null;
     const counter = counterRef ? await tx.get(counterRef) : null;
-    const product = (await tx.get(root.collection('products').doc(record.productId))).data();
+    const product = record.productId ? (await tx.get(root.collection('products').doc(record.productId))).data() : null;
     const buyerEmail = String(record.customerEmail || '').trim().toLowerCase();
     const leadId = buyerEmail ? 'lead-order-' + hash(buyerEmail).slice(0, 24) : '';
     const leadRef = leadId ? root.collection('leads').doc(leadId) : null;
     const existingLeadSnap = leadRef ? await tx.get(leadRef) : null;
     const decidedAt = new Date(now()).toISOString();
-    const review = { status, reviewNote, decidedAt, decidedBy: user.uid };
-    tx.update(ref, review);
+    const review = { status, reviewNote, rejectionReason: decision === 'reject' ? reviewNote : '', decidedAt, decidedBy: user.uid };
+    if (canonicalSnap.exists) tx.update(ref, review);
+    else tx.set(ref, { ...record, id, orderId: record.orderId || id, tenantId: root.id, workspaceId: root.id, ...review });
+    if (mirrorRef) tx.set(mirrorRef, review, { merge: true });
     const payment = { ...review, status: decision === 'approve' ? 'Paid' : 'Rejected' };
-    tx.set(root.collection('orders').doc(id), { ...record, ...payment }, { merge: true });
-    if (record.amount > 0) tx.set(root.collection('transactions').doc(id), { ...record, ...payment }, { merge: true });
+    tx.set(root.collection('orders').doc(id), { ...record, orderId: record.orderId || id, ...payment }, { merge: true });
+    if ((record.amount ?? record.totals?.dueToday ?? 0) > 0) tx.set(root.collection('transactions').doc(id), { ...record, orderId: record.orderId || id, ...payment }, { merge: true });
+    const prodName = record.productName || product?.name || 'Product';
+    reviewedRecord = { ...record, orderId: record.orderId || id, customerEmail: buyerEmail };
+    reviewedProductName = prodName;
     if (decision === 'approve' && leadRef) {
       const prevLead = existingLeadSnap?.data();
       const targetStage = product?.config?.crmRouting?.stageId || 'PAYMENT_COMPLETED';
       const crmTag = product?.config?.automations?.crmTag;
-      const prodName = record.productName || product?.name || 'Product';
       const rawProdType = String(product?.type || '').trim().toLowerCase();
       const prodTypeLabel = rawProdType.includes('course')
         ? 'Course'
@@ -422,9 +544,38 @@ async function reviewCheckout(request, { db, workspace, bucket, fulfillPaidCheck
     }
     if (counter?.exists) tx.update(counterRef, { uses: Math.max(0, (Number(counter.data().uses) || 0) - 1) });
     if (decision === 'reject' && record.couponClaim) tx.delete(db.doc(record.couponClaim));
-    if (decision === 'reject' && product?.config.automations?.confirmation) queueRequestEmail(tx, root, record, 'checkoutRejected', decidedAt);
+    if (decision === 'reject' && buyerEmail) {
+      queueRequestEmail(tx, root, { ...record, orderId: id, customerEmail: buyerEmail, productName: prodName }, 'checkoutRejected', decidedAt, {
+        reviewNote,
+        orderStatus: 'Rejected',
+      });
+    }
     return { status };
   });
-  if (result.status === 'Approved') await fulfillPaidCheckout?.(root, id);
+  if (result.status === 'Approved') {
+    await fulfillPaidCheckout?.(root, id);
+    if (sendDecisionEmail && reviewedRecord?.customerEmail) {
+      await sendDecisionEmail({
+        root,
+        decision: 'approve',
+        id,
+        email: reviewedRecord.customerEmail,
+        customerName: reviewedRecord.customerName || '',
+        productId: reviewedRecord.productId || '',
+        productName: reviewedProductName || 'Purchased Product',
+      }).catch(() => null);
+    }
+  } else if (result.status === 'Rejected' && sendDecisionEmail && reviewedRecord?.customerEmail) {
+    await sendDecisionEmail({
+      root,
+      decision: 'reject',
+      id,
+      email: reviewedRecord.customerEmail,
+      customerName: reviewedRecord.customerName || '',
+      productId: reviewedRecord.productId || '',
+      productName: reviewedProductName || 'Purchased Product',
+      reviewNote,
+    }).catch(() => null);
+  }
   return result;
 }

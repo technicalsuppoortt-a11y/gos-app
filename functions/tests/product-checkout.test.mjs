@@ -4,7 +4,8 @@ import { randomUUID } from 'node:crypto';
 import { HttpsError } from 'firebase-functions/v2/https';
 import { productCheckoutRequest } from '../product-checkout.js';
 import { fulfillCommerceOrder } from '../commerce-orders.js';
-import { portalPurchaseId } from '../customer-portal.js';
+import { INITIAL_CUSTOMER_PASSWORD, portalPurchaseId } from '../customer-portal.js';
+import { buildReceiptDecisionEmail, dispatchReceiptDecisionEmail } from '../commerce-delivery.js';
 
 function fixture() {
   const rootPath = 'tenants/shop';
@@ -251,4 +252,80 @@ test('quote pulls active payment methods and brand providers from the product ow
   assert.equal(quote.methods[0].id, 'vodafone');
   assert.equal(quote.methods[0].provider, 'vodafone');
   assert.equal(quote.methods[0].account, '01099998888');
+});
+
+test('approval provisions 12345678 with mustChangePassword:true and sends product access email; rejection sends reason email', async () => {
+  const { call, read, rows, form, deps, staff } = fixture();
+  read('products/item').config.automations.confirmation = false;
+  let createdAccount;
+  const sentEmails = [];
+  const auth = {
+    getUserByEmail: async () => {
+      if (!createdAccount) throw Object.assign(new Error('Missing account'), { code: 'auth/user-not-found' });
+      return createdAccount;
+    },
+    createUser: async payload => {
+      createdAccount = payload;
+      return payload;
+    },
+  };
+  deps.fulfillPaidCheckout = (root, orderId) =>
+    fulfillCommerceOrder(
+      { tenantId: root.id, orderId, order: read('orders/' + orderId) },
+      { ...deps, auth, origin: 'https://app.upklick.net' }
+    );
+  deps.sendDecisionEmail = params =>
+    dispatchReceiptDecisionEmail({
+      ...params,
+      portalUrl: `https://app.upklick.net/portal/shop_${params.productId || 'item'}`,
+      loginUrl: `https://app.upklick.net/auth/login?portal=1&email=${encodeURIComponent(params.email)}&redirect=%2Fportal%2Fshop_${params.productId || 'item'}`,
+      initialPassword: INITIAL_CUSTOMER_PASSWORD,
+      resendApiKey: 'test-resend-key',
+      defaultSender: 'support@upklick.net',
+      fetcher: async (_url, options) => {
+        sentEmails.push(JSON.parse(options.body));
+        return { ok: true, json: async () => ({ id: 'msg-' + sentEmails.length }) };
+      },
+    });
+
+  // 1. Submit without phone (requirePhone defaults to false) -> verify workspace/owner fields & Pending status
+  const quote = await call({ action: 'quote', email: 'buyer1@example.com' });
+  const receipt = { name: 'receipt.png', type: 'image/png', data: Buffer.from('89504e470d0a1a0a0102', 'hex').toString('base64') };
+  const { id: approveId } = await call({
+    action: 'submit',
+    submissionId: randomUUID(),
+    revision: quote.revision,
+    methodId: 'bank',
+    name: 'Nour Hassan',
+    email: 'buyer1@example.com',
+    phone: '',
+    receipt,
+  });
+  const savedReq = read('checkoutRequests/' + approveId);
+  assert.equal(savedReq.tenantId, 'shop');
+  assert.equal(savedReq.workspaceId, 'shop');
+  assert.equal(savedReq.ownerId, 'shop');
+  assert.equal(savedReq.status, 'Pending');
+
+  // 2. Approve -> provisions customer with 12345678 + mustChangePassword:true + sends approval email
+  await call({ action: 'review', id: approveId, decision: 'approve' }, staff);
+  assert.equal(createdAccount.password, '12345678');
+  assert.equal(rows.get(`users/${createdAccount.uid}`).mustChangePassword, true);
+  assert.equal(sentEmails.length, 1);
+  assert.deepEqual(sentEmails[0].to, ['buyer1@example.com']);
+  assert.match(sentEmails[0].text, /https:\/\/app\.upklick\.net\/portal\/shop_item/);
+  assert.match(sentEmails[0].text, /buyer1@example\.com/);
+  assert.match(sentEmails[0].text, /12345678/);
+
+  // 3. Submit second request & Reject -> sends rejection email containing the exact rejection reason even with confirmation=false
+  const { submission: secondSub } = await form('');
+  const { id: rejectId } = await call(secondSub);
+  await call({ action: 'review', id: rejectId, decision: 'reject', note: 'Receipt screenshot is blurry and unreadable' }, staff);
+  assert.equal(read('checkoutRequests/' + rejectId).status, 'Rejected');
+  assert.equal(read('commerceDeliveries/' + rejectId + '-checkoutRejected').reviewNote, 'Receipt screenshot is blurry and unreadable');
+  assert.equal(sentEmails.length, 2);
+  assert.deepEqual(sentEmails[1].to, ['test@example.com']);
+  assert.match(sentEmails[1].text, /Receipt screenshot is blurry and unreadable/);
+  const builtReject = buildReceiptDecisionEmail({ decision: 'reject', productName: 'Design session', reviewNote: 'Amount mismatch' });
+  assert.match(builtReject.html, /Amount mismatch/);
 });

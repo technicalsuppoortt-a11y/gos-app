@@ -131,7 +131,7 @@ export const LoginPage: React.FC = () => {
       if (auth.role === 'CUSTOMER' || isPortalInvite) {
         void resolveCustomerPrimaryPortalPath(auth.user?.id || '', auth.user?.email || '', hintPath).then(portalTarget => {
           if (cancelled) return;
-          if (auth.user?.requiresPasswordChange) {
+          if (auth.user?.requiresPasswordChange || auth.user?.mustChangePassword) {
             navigate(customerPasswordChangePath(portalTarget), { replace: true });
             return;
           }
@@ -139,7 +139,7 @@ export const LoginPage: React.FC = () => {
         });
         return () => { cancelled = true; };
       }
-      if (auth.user?.requiresPasswordChange) {
+      if (auth.user?.requiresPasswordChange || auth.user?.mustChangePassword) {
         navigate(customerPasswordChangePath(hintPath || '/portal'), { replace: true });
         return;
       }
@@ -154,6 +154,7 @@ export const LoginPage: React.FC = () => {
     auth.user?.email,
     auth.user?.allowedTabs,
     auth.user?.requiresPasswordChange,
+    auth.user?.mustChangePassword,
     isPortalInvite,
     requestedReturnTo,
     location.state,
@@ -230,7 +231,9 @@ export const LoginPage: React.FC = () => {
       if (session.role === 'CUSTOMER' || isPortalInvite) {
         const portalTarget = await resolveCustomerPrimaryPortalPath(session.user.id, session.user.email, requestedPath);
         navigate(
-          session.user.requiresPasswordChange ? customerPasswordChangePath(portalTarget) : portalTarget,
+          session.user.requiresPasswordChange || session.user.mustChangePassword
+            ? customerPasswordChangePath(portalTarget)
+            : portalTarget,
           { replace: true },
         );
         return;
@@ -243,7 +246,7 @@ export const LoginPage: React.FC = () => {
       const fallbackRoute = isPortalInvite && !requestedPath
         ? '/portal'
         : routeForRole(session.role, session.user.allowedTabs);
-      navigate(session.user.requiresPasswordChange ? customerPasswordChangePath(requestedPath || '/portal') : canOpenRequestedPath ? requestedPath! : fallbackRoute, { replace: true });
+      navigate(session.user.requiresPasswordChange || session.user.mustChangePassword ? customerPasswordChangePath(requestedPath || '/portal') : canOpenRequestedPath ? requestedPath! : fallbackRoute, { replace: true });
     })();
   };
 

@@ -4,9 +4,11 @@ import { ExternalPagePreview } from './PagePreviewFrame';
 import { ProductFunnelLayout, ThankYouPage } from './ProductPageLayouts';
 import { useUILanguage, translateText, localizeNode } from '../../i18n/display';
 import { useEffect, useState } from 'react';
+import { useSelector } from 'react-redux';
 import { AnimatePresence, MotionConfig, motion } from 'framer-motion';
 import { useParams, useSearchParams } from 'react-router-dom';
 import { ArrowLeft, ArrowRight, Sparkles } from 'lucide-react';
+import type { RootState } from '../../store';
 import { productKind, hydrateProduct } from './model';
 import type { Product } from './model';
 import { productPreviewToken, readPreview, subscribePreview } from './previewSnapshot';
@@ -30,7 +32,10 @@ export function ProductLivePreview() {
   const [workspace] = useAssetWorkspace();
   const { token = '' } = useParams(); const [params, setParams] = useSearchParams();
   const [snapshot, setProduct] = useState(() => readPreview(token));
-  const products = useProducts(), tenantId = storageKey().replace('gos-commerce-products-v1:', '');
+  const authState = useSelector((state: RootState) => state.auth);
+  const products = useProducts();
+  const tenantId = authState.tenant?.id || storageKey().replace('gos-commerce-products-v1:', '');
+  const ownerId = authState.user?.ownerId || authState.user?.id || tenantId.replace(/^workspace-/, '');
   const rawId = token.replace(/^product[-_]/, '');
   const saved = products.find(row =>
     row.id === snapshot?.id ||
@@ -85,7 +90,7 @@ export function ProductLivePreview() {
     <div className="cp-preview-banner"><Sparkles size={13}/><span>{translateText("Live preview · Synced with your editor · No payments collected")}</span></div>
     {!inFunnel && <motion.nav className="lp-nav" initial={{ opacity: 0 }} animate={{ opacity: 1 }}><button onClick={back} className="lp-wordmark" aria-label={translateText("Back to product")}><span>{product.name.slice(0, 1)}</span>{product.name}</button><motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: .98 }} className="lp-nav-action" onClick={buy}>{localizeNode(kind === 'course' ? 'Enroll now' : kind === 'service' ? 'Book a session' : 'Get access')}<ArrowRight size={14}/></motion.button></motion.nav>}
     <AnimatePresence mode="wait" initial={false}><motion.div key={params.get('view') || kind} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: .22 }}>
-      {params.get('view') === 'thank-you' ? <ThankYouPage product={product}/> : <ProductFunnelLayout product={product}>{checkout ? <><button className="cp-back" onClick={back}><ArrowLeft size={14}/>{translateText(" Back to product")}</button><CheckoutScreen product={product}/><button className="cw-button cx-thankyou-trigger" onClick={() => setParams({view:'thank-you'})}>{translateText('Preview thank-you page')}</button></> : c.salesTemplate === 'external' ? <ExternalPagePreview url={c.salesUrl} title={translateText('Custom sales page')}/> : <ProductSalesPage product={product} buy={buy} progressScope={'live-' + token}/>}</ProductFunnelLayout>}
+      {params.get('view') === 'thank-you' ? <ThankYouPage product={product}/> : <ProductFunnelLayout product={product}>{checkout ? <><button className="cp-back" onClick={back}><ArrowLeft size={14}/>{translateText(" Back to product")}</button><CheckoutScreen product={product} submissionScope={tenantId ? { tenantId, ownerId } : undefined}/><button className="cw-button cx-thankyou-trigger" onClick={() => setParams({view:'thank-you'})}>{translateText('Preview thank-you page')}</button></> : c.salesTemplate === 'external' ? <ExternalPagePreview url={c.salesUrl} title={translateText('Custom sales page')}/> : <ProductSalesPage product={product} buy={buy} progressScope={'live-' + token}/>}</ProductFunnelLayout>}
     </motion.div></AnimatePresence>
     {!checkout && <ProductReviews key={product.id} product={product} tenantId={tenantId} onSubmitted={summary => setProduct(current => current ? { ...current, ...summary } : current)}/>}
     {displayProduct?.status === 'Active' && displayProduct.config?.experience?.visibility !== 'Private' && <div className="lp-container" style={{ paddingBlock: 16 }}><a className="cw-button" href={`/product-preview/${encodeURIComponent(displayProduct.id)}?workspace=${encodeURIComponent(tenantId)}`} target="_blank" rel="noopener noreferrer">{translateText('Open public page')}</a></div>}

@@ -1,9 +1,9 @@
 import { useEffect, useState, type ReactNode } from 'react';
-import { sessionStorageFallback as sessionStorage } from '../utils/browserStorage';
-import { createUserWithEmailAndPassword, onIdTokenChanged, signInWithEmailAndPassword, signOut, type User } from 'firebase/auth';
-import { collection, doc, getDoc, getDocs, limit, onSnapshot, query, where } from 'firebase/firestore';
+import { browserStorage, sessionStorageFallback as sessionStorage } from '../utils/browserStorage';
+import { createUserWithEmailAndPassword, onIdTokenChanged, signInWithEmailAndPassword, signOut, updatePassword, type User } from 'firebase/auth';
+import { collection, doc, getDoc, getDocs, limit, onSnapshot, query, setDoc, where } from 'firebase/firestore';
 import { primaryAuth as auth, primaryDb as db, callBackend } from './firebase';
-import { sha256Hex } from './customerPortal';
+import { INITIAL_CUSTOMER_PORTAL_PASSWORD, sha256Hex } from './customerPortal';
 import { clearImpersonationContext, returnToAdmin } from './impersonation';
 import { store } from '../store';
 import { loginSuccess, logout } from '../store/slices/authSlice';
@@ -117,7 +117,8 @@ export async function endActivation() {
 }
 
 const resolvedProfileSignatures = new WeakMap<User, string>();
-const profileSignature = (value: Record<string, unknown> | undefined) => JSON.stringify([value?.role, value?.tenantId, value?.name, value?.avatar, value?.accountType, value?.allowedTabs]);
+const profileSignature = (value: Record<string, unknown> | undefined) => JSON.stringify([value?.role, value?.tenantId, value?.name, value?.avatar, value?.accountType, value?.allowedTabs, value?.mustChangePassword, value?.portalPasswordChangeRequired]);
+const customerPwClearedKey = (uid: string) => `gos.portal.pw_changed:${uid}`;
 const suspendedStatus = (value: unknown) => ['deactivated', 'inactive', 'suspended', 'deleted'].includes(String(value).toLowerCase());
 
 export async function resolveSession(user: User, forceRefreshToken = false): Promise<StoredAuth> {
@@ -250,25 +251,28 @@ export async function resolveSession(user: User, forceRefreshToken = false): Pro
   if (!rawDataRole && user.uid.startsWith('customer_')) {
     rawDataRole = 'CUSTOMER';
   }
-  if (!rawDataRole && !claimRole && !data?.isTeamMember && emailLower) {
+  let portalRouteData: Record<string, any> | null = null;
+  if (emailLower && (rawDataRole === 'CUSTOMER' || claimRole === 'CUSTOMER' || (!rawDataRole && !claimRole && !data?.isTeamMember))) {
     const [ownTenantSnap, libSnap, routeSnap] = await Promise.all([
-      getDoc(doc(db, 'tenants', `workspace-${user.uid}`)).catch(() => null),
-      getDocs(query(collection(db, 'customerLibraries', user.uid, 'purchases'), limit(1))).catch(() => null),
+      !rawDataRole && !claimRole ? getDoc(doc(db, 'tenants', `workspace-${user.uid}`)).catch(() => null) : Promise.resolve(null),
+      !rawDataRole && !claimRole ? getDocs(query(collection(db, 'customerLibraries', user.uid, 'purchases'), limit(1))).catch(() => null) : Promise.resolve(null),
       sha256Hex(emailLower)
         .then(hash => getDoc(doc(db, 'settings', `portalRoute_${hash}`)))
         .catch(() => null),
     ]);
-    const hasOwnWorkspace = Boolean(ownTenantSnap?.exists());
-    const hasCustomerLibrary = Boolean(libSnap && !libSnap.empty);
-    const routeData = routeSnap?.exists() ? routeSnap.data() : null;
-    const hasPortalRoute = Boolean(
-      routeData &&
-      (routeData.role === 'CUSTOMER' ||
-        (typeof routeData.primaryPurchaseId === 'string' && routeData.primaryPurchaseId) ||
-        (Array.isArray(routeData.purchaseIds) && routeData.purchaseIds.length > 0)),
-    );
-    if (!hasOwnWorkspace && (hasCustomerLibrary || hasPortalRoute)) {
-      rawDataRole = 'CUSTOMER';
+    portalRouteData = routeSnap?.exists() ? routeSnap.data() : null;
+    if (!rawDataRole && !claimRole && !data?.isTeamMember) {
+      const hasOwnWorkspace = Boolean(ownTenantSnap?.exists());
+      const hasCustomerLibrary = Boolean(libSnap && !libSnap.empty);
+      const hasPortalRoute = Boolean(
+        portalRouteData &&
+        (portalRouteData.role === 'CUSTOMER' ||
+          (typeof portalRouteData.primaryPurchaseId === 'string' && portalRouteData.primaryPurchaseId) ||
+          (Array.isArray(portalRouteData.purchaseIds) && portalRouteData.purchaseIds.length > 0)),
+      );
+      if (!hasOwnWorkspace && (hasCustomerLibrary || hasPortalRoute)) {
+        rawDataRole = 'CUSTOMER';
+      }
     }
   }
   if (isPlatformTeamRole(rawDataRole) || isPlatformTeamRole(claimRole)) {
@@ -321,12 +325,28 @@ export async function resolveSession(user: User, forceRefreshToken = false): Pro
   if (!phoenix && !impersonating) clearPhoenixBrand();
   resolvedProfileSignatures.set(user, profileSignature(data));
   try { sessionStorage.removeItem(NOTICE_KEY); } catch { /* noop */ }
+  let localPwCleared = false;
+  try {
+    localPwCleared = browserStorage.getItem(customerPwClearedKey(user.uid)) === '1';
+  } catch { /* noop */ }
+
+  let mustChangePassword = false;
+  if (role === 'CUSTOMER' && !localPwCleared) {
+    if (data?.mustChangePassword === false || (data?.portalPasswordChangeRequired === false && data?.mustChangePassword !== true)) {
+      mustChangePassword = false;
+    } else if (data?.mustChangePassword === true || data?.portalPasswordChangeRequired === true) {
+      mustChangePassword = true;
+    } else if (portalRouteData?.mustChangePassword === true && !portalRouteData?.passwordChangedAt) {
+      mustChangePassword = true;
+    }
+  }
+
   return {
     user: {
       id: user.uid,
       name: data?.name || (tokenResult.claims.name as string) || user.displayName || user.email?.split('@')[0] || 'User',
       email: user.email || data?.email || '',
-      ...(data?.portalPasswordPolicy === 'temporary-v1' && (data.portalPasswordChangeRequired !== false || tokenResult.claims.portalPasswordReady !== true || !(Number(tokenResult.claims.auth_time) > (data.portalPasswordChangedAfter || 0))) ? { requiresPasswordChange: true } : {}),
+      ...(mustChangePassword ? { requiresPasswordChange: true, mustChangePassword: true } : { mustChangePassword: false }),
       avatar: data?.avatar || user.photoURL || undefined,
       ...(agency ? { accountType: 'agency' } : {}),
       ...(cashWalletRestricted ? { cashWalletRestricted: true } : {}),
@@ -381,11 +401,32 @@ export async function login(email: string, password: string) {
           }
         }
       } catch {
-        // Proceed to Phoenix fallback if team lookup fails
+        // Proceed to customer portal / Phoenix fallback if team lookup fails
+      }
+      // Lazy customer portal Auth initialization if approved with initial password `12345678`
+      if (password === INITIAL_CUSTOMER_PORTAL_PASSWORD) {
+        try {
+          const emailHash = await sha256Hex(cleanEmail);
+          const routeSnap = await getDoc(doc(db, 'settings', `portalRoute_${emailHash}`));
+          if (routeSnap.exists()) {
+            const routeData = routeSnap.data();
+            const hasPurchases =
+              (typeof routeData?.primaryPurchaseId === 'string' && routeData.primaryPurchaseId) ||
+              (Array.isArray(routeData?.purchaseIds) && routeData.purchaseIds.length > 0);
+            if (hasPurchases && routeData?.mustChangePassword === true && !routeData?.passwordChangedAt) {
+              return await createUserWithEmailAndPassword(auth, cleanEmail, password);
+            }
+          }
+        } catch {
+          // Proceed to Phoenix fallback if portal route lookup fails
+        }
       }
       usedPhoenix = true;
       return loginWithPhoenix(email, password);
     });
+    if (password === INITIAL_CUSTOMER_PORTAL_PASSWORD && credential.user?.uid) {
+      try { browserStorage.removeItem(customerPwClearedKey(credential.user.uid)); } catch { /* noop */ }
+    }
     try {
       const profile = (await getDoc(doc(db, 'users', credential.user.uid))).data();
       if (profile?.phoenixUid && !usedPhoenix
@@ -400,6 +441,86 @@ export async function login(email: string, password: string) {
   finally { await endActivation(); }
 }
 export async function logoutFirebase() { clearImpersonationContext(); await signOut(auth); store.dispatch(logout()); }
+
+/**
+ * Completes the forced first-login password change for a provisioned customer account,
+ * sets `mustChangePassword: false`, refreshes the authenticated session seamlessly, and
+ * prevents any redirect loop when navigating to the target product portal page.
+ */
+export async function completeCustomerFirstLoginPasswordChange(newPassword: string): Promise<StoredAuth> {
+  const activeUser = auth.currentUser;
+  if (!activeUser) {
+    throw new Error('Your session has expired. Sign in again to continue.');
+  }
+  const cleanEmail = (activeUser.email || store.getState().auth.user?.email || '').trim().toLowerCase();
+  if (!newPassword || newPassword.length < 8 || newPassword.length > 128 || newPassword === INITIAL_CUSTOMER_PORTAL_PASSWORD) {
+    throw new Error('Choose a new password of at least 8 characters that is different from your initial password.');
+  }
+
+  beginActivation();
+  try {
+    let updatedViaBackend = false;
+    try {
+      await callBackend('customerPortal', { action: 'changeInitialPassword', newPassword });
+      updatedViaBackend = true;
+    } catch {
+      // Fallback to direct Firebase Auth updatePassword for client-provisioned customer accounts
+      try {
+        await updatePassword(activeUser, newPassword);
+      } catch (updateErr: any) {
+        const code = updateErr?.code || '';
+        if ((code === 'auth/requires-recent-login' || code === 'auth/user-token-expired') && cleanEmail) {
+          const reauthCred = await signInWithEmailAndPassword(auth, cleanEmail, INITIAL_CUSTOMER_PORTAL_PASSWORD);
+          await updatePassword(reauthCred.user, newPassword);
+        } else {
+          throw updateErr;
+        }
+      }
+    }
+
+    const nowIso = new Date().toISOString();
+    try {
+      browserStorage.setItem(customerPwClearedKey(activeUser.uid), '1');
+    } catch { /* noop */ }
+
+    if (cleanEmail) {
+      const emailHash = await sha256Hex(cleanEmail);
+      await setDoc(
+        doc(db, 'settings', `portalRoute_${emailHash}`),
+        { mustChangePassword: false, passwordChangedAt: nowIso, updatedAt: nowIso },
+        { merge: true }
+      ).catch(() => null);
+    }
+
+    // Seamlessly establish a fresh ID token with the new password so auth_time & claims are current without logging out
+    let effectiveUser: User = activeUser;
+    if (cleanEmail) {
+      const freshCred = await signInWithEmailAndPassword(auth, cleanEmail, newPassword).catch(() => null);
+      if (freshCred?.user) {
+        effectiveUser = freshCred.user;
+        try {
+          browserStorage.setItem(customerPwClearedKey(effectiveUser.uid), '1');
+        } catch { /* noop */ }
+      } else if (updatedViaBackend) {
+        await activeUser.getIdToken(true).catch(() => null);
+      }
+    }
+
+    const rawSession = await resolveSession(effectiveUser, true);
+    const readySession: StoredAuth = {
+      ...rawSession,
+      user: {
+        ...rawSession.user,
+        requiresPasswordChange: false,
+        mustChangePassword: false,
+      },
+    };
+    store.dispatch(loginSuccess(readySession));
+    return readySession;
+  } finally {
+    activationInProgress = false;
+  }
+}
 
 export function FirebaseSession({ children }: { children: ReactNode }) {
   const [ready, setReady] = useState(false);

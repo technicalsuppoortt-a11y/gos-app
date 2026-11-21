@@ -7435,9 +7435,16 @@
   --cp-emerald-soft: var(--gp-soft, color-mix(in srgb, var(--gp-primary) 10%, var(--gp-surface))) !important;
 }
 
-:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .cportal-brand-mark {
-  background: linear-gradient(135deg, var(--gp-action-bg, var(--gp-primary, #7c3aed)), var(--gp-action-bg, var(--gp-primary, #6366f1))) !important;
-  box-shadow: 0 6px 16px color-mix(in srgb, var(--gp-primary, rgba(124, 58, 237, 0.25)) 25%, transparent) !important;
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .cportal-brand-copy b {
+  color: var(--cp-ink, var(--gp-text, #0f172a)) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .cportal-brand-copy small {
+  color: var(--cp-muted, var(--gp-muted-text, #64748b)) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand].dark .cportal-brand-copy small {
+  color: var(--gp-muted-text, #94a3b8) !important;
 }
 
 :scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .cportal-avatar {
@@ -7502,11 +7509,342 @@
 :scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .cportal-certificate {
   background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), color-mix(in srgb, var(--gp-action-bg, var(--gp-primary, rgba(124, 58, 237, 0.08))) 8%, transparent)) !important;
 }
-:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .cportal-account-form :is(input, select, textarea) { border: 1px solid var(--ui-border, var(--gp-border, #cbd5e1)) !important; background: var(--ui-surface-raised, var(--gp-surface, #fff)) !important; color: var(--ui-text, var(--gp-text, #0f172a)) !important;
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .cportal-modal-backdrop {
+  background: color-mix(in srgb, var(--gp-surface, rgba(15, 23, 42, 0.55)) 55%, transparent) !important;
 }
-:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .cportal-preview-notice { color: var(--ui-text-secondary, var(--gp-muted-text, #64748b)) !important; }
-:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .cportal-review-grid .pr-star-input label:has(input:checked) { background: var(--gp-surface, #fef3c7) !important; }
-:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .cportal-review-grid .pr-star-input label:has(input:focus-visible) { outline: 2px solid var(--gp-primary, #8b5cf6) !important; }
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .cportal-modal-dialog {
+  background: var(--cp-surface, var(--gp-surface, #ffffff)) !important;
+  border: 1px solid var(--cp-border, var(--gp-border, #e2e8f0)) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand].dark .cportal-modal-dialog {
+  background: var(--gp-surface, #141a29) !important;
+  border-color: var(--gp-border, #263148) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .cportal-modal-header {
+  border-bottom: 1px solid var(--cp-border-subtle, var(--gp-border, #edf2f7)) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand].dark .cportal-modal-header {
+  border-bottom-color: var(--gp-border, #1e283c) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .cportal-modal-icon-badge {
+  background: linear-gradient(135deg, color-mix(in srgb, var(--gp-action-bg, var(--gp-primary, rgba(124, 58, 237, 0.15))) 15%, transparent), color-mix(in srgb, var(--gp-action-bg, var(--gp-primary, rgba(99, 102, 241, 0.1))) 10%, transparent)) !important;
+  color: var(--cp-accent, var(--gp-accent-text, var(--gp-primary, #7c3aed))) !important;
+  border: 1px solid color-mix(in srgb, var(--gp-primary, rgba(124, 58, 237, 0.2)) 20%, transparent) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand].dark .cportal-modal-icon-badge {
+  background: linear-gradient(135deg, color-mix(in srgb, var(--gp-action-bg, var(--gp-primary, rgba(124, 58, 237, 0.25))) 25%, transparent), color-mix(in srgb, var(--gp-action-bg, var(--gp-primary, rgba(99, 102, 241, 0.18))) 18%, transparent)) !important;
+  color: var(--gp-accent-text, var(--gp-primary, #c4b5fd)) !important;
+  border-color: color-mix(in srgb, var(--gp-primary, rgba(167, 139, 250, 0.3)) 30%, transparent) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .cportal-modal-title {
+  color: var(--cp-ink, var(--gp-text, #0f172a)) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .cportal-modal-subtitle {
+  color: var(--cp-muted, var(--gp-muted-text, #64748b)) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .cportal-modal-close-btn {
+  color: var(--cp-muted, var(--gp-muted-text, #64748b)) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .cportal-modal-close-btn:hover {
+  background: color-mix(in srgb, var(--gp-background, rgba(148, 163, 184, 0.16)) 16%, transparent) !important;
+  color: var(--cp-ink, var(--gp-text, #0f172a)) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand].dark .cportal-modal-close-btn:hover {
+  background: color-mix(in srgb, var(--gp-background, rgba(148, 163, 184, 0.16)) 16%, transparent) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .cportal-btn-secondary {
+  border: 1px solid var(--cp-border, var(--gp-border, #cbd5e1)) !important;
+  background: var(--cp-surface, var(--gp-surface, #ffffff)) !important;
+  color: var(--cp-ink, var(--gp-text, #0f172a)) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .cportal-btn-secondary:hover:not(:disabled) {
+  background: var(--cp-surface-alt, var(--gp-surface, #f8fafc)) !important;
+  border-color: var(--gp-border, #94a3b8) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand].dark .cportal-btn-secondary {
+  border-color: var(--gp-border, #263148) !important;
+  background: var(--gp-surface, #1a2235) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand].dark .cportal-btn-secondary:hover:not(:disabled) {
+  background: var(--gp-surface, #232c44) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .cportal-review-header {
+  border-bottom: 1px solid var(--cp-border-subtle, var(--gp-border, #edf2f7)) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand].dark .cportal-review-header {
+  border-bottom-color: var(--gp-border, #1e283c) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .cportal-review-header h2 {
+  color: var(--cp-ink, var(--gp-text, #0f172a)) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .cportal-review-subtitle {
+  color: var(--cp-muted, var(--gp-muted-text, #64748b)) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .cportal-review-card {
+  background: var(--cp-surface-alt, var(--gp-surface, #f8fafc)) !important;
+  border: 1px solid var(--cp-border, var(--gp-border, #e2e8f0)) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand].dark .cportal-review-card {
+  background: var(--gp-surface, #1a2235) !important;
+  border-color: var(--gp-border, #263148) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .cportal-review-avatar {
+  background: linear-gradient(135deg, var(--gp-action-bg, var(--gp-primary, #7c3aed)), var(--gp-action-bg, var(--gp-primary, #4f46e5))) !important;
+  color: var(--gp-on-action, #ffffff) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .cportal-review-author b {
+  color: var(--cp-ink, var(--gp-text, #0f172a)) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .cportal-review-author time {
+  color: var(--cp-muted, var(--gp-muted-text, #64748b)) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .cportal-review-card-comment {
+  color: var(--cp-ink, var(--gp-text, #0f172a)) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand].dark .cportal-review-card-comment {
+  color: var(--gp-muted-text, #cbd5e1) !important;
+}
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .cportal-review-empty {
+  background: var(--cp-surface-alt, var(--gp-surface, #f8fafc)) !important;
+  border: 1px dashed var(--cp-border, var(--gp-border, #cbd5e1)) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand].dark .cportal-review-empty {
+  background: var(--gp-surface, #151b2a) !important;
+  border-color: var(--gp-border, #263148) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .cportal-review-empty h3 {
+  color: var(--cp-ink, var(--gp-text, #0f172a)) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .cportal-review-empty p {
+  color: var(--cp-muted, var(--gp-muted-text, #64748b)) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .cportal-review-form {
+  background: var(--cp-surface-alt, var(--gp-surface, #f8fafc)) !important;
+  border: 1px solid var(--cp-border, var(--gp-border, #e2e8f0)) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand].dark .cportal-review-form {
+  background: var(--gp-surface, #172033) !important;
+  border-color: var(--gp-border, #263148) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .cportal-review-form-title {
+  color: var(--cp-ink, var(--gp-text, #0f172a)) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .cportal-star-empty {
+  color: var(--gp-muted-text, #cbd5e1) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .cportal-review-textarea {
+  border: 1px solid var(--cp-border, var(--gp-border, #cbd5e1)) !important;
+  background: var(--cp-surface, var(--gp-surface, #ffffff)) !important;
+  color: var(--cp-ink, var(--gp-text, #0f172a)) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand].dark .cportal-review-textarea {
+  background: var(--gp-surface, #111622) !important;
+  border-color: var(--gp-border, #2b364a) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .cportal-review-textarea:focus {
+  border-color: var(--gp-primary, #7c3aed) !important;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--gp-primary, rgba(124, 58, 237, 0.18)) 18%, transparent) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .cportal-review-char-count {
+  color: var(--cp-muted, var(--gp-muted-text, #94a3b8)) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .cportal-review-notice-card,
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .cportal-review-success-card {
+  background: var(--cp-surface-alt, var(--gp-surface, #f8fafc)) !important;
+  border: 1px solid var(--cp-border, var(--gp-border, #e2e8f0)) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand].dark .cportal-review-notice-card,
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand].dark .cportal-review-success-card {
+  background: var(--gp-surface, #172033) !important;
+  border-color: var(--gp-border, #263148) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .cportal-review-success-card h3 {
+  color: var(--cp-ink, var(--gp-text, #0f172a)) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .cportal-review-success-card p {
+  color: var(--cp-muted, var(--gp-muted-text, #64748b)) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .cportal-brand-name {
+  color: var(--cp-ink, var(--gp-text, #0f172a)) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .cportal-brand-divider {
+  background: var(--cp-border, var(--gp-background, #e2e8f0)) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .cportal-portal-badge {
+  background: var(--cp-accent-soft, color-mix(in srgb, var(--gp-action-bg, var(--gp-primary, rgba(124, 58, 237, 0.1))) 10%, transparent)) !important;
+  color: var(--cp-accent, var(--gp-accent-text, var(--gp-primary, #7c3aed))) !important;
+  border: 1px solid color-mix(in srgb, var(--gp-primary, rgba(124, 58, 237, 0.18)) 18%, transparent) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand].dark .cportal-portal-badge {
+  background: color-mix(in srgb, var(--gp-action-bg, var(--gp-primary, rgba(167, 139, 250, 0.12))) 12%, transparent) !important;
+  color: var(--gp-accent-text, var(--gp-primary, #c4b5fd)) !important;
+  border-color: color-mix(in srgb, var(--gp-primary, rgba(167, 139, 250, 0.22)) 22%, transparent) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .cportal-shell.cportal-password-page {
+  background: radial-gradient(130% 100% at 50% 0%, color-mix(in srgb, var(--gp-action-bg, var(--gp-primary, rgba(124, 58, 237, 0.05))) 5%, transparent) 0%, var(--gp-surface, #f6f7fb) 60%) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand].dark .cportal-shell.cportal-password-page {
+  background: radial-gradient(130% 100% at 50% 0%, color-mix(in srgb, var(--gp-action-bg, var(--gp-primary, rgba(124, 58, 237, 0.08))) 8%, transparent) 0%, var(--gp-surface, #0c101b) 60%) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .cportal-password-page .cportal-panel-card,
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .cportal-password-card {
+  background: var(--cp-surface, var(--gp-surface, #ffffff)) !important;
+  border: 1px solid var(--cp-border, var(--gp-border, #e2e8f0)) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand].dark .cportal-password-page .cportal-panel-card,
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand].dark .cportal-password-card {
+  border-color: var(--gp-border, #263148) !important;
+  background: var(--gp-surface, #141a29) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .cportal-key-icon {
+  background: linear-gradient(135deg, color-mix(in srgb, var(--gp-action-bg, var(--gp-primary, rgba(124, 58, 237, 0.16))) 16%, transparent), color-mix(in srgb, var(--gp-action-bg, var(--gp-primary, rgba(99, 102, 241, 0.1))) 10%, transparent)) !important;
+  color: var(--cp-accent, var(--gp-accent-text, var(--gp-primary, #7c3aed))) !important;
+  border: 1px solid color-mix(in srgb, var(--gp-primary, rgba(124, 58, 237, 0.2)) 20%, transparent) !important;
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--gp-primary, rgba(124, 58, 237, 0.12)) 12%, transparent) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand].dark .cportal-key-icon {
+  background: linear-gradient(135deg, color-mix(in srgb, var(--gp-action-bg, var(--gp-primary, rgba(124, 58, 237, 0.25))) 25%, transparent), color-mix(in srgb, var(--gp-action-bg, var(--gp-primary, rgba(99, 102, 241, 0.18))) 18%, transparent)) !important;
+  color: var(--gp-accent-text, var(--gp-primary, #c4b5fd)) !important;
+  border-color: color-mix(in srgb, var(--gp-primary, rgba(167, 139, 250, 0.3)) 30%, transparent) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .cportal-card-title {
+  color: var(--cp-ink, var(--gp-text, #0f172a)) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .cportal-card-subtitle {
+  color: var(--cp-muted, var(--gp-muted-text, #64748b)) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .cportal-password-intro {
+  color: var(--cp-muted, var(--gp-muted-text, #64748b)) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .cportal-email-pill {
+  border: 1px solid var(--cp-border, var(--gp-border, #e2e8f0)) !important;
+  background: var(--cp-surface-alt, var(--gp-surface, #f8fafc)) !important;
+  color: var(--cp-ink, var(--gp-text, #0f172a)) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand].dark .cportal-email-pill {
+  border-color: var(--gp-border, #263148) !important;
+  background: var(--gp-surface, #1a2235) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .cportal-email-label {
+  color: var(--cp-muted, var(--gp-muted-text, #64748b)) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .cportal-password-error {
+  border: 1px solid var(--gp-border, #fecdd3) !important;
+  background: var(--gp-surface, #fff1f2) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .cportal-field-label {
+  color: var(--cp-ink, var(--gp-text, #0f172a)) !important;
+}
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .cportal-password-input-wrap {
+  border: 1px solid var(--cp-border, var(--gp-border, #cbd5e1)) !important;
+  background: var(--cp-surface, var(--gp-surface, #ffffff)) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand].dark .cportal-password-input-wrap {
+  border-color: var(--gp-border, #2b364a) !important;
+  background: var(--gp-surface, #111622) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .cportal-password-input-wrap:focus-within {
+  border-color: var(--gp-primary, #7c3aed) !important;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--gp-primary, rgba(124, 58, 237, 0.18)) 18%, transparent) !important;
+}
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .cportal-password-input-wrap input.cportal-password-input,
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .cportal-password-input {
+  color: var(--cp-ink, var(--gp-text, #0f172a)) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .cportal-password-input::placeholder {
+  color: var(--gp-muted-text, #94a3b8) !important;
+}
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .cportal-password-input-wrap button.cportal-password-toggle,
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .cportal-password-toggle {
+  color: var(--gp-muted-text, #94a3b8) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .cportal-password-input-wrap button.cportal-password-toggle:hover,
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .cportal-password-toggle:hover {
+  background-color: color-mix(in srgb, var(--gp-background, rgba(148, 163, 184, 0.15)) 15%, transparent) !important;
+  color: var(--gp-text, #475569) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand].dark .cportal-password-input-wrap button.cportal-password-toggle:hover,
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand].dark .cportal-password-toggle:hover {
+  background-color: color-mix(in srgb, var(--gp-background, rgba(148, 163, 184, 0.15)) 15%, transparent) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .cportal-password-hint {
+  color: var(--cp-muted, var(--gp-muted-text, #64748b)) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .cportal-submit-btn {
+  background: linear-gradient(135deg, var(--gp-action-bg, var(--gp-primary, #7c3aed)), var(--gp-action-bg, var(--gp-primary, #6366f1))) !important;
+  box-shadow: 0 8px 22px -4px color-mix(in srgb, var(--gp-primary, rgba(124, 58, 237, 0.38)) 38%, transparent) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .cportal-submit-btn:hover:not(:disabled) {
+  box-shadow: 0 12px 26px -4px color-mix(in srgb, var(--gp-primary, rgba(124, 58, 237, 0.48)) 48%, transparent) !important;
+}
 }
 @scope (html[data-gp-brand="true"]) to (.aw-live-preview, .aw-thumbnail, .fb-live-preview-frame, .fn-focused-canvas, .pf-page, .pf-thumb, .pf-renderer, .pf-canvas, .bk-public, .bk-preview-frame, .bk-live-preview, .lp-page, .product-live-preview, .pp-live-preview, .cw-live-preview, .checkout-screen, .landing-page, .lp, [data-form-theme], [data-public-asset]) {
 :scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .dv-invalid input:not([type=checkbox]):not([type=file]),:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .dv-invalid textarea,:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .dv-invalid [contenteditable=true],:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .dv-input-error{background:color-mix(in srgb, var(--gp-surface, rgba(254,242,242,.5)) 50%, transparent)!important}
@@ -8407,7 +8745,9 @@
 :scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .crm-pipeline-workspace .crm2-subnav-btn.active::after { background: var(--gp-action-bg, var(--gp-primary, #7C3AED)) !important; }
 
 :scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .crm-pipeline-workspace .crm-toolbar { background: var(--gp-surface, #fbfdff) !important; }
-:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .crm-pipeline-workspace .crm-search { border-color: var(--gp-border, #e9edf5) !important; background: var(--gp-surface, #fff) !important; color: var(--gp-accent-text, var(--gp-primary, #A78BFA)) !important; }
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .crm-pipeline-workspace .crm-search { border: 1px solid var(--gp-border, #e9edf5) !important; background: var(--gp-surface, #fff) !important; color: var(--gp-accent-text, var(--gp-primary, #A78BFA)) !important; }
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .crm-pipeline-workspace .crm-search:hover { border-color: var(--gp-border, #cbd5e1) !important; }
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .crm-pipeline-workspace .crm-search:focus-within { border-color: var(--gp-border, #cbd5e1) !important; }
 :scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .crm-pipeline-workspace .crm-search input { color: var(--gp-text, #475569) !important; }
 :scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .crm-pipeline-workspace .crm-search input::placeholder { color: var(--gp-muted-text, #9399b1) !important; }
 :scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .crm-toolbar-control, :scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .crm-sort-control { border: 1px solid var(--gp-border, #e9edf5) !important; background: var(--gp-surface, #fff) !important; color: var(--gp-text, #48506e) !important; }
@@ -8478,7 +8818,7 @@
 :scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .crm-workspace-summary-icon.amber{background:var(--gp-surface, #fff8e9) !important}:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .crm-workspace-summary-icon.green{background:var(--gp-surface, #ecfbf5) !important}:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .crm-connection a{color:var(--gp-accent-text, var(--gp-primary, #7C3AED)) !important}
 :scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .crm-search{border:1px solid var(--gp-border, #e2e8f0) !important;background:var(--gp-surface, #fff) !important;color:var(--gp-muted-text, #8a96ac) !important}
 :scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .crm-search:hover{border-color:var(--gp-border, #cbd5e1) !important}
-:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .crm-search:focus-within{border-color:var(--gp-primary, #7C3AED) !important;box-shadow:0 0 0 3px color-mix(in srgb, var(--gp-primary, rgba(124,92,252,0.12)) 12%, transparent) !important}:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .crm-search input::placeholder{color:var(--gp-muted-text, #97a2b5) !important}
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .crm-search:focus-within{border-color:var(--gp-border, #cbd5e1) !important}:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .crm-search input::placeholder{color:var(--gp-muted-text, #97a2b5) !important}
 :scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .crm-sort{border:1px solid var(--gp-border, #e8edf6) !important;background:var(--gp-surface, #fff) !important;color:var(--gp-muted-text, #64748b) !important}
 :scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .crm-result{color:var(--gp-muted-text, #8b98ad) !important}
 :scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .crm-view-switch{border:1px solid var(--gp-border, #e8edf6) !important;background:var(--gp-surface, #fff) !important}
@@ -8632,7 +8972,7 @@
   color: var(--gp-accent-text, var(--gp-primary, #7C3AED)) !important;
 }
 :scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .crm-pagination{border-top:1px solid var(--gp-border, #e9edf6) !important;background:var(--gp-surface, #fff) !important;color:var(--gp-muted-text, #64748b) !important}
-:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .crm-workspace .crm-search:focus-within{border-color:var(--gp-primary, #A78BFA) !important;box-shadow:0 0 0 3px color-mix(in srgb, var(--gp-primary, #7C3AED16) 9%, transparent) !important}
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .crm-workspace .crm-search:focus-within{border-color:var(--gp-border, #cbd5e1) !important}
 :scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .crm-workspace input:not([type=checkbox]):focus,:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .crm-dialog input:not([type=checkbox]):focus,:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .crm-workspace textarea:focus{border-color:var(--gp-primary, #A78BFA) !important;box-shadow:0 0 0 3px color-mix(in srgb, var(--gp-primary, #7C3AED16) 9%, transparent) !important}
 :scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .crm-custom-select-trigger:focus-visible{border-color:var(--gp-primary, #A78BFA) !important;box-shadow:0 0 0 3px color-mix(in srgb, var(--gp-primary, #7C3AED20) 13%, transparent) !important}
 :scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .crm-select-content{border:1px solid var(--gp-border, #e5e7ef) !important;background:var(--gp-surface, #fff) !important;color:var(--gp-text, #475569) !important}
@@ -16417,6 +16757,11 @@
     var(--ui-surface-raised) 42%,
     var(--ui-surface) 100%
   ) !important
+}
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand].dark :is(
+  .cportal-shell.cportal-password-page
+):not([data-form-theme]):not([data-form-theme] *):not([data-public-asset]):not([data-public-asset] *):not(:where(.tb-block,.tb-form-showcase,.aw-live-preview,.aw-asset-image,.aw-step-image,.fb-site-window,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,[role=switch],.af-switch,.aw-default,.bk-switch-track,.aw-primary,.aw-primary-split,.button-primary,.bk-button.primary,.cw-button.primary,.st-button.primary,.crm-button.primary)):not(:where(.tb-block,.tb-form-showcase,.aw-live-preview,.aw-asset-image,.aw-step-image,.fb-site-window,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,[role=switch],.af-switch,.aw-default,.bk-switch-track,.aw-primary,.aw-primary-split,.button-primary,.bk-button.primary,.cw-button.primary,.st-button.primary,.crm-button.primary) *) {
+    background: radial-gradient(130% 100% at 50% 0%, color-mix(in srgb, var(--gp-action-bg, var(--gp-primary, rgba(124, 58, 237, 0.05))) 5%, transparent) 0%, var(--ui-surface-raised) 60%) !important
 }
 :scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand].dark :is(
   .st-privacy-icon-box

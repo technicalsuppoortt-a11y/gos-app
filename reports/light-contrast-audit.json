@@ -1,6 +1,6 @@
 {
   "scannedStylesheets": 114,
-  "correctedDeclarations": 871,
+  "correctedDeclarations": 873,
   "correctedVariables": 12,
   "referenceSurface": "#ffffff",
   "minimumRatio": 4.5,
@@ -238,47 +238,47 @@
     },
     {
       "file": "src/pages/auth/LoginPage.tsx",
-      "line": 273,
+      "line": 276,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/auth/LoginPage.tsx",
-      "line": 285,
+      "line": 288,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/auth/LoginPage.tsx",
-      "line": 315,
+      "line": 318,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/auth/LoginPage.tsx",
-      "line": 340,
+      "line": 343,
       "utility": "text-slate-400"
     },
     {
       "file": "src/pages/auth/LoginPage.tsx",
-      "line": 344,
+      "line": 347,
       "utility": "text-slate-400"
     },
     {
       "file": "src/pages/auth/LoginPage.tsx",
-      "line": 344,
+      "line": 347,
       "utility": "text-slate-400"
-    },
-    {
-      "file": "src/pages/auth/LoginPage.tsx",
-      "line": 368,
-      "utility": "text-slate-500"
     },
     {
       "file": "src/pages/auth/LoginPage.tsx",
       "line": 371,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/auth/LoginPage.tsx",
+      "line": 374,
       "utility": "text-slate-400"
     },
     {
       "file": "src/pages/auth/LoginPage.tsx",
-      "line": 380,
+      "line": 383,
       "utility": "text-slate-100"
     },
     {
@@ -5380,7 +5380,7 @@
     },
     {
       "file": "src/pages/commerce/customer-portal.css",
-      "line": 598,
+      "line": 626,
       "selector": ".cportal-lesson-placeholder",
       "before": "#f8fafc",
       "after": "#475569",
@@ -5388,11 +5388,27 @@
     },
     {
       "file": "src/pages/commerce/customer-portal.css",
-      "line": 623,
+      "line": 651,
       "selector": ".cportal-lesson-placeholder p",
       "before": "#cbd5e1",
       "after": "#475569",
       "contrastOnWhite": 1.48
+    },
+    {
+      "file": "src/pages/commerce/customer-portal.css",
+      "line": 1502,
+      "selector": ".cportal-star-empty",
+      "before": "#cbd5e1",
+      "after": "#334155",
+      "contrastOnWhite": 1.48
+    },
+    {
+      "file": "src/pages/commerce/customer-portal.css",
+      "line": 1904,
+      "selector": ".cportal-password-input-wrap button.cportal-password-toggle,\n.cportal-password-toggle",
+      "before": "#94a3b8",
+      "after": "#334155",
+      "contrastOnWhite": 2.56
     },
     {
       "file": "src/pages/commerce/digital-workspace.css",
@@ -5964,7 +5980,7 @@
     },
     {
       "file": "src/pages/crm/crm-pipeline.css",
-      "line": 23,
+      "line": 27,
       "selector": ".crm-pipeline-workspace .crm-view-switch button",
       "before": "#EDE9FE",
       "after": "#334155",
@@ -5972,7 +5988,7 @@
     },
     {
       "file": "src/pages/crm/crm-pipeline.css",
-      "line": 44,
+      "line": 48,
       "selector": ".crm-stage-head .crm-options-trigger",
       "before": "#EDE9FE",
       "after": "#334155",
@@ -5980,7 +5996,7 @@
     },
     {
       "file": "src/pages/crm/crm-pipeline.css",
-      "line": 73,
+      "line": 77,
       "selector": ".crm-pipeline-workspace .crm-card-person small",
       "before": "#9198ad",
       "after": "#475569",
@@ -5988,7 +6004,7 @@
     },
     {
       "file": "src/pages/crm/crm-pipeline.css",
-      "line": 76,
+      "line": 80,
       "selector": ".crm-pipeline-workspace .crm-card-tags .crm-tag",
       "before": "#EDE9FE",
       "after": "#334155",
@@ -5996,7 +6012,7 @@
     },
     {
       "file": "src/pages/crm/crm-pipeline.css",
-      "line": 85,
+      "line": 89,
       "selector": ".crm-pipeline-workspace .crm-card-time",
       "before": "#929aaf",
       "after": "#334155",
@@ -6004,7 +6020,7 @@
     },
     {
       "file": "src/pages/crm/crm-pipeline.css",
-      "line": 90,
+      "line": 94,
       "selector": ".crm-followup-none",
       "before": "#a1a9b9",
       "after": "#334155",
@@ -6012,7 +6028,7 @@
     },
     {
       "file": "src/pages/crm/crm-pipeline.css",
-      "line": 92,
+      "line": 96,
       "selector": ".crm-card-menu-button",
       "before": "#EDE9FE",
       "after": "#334155",
@@ -6020,7 +6036,7 @@
     },
     {
       "file": "src/pages/crm/crm-pipeline.css",
-      "line": 96,
+      "line": 100,
       "selector": ".crm-card-menu label",
       "before": "#EDE9FE",
       "after": "#334155",
@@ -6332,7 +6348,7 @@
     },
     {
       "file": "src/pages/crm/crm-workspace.css",
-      "line": 489,
+      "line": 492,
       "selector": ".crm-template-stage-row>span",
       "before": "#94a3b8",
       "after": "#334155",
@@ -6340,7 +6356,7 @@
     },
     {
       "file": "src/pages/crm/crm-workspace.css",
-      "line": 517,
+      "line": 520,
       "selector": ".crm-contact-form-status",
       "before": "#94a3b8",
       "after": "#334155",
@@ -6348,7 +6364,7 @@
     },
     {
       "file": "src/pages/crm/crm-workspace.css",
-      "line": 533,
+      "line": 536,
       "selector": ".crm-thread header p",
       "before": "#94a3b8",
       "after": "#334155",
@@ -6356,7 +6372,7 @@
     },
     {
       "file": "src/pages/crm/crm-workspace.css",
-      "line": 537,
+      "line": 540,
       "selector": ".crm-message time",
       "before": "#7d879b",
       "after": "#334155",
@@ -6364,7 +6380,7 @@
     },
     {
       "file": "src/pages/crm/crm-workspace.css",
-      "line": 540,
+      "line": 543,
       "selector": ".crm-appointment small",
       "before": "#94a3b8",
       "after": "#475569",
@@ -6372,7 +6388,7 @@
     },
     {
       "file": "src/pages/crm/crm-workspace.css",
-      "line": 544,
+      "line": 547,
       "selector": ".crm-order-metrics small",
       "before": "#94a3b8",
       "after": "#475569",
@@ -6380,7 +6396,7 @@
     },
     {
       "file": "src/pages/crm/crm-workspace.css",
-      "line": 545,
+      "line": 548,
       "selector": ".crm-orders-table th",
       "before": "#94a3b8",
       "after": "#334155",
@@ -6388,7 +6404,7 @@
     },
     {
       "file": "src/pages/crm/crm-workspace.css",
-      "line": 545,
+      "line": 548,
       "selector": ".crm-orders-table td small",
       "before": "#94a3b8",
       "after": "#475569",

@@ -28,6 +28,7 @@ export async function deliverMessage(message, lead, config, credentials, fetcher
     headers.Authorization = `Bearer ${credentials.resendApiKey}`;
     headers['Idempotency-Key'] = message.deliveryId;
     body = { from: config.from, to: [lead.email], subject: message.subject || 'Following up', text: message.text };
+    if (message.html) body.html = message.html;
     if (message.attachments?.length) body.attachments = message.attachments;
   } else if (message.channel === 'whatsapp') {
     if (!credentials.whatsappAccessToken || !/^\d+$/.test(config.phoneNumberId) || !/^v\d+\.\d+$/.test(config.apiVersion || '') || !(lead.whatsapp || lead.phone)) throw new Error('WhatsApp delivery requires Meta credentials, API version, phone number ID and recipient.');

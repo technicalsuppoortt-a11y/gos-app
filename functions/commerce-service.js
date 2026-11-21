@@ -1,6 +1,6 @@
 import { createHash, randomBytes } from 'node:crypto';
 import { HttpsError } from 'firebase-functions/v2/https';
-import { buildProductSnapshot } from './customer-portal.js';
+import { buildProductSnapshot, INITIAL_CUSTOMER_PASSWORD } from './customer-portal.js';
 
 const validId = value => typeof value === 'string' && /^[\w-]{1,150}$/.test(value);
 const emailKey = email => createHash('sha256').update(email.trim().toLowerCase()).digest('hex');
@@ -30,7 +30,11 @@ export async function commerceServiceRequest(request, { workspace, db, auth, ori
     const product = prodSnap.data();
     checkProduct(product);
     const nowIso = new Date(now()).toISOString();
+    const forceInitialChange =
+      request.data?.mustChangePassword === true ||
+      (request.data?.mustChangePassword !== false && (!rawPassword || rawPassword === INITIAL_CUSTOMER_PASSWORD));
     let account;
+    let newlyCreated = false;
     try {
       account = await auth.getUserByEmail(cleanEmail);
       if (rawPassword) {
@@ -38,7 +42,8 @@ export async function commerceServiceRequest(request, { workspace, db, auth, ori
       }
     } catch (err) {
       if (err?.code !== 'auth/user-not-found') throw err;
-      const initialPassword = rawPassword || `Portal@${randomBytes(6).toString('hex')}!`;
+      newlyCreated = true;
+      const initialPassword = rawPassword || INITIAL_CUSTOMER_PASSWORD;
       account = await auth.createUser({
         uid: `customer_${emailKey(cleanEmail)}`,
         email: cleanEmail,
@@ -50,8 +55,15 @@ export async function commerceServiceRequest(request, { workspace, db, auth, ori
     const targetUid = account.uid;
     const existingUserSnap = await db.doc(`users/${targetUid}`).get();
     const existingProfile = existingUserSnap.data();
+    const requirePasswordChange = newlyCreated
+      ? forceInitialChange
+      : request.data?.mustChangePassword === true
+        ? true
+        : request.data?.mustChangePassword === false
+          ? false
+          : Boolean(existingProfile?.mustChangePassword ?? existingProfile?.portalPasswordChangeRequired);
     if (!existingProfile) {
-      await auth.setCustomUserClaims(targetUid, { ...(account.customClaims || {}), role: 'CUSTOMER', portalPasswordReady: true });
+      await auth.setCustomUserClaims(targetUid, { ...(account.customClaims || {}), role: 'CUSTOMER', portalPasswordReady: !requirePasswordChange });
       await db.doc(`users/${targetUid}`).set({
         id: targetUid,
         uid: targetUid,
@@ -59,17 +71,21 @@ export async function commerceServiceRequest(request, { workspace, db, auth, ori
         name: customerName,
         role: 'CUSTOMER',
         portalProvisioned: true,
+        mustChangePassword: requirePasswordChange,
+        portalPasswordPolicy: requirePasswordChange ? 'temporary-v1' : '',
+        portalPasswordChangeRequired: requirePasswordChange,
         status: 'Active',
         createdAt: nowIso,
         updatedAt: nowIso,
       }, { merge: true });
     } else if (existingProfile.role === 'CUSTOMER') {
-      await auth.setCustomUserClaims(targetUid, { ...(account.customClaims || {}), role: 'CUSTOMER', portalPasswordReady: true });
+      await auth.setCustomUserClaims(targetUid, { ...(account.customClaims || {}), role: 'CUSTOMER', portalPasswordReady: !requirePasswordChange });
       await db.doc(`users/${targetUid}`).set({
         portalProvisioned: true,
-        portalPasswordPolicy: '',
-        portalPasswordChangeRequired: false,
-        portalPasswordChangedAfter: Math.floor(now() / 1000) - 5,
+        mustChangePassword: requirePasswordChange,
+        portalPasswordPolicy: requirePasswordChange ? 'temporary-v1' : '',
+        portalPasswordChangeRequired: requirePasswordChange,
+        ...(!requirePasswordChange ? { portalPasswordChangedAfter: Math.floor(now() / 1000) - 5 } : {}),
         status: 'Active',
         updatedAt: nowIso,
       }, { merge: true });
@@ -114,7 +130,12 @@ export async function commerceServiceRequest(request, { workspace, db, auth, ori
     };
     await db.doc(`customerLibraries/${targetUid}/purchases/${purchaseId}`).set(record, { merge: true });
     await root.collection('customerPurchases').doc(hash(JSON.stringify([targetUid, productId]))).set(record, { merge: true });
-    return { uid: targetUid, purchaseId, portalUrl, loginUrl: loginLink.href };
+    await db.doc(`settings/portalRoute_${emailKey(cleanEmail)}`).set({
+      role: 'CUSTOMER',
+      mustChangePassword: requirePasswordChange,
+      primaryPurchaseId: purchaseId,
+    }, { merge: true }).catch(() => null);
+    return { uid: targetUid, purchaseId, portalUrl, loginUrl: loginLink.href, mustChangePassword: requirePasswordChange };
   }
   if (action === 'syncCalendar') {
     if (!validId(productId)) throw new HttpsError('invalid-argument', 'Save the product first.');

@@ -8,8 +8,12 @@
 .crm-pipeline-workspace .crm2-subnav-btn.active::after { inset-inline-start: 0; inset-inline-end: 0; height: 2px; border-radius: 0; background: #7C3AED; }
 
 .crm-pipeline-workspace .crm-toolbar { gap: 10px; padding: 14px 18px 12px; background: #fbfdff; }
-.crm-pipeline-workspace .crm-search { height: 35px; padding: 0 11px; max-width: 395px; border-color: #e9edf5; background: #fff; border-radius: 6px; color: #A78BFA; }
-.crm-pipeline-workspace .crm-search input { font-size: 11px; color: #475569; box-shadow: none; }
+.crm-pipeline-workspace .crm-search { height: 35px; padding: 0 11px; max-width: 395px; border: 1px solid #e9edf5; background: #fff; border-radius: 6px; color: #A78BFA; outline: none !important; }
+.crm-pipeline-workspace .crm-search:hover { border-color: #cbd5e1; }
+.crm-pipeline-workspace .crm-search:focus-within { border-color: #cbd5e1; outline: none !important; box-shadow: none !important; }
+.crm-pipeline-workspace .crm-search input { font-size: 11px; color: #475569; border: none !important; outline: none !important; box-shadow: none !important; }
+.crm-pipeline-workspace .crm-search input:focus,
+.crm-pipeline-workspace .crm-search input:focus-visible { border: none !important; outline: none !important; box-shadow: none !important; }
 .crm-pipeline-workspace .crm-search input::placeholder { color: #9399b1; }
 .crm-toolbar-control, .crm-sort-control { display: flex; align-items: center; justify-content: center; gap: 8px; height: 35px; border: 1px solid #e9edf5; border-radius: 6px; background: #fff; padding: 0 12px; color: #48506e; font-size: 11px; font-weight: 500; cursor: pointer; }
 .crm-toolbar-control > svg, .crm-sort-control > svg { color: #A78BFA; }

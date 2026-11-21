@@ -32,7 +32,7 @@ export const ProtectedRoute: React.FC<React.PropsWithChildren<{ allowedRoles: Ro
   const sessionReady = useSessionReady();
   if (!sessionReady) return <WorkspaceSkeleton variant="spinner" fullScreen/>;
   if (!isAuthenticated || !role) return <Navigate to="/auth/login" state={{ from: location }} replace />;
-  if (user?.requiresPasswordChange && !allowPendingPassword) return <Navigate to={customerPasswordChangePath(location.pathname)} replace/>;
+  if ((user?.requiresPasswordChange || user?.mustChangePassword) && !allowPendingPassword) return <Navigate to={customerPasswordChangePath(location.pathname)} replace/>;
   if (!allowedRoles.includes(role)) return <Navigate to={routeForRole(role, user?.allowedTabs)} replace />;
   // The onboarding redirect is temporarily disabled with the setup cycle.
   return <>{localizeNode(children)}</>;

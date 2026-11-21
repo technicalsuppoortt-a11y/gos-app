@@ -342,52 +342,65 @@ export function buildCustomerProductSnapshot(
  * Syncs non-sensitive customer portal delivery & routing index under workspace/settings
  * rules so authenticated customers immediately land on their purchased product portal.
  */
+export const INITIAL_CUSTOMER_PORTAL_PASSWORD = '12345678';
+
 const syncedDeliveryKeys = new Set<string>();
 
-export async function syncMerchantPortalDelivery(record: CustomerPurchaseRecord): Promise<void> {
+export async function syncMerchantPortalDelivery(
+  record: CustomerPurchaseRecord,
+  options?: { mustChangePassword?: boolean; forceSync?: boolean }
+): Promise<boolean> {
   const cleanEmail = String(record.customerEmail || '').trim().toLowerCase();
   const tenantId = String(record.tenantId || '').trim();
   const purchaseId = String(record.purchaseId || '').trim();
-  if (!cleanEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail) || !tenantId || !purchaseId) return;
-  if (!primaryAuth.currentUser) return;
+  if (!cleanEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail) || !tenantId || !purchaseId) return false;
+  if (!primaryAuth.currentUser) return false;
 
-  const dedupeKey = `${tenantId}:${purchaseId}:${cleanEmail}:${record.updatedAt || ''}`;
-  if (syncedDeliveryKeys.has(dedupeKey)) return;
+  const dedupeKey = `${tenantId}:${purchaseId}:${cleanEmail}:${record.updatedAt || ''}:${String(options?.mustChangePassword ?? '')}`;
+  if (!options?.forceSync && syncedDeliveryKeys.has(dedupeKey)) return true;
   syncedDeliveryKeys.add(dedupeKey);
 
   try {
     const emailHash = await sha256Hex(cleanEmail);
     const deliveryDocId = `${purchaseId}_${emailHash.slice(0, 24)}`;
     const nowIso = new Date().toISOString();
-    const deliveryPayload = {
-      id: purchaseId,
-      purchaseId,
-      tenantId,
-      orderId: record.orderId || `ord_${record.productId}`,
-      productId: record.productId,
-      customerEmailHash: emailHash,
-      customerDisplayName: record.customerName || 'Customer',
-      amount: Number(record.amount || 0),
-      currency: String(record.currency || 'USD'),
-      paymentMethod: record.paymentMethod || '',
-      status: record.status || 'Active',
-      portalUrl: record.portalUrl,
-      productSnapshot: record.productSnapshot,
-      completedLessonIds: record.completedLessonIds || [],
-      progress: Number(record.progress || 0),
-      downloadedAssetIds: record.downloadedAssetIds || [],
-      downloadCount: Number(record.downloadCount || 0),
-      serviceStatus: record.serviceStatus || 'Order Confirmed',
-      scheduledAt: record.scheduledAt || '',
-      grantedAt: record.grantedAt || nowIso,
-      updatedAt: nowIso,
-    };
+    const deliveryPayload = JSON.parse(
+      JSON.stringify({
+        id: purchaseId,
+        purchaseId,
+        tenantId,
+        orderId: record.orderId || `ord_${record.productId}`,
+        productId: record.productId,
+        customerEmailHash: emailHash,
+        customerDisplayName: record.customerName || 'Customer',
+        amount: Number(record.amount || 0),
+        currency: String(record.currency || 'USD'),
+        paymentMethod: record.paymentMethod || '',
+        status: record.status || 'Active',
+        portalUrl: record.portalUrl,
+        productSnapshot: record.productSnapshot,
+        completedLessonIds: record.completedLessonIds || [],
+        progress: Number(record.progress || 0),
+        downloadedAssetIds: record.downloadedAssetIds || [],
+        downloadCount: Number(record.downloadCount || 0),
+        serviceStatus: record.serviceStatus || 'Order Confirmed',
+        scheduledAt: record.scheduledAt || '',
+        grantedAt: record.grantedAt || nowIso,
+        updatedAt: nowIso,
+      })
+    );
 
+    // Primary settings-scoped delivery store (always accessible under live rules) + workspace mirror
+    await setDoc(
+      doc(db, 'settings', `portalDelivery_${deliveryDocId}`),
+      deliveryPayload,
+      { merge: true }
+    );
     await setDoc(
       doc(db, 'workspaces', tenantId, 'portalDeliveries', deliveryDocId),
       deliveryPayload,
       { merge: true }
-    );
+    ).catch(() => null);
 
     const routeRef = doc(db, 'settings', `portalRoute_${emailHash}`);
     const prevRouteSnap = await getDoc(routeRef).catch(() => null);
@@ -399,10 +412,19 @@ export async function syncMerchantPortalDelivery(record: CustomerPurchaseRecord)
       ...prevItems.filter((entry: any) => entry?.purchaseId && entry.purchaseId !== purchaseId),
     ].slice(0, 25);
 
+    const alreadyChangedPassword = Boolean(prevRoute?.passwordChangedAt) || prevRoute?.mustChangePassword === false;
+    const nextMustChangePassword =
+      options?.mustChangePassword === false
+        ? false
+        : options?.mustChangePassword === true
+          ? !alreadyChangedPassword
+          : Boolean(prevRoute?.mustChangePassword);
+
     await setDoc(
       routeRef,
       {
         role: 'CUSTOMER',
+        mustChangePassword: nextMustChangePassword,
         primaryPurchaseId: mergedItems[0]?.purchaseId || purchaseId,
         purchaseIds: mergedItems.map((entry: any) => entry.purchaseId),
         items: mergedItems,
@@ -410,9 +432,81 @@ export async function syncMerchantPortalDelivery(record: CustomerPurchaseRecord)
       },
       { merge: true }
     );
+    return true;
   } catch {
     syncedDeliveryKeys.delete(dedupeKey);
+    return false;
   }
+}
+
+/**
+ * Provisions or links a customer's product portal account on receipt approval with
+ * initial password `12345678` and `mustChangePassword: true` without touching the
+ * active merchant dashboard session.
+ */
+export async function provisionCustomerPortalOnApproval(options: {
+  record: CustomerPurchaseRecord;
+}): Promise<{
+  ok: boolean;
+  newlyProvisioned: boolean;
+  mustChangePassword: boolean;
+  portalUrl: string;
+  loginUrl: string;
+}> {
+  const { record } = options;
+  const cleanEmail = String(record.customerEmail || '').trim().toLowerCase();
+  const origin = typeof window !== 'undefined' ? window.location.origin : 'https://app.upklick.net';
+  const portalPath = `/portal/${encodeURIComponent(record.purchaseId)}`;
+  const portalUrl = `${origin}${portalPath}`;
+  const loginUrl = `${origin}/auth/login?portal=1&email=${encodeURIComponent(cleanEmail)}&redirect=${encodeURIComponent(portalPath)}`;
+
+  if (!cleanEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail)) {
+    return { ok: false, newlyProvisioned: false, mustChangePassword: false, portalUrl, loginUrl };
+  }
+
+  const activeMerchantEmail = primaryAuth.currentUser?.email?.trim().toLowerCase() || '';
+  const isSameAsMerchant = Boolean(activeMerchantEmail && activeMerchantEmail === cleanEmail);
+
+  let newlyProvisioned = false;
+  let mustChangePassword = !isSameAsMerchant;
+
+  if (!isSameAsMerchant) {
+    try {
+      const emailHash = await sha256Hex(cleanEmail);
+      const prevRouteSnap = await getDoc(doc(db, 'settings', `portalRoute_${emailHash}`)).catch(() => null);
+      const prevRoute = prevRouteSnap?.exists() ? prevRouteSnap.data() : null;
+
+      const authResult = await provisionTeamMemberAuth({
+        email: cleanEmail,
+        password: INITIAL_CUSTOMER_PORTAL_PASSWORD,
+        displayName: record.customerName || cleanEmail.split('@')[0] || 'Customer',
+      });
+      newlyProvisioned = !authResult.alreadyExists && Boolean(authResult.uid);
+      if (authResult.alreadyExists && !authResult.passwordUpdated) {
+        // Account already exists with a user-chosen password
+        mustChangePassword = false;
+      } else if (prevRoute?.passwordChangedAt && prevRoute?.mustChangePassword === false) {
+        mustChangePassword = false;
+      } else {
+        mustChangePassword = true;
+      }
+    } catch {
+      mustChangePassword = true;
+    }
+  }
+
+  const synced = await syncMerchantPortalDelivery(
+    { ...record, portalUrl, loginUrl },
+    { mustChangePassword, forceSync: true }
+  );
+
+  return {
+    ok: synced,
+    newlyProvisioned,
+    mustChangePassword,
+    portalUrl,
+    loginUrl,
+  };
 }
 
 /**
@@ -423,7 +517,7 @@ export async function resolveCustomerPrimaryPortalPath(
   email: string,
   requestedPath?: string
 ): Promise<string> {
-  if (requestedPath && /^\/portal\/[\w.-]+$/.test(requestedPath)) {
+  if (requestedPath && /^\/portal\/[\w.%-]+$/.test(requestedPath)) {
     return requestedPath;
   }
 
@@ -597,12 +691,25 @@ export function getPortalFile(purchase: CustomerPurchaseRecord, resourceId: stri
   return callBackend<{ url: string }>('customerPortal', { action: 'file', purchaseId: purchase.purchaseId, resourceId });
 }
 
-export function readPortalReviewSummary(purchaseId: string) {
-  return callBackend<ReviewSummary>('customerPortal', { action: 'reviewSummary', purchaseId });
+export function readPortalReviewSummary(purchaseId: string, tenantId?: string, productId?: string) {
+  return callBackend<ReviewSummary>('customerPortal', {
+    action: 'reviewSummary',
+    purchaseId,
+    ...(tenantId ? { tenantId } : {}),
+    ...(productId ? { productId } : {}),
+  });
 }
 
 export function submitPortalReview(purchase: CustomerPurchaseRecord, rating: number, comment: string) {
-  return callBackend<ReviewSummary>('customerPortal', { action: 'review', purchaseId: purchase.purchaseId, rating, comment });
+  return callBackend<ReviewSummary>('customerPortal', {
+    action: 'review',
+    purchaseId: purchase.purchaseId,
+    tenantId: purchase.tenantId,
+    productId: purchase.productId,
+    legacyId: purchase.legacyId,
+    rating,
+    comment,
+  });
 }
 
 export function useCustomerPortalLibrary() {
@@ -677,7 +784,10 @@ export function useCustomerPortalLibrary() {
         for (const entry of routeItems) {
           if (!entry?.tenantId || !entry?.purchaseId) continue;
           const docId = entry.deliveryDocId || `${entry.purchaseId}_${emailHash.slice(0, 24)}`;
-          const delivSnap = await getDoc(doc(db, 'workspaces', entry.tenantId, 'portalDeliveries', docId)).catch(() => null);
+          let delivSnap = await getDoc(doc(db, 'settings', `portalDelivery_${docId}`)).catch(() => null);
+          if (!delivSnap?.exists()) {
+            delivSnap = await getDoc(doc(db, 'workspaces', entry.tenantId, 'portalDeliveries', docId)).catch(() => null);
+          }
           if (!delivSnap?.exists()) continue;
           const raw = delivSnap.data() as Record<string, any>;
           if (raw.customerEmailHash && raw.customerEmailHash !== emailHash) continue;
@@ -1087,7 +1197,7 @@ export function useCustomerPortalLibrary() {
     if (!role || role === 'CUSTOMER' || !scopeTenant) return;
     for (const item of mergedItems) {
       if (item.status === 'Active' && item.customerEmail) {
-        void syncMerchantPortalDelivery(item);
+        void syncMerchantPortalDelivery(item).catch(() => {});
       }
     }
   }, [role, scopeTenant, mergedItems]);

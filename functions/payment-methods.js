@@ -14,13 +14,20 @@ export function validatePaymentMethods(methods, previous = []) {
     return { id: m.provider, provider: m.provider, name: text('name', 60), type: providers.get(m.provider), account, instructions: text('instructions', 1000), enabled: m.enabled, status: m.type === 'gateway' && verified ? 'Connected' : 'Configured' };
   });
 }
+function normalizeActorRole(user) {
+  const raw = String(user?.role || '').trim().toUpperCase();
+  if (raw === 'OWNER') return 'USER';
+  if (raw) return raw;
+  return user?.uid ? 'USER' : '';
+}
 function resolvePaymentScope(requestData, user) {
+  const role = normalizeActorRole(user);
   const rawScope = requestData?.scope;
   if (rawScope === undefined) {
     return {
       scope: undefined,
       targetId: undefined,
-      canManage: ['ADMIN', 'SUPER_ADMIN'].includes(user.role),
+      canManage: ['ADMIN', 'SUPER_ADMIN'].includes(role),
       refPath: 'settings/paymentMethods',
       mirrorPaths: [],
       gatewayKey: provider => `paymentGatewayConfigurations/${provider}`,
@@ -34,7 +41,7 @@ function resolvePaymentScope(requestData, user) {
     return {
       scope: 'super_admin',
       targetId: 'platform',
-      canManage: ['SUPER_ADMIN', 'PLATFORM_ADMIN', 'PLATFORM_FINANCE'].includes(user.role),
+      canManage: ['SUPER_ADMIN', 'PLATFORM_ADMIN', 'PLATFORM_FINANCE'].includes(role),
       refPath: 'settings/paymentMethods',
       mirrorPaths: ['tenants/platform/paymentMethods/config', 'settings/paymentMethods_super_admin'],
       gatewayKey: provider => `paymentGatewayConfigurations/${provider}`,
@@ -44,10 +51,19 @@ function resolvePaymentScope(requestData, user) {
   if (!targetId || targetId.includes('/')) {
     throw new HttpsError('invalid-argument', 'Invalid payment scope target.');
   }
+  const bareTarget = targetId.replace(/^workspace-/, '');
+  const bareUserTenant = String(user.tenantId || '').replace(/^workspace-/, '');
+  const isOwnTarget = Boolean(
+    user.uid &&
+      (targetId === user.tenantId ||
+        targetId === user.uid ||
+        bareTarget === user.uid ||
+        (bareUserTenant && bareTarget === bareUserTenant))
+  );
   if (scope === 'admin') {
-    const canManage = user.role === 'SUPER_ADMIN' || (user.role === 'ADMIN' && (targetId === user.tenantId || targetId === user.uid));
-    const altId = user.role === 'ADMIN' && user.uid && user.tenantId && user.uid !== user.tenantId ? (targetId === user.uid ? user.tenantId : user.uid) : '';
-    const gwOwner = user.role === 'ADMIN' ? (user.uid || targetId) : targetId;
+    const canManage = role === 'SUPER_ADMIN' || (role === 'ADMIN' && isOwnTarget);
+    const altId = role === 'ADMIN' && user.uid && user.tenantId && user.uid !== user.tenantId ? (targetId === user.uid ? user.tenantId : user.uid) : '';
+    const gwOwner = role === 'ADMIN' ? (user.uid || bareTarget || targetId) : targetId;
     return {
       scope: 'admin',
       targetId,
@@ -60,8 +76,9 @@ function resolvePaymentScope(requestData, user) {
       gatewayKey: provider => `paymentGatewayConfigurations/admin_${gwOwner}_${provider}`,
     };
   }
-  const canManage = ['ADMIN', 'SUPER_ADMIN'].includes(user.role) || (user.role === 'USER' && (targetId === user.tenantId || targetId === user.uid));
-  const altId = user.role === 'USER' && user.uid && user.tenantId && user.uid !== user.tenantId ? (targetId === user.uid ? user.tenantId : user.uid) : '';
+  const canManage = ['ADMIN', 'SUPER_ADMIN'].includes(role) || (role === 'USER' && isOwnTarget);
+  const altId = role === 'USER' && user.uid && user.tenantId && user.uid !== user.tenantId ? (targetId === user.uid ? user.tenantId : user.uid) : '';
+  const gwOwner = role === 'USER' ? (user.uid || bareTarget || targetId) : targetId;
   return {
     scope: 'user',
     targetId,
@@ -71,7 +88,7 @@ function resolvePaymentScope(requestData, user) {
       ...(altId ? [`tenants/${altId}/paymentMethods/config`, `settings/paymentMethods_user_${altId}`] : []),
       `settings/paymentMethods_user_${targetId}`,
     ],
-    gatewayKey: provider => `paymentGatewayConfigurations/user_${targetId}_${provider}`,
+    gatewayKey: provider => `paymentGatewayConfigurations/user_${gwOwner}_${provider}`,
   };
 }
 

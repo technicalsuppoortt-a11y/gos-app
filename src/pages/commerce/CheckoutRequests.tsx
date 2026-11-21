@@ -1,6 +1,6 @@
 import { useCurrency } from '../../context/CurrencyContext';
 import { useEffect, useRef, useState } from 'react';
-import { collection, doc, onSnapshot, orderBy, query, setDoc } from 'firebase/firestore';
+import { collection, doc, onSnapshot, setDoc } from 'firebase/firestore';
 import {
   CheckCircle2,
   ChevronLeft,
@@ -20,17 +20,23 @@ import {
   XCircle,
 } from 'lucide-react';
 import { useSelector } from 'react-redux';
-import { backendError, callBackend, db } from '../../backend/firebase';
+import { backendError, callBackend, db, primaryAuth } from '../../backend/firebase';
+import { encodeFirestoreValue } from '../../backend/firestoreCodec';
 import {
   buildCustomerProductSnapshot,
-  syncMerchantPortalDelivery,
+  INITIAL_CUSTOMER_PORTAL_PASSWORD,
+  provisionCustomerPortalOnApproval,
   type CustomerPurchaseRecord,
 } from '../../backend/customerPortal';
 import { QuickDetails } from '../../components/ui/QuickDetails';
 import { translateText as t, useUILanguage } from '../../i18n/display';
 import { matchesLocalizedSearch } from '../../utils/arabicSearch';
 import { showToast } from '../../utils/toast';
-import type { RootState } from '../../store';
+import { store, type RootState } from '../../store';
+import { addLead, type CanonicalLead } from '../../store/slices/crmSlice';
+import { makeLead } from '../crm/model';
+import type { LeadStage } from '../../types/business';
+import type { Product } from './model';
 import { useProducts } from './repository';
 import './checkout-requests.css';
 
@@ -73,20 +79,414 @@ const initials = (name: string) =>
     .map(part => part[0]?.toUpperCase() || '')
     .join('') || 'C';
 
-async function applyRequestDecision(
-  request: RequestRow,
-  decision: 'approve' | 'reject',
-  note: string
-) {
-  await callBackend('productCheckout', { action: 'review', id: request.id, decision, note: note.trim() });
+function normalizeStatus(raw: unknown): Status {
+  const s = String(raw || '').trim().toLowerCase();
+  if (s === 'approved' || s === 'paid' || s === 'completed' || s === 'succeeded') return 'Approved';
+  if (s === 'rejected' || s === 'declined') return 'Rejected';
+  return 'Pending';
+}
+
+function normalizeRequestRow(raw: Record<string, any>, fallbackId: string): RequestRow {
+  const id = String(raw?.id || fallbackId || '').trim();
+  const fallbackDue = Number(raw?.totals?.dueToday ?? raw?.total ?? raw?.amount ?? 0) || 0;
+  const rawTotals = raw?.totals && typeof raw.totals === 'object' ? raw.totals : {};
+  const totals = {
+    price: Number(rawTotals.price ?? fallbackDue) || 0,
+    subtotal: Number(rawTotals.subtotal ?? fallbackDue) || 0,
+    discount: Number(rawTotals.discount ?? raw?.discount ?? 0) || 0,
+    tax: Number(rawTotals.tax ?? 0) || 0,
+    dueToday: Number(rawTotals.dueToday ?? fallbackDue) || 0,
+  };
+  const safeItems = Array.isArray(raw?.items)
+    ? raw.items.filter(Boolean).map((item: any) => ({
+        productId: String(item?.productId || item?.product_id || ''),
+        product_id: item?.product_id ? String(item.product_id) : undefined,
+        productName: String(item?.productName || item?.product_name || raw?.productName || 'Product'),
+        amount: typeof item?.amount === 'number' ? item.amount : undefined,
+        quantity: typeof item?.quantity === 'number' ? item.quantity : undefined,
+      }))
+    : [];
+  return {
+    ...(raw as RequestRow),
+    id,
+    status: normalizeStatus(raw?.status),
+    createdAt: String(raw?.createdAt || raw?.decidedAt || ''),
+    decidedAt: raw?.decidedAt ? String(raw.decidedAt) : undefined,
+    productId: raw?.productId ? String(raw.productId) : undefined,
+    product_id: raw?.product_id ? String(raw.product_id) : undefined,
+    productName: String(raw?.productName || safeItems[0]?.productName || 'Purchased Product'),
+    items: safeItems,
+    customerName: String(raw?.customerName || raw?.customer?.name || raw?.customerEmail || 'Customer'),
+    customerEmail: String(raw?.customerEmail || raw?.customer?.email || raw?.email || '').trim().toLowerCase(),
+    customerPhone: String(raw?.customerPhone || raw?.customer?.phone || raw?.phone || ''),
+    currency: String(raw?.currency || rawTotals?.currency || 'USD'),
+    method: String(raw?.method || ''),
+    transferAccount: raw?.transferAccount ? String(raw.transferAccount) : undefined,
+    totals,
+    note: String(raw?.note || ''),
+    reviewNote: raw?.reviewNote
+      ? String(raw.reviewNote)
+      : raw?.rejectionReason
+        ? String(raw.rejectionReason)
+        : undefined,
+    discountCode: String(raw?.discountCode || ''),
+    receipt: raw?.receipt && typeof raw.receipt === 'object' ? raw.receipt : null,
+    fields: Array.isArray(raw?.fields)
+      ? raw.fields.filter(Boolean).map((f: any) => ({ label: String(f?.label || ''), value: String(f?.value || '') }))
+      : [],
+  };
+}
+
+async function processRequestWorkflow(options: {
+  row: RequestRow;
+  mode: 'approve' | 'reject' | 'sync';
+  note: string;
+  tenantId: string;
+  scopes: string[];
+  workspaceProducts: Product[];
+}) {
+  const { row, mode, note, tenantId, scopes, workspaceProducts } = options;
+  const trimmedNote = note.trim();
+  const nowIso = new Date().toISOString();
+  const actorUid = primaryAuth.currentUser?.uid || '';
+
+  const candidateId = [
+    row.productId,
+    row.product_id,
+    row.product?.id,
+    ...(row.items || []).filter(Boolean).flatMap(item => [item.productId, item.product_id]),
+  ].find(id => typeof id === 'string' && /^[\w-]{1,150}$/.test(id));
+  const cleanProdName = String(row.productName || row.items?.[0]?.productName || '').trim().toLowerCase();
+  const matchedProduct = workspaceProducts.find(
+    p =>
+      p &&
+      ((candidateId && p.id === candidateId) ||
+        (cleanProdName && typeof p.name === 'string' && p.name.trim().toLowerCase() === cleanProdName))
+  );
+  const resolvedProductId =
+    matchedProduct?.id ||
+    candidateId ||
+    (cleanProdName ? `prod_${cleanProdName.replace(/[^a-z0-9]+/g, '_').slice(0, 48)}` : 'product');
+  const resolvedProductName = row.productName || matchedProduct?.name || 'Purchased Product';
+  const cleanEmail = String(row.customerEmail || '').trim().toLowerCase();
+
+  if (mode === 'reject') {
+    let backendRejected = false;
+    await callBackend('productCheckout', {
+      action: 'review',
+      id: row.id,
+      decision: 'reject',
+      note: trimmedNote,
+    })
+      .then(() => {
+        backendRejected = true;
+      })
+      .catch(() => null);
+
+    let mirrorRejected = false;
+    const rejectPatch = {
+      status: 'Rejected',
+      reviewNote: trimmedNote,
+      rejectionReason: trimmedNote,
+      decidedAt: nowIso,
+      ...(actorUid ? { decidedBy: actorUid } : {}),
+    };
+    for (const sc of scopes) {
+      const ok = await setDoc(
+        doc(db, 'settings', `checkoutRequests_${sc}`, 'items', row.id),
+        rejectPatch,
+        { merge: true }
+      )
+        .then(() => true)
+        .catch(() => false);
+      if (ok) mirrorRejected = true;
+    }
+
+    if (!backendRejected && !mirrorRejected) {
+      throw new Error('Could not reject checkout request. Please try again.');
+    }
+
+    if (cleanEmail && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail)) {
+      if (!backendRejected) {
+        await callBackend('productCheckout', {
+          action: 'notify_decision',
+          decision: 'reject',
+          requestId: row.id,
+          email: cleanEmail,
+          customerName: row.customerName,
+          productId: resolvedProductId,
+          productName: resolvedProductName,
+          note: trimmedNote,
+        }).catch(() => null);
+      }
+      await setDoc(
+        doc(db, 'settings', `checkoutDecisionEmails_${tenantId}`, 'items', `${row.id}_reject`),
+        {
+          id: `${row.id}_reject`,
+          requestId: row.id,
+          decision: 'reject',
+          to: cleanEmail,
+          customerName: row.customerName || '',
+          productId: resolvedProductId,
+          productName: resolvedProductName,
+          rejectionReason: trimmedNote,
+          createdAt: nowIso,
+        },
+        { merge: true }
+      ).catch(() => null);
+    }
+    return;
+  }
+
+  // Ensure canonical product document exists in Firestore so backend fulfillment resolves config reliably
+  if (matchedProduct?.config && /^[\w-]{1,150}$/.test(matchedProduct.id)) {
+    try {
+      const {
+        reviews: _r,
+        ratingAverage: _ra,
+        reviewsCount: _rc,
+        ratingTotal: _rt,
+        ...safeProductDoc
+      } = matchedProduct as unknown as Record<string, unknown>;
+      await setDoc(
+        doc(db, 'tenants', tenantId, 'products', matchedProduct.id),
+        encodeFirestoreValue(JSON.parse(JSON.stringify(safeProductDoc))),
+        { merge: true }
+      ).catch(() => null);
+    } catch {
+      /* Ignore optional product sync failures */
+    }
+  }
+
+  let backendReviewed = false;
+  let mirrorApproved = false;
+  if (mode === 'approve') {
+    const approvalNote = trimmedNote || row.reviewNote || 'Approved by merchant';
+    await callBackend('productCheckout', {
+      action: 'review',
+      id: row.id,
+      decision: 'approve',
+      note: approvalNote,
+    })
+      .then(() => {
+        backendReviewed = true;
+      })
+      .catch(() => null);
+
+    const approvePatch = {
+      status: 'Approved',
+      reviewNote: approvalNote,
+      decidedAt: nowIso,
+      ...(actorUid ? { decidedBy: actorUid } : {}),
+    };
+    for (const sc of scopes) {
+      const ok = await setDoc(
+        doc(db, 'settings', `checkoutRequests_${sc}`, 'items', row.id),
+        approvePatch,
+        { merge: true }
+      )
+        .then(() => true)
+        .catch(() => false);
+      if (ok) mirrorApproved = true;
+    }
+
+    if (cleanEmail) {
+      const rawEmail = cleanEmail.toLowerCase();
+      const leadSlug = rawEmail.replace(/[^a-z0-9]/g, '').slice(0, 24);
+      const leadId = `lead-order-${leadSlug || row.id.slice(0, 16)}`;
+      const dueAmount = Number(row.totals?.dueToday ?? 0);
+      const prodCurrency = row.currency || matchedProduct?.config?.currency || 'USD';
+      const targetStage: LeadStage = (matchedProduct?.config?.crmRouting?.stageId as LeadStage) || 'PAYMENT_COMPLETED';
+      const crmLead: CanonicalLead = makeLead({
+        id: leadId,
+        name: row.customerName || cleanEmail.split('@')[0] || 'Customer',
+        email: cleanEmail,
+        phone: row.customerPhone || '',
+        source: 'Services',
+        pipelineId: matchedProduct?.config?.crmRouting?.pipelineId || 'main',
+        stage: targetStage,
+        lifecycleStage: targetStage,
+        owner: 'Unassigned',
+        value: dueAmount,
+        currency: prodCurrency,
+        interest: resolvedProductName || 'Product',
+        orderId: row.id,
+        qualificationStatus: 'Qualified',
+        followUpState: 'CUSTOMER',
+        attachedProducts: [{
+          productId: resolvedProductId,
+          productName: resolvedProductName,
+          attachedAt: nowIso,
+        }],
+        tags: ['Customer', matchedProduct?.type || 'Course', resolvedProductName].filter(Boolean),
+        activities: [{
+          id: `act-approved-${row.id}`,
+          type: 'payment',
+          title: 'Product purchased (Receipt Approved)',
+          detail: `${resolvedProductName} · ${prodCurrency} ${dueAmount.toFixed(2)}`,
+          at: nowIso,
+        }],
+        createdAt: row.createdAt || nowIso,
+        lastActivity: nowIso,
+      });
+      for (const sc of scopes) {
+        void setDoc(doc(db, 'tenants', sc, 'leads', leadId), encodeFirestoreValue(crmLead), { merge: true }).catch(() => null);
+      }
+      store.dispatch(addLead(crmLead));
+      window.dispatchEvent(new CustomEvent('gos-booking-change', { detail: 'gos-crm-leads-v1' }));
+      window.dispatchEvent(new Event('gos-settings-changed'));
+    }
+  }
+
+  const purchaseId = `${tenantId}_${resolvedProductId}`.replace(/[^a-zA-Z0-9_-]/g, '_');
+  const origin = typeof window !== 'undefined' ? window.location.origin : 'https://app.upklick.net';
+  const portalPath = `/portal/${encodeURIComponent(purchaseId)}`;
+  const portalUrl = `${origin}${portalPath}`;
+  const loginUrl = `${origin}/auth/login?portal=1&email=${encodeURIComponent(cleanEmail)}&redirect=${encodeURIComponent(portalPath)}`;
+
+  let localDeliverySynced = false;
+  let mustChangePassword = true;
+  if (cleanEmail && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail)) {
+    let snapshot;
+    try {
+      snapshot = buildCustomerProductSnapshot(
+        matchedProduct,
+        resolvedProductId,
+        resolvedProductName,
+        matchedProduct?.type || 'Course'
+      );
+    } catch {
+      snapshot = buildCustomerProductSnapshot(
+        undefined,
+        resolvedProductId,
+        resolvedProductName,
+        matchedProduct?.type || 'Course'
+      );
+    }
+    const portalRecord: CustomerPurchaseRecord = {
+      id: purchaseId,
+      purchaseId,
+      legacyId: purchaseId,
+      tenantId,
+      orderId: row.id,
+      productId: resolvedProductId,
+      customerUid: '',
+      customerEmail: cleanEmail,
+      customerName: row.customerName || cleanEmail.split('@')[0] || 'Customer',
+      customerPhone: row.customerPhone || '',
+      paymentMethod: row.method || '',
+      transferAccount: row.transferAccount || '',
+      discountCode: row.discountCode || '',
+      decidedAt: row.decidedAt || nowIso,
+      amount: Number(row.totals?.dueToday ?? 0),
+      currency: row.currency || matchedProduct?.config?.currency || 'USD',
+      status: 'Active',
+      loginUrl,
+      portalUrl,
+      productSnapshot: snapshot,
+      completedLessonIds: [],
+      progress: 0,
+      downloadedAssetIds: [],
+      downloadCount: 0,
+      serviceStatus: 'Order Confirmed',
+      grantedAt: row.decidedAt || row.createdAt || nowIso,
+      updatedAt: nowIso,
+    };
+    const provisioned = await provisionCustomerPortalOnApproval({ record: portalRecord });
+    localDeliverySynced = provisioned.ok;
+    mustChangePassword = provisioned.mustChangePassword;
+  }
+
+  let backendSynced = backendReviewed;
+  if (!backendSynced) {
+    await callBackend<{ ok: boolean }>(
+      'productCheckout',
+      {
+        action: 'sync_portal_access',
+        requestId: row.id,
+        tenantId,
+        ...(resolvedProductId ? { productId: resolvedProductId } : {}),
+      },
+      90000
+    )
+      .then(result => {
+        if (result?.ok) backendSynced = true;
+      })
+      .catch(() => null);
+  }
+
+  if (!backendSynced && cleanEmail && /^[\w-]{1,150}$/.test(resolvedProductId)) {
+    await callBackend('commerceService', {
+      action: 'provisionCustomerPortal',
+      productId: resolvedProductId,
+      email: cleanEmail,
+      name: row.customerName,
+      orderId: row.id,
+      amount: Number(row.totals?.dueToday ?? 0),
+      currency: row.currency || 'USD',
+      paymentMethod: row.method || '',
+      customerPhone: row.customerPhone || '',
+      password: INITIAL_CUSTOMER_PORTAL_PASSWORD,
+      mustChangePassword,
+    })
+      .then(() => {
+        backendSynced = true;
+      })
+      .catch(() => null);
+  }
+
+  if (cleanEmail && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail)) {
+    if (!backendReviewed && !backendSynced) {
+      await callBackend('productCheckout', {
+        action: 'notify_decision',
+        decision: 'approve',
+        requestId: row.id,
+        email: cleanEmail,
+        customerName: row.customerName,
+        productId: resolvedProductId,
+        productName: resolvedProductName,
+        portalUrl,
+        loginUrl,
+        initialPassword: INITIAL_CUSTOMER_PORTAL_PASSWORD,
+      }).catch(() => null);
+    }
+    await setDoc(
+      doc(db, 'settings', `checkoutDecisionEmails_${tenantId}`, 'items', `${row.id}_approve`),
+      {
+        id: `${row.id}_approve`,
+        requestId: row.id,
+        decision: 'approve',
+        to: cleanEmail,
+        registeredEmail: cleanEmail,
+        customerName: row.customerName || '',
+        productId: resolvedProductId,
+        productName: resolvedProductName,
+        productPageUrl: portalUrl,
+        loginUrl,
+        initialPassword: INITIAL_CUSTOMER_PORTAL_PASSWORD,
+        mustChangePassword,
+        createdAt: nowIso,
+      },
+      { merge: true }
+    ).catch(() => null);
+  }
+
+  if (mode === 'approve' && !backendReviewed && !mirrorApproved && !localDeliverySynced) {
+    throw new Error('Could not approve checkout request. Please try again.');
+  }
+  if (mode === 'sync' && !localDeliverySynced && !backendSynced) {
+    throw new Error('Customer portal access could not be synced.');
+  }
 }
 
 export function CheckoutRequests() {
   const { tenant, user } = useSelector((state: RootState) => state.auth);
-  return tenant?.id && <RequestsView key={tenant.id + '/' + user?.id} tenantId={tenant.id} />;
+  const scopeId = tenant?.id || (user?.id ? `workspace-${user.id}` : '');
+  const ownerId = user?.ownerId || user?.id || scopeId.replace(/^workspace-/, '');
+  return scopeId ? <RequestsView key={scopeId + '/' + (user?.id || '')} tenantId={scopeId} ownerId={ownerId} /> : null;
 }
 
-function RequestsView({ tenantId }: { tenantId: string }) {
+function RequestsView({ tenantId, ownerId }: { tenantId: string; ownerId: string }) {
   const { formatPrice: money } = useCurrency();
   const isArabic = useUILanguage().startsWith('ar');
   const workspaceProducts = useProducts();
@@ -104,17 +504,39 @@ function RequestsView({ tenantId }: { tenantId: string }) {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(8);
 
+  const scopes = Array.from(
+    new Set([tenantId, ownerId ? `workspace-${ownerId}` : '', ownerId].filter(Boolean))
+  );
+  const scopesKey = scopes.join('|');
+
   useEffect(() => {
     let active = true;
     const bySource = new Map<string, RequestRow[]>();
     let settled = 0;
+    const activeScopes = scopesKey.split('|').filter(Boolean);
+    const totalStreams = activeScopes.length * 2;
+
+    const pickBetterRow = (existing: RequestRow | undefined, incoming: RequestRow): RequestRow => {
+      if (!existing) return incoming;
+      if (existing.status === 'Pending' && incoming.status !== 'Pending') return incoming;
+      if (incoming.status === 'Pending' && existing.status !== 'Pending') return existing;
+      const existingDecided = String(existing.decidedAt || '');
+      const incomingDecided = String(incoming.decidedAt || '');
+      if (incomingDecided && incomingDecided > existingDecided) return incoming;
+      if (existingDecided && existingDecided > incomingDecided) return existing;
+      return {
+        ...existing,
+        ...incoming,
+        receipt: incoming.receipt || existing.receipt,
+      };
+    };
 
     const recompute = () => {
       if (!active) return;
       const merged = new Map<string, RequestRow>();
-      for (const source of ['mirror', 'tenant']) {
-        for (const item of bySource.get(source) || []) {
-          if (item?.id) merged.set(item.id, item);
+      for (const [, list] of bySource.entries()) {
+        for (const item of list) {
+          if (item?.id) merged.set(item.id, pickBetterRow(merged.get(item.id), item));
         }
       }
       const rows = [...merged.values()].sort((a, b) =>
@@ -123,49 +545,55 @@ function RequestsView({ tenantId }: { tenantId: string }) {
       setSource({ rows, error: '', loading: false });
     };
 
-    const unsubTenant = onSnapshot(
-      query(collection(db, 'tenants', tenantId, 'checkoutRequests'), orderBy('createdAt', 'desc')),
-      snapshot => {
-        settled++;
-        bySource.set(
-          'tenant',
-          snapshot.docs.map(d => ({ ...d.data(), id: d.id }) as RequestRow)
-        );
-        recompute();
-      },
-      cause => {
-        settled++;
-        const isPermDenied = /(?:^|\/)permission-denied$/i.test(String((cause as { code?: string })?.code ?? ''));
-        if (!isPermDenied && settled >= 2 && !bySource.size) {
-          setSource({ rows: [], error: backendError(cause), loading: false });
-        } else {
-          recompute();
-        }
-      }
-    );
+    const unsubs: Array<() => void> = [];
+    for (const sc of activeScopes) {
+      unsubs.push(
+        onSnapshot(
+          collection(db, 'tenants', sc, 'checkoutRequests'),
+          snapshot => {
+            settled++;
+            bySource.set(
+              `tenant:${sc}`,
+              snapshot.docs.map(d => normalizeRequestRow(d.data() as Record<string, any>, d.id))
+            );
+            recompute();
+          },
+          cause => {
+            settled++;
+            const isPermDenied = /(?:^|\/)permission-denied$/i.test(String((cause as { code?: string })?.code ?? ''));
+            if (!isPermDenied && settled >= totalStreams && !bySource.size) {
+              setSource({ rows: [], error: backendError(cause), loading: false });
+            } else {
+              recompute();
+            }
+          }
+        )
+      );
 
-    const unsubMirror = onSnapshot(
-      collection(db, 'settings', `checkoutRequests_${tenantId}`, 'items'),
-      snapshot => {
-        settled++;
-        bySource.set(
-          'mirror',
-          snapshot.docs.map(d => ({ ...d.data(), id: d.id }) as RequestRow)
-        );
-        recompute();
-      },
-      () => {
-        settled++;
-        recompute();
-      }
-    );
+      unsubs.push(
+        onSnapshot(
+          collection(db, 'settings', `checkoutRequests_${sc}`, 'items'),
+          snapshot => {
+            settled++;
+            bySource.set(
+              `mirror:${sc}`,
+              snapshot.docs.map(d => normalizeRequestRow(d.data() as Record<string, any>, d.id))
+            );
+            recompute();
+          },
+          () => {
+            settled++;
+            recompute();
+          }
+        )
+      );
+    }
 
     return () => {
       active = false;
-      unsubTenant();
-      unsubMirror();
+      unsubs.forEach(fn => fn());
     };
-  }, [tenantId, retry]);
+  }, [scopesKey, retry]);
 
   const rows = source.rows.filter(
     row =>
@@ -201,122 +629,24 @@ function RequestsView({ tenantId }: { tenantId: string }) {
     setRowBusyId(row.id);
     try {
       if (row.status === 'Approved') {
-        const candidateId = [row.productId, row.product_id, row.product?.id, ...(row.items || []).flatMap(item => [item.productId, item.product_id])]
-          .find(id => typeof id === 'string' && /^[\w-]{1,150}$/.test(id));
-        const cleanProdName = String(row.productName || row.items?.[0]?.productName || '').trim().toLowerCase();
-        const matchedProduct = workspaceProducts.find(
-          p => (candidateId && p.id === candidateId) || (cleanProdName && p.name.trim().toLowerCase() === cleanProdName),
-        );
-        const resolvedProductId =
-          matchedProduct?.id ||
-          candidateId ||
-          (cleanProdName ? `prod_${cleanProdName.replace(/[^a-z0-9]+/g, '_').slice(0, 48)}` : 'product');
-
-        // Ensure canonical product document exists in Firestore so backend fulfillment resolves config reliably
-        if (matchedProduct?.config && /^[\w-]{1,150}$/.test(matchedProduct.id)) {
-          const {
-            reviews: _r,
-            ratingAverage: _ra,
-            reviewsCount: _rc,
-            ratingTotal: _rt,
-            ...safeProductDoc
-          } = matchedProduct as unknown as Record<string, unknown>;
-          await setDoc(
-            doc(db, 'tenants', tenantId, 'products', matchedProduct.id),
-            JSON.parse(JSON.stringify(safeProductDoc)),
-            { merge: true },
-          ).catch(() => null);
-        }
-
-        const cleanEmail = String(row.customerEmail || '').trim().toLowerCase();
-        const purchaseId = `${tenantId}_${resolvedProductId}`.replace(/[^a-zA-Z0-9_-]/g, '_');
-        const origin = typeof window !== 'undefined' ? window.location.origin : 'https://app.upklick.net';
-        const portalPath = `/portal/${encodeURIComponent(purchaseId)}`;
-        const nowIso = new Date().toISOString();
-
-        let localDeliverySynced = false;
-        if (cleanEmail && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail)) {
-          const portalRecord: CustomerPurchaseRecord = {
-            id: purchaseId,
-            purchaseId,
-            legacyId: purchaseId,
-            tenantId,
-            orderId: row.id,
-            productId: resolvedProductId,
-            customerUid: '',
-            customerEmail: cleanEmail,
-            customerName: row.customerName || cleanEmail.split('@')[0] || 'Customer',
-            customerPhone: row.customerPhone || '',
-            paymentMethod: row.method || '',
-            transferAccount: row.transferAccount || '',
-            discountCode: row.discountCode || '',
-            decidedAt: row.decidedAt || nowIso,
-            amount: Number(row.totals?.dueToday ?? 0),
-            currency: row.currency || matchedProduct?.config?.currency || 'USD',
-            status: 'Active',
-            loginUrl: `${origin}/auth/login?portal=1&email=${encodeURIComponent(cleanEmail)}&redirect=${encodeURIComponent(portalPath)}`,
-            portalUrl: `${origin}${portalPath}`,
-            productSnapshot: buildCustomerProductSnapshot(
-              matchedProduct,
-              resolvedProductId,
-              row.productName || matchedProduct?.name || 'Purchased Product',
-              matchedProduct?.type || 'Course',
-            ),
-            completedLessonIds: [],
-            progress: 0,
-            downloadedAssetIds: [],
-            downloadCount: 0,
-            serviceStatus: 'Order Confirmed',
-            grantedAt: row.decidedAt || row.createdAt || nowIso,
-            updatedAt: nowIso,
-          };
-          await syncMerchantPortalDelivery(portalRecord);
-          localDeliverySynced = true;
-        }
-
-        let backendSynced = false;
-        try {
-          const result = await callBackend<{ ok: boolean }>('productCheckout', {
-            action: 'sync_portal_access',
-            requestId: row.id,
-            tenantId,
-            ...(resolvedProductId ? { productId: resolvedProductId } : {}),
-          }, 90000);
-          backendSynced = Boolean(result?.ok);
-        } catch (syncErr) {
-          // Repair interrupted legacy checkout approval or provision directly via commerceService
-          if (/^[a-f0-9]{64}$/i.test(row.id)) {
-            await callBackend('productCheckout', {
-              action: 'review',
-              id: row.id,
-              decision: 'approve',
-              note: row.reviewNote || 'Approved by merchant',
-            }).then(() => { backendSynced = true; }).catch(() => null);
-          }
-          if (!backendSynced && cleanEmail && /^[\w-]{1,150}$/.test(resolvedProductId)) {
-            await callBackend('commerceService', {
-              action: 'provisionCustomerPortal',
-              productId: resolvedProductId,
-              email: cleanEmail,
-              name: row.customerName,
-              orderId: row.id,
-              amount: Number(row.totals?.dueToday ?? 0),
-              currency: row.currency || 'USD',
-              paymentMethod: row.method || '',
-              customerPhone: row.customerPhone || '',
-            }).then(() => { backendSynced = true; }).catch(() => null);
-          }
-          if (!backendSynced && !localDeliverySynced) {
-            throw syncErr;
-          }
-        }
-
-        if (!backendSynced && !localDeliverySynced) {
-          throw new Error('Customer portal access could not be synced.');
-        }
+        await processRequestWorkflow({
+          row,
+          mode: 'sync',
+          note: row.reviewNote || 'Approved by merchant',
+          tenantId,
+          scopes,
+          workspaceProducts,
+        });
         showToast.success(isArabic ? 'تمت مزامنة وصول العميل إلى البوابة.' : 'Customer portal access synced.');
       } else {
-        await applyRequestDecision(row, 'approve', row.reviewNote || 'Approved by merchant');
+        await processRequestWorkflow({
+          row,
+          mode: 'approve',
+          note: row.reviewNote || 'Approved by merchant',
+          tenantId,
+          scopes,
+          workspaceProducts,
+        });
         showToast.success(t('Checkout request approved.'));
       }
     } catch (cause) {
@@ -618,6 +948,8 @@ function RequestsView({ tenantId }: { tenantId: string }) {
         <RequestDetails
           key={request.id}
           tenantId={tenantId}
+          scopes={scopes}
+          workspaceProducts={workspaceProducts}
           request={request}
           focusReject={focusReject}
           close={() => {
@@ -632,11 +964,15 @@ function RequestsView({ tenantId }: { tenantId: string }) {
 
 function RequestDetails({
   tenantId,
+  scopes,
+  workspaceProducts,
   request,
   focusReject = false,
   close,
 }: {
   tenantId: string;
+  scopes: string[];
+  workspaceProducts: Product[];
   request: RequestRow;
   focusReject?: boolean;
   close: () => void;
@@ -687,7 +1023,14 @@ function RequestDetails({
     setBusy(true);
     setError('');
     try {
-      await applyRequestDecision(request, decision, note);
+      await processRequestWorkflow({
+        row: request,
+        mode: decision,
+        note,
+        tenantId,
+        scopes,
+        workspaceProducts,
+      });
       showToast.success(t(decision === 'approve' ? 'Checkout request approved.' : 'Checkout request rejected.'));
     } catch (cause) {
       setError(backendError(cause));

@@ -20,7 +20,8 @@ import { marketingTrackingConfigurationRequest } from './marketing-tracking.js';
 import { productReviewsRequest } from './product-reviews.js';
 import { commerceServiceRequest, productAccessRequest } from './commerce-service.js';
 import { fulfillCommerceOrder } from './commerce-orders.js';
-import { customerPasswordChangePending, customerPortalRequest, portalBootstrapKey } from './customer-portal.js';
+import { dispatchReceiptDecisionEmail, portalSender, resendKey } from './commerce-delivery.js';
+import { customerPasswordChangePending, customerPortalRequest, INITIAL_CUSTOMER_PASSWORD, portalBootstrapKey } from './customer-portal.js';
 import { productCheckoutRequest } from './product-checkout.js';
 import { getStorage } from 'firebase-admin/storage';
 import { initializeApp, applicationDefault } from 'firebase-admin/app';
@@ -81,14 +82,51 @@ export const stripeWebhook = onRequest({ timeoutSeconds: 30 }, (req, res) => cre
 export const billingService = onCall({ cors: true, invoker: 'public' }, request => billingServiceRequest(request, { actor, db }));
 export const marketingTrackingConfiguration = onCall({ cors: true, invoker: 'public' }, request => marketingTrackingConfigurationRequest(request, { actor, db }));
 export const productReviews = onCall({ cors: true, invoker: 'public' }, request => productReviewsRequest(request, { db, workspace }));
-export const commerceService = onCall(request => commerceServiceRequest(request, { workspace, db, auth, origin: appOrigin.value() }));
-export const productCheckout = onCall({ cors: true, invoker: 'public', memory: '512MiB', concurrency: 4, timeoutSeconds: 90, secrets: [portalBootstrapKey] }, request => productCheckoutRequest(request, {
+export const commerceService = onCall({ cors: true, invoker: 'public' }, request => commerceServiceRequest(request, { workspace, db, auth, origin: appOrigin.value() }));
+export const productCheckout = onCall({ cors: true, invoker: 'public', memory: '512MiB', concurrency: 4, timeoutSeconds: 90, secrets: [portalBootstrapKey, resendKey] }, request => productCheckoutRequest(request, {
   db, workspace, bucket: getStorage().bucket(),
   portal: commerceFulfillmentDependencies(),
   fulfillPaidCheckout: async (root, orderId) => {
     const order = (await root.collection('orders').doc(orderId).get()).data();
     if (!order) throw new HttpsError('failed-precondition', 'The checkout order is unavailable.');
     await fulfillCommerceOrder({ tenantId: root.id, orderId, order }, commerceFulfillmentDependencies());
+  },
+  sendDecisionEmail: async ({ root, decision, id, email, customerName, productId, productName, reviewNote, portalUrl, loginUrl, initialPassword }) => {
+    const cleanOrigin = appOrigin.value();
+    const safeProdId = productId || 'product';
+    const legacyId = `${root.id}_${safeProdId}`.replace(/[^a-zA-Z0-9_-]/g, '_');
+    const portalPath = `/portal/${encodeURIComponent(legacyId)}`;
+    const resolvedPortalUrl = portalUrl || new URL(portalPath, cleanOrigin).href;
+    const resolvedLoginUrl = loginUrl || (() => {
+      const u = new URL('/auth/login', cleanOrigin);
+      u.search = new URLSearchParams({ portal: '1', redirect: portalPath, email }).toString();
+      return u.href;
+    })();
+    const deliveryId = createHash('sha256').update(`${root.path}:${id}:${decision}`).digest('hex');
+    const sent = await dispatchReceiptDecisionEmail({
+      root,
+      email,
+      deliveryId,
+      decision,
+      productName,
+      customerName,
+      reviewNote,
+      portalUrl: resolvedPortalUrl,
+      loginUrl: resolvedLoginUrl,
+      initialPassword: initialPassword || INITIAL_CUSTOMER_PASSWORD,
+      resendApiKey: resendKey.value(),
+      defaultSender: portalSender.value(),
+    });
+    if (sent) {
+      const deliveredAt = new Date().toISOString();
+      if (decision === 'reject') {
+        await root.collection('commerceDeliveries').doc(`${id}-checkoutRejected`).set({ status: 'delivered', deliveredAt }, { merge: true }).catch(() => null);
+      } else if (productId) {
+        const jobHash = createHash('sha256').update(JSON.stringify([id, productId])).digest('hex');
+        await root.collection('commerceDeliveries').doc(`${jobHash}-portalAccess`).set({ status: 'delivered', deliveredAt }, { merge: true }).catch(() => null);
+      }
+    }
+    return sent;
   },
 }));
 export const productAccess = onCall(async request => {
@@ -119,7 +157,16 @@ async function actor(request) {
       tenantId = uidLookup.tenantId;
     }
   }
-  return { ...profile, uid: request.auth.uid, tenantId: tenantId || request.auth.uid };
+  if (!tenantId) {
+    const wsSnap = await db.doc(`tenants/workspace-${request.auth.uid}`).get().catch(() => null);
+    if (wsSnap?.exists) tenantId = `workspace-${request.auth.uid}`;
+  }
+  return {
+    ...profile,
+    uid: request.auth.uid,
+    email: profile?.email || request.auth.token?.email || '',
+    tenantId: tenantId || request.auth.uid,
+  };
 }
 async function workspace(request, permission) {
   const user = await actor(request);
@@ -139,7 +186,7 @@ async function workspace(request, permission) {
   } : undefined);
 
   const isAdmin = ['ADMIN', 'SUPER_ADMIN', 'admin', 'super_admin'].includes(user.role);
-  const isOwner = user.role === 'Owner' || member?.role === 'Owner' || tenant.ownerId === user.uid || tenant.ownerUid === user.uid || user.tenantId === user.uid;
+  const isOwner = user.role === 'Owner' || member?.role === 'Owner' || tenant.ownerId === user.uid || tenant.ownerUid === user.uid || user.tenantId === user.uid || user.tenantId === `workspace-${user.uid}`;
   const isMemberActive = member ? member.active !== false && member.status !== 'Deactivated' : false;
   const hasPermission = Boolean(
     member?.permissions?.includes('*') ||

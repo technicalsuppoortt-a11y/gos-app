@@ -6,6 +6,7 @@ import { readAppointments as readBookingAppointments } from './booking/model';
 import { store } from '../store';
 import { addLead } from '../store/slices/crmSlice';
 import { makeLead, mergeCRMLeads } from './crm/model';
+import { cloudStorage } from '../backend/workspace';
 import { selectUnifiedCRMLeads } from '../store/crmSelectors';
 import { CRMActionBoundary } from './crm/CRMActions';
 import { useCRMActions } from './crm/useCRMActions';
@@ -119,6 +120,14 @@ export function CRMLeads({ notify, isContactsPage }: { notify: (message: string)
   }, []);
   const leads = (() => {
     void bookingSyncTick;
+    const entityLeads: any[] = (() => {
+      try {
+        const raw = cloudStorage.getItem('gos-crm-leads-v1');
+        return raw ? (JSON.parse(raw) as any[]) : [];
+      } catch {
+        return [];
+      }
+    })();
     const pendingScreening = readPendingScreeningLeads();
     const pendingAppointments = readBookingAppointments()
       .filter(b => b && b.status === 'Pending' && (b.email || b.name))
@@ -138,8 +147,9 @@ export function CRMLeads({ notify, isContactsPage }: { notify: (message: string)
         lastActivity: b.start || 'Just now',
       }));
     const localPending = [...pendingScreening, ...pendingAppointments];
-    if (!localPending.length) return rawLeads;
-    return mergeCRMLeads(rawLeads, localPending);
+    const baseLeads = entityLeads.length ? mergeCRMLeads(rawLeads, entityLeads) : rawLeads;
+    if (!localPending.length) return baseLeads;
+    return mergeCRMLeads(baseLeads, localPending);
   })();
   useEffect(() => {
     const existingIds = new Set(store.getState().crm.leads.map(l => l.id));
@@ -487,9 +497,10 @@ export function CRMLeads({ notify, isContactsPage }: { notify: (message: string)
       {(tab === "pipeline" || tab === "contacts") && (
         <>
           <div className="crm-toolbar">
-            <label className="crm-search w-64 md:w-80 min-w-[250px]">
+            <label className="crm-search w-64 md:w-80 min-w-[250px] outline-none shadow-none focus-within:outline-none focus-within:shadow-none">
               <Search size={16} />
               <input
+                className="border-0 outline-none focus:outline-none focus:ring-0 shadow-none focus:shadow-none focus:border-0"
                 aria-label={translateText("Search contacts")}
                 placeholder={translateText("Search leads, name, company...")}
                 value={query}

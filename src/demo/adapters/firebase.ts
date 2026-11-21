@@ -124,6 +124,55 @@ async function demoRequest(name: string, data: any): Promise<any> {
       return summary;
     }
     case 'commerceService': return { ok: true, customerUid: 'customer_demo', created: false, passwordUpdated: Boolean(data.password), message: 'Demo access updated. No real purchase or account was changed.', ...(data.action === 'certificate' ? { certificate: { id: crypto.randomUUID(), name: data.email, course: rows('products').find(row => row.id === data.productId)?.name ?? 'Demo Course', issuedAt: new Date().toISOString() } } : {}) };
+    case 'productCheckout': {
+      if (data.action === 'sync_portal_access' || data.action === 'syncPortalAccess' || data.action === 'notify_decision') {
+        return { ok: true, emailSent: true };
+      }
+      if (data.action === 'review') {
+        const status = data.decision === 'approve' ? 'Approved' : 'Rejected';
+        const existing = rows('checkoutRequests').find(r => r.id === data.id);
+        if (existing) {
+          entityMutation('checkoutRequests', data.id, { ...existing, status, reviewNote: data.note || '', decidedAt: new Date().toISOString() });
+        }
+        return { status };
+      }
+      if (data.action === 'submit') {
+        const id = crypto.randomUUID().replace(/-/g, '').padEnd(64, '0').slice(0, 64);
+        const prod = rows('products').find(p => p.id === data.productId);
+        entityMutation('checkoutRequests', id, {
+          id,
+          orderId: id,
+          tenantId: data.tenantId || 'account-demo',
+          workspaceId: data.tenantId || 'account-demo',
+          ownerId: 'account-demo',
+          status: 'Pending',
+          createdAt: new Date().toISOString(),
+          productId: data.productId,
+          productName: prod?.name || 'Product',
+          items: [{ productId: data.productId, productName: prod?.name || 'Product', quantity: 1 }],
+          customerName: data.name || 'Customer',
+          customerEmail: String(data.email || '').trim().toLowerCase(),
+          customerPhone: data.phone || '',
+          currency: prod?.config?.currency || 'USD',
+          method: data.methodId || 'Manual transfer',
+          totals: { price: Number(prod?.config?.amount || 0), subtotal: Number(prod?.config?.amount || 0), discount: 0, tax: 0, dueToday: Number(prod?.config?.amount || 0) },
+          note: data.note || '',
+          discountCode: data.discountCode || '',
+          receipt: data.receipt ? { name: data.receipt.name, type: data.receipt.type, dataUrl: `data:${data.receipt.type};base64,${data.receipt.data}` } : null,
+          fields: [],
+        });
+        return { id };
+      }
+      return { ok: true };
+    }
+    case 'customerPortal': {
+      if (data.action === 'changeInitialPassword') return { ok: true };
+      if (data.action === 'restore') return { ok: true, purchaseIds: [], primaryPurchaseId: '', primaryPortalId: '' };
+      if (data.action === 'reviewSummary' || data.action === 'review') {
+        return { reviews: [], ratingAverage: 0, reviewsCount: 0, ratingTotal: 0 };
+      }
+      return { ok: true };
+    }
     case 'productAccess': return { name: 'Demo Product', files: [], message: 'Demo access updated.' };
     case 'activateUser': return { success: true };
     case 'billingService': return demoBilling(data);

@@ -7,6 +7,7 @@ export interface User {
   email: string;
   avatar?: string;
   requiresPasswordChange?: boolean;
+  mustChangePassword?: boolean;
   accountType?: 'agency';
   cashWalletRestricted?: boolean;
   allowedTabs?: string[];

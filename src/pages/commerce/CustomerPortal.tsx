@@ -15,6 +15,8 @@ import {
   Clock3,
   Download,
   ExternalLink,
+  Eye,
+  EyeOff,
   FileText,
   FolderDown,
   GraduationCap,
@@ -25,15 +27,17 @@ import {
   PackageCheck,
   PlayCircle,
   Search,
+  Send,
   Sparkles,
+  Star,
   UserCheck,
+  X,
 } from 'lucide-react';
 import type { RootState } from '../../store';
 import { sendEmailVerification } from 'firebase/auth';
 import { auth, backendError, db } from '../../backend/firebase';
 import { firebaseSettingsRequest } from '../../backend/settings';
 import { useProducts } from './repository';
-import { Dialog } from './primitives';
 import { logoutFirebase } from '../../backend/session';
 import {
   buildCustomerProductSnapshot,
@@ -51,7 +55,7 @@ import {
   type ServiceDeliveryStatus,
 } from '../../backend/customerPortal';
 import { matchesLocalizedSearch } from '../../utils/arabicSearch';
-import { RatingBadge, ReviewHistory } from './ProductReviews';
+import { RatingBadge } from './ProductReviews';
 import { useLiveReviews } from './reviewRepository';
 import { reviewMetrics, type ReviewSummary } from './model';
 import { readStoredFile } from './files';
@@ -157,7 +161,10 @@ export function CustomerPortal({ preview, previewRoute = false, previewReviews }
         if (role === 'CUSTOMER' && targetTenant && email) {
           const emailHash = await sha256Hex(email);
           const delivId = `${decodedId}_${emailHash.slice(0, 24)}`;
-          const delivSnap = await getDoc(doc(db, 'workspaces', targetTenant, 'portalDeliveries', delivId)).catch(() => null);
+          let delivSnap = await getDoc(doc(db, 'settings', `portalDelivery_${delivId}`)).catch(() => null);
+          if (!delivSnap?.exists()) {
+            delivSnap = await getDoc(doc(db, 'workspaces', targetTenant, 'portalDeliveries', delivId)).catch(() => null);
+          }
           if (delivSnap?.exists() && active) {
             const raw = delivSnap.data() as Record<string, any>;
             if ((!raw.customerEmailHash || raw.customerEmailHash === emailHash) && raw.status !== 'Revoked') {
@@ -383,9 +390,16 @@ export function CustomerPortal({ preview, previewRoute = false, previewReviews }
             type="button"
             className="cportal-brand"
             onClick={() => navigate(libraryHomePath)}
+            title={t('Customer Portal')}
           >
             <span className="cportal-brand-mark">
-              <img src="/upclick-mark.svg" width="22" height="22" alt="" />
+              <img
+                src="/upclick-mark.svg"
+                width="32"
+                height="32"
+                alt="Upklick"
+                className="cportal-brand-mark-img"
+              />
             </span>
             <span className="cportal-brand-copy">
               <b>{t('Customer Portal')}</b>
@@ -1297,18 +1311,70 @@ function ServiceDeliveryWorkspace({
 }
 
 function PortalPasswordDialog({ close }: { close: () => void }) {
-  useUILanguage();
+  const language = useUILanguage();
+  const ar = language.startsWith('ar');
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [showCurrent, setShowCurrent] = useState(false);
+  const [showNew, setShowNew] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
+
+  useEffect(() => {
+    function onKeyDown(e: KeyboardEvent) {
+      if (e.key === 'Escape') close();
+    }
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [close]);
+
   async function submit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (busy) return;
-    const fields = new FormData(event.currentTarget);
     setError('');
+
+    if (!currentPassword) {
+      setError(ar ? 'يرجى إدخال كلمة المرور الحالية.' : 'Please enter your current password.');
+      return;
+    }
+    if (newPassword.length < 8) {
+      setError(
+        ar
+          ? 'يجب أن تتكون كلمة المرور الجديدة من 8 أحرف على الأقل.'
+          : 'New password must be at least 8 characters long.'
+      );
+      return;
+    }
+    if (currentPassword === newPassword) {
+      setError(
+        ar
+          ? 'يرجى اختيار كلمة مرور جديدة مختلفة عن كلمة المرور الحالية.'
+          : 'Choose a new password different from your current password.'
+      );
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      setError(
+        ar
+          ? 'كلمتا المرور غير متطابقتين.'
+          : 'The new passwords do not match.'
+      );
+      return;
+    }
+
     setBusy(true);
     try {
-      await firebaseSettingsRequest('/security/password', { currentPassword: fields.get('currentPassword'), newPassword: fields.get('newPassword') });
-      showToast.success(t('Your sign-in password was updated.'));
+      await firebaseSettingsRequest('/security/password', {
+        currentPassword,
+        newPassword,
+      });
+      showToast.success(
+        ar
+          ? 'تم تحديث كلمة المرور بنجاح.'
+          : 'Your password was updated successfully.'
+      );
       close();
     } catch (cause) {
       setError(backendError(cause));
@@ -1316,16 +1382,186 @@ function PortalPasswordDialog({ close }: { close: () => void }) {
       setBusy(false);
     }
   }
-  return <Dialog title={t('Change password')} onClose={close}><form className="cportal-account-form" onSubmit={submit}>
-    <label>{t('Current password')}<input required name="currentPassword" type="password" autoComplete="current-password"/></label>
-    <label>{t('New password')}<input required minLength={8} name="newPassword" type="password" autoComplete="new-password"/></label>
-    {error && <p role="alert">{error}</p>}
-    <button type="submit" className="cportal-btn-primary" disabled={busy}>{t('Change password')}</button>
-  </form></Dialog>;
+
+  return (
+    <div
+      className="cportal-modal-backdrop"
+      role="presentation"
+      onClick={e => {
+        if (e.target === e.currentTarget) close();
+      }}
+    >
+      <div
+        className="cportal-modal-dialog"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="cportal-password-title"
+      >
+        <div className="cportal-modal-header">
+          <div className="cportal-modal-header-left">
+            <div className="cportal-modal-icon-badge">
+              <KeyRound size={20} className="stroke-[2.2]" />
+            </div>
+            <div>
+              <h2 id="cportal-password-title" className="cportal-modal-title">
+                {t('Change password')}
+              </h2>
+              <p className="cportal-modal-subtitle">
+                {ar
+                  ? 'أدخل كلمة المرور الحالية واختر كلمة مرور جديدة لحسابك.'
+                  : 'Enter your current password and choose a new secure password.'}
+              </p>
+            </div>
+          </div>
+          <button
+            type="button"
+            className="cportal-modal-close-btn"
+            onClick={close}
+            aria-label={t('Close')}
+          >
+            <X size={18} />
+          </button>
+        </div>
+
+        {error && (
+          <div className="cportal-password-error mt-4" role="alert">
+            <span>{ar ? t(error) : error}</span>
+          </div>
+        )}
+
+        <form className="cportal-modal-form" onSubmit={submit}>
+          <div className="cportal-field-group">
+            <label htmlFor="portal-current-pw" className="cportal-field-label">
+              {t('Current password')} <span className="text-rose-500">*</span>
+            </label>
+            <div className="cportal-password-input-wrap">
+              <input
+                id="portal-current-pw"
+                name="currentPassword"
+                type={showCurrent ? 'text' : 'password'}
+                required
+                autoComplete="current-password"
+                value={currentPassword}
+                onChange={e => {
+                  setCurrentPassword(e.target.value);
+                  if (error) setError('');
+                }}
+                placeholder={ar ? 'أدخل كلمة المرور الحالية' : 'Enter your current password'}
+                className="cportal-password-input"
+              />
+              <button
+                type="button"
+                tabIndex={-1}
+                onClick={() => setShowCurrent(v => !v)}
+                aria-label={showCurrent ? t('Hide password') : t('Show password')}
+                className="cportal-password-toggle"
+              >
+                {showCurrent ? <EyeOff size={16} /> : <Eye size={16} />}
+              </button>
+            </div>
+          </div>
+
+          <div className="cportal-field-group">
+            <label htmlFor="portal-new-pw" className="cportal-field-label">
+              {t('New password')} <span className="text-rose-500">*</span>
+            </label>
+            <div className="cportal-password-input-wrap">
+              <input
+                id="portal-new-pw"
+                name="newPassword"
+                type={showNew ? 'text' : 'password'}
+                required
+                minLength={8}
+                maxLength={128}
+                autoComplete="new-password"
+                value={newPassword}
+                onChange={e => {
+                  setNewPassword(e.target.value);
+                  if (error) setError('');
+                }}
+                placeholder={ar ? '8 أحرف على الأقل' : 'At least 8 characters'}
+                className="cportal-password-input"
+              />
+              <button
+                type="button"
+                tabIndex={-1}
+                onClick={() => setShowNew(v => !v)}
+                aria-label={showNew ? t('Hide password') : t('Show password')}
+                className="cportal-password-toggle"
+              >
+                {showNew ? <EyeOff size={16} /> : <Eye size={16} />}
+              </button>
+            </div>
+          </div>
+
+          <div className="cportal-field-group">
+            <label htmlFor="portal-confirm-pw" className="cportal-field-label">
+              {ar ? 'تأكيد كلمة المرور الجديدة' : 'Confirm new password'} <span className="text-rose-500">*</span>
+            </label>
+            <div className="cportal-password-input-wrap">
+              <input
+                id="portal-confirm-pw"
+                name="confirmPassword"
+                type={showConfirm ? 'text' : 'password'}
+                required
+                minLength={8}
+                maxLength={128}
+                autoComplete="new-password"
+                value={confirmPassword}
+                onChange={e => {
+                  setConfirmPassword(e.target.value);
+                  if (error) setError('');
+                }}
+                placeholder={ar ? 'أعد كتابة كلمة المرور الجديدة' : 'Re-enter your new password'}
+                className="cportal-password-input"
+              />
+              <button
+                type="button"
+                tabIndex={-1}
+                onClick={() => setShowConfirm(v => !v)}
+                aria-label={showConfirm ? t('Hide password') : t('Show password')}
+                className="cportal-password-toggle"
+              >
+                {showConfirm ? <EyeOff size={16} /> : <Eye size={16} />}
+              </button>
+            </div>
+          </div>
+
+          <p className="cportal-password-hint">
+            {ar
+              ? 'استخدم 8 أحرف على الأقل وتأكد من اختلافها عن كلمة المرور الحالية.'
+              : 'Use at least 8 characters and make sure it differs from your current password.'}
+          </p>
+
+          <div className="cportal-modal-actions">
+            <button
+              type="button"
+              className="cportal-btn-secondary"
+              onClick={close}
+              disabled={busy}
+            >
+              {ar ? 'إلغاء' : 'Cancel'}
+            </button>
+            <button
+              type="submit"
+              className="cportal-btn-primary cportal-submit-btn"
+              disabled={busy}
+            >
+              {busy ? (ar ? 'جاري التحديث…' : 'Updating…') : t('Change password')}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
 }
 
 function PortalReview({ purchase, owned, fallback }: { purchase: CustomerPurchaseRecord; owned: boolean; fallback?: ReviewSummary }) {
-  useUILanguage();
+  const language = useUILanguage();
+  const ar = language.startsWith('ar');
+  const [rating, setRating] = useState(5);
+  const [hoverRating, setHoverRating] = useState(0);
+  const [comment, setComment] = useState('');
   const [busy, setBusy] = useState(false);
   const [sent, setSent] = useState(false);
   const [error, setError] = useState('');
@@ -1333,47 +1569,228 @@ function PortalReview({ purchase, owned, fallback }: { purchase: CustomerPurchas
   const [summary, setSummary] = useState<ReviewSummary>();
   const live = useLiveReviews(purchase.tenantId, purchase.productId);
   const purchaseId = purchase.purchaseId;
+
   useEffect(() => {
     if (!owned) return;
     let active = true;
-    void readPortalReviewSummary(purchaseId).then(result => { if (active) setSummary(result); }, cause => {
-      if (active) setReadError(backendError(cause));
-    });
+    void readPortalReviewSummary(purchaseId, purchase.tenantId, purchase.productId).then(
+      result => {
+        if (active && result && Array.isArray(result.reviews)) {
+          setSummary(result);
+        }
+      },
+      () => {
+        if (active) setReadError('');
+      }
+    );
     return () => { active = false; };
   }, [owned, purchaseId]);
-  const reviews = live && live.reviewsCount >= (summary?.reviewsCount || 0) ? live : summary || fallback || reviewMetrics({});
+
+  const reviews =
+    live && live.reviewsCount >= (summary?.reviewsCount || 0)
+      ? live
+      : (summary && Array.isArray(summary.reviews) ? summary : undefined) || fallback || reviewMetrics({});
+
+  const ratingDescriptors: Record<number, { en: string; ar: string }> = {
+    1: { en: 'Poor', ar: 'ضعيف' },
+    2: { en: 'Fair', ar: 'مقبول' },
+    3: { en: 'Good', ar: 'جيد' },
+    4: { en: 'Very Good', ar: 'جيد جداً' },
+    5: { en: 'Excellent', ar: 'ممتاز' },
+  };
+
+  const currentDisplayRating = hoverRating || rating;
+  const ratingLabel = ratingDescriptors[currentDisplayRating]
+    ? ar
+      ? ratingDescriptors[currentDisplayRating].ar
+      : ratingDescriptors[currentDisplayRating].en
+    : '';
+
   async function submit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!owned || purchase.preview || busy || sent) return;
-    const fields = new FormData(event.currentTarget);
+    if (!rating || !comment.trim()) {
+      setError(ar ? 'يرجى اختيار التقييم وكتابة رأيك.' : 'Please select a rating and write your review.');
+      return;
+    }
     setError('');
     setBusy(true);
     try {
-      setSummary(await submitPortalReview(purchase, Number(fields.get('rating')), String(fields.get('comment') || '').trim()));
+      setSummary(await submitPortalReview(purchase, rating, comment.trim()));
       setSent(true);
+      showToast.success(ar ? 'شكراً لك! تم إرسال تقييمك بنجاح.' : 'Thank you! Your review has been submitted.');
     } catch (cause) {
       setError(backendError(cause));
     } finally {
       setBusy(false);
     }
   }
-  return <section className="cportal-panel-card cportal-review" aria-label={t('Ratings & reviews')}>
-    <header className="cportal-review-header"><h2>{t('Ratings & reviews')}</h2><RatingBadge product={reviews}/></header>
-    <div className="cportal-review-grid">
-      {readError && !live ? <p role="alert">{readError}</p> : <ReviewHistory reviews={reviews.reviews}/>}
-      {purchase.preview ? <p>{t('Customers can leave a rating and review after signing in.')}</p>
-        : sent || purchase.reviewedAt ? <p role="status">{t('Thank you! Your review has been submitted.')}</p>
-        : <form className="cportal-account-form" onSubmit={submit}>
-          <fieldset className="pr-star-input" disabled={busy}><legend>{t('Your rating')}</legend>
-            {[1, 2, 3, 4, 5].map(value => <label key={value}>
-              <input type="radio" name="rating" required value={value} aria-label={`${value} ${t('out of 5 stars')}`}/>
-              <span aria-hidden="true">{'★'.repeat(value)}</span>
-            </label>)}
-          </fieldset>
-          <label>{t('Your review')}<textarea required name="comment" maxLength={1000} rows={3}/></label>
-          {error && <p role="alert">{error}</p>}
-          <button type="submit" className="cportal-btn-primary" disabled={busy}>{t('Submit review')}</button>
-        </form>}
-    </div>
-  </section>;
+
+  const reviewList = reviews.reviews || [];
+
+  return (
+    <section className="cportal-panel-card cportal-review" aria-label={t('Ratings & reviews')}>
+      <header className="cportal-review-header">
+        <div>
+          <h2>{t('Ratings & reviews')}</h2>
+          <p className="cportal-review-subtitle">
+            {ar ? 'آراء العملاء وتقييمات التجربة التعليمية' : 'Student reviews and product experience feedback'}
+          </p>
+        </div>
+        <RatingBadge product={reviews} />
+      </header>
+
+      <div className="cportal-review-grid">
+        <div className="cportal-review-list-col">
+          {readError && !live ? (
+            <p className="cportal-password-error" role="alert">{readError}</p>
+          ) : reviewList.length > 0 ? (
+            <div className="cportal-review-cards">
+              {reviewList.slice().reverse().map((review, idx) => (
+                <article key={review.id || idx} className="cportal-review-card">
+                  <div className="cportal-review-card-header">
+                    <div className="cportal-review-author">
+                      <div className="cportal-review-avatar">
+                        {(review.author || 'U').charAt(0).toUpperCase()}
+                      </div>
+                      <div>
+                        <b>{review.author || (ar ? 'عميل موثق' : 'Verified Student')}</b>
+                        {review.createdAt && (
+                          <time dateTime={review.createdAt}>
+                            {Number.isFinite(Date.parse(review.createdAt))
+                              ? new Date(review.createdAt).toLocaleDateString(language, { numberingSystem: 'latn' })
+                              : ''}
+                          </time>
+                        )}
+                      </div>
+                    </div>
+                    <div className="cportal-review-card-stars">
+                      {[1, 2, 3, 4, 5].map(star => (
+                        <Star
+                          key={star}
+                          size={13}
+                          className={star <= review.rating ? 'cportal-star-filled' : 'cportal-star-empty'}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                  <p className="cportal-review-card-comment" dir="auto">{review.comment}</p>
+                </article>
+              ))}
+            </div>
+          ) : (
+            <div className="cportal-review-empty">
+              <div className="cportal-review-empty-icon">
+                <Star size={24} className="stroke-[1.8]" />
+              </div>
+              <h3>{ar ? 'لا توجد تقييمات بعد' : 'No reviews yet'}</h3>
+              <p>
+                {ar
+                  ? 'كن أول من يشارك رأيه حول هذا المنتج وساعد الآخرين في التعلم.'
+                  : 'Be the first to share your experience and help fellow students.'}
+              </p>
+            </div>
+          )}
+        </div>
+
+        <div className="cportal-review-form-col">
+          {purchase.preview ? (
+            <div className="cportal-review-notice-card">
+              <p>{t('Customers can leave a rating and review after signing in.')}</p>
+            </div>
+          ) : sent || purchase.reviewedAt ? (
+            <div className="cportal-review-success-card">
+              <CheckCircle2 size={32} className="text-emerald-500 mb-2 shrink-0" />
+              <h3>{ar ? 'شكراً لك على تقييمك!' : 'Thank you for your review!'}</h3>
+              <p>
+                {ar
+                  ? 'تم تسجيل رأيك ومشاركته بنجاح.'
+                  : 'Your review has been published and helps improve the course experience.'}
+              </p>
+            </div>
+          ) : (
+            <form className="cportal-review-form" onSubmit={submit}>
+              <h3 className="cportal-review-form-title">
+                {ar ? 'شارك تجربتك وتقييمك' : 'Share your rating & review'}
+              </h3>
+
+              <div className="cportal-star-picker">
+                <label className="cportal-field-label">
+                  {t('Your rating')} <span className="text-rose-500">*</span>
+                </label>
+                <div className="cportal-star-row" onMouseLeave={() => setHoverRating(0)}>
+                  {[1, 2, 3, 4, 5].map(val => (
+                    <button
+                      key={val}
+                      type="button"
+                      disabled={busy}
+                      onMouseEnter={() => setHoverRating(val)}
+                      onClick={() => setRating(val)}
+                      className="cportal-star-btn"
+                      aria-label={`${val} ${t('out of 5 stars')}`}
+                    >
+                      <Star
+                        size={24}
+                        className={val <= currentDisplayRating ? 'cportal-star-filled' : 'cportal-star-empty'}
+                      />
+                    </button>
+                  ))}
+                  {ratingLabel && (
+                    <span className="cportal-rating-tag">
+                      {currentDisplayRating} / 5 · {ratingLabel}
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              <div className="cportal-field-group">
+                <label htmlFor="portal-review-comment" className="cportal-field-label">
+                  {t('Your review')} <span className="text-rose-500">*</span>
+                </label>
+                <div className="cportal-review-textarea-wrap">
+                  <textarea
+                    id="portal-review-comment"
+                    required
+                    name="comment"
+                    maxLength={1000}
+                    rows={4}
+                    value={comment}
+                    disabled={busy}
+                    onChange={e => {
+                      setComment(e.target.value);
+                      if (error) setError('');
+                    }}
+                    placeholder={
+                      ar
+                        ? 'ما الذي أعجبك في هذا المنتج؟ وما الذي يمكن تحسينه؟'
+                        : 'What did you like most about this product? Share actionable feedback…'
+                    }
+                    className="cportal-review-textarea"
+                  />
+                  <div className="cportal-review-char-count">
+                    {comment.length} / 1000
+                  </div>
+                </div>
+              </div>
+
+              {error && (
+                <div className="cportal-password-error" role="alert">
+                  <span>{ar ? t(error) : error}</span>
+                </div>
+              )}
+
+              <button
+                type="submit"
+                className="cportal-btn-primary cportal-review-submit-btn"
+                disabled={busy || !rating || !comment.trim()}
+              >
+                <Send size={15} className="shrink-0" />
+                <span>{busy ? (ar ? 'جاري الإرسال…' : 'Submitting…') : t('Submit review')}</span>
+              </button>
+            </form>
+          )}
+        </div>
+      </div>
+    </section>
+  );
 }

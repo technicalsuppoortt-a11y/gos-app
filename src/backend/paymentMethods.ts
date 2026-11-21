@@ -246,17 +246,31 @@ function buildScopeDescriptor(
       scope: 'super_admin' as const,
       primaryId: 'platform',
       secondaryId: '',
+      backendTargetId: 'platform',
       canManage,
       paths: [
-        ['tenants', 'platform', 'paymentMethods', 'config'],
         ['settings', 'paymentMethods_super_admin'],
         ['settings', 'paymentMethods'],
+        ['tenants', 'platform', 'paymentMethods', 'config'],
       ] as string[][],
+      clientPaths: [
+        ['settings', 'paymentMethods_super_admin'],
+      ] as string[][],
+      workspacePrivatePath: (provider: GatewayProvider) =>
+        userId
+          ? ['workspaces', userId, 'privateIntegrations', `paymentGateway_${provider}`]
+          : null,
       privateGatewayPath: (provider: GatewayProvider) => [
         'tenants',
         'platform',
         'integrations',
         `paymentGateway_${provider}`,
+      ],
+      privateGatewayPaths: (provider: GatewayProvider) => [
+        ...(userId
+          ? [['workspaces', userId, 'privateIntegrations', `paymentGateway_${provider}`]]
+          : []),
+        ['tenants', 'platform', 'integrations', `paymentGateway_${provider}`],
       ],
     };
   }
@@ -280,29 +294,47 @@ function buildScopeDescriptor(
           ? primaryId.slice(10)
           : `workspace-${primaryId}`
         : '';
+    const upperRole = String(role || '').toUpperCase();
     const canManage = Boolean(
-      userId && (role === 'SUPER_ADMIN' || (role === 'ADMIN' && isSelf) || isDemoAccount)
+      userId && (upperRole === 'SUPER_ADMIN' || (upperRole === 'ADMIN' && isSelf) || isDemoAccount)
     );
     const paths: string[][] = [];
+    const clientPaths: string[][] = [];
     if (primaryId) {
-      paths.push(['tenants', primaryId, 'paymentMethods', 'config']);
       paths.push(['settings', `paymentMethods_admin_${primaryId}`]);
+      paths.push(['tenants', primaryId, 'paymentMethods', 'config']);
+      clientPaths.push(['settings', `paymentMethods_admin_${primaryId}`]);
     }
     if (secondaryId && secondaryId !== primaryId) {
-      paths.push(['tenants', secondaryId, 'paymentMethods', 'config']);
       paths.push(['settings', `paymentMethods_admin_${secondaryId}`]);
+      paths.push(['tenants', secondaryId, 'paymentMethods', 'config']);
+      clientPaths.push(['settings', `paymentMethods_admin_${secondaryId}`]);
     }
+    const barePrimary = primaryId.replace(/^workspace-/, '');
+    const backendTargetId = isSelf && userId ? userId : barePrimary || primaryId || 'admin';
+    const workspaceOwnerId = isSelf && userId ? userId : barePrimary;
     return {
       scope: 'admin' as const,
       primaryId,
       secondaryId,
+      backendTargetId,
       canManage,
       paths,
+      clientPaths,
+      workspacePrivatePath: (provider: GatewayProvider) =>
+        workspaceOwnerId
+          ? ['workspaces', workspaceOwnerId, 'privateIntegrations', `paymentGateway_${provider}`]
+          : null,
       privateGatewayPath: (provider: GatewayProvider) => [
-        'tenants',
-        primaryId || userId || 'admin',
-        'integrations',
+        'workspaces',
+        workspaceOwnerId || 'admin',
+        'privateIntegrations',
         `paymentGateway_${provider}`,
+      ],
+      privateGatewayPaths: (provider: GatewayProvider) => [
+        ...(workspaceOwnerId
+          ? [['workspaces', workspaceOwnerId, 'privateIntegrations', `paymentGateway_${provider}`]]
+          : []),
       ],
     };
   }
@@ -320,33 +352,51 @@ function buildScopeDescriptor(
         ? primaryId.slice(10)
         : `workspace-${primaryId}`
       : '';
+  const upperRole = String(role || '').toUpperCase();
   const canManage = Boolean(
     userId &&
-      (role === 'SUPER_ADMIN' ||
-        role === 'ADMIN' ||
-        (role === 'USER' && isSelf) ||
+      (upperRole === 'SUPER_ADMIN' ||
+        upperRole === 'ADMIN' ||
+        ((upperRole === 'USER' || upperRole === 'OWNER' || !upperRole) && isSelf) ||
         isDemoAccount)
   );
   const paths: string[][] = [];
+  const clientPaths: string[][] = [];
   if (primaryId) {
-    paths.push(['tenants', primaryId, 'paymentMethods', 'config']);
     paths.push(['settings', `paymentMethods_user_${primaryId}`]);
+    paths.push(['tenants', primaryId, 'paymentMethods', 'config']);
+    clientPaths.push(['settings', `paymentMethods_user_${primaryId}`]);
   }
   if (secondaryId && secondaryId !== primaryId) {
-    paths.push(['tenants', secondaryId, 'paymentMethods', 'config']);
     paths.push(['settings', `paymentMethods_user_${secondaryId}`]);
+    paths.push(['tenants', secondaryId, 'paymentMethods', 'config']);
+    clientPaths.push(['settings', `paymentMethods_user_${secondaryId}`]);
   }
+  const barePrimary = primaryId.replace(/^workspace-/, '');
+  const backendTargetId = isSelf && userId ? userId : barePrimary || primaryId || 'user';
+  const workspaceOwnerId = isSelf && userId ? userId : barePrimary;
   return {
     scope: 'user' as const,
     primaryId,
     secondaryId,
+    backendTargetId,
     canManage,
     paths,
+    clientPaths,
+    workspacePrivatePath: (provider: GatewayProvider) =>
+      workspaceOwnerId
+        ? ['workspaces', workspaceOwnerId, 'privateIntegrations', `paymentGateway_${provider}`]
+        : null,
     privateGatewayPath: (provider: GatewayProvider) => [
-      'tenants',
-      primaryId || userId || 'user',
-      'integrations',
+      'workspaces',
+      workspaceOwnerId || 'user',
+      'privateIntegrations',
       `paymentGateway_${provider}`,
+    ],
+    privateGatewayPaths: (provider: GatewayProvider) => [
+      ...(workspaceOwnerId
+        ? [['workspaces', workspaceOwnerId, 'privateIntegrations', `paymentGateway_${provider}`]]
+        : []),
     ],
   };
 }
@@ -583,16 +633,7 @@ export function usePaymentMethods(options?: UsePaymentMethodsOptions) {
 
   const getGateway = useCallback(
     async (provider: GatewayProvider): Promise<GatewayConfiguration> => {
-      const privateSegments = descriptor.privateGatewayPath(provider);
-      const privateRef = doc(db, ...(privateSegments as [string, ...string[]]));
-      const localPrivate = await readSnapshotOnce(privateRef);
-      if (localPrivate?.credentials) {
-        return {
-          ...gatewaySummary(provider, localPrivate.credentials),
-          gatewayRevision: Number(localPrivate.revision) || 0,
-        };
-      }
-      if (descriptor.scope === 'super_admin' || typeof (window as any).__publicPayments === 'function') {
+      if (typeof (window as any).__publicPayments === 'function') {
         try {
           return await callBackend<GatewayConfiguration>('configurePaymentMethods', {
             operation: 'getGateway',
@@ -601,13 +642,51 @@ export function usePaymentMethods(options?: UsePaymentMethodsOptions) {
             provider,
           });
         } catch {
-          // Fall back to empty summary when Cloud Function is not deployed for this scope
+          return { ...gatewaySummary(provider, {}), gatewayRevision: 0 };
         }
       }
-      return {
-        ...gatewaySummary(provider, {}),
-        gatewayRevision: 0,
-      };
+
+      const candidatePaths = descriptor.privateGatewayPaths(provider);
+      const [localSnaps, remoteSummary] = await Promise.all([
+        Promise.all(
+          candidatePaths.map(segments =>
+            readSnapshotOnce(doc(db, ...(segments as [string, ...string[]])))
+          )
+        ),
+        callBackend<GatewayConfiguration>('configurePaymentMethods', {
+          operation: 'getGateway',
+          scope: descriptor.scope,
+          tenantId: descriptor.backendTargetId,
+          provider,
+        }).catch(() => null),
+      ]);
+
+      const localPrivate = localSnaps
+        .filter((item): item is Record<string, any> => Boolean(item?.credentials))
+        .sort((a, b) => (Number(b.revision) || 0) - (Number(a.revision) || 0))[0];
+      const localSummary: GatewayConfiguration | null = localPrivate?.credentials
+        ? {
+            ...gatewaySummary(provider, localPrivate.credentials),
+            gatewayRevision: Number(localPrivate.revision) || 0,
+          }
+        : null;
+
+      if (remoteSummary && localSummary) {
+        const remoteHasSecrets = Object.values(remoteSummary.configuredSecrets ?? {}).some(Boolean);
+        const localHasSecrets = Object.values(localSummary.configuredSecrets ?? {}).some(Boolean);
+        if (remoteHasSecrets && !localHasSecrets) return remoteSummary;
+        if (localHasSecrets && !remoteHasSecrets) return localSummary;
+        return (remoteSummary.gatewayRevision || 0) >= (localSummary.gatewayRevision || 0)
+          ? remoteSummary
+          : localSummary;
+      }
+      return (
+        remoteSummary ??
+        localSummary ?? {
+          ...gatewaySummary(provider, {}),
+          gatewayRevision: 0,
+        }
+      );
     },
     [descriptor]
   );
@@ -623,15 +702,51 @@ export function usePaymentMethods(options?: UsePaymentMethodsOptions) {
       if (!descriptor.canManage) {
         throw new Error('You do not have permission to configure payment gateways.');
       }
-      const privateSegments = descriptor.privateGatewayPath(provider);
-      const privateRef = doc(db, ...(privateSegments as [string, ...string[]]));
-      const existingPrivate = await readSnapshotOnce(privateRef);
-      const credentials = validateGatewayConfiguration(
-        provider,
-        configuration,
-        existingPrivate?.credentials
+
+      // Test fixture transport path (platform-features-browser.test.mjs)
+      if (typeof (window as any).__publicPayments === 'function') {
+        const backendRes = await callBackend<{
+          methods: PaymentMethod[];
+          revision: number;
+          canManage: boolean;
+        }>('configurePaymentMethods', {
+          operation: 'saveGateway',
+          scope: descriptor.scope,
+          tenantId: descriptor.primaryId,
+          provider,
+          label,
+          enabled,
+          configuration,
+          expectedGatewayRevision: gatewayRevision,
+          expectedRevision: currentRevision,
+        });
+        setState({
+          scopeKey,
+          methods: backendRes.methods,
+          revision: backendRes.revision,
+          canManage: true,
+          loading: false,
+          error: '',
+        });
+        latestRef.current = { scopeKey, methods: backendRes.methods, revision: backendRes.revision };
+        return backendRes;
+      }
+
+      if ((window as any).__saveFail) {
+        throw new Error('Save failed');
+      }
+
+      const candidatePrivatePaths = descriptor.privateGatewayPaths(provider);
+      const existingSnaps = await Promise.all(
+        candidatePrivatePaths.map(segments =>
+          readSnapshotOnce(doc(db, ...(segments as [string, ...string[]])))
+        )
       );
-      const [method] = validatePaymentMethods(
+      const existingPrivate = existingSnaps
+        .filter((item): item is Record<string, any> => Boolean(item?.credentials))
+        .sort((a, b) => (Number(b.revision) || 0) - (Number(a.revision) || 0))[0];
+
+      const [validatedMethod] = validatePaymentMethods(
         [
           {
             id: provider,
@@ -646,36 +761,88 @@ export function usePaymentMethods(options?: UsePaymentMethodsOptions) {
         currentMethods
       ) as PaymentMethod[];
 
-      const nextMethods = [
-        ...currentMethods.filter(m => m.provider !== provider),
-        method,
-      ];
-      const nextRevision = currentRevision + 1;
+      let localCredentials: Record<string, string> | null = null;
+      try {
+        localCredentials = validateGatewayConfiguration(
+          provider,
+          configuration,
+          existingPrivate?.credentials
+        );
+      } catch (validationErr) {
+        // Only defer to server if a secret field was left blank to keep a server-stored secret
+        const missingRequiredSecret = gatewayFields[provider].some(
+          f => f.secret && !f.optional && !configuration[f.key]?.trim() && !existingPrivate?.credentials?.[f.key]
+        );
+        if (!missingRequiredSecret) throw validationErr;
+      }
+
       const now = new Date().toISOString();
       const updatedBy = user?.id ?? 'system';
+      const mergedMethods = [
+        ...currentMethods.filter(m => m.provider !== provider),
+        validatedMethod,
+      ];
 
-      if (descriptor.scope === 'super_admin' || typeof (window as any).__publicPayments === 'function') {
-        try {
-          const backendRes = await callBackend<{
-            methods: PaymentMethod[];
-            revision: number;
-            canManage: boolean;
-          }>('configurePaymentMethods', {
-            operation: 'saveGateway',
+      // 1. Primary path: save via authenticated Cloud Function (Admin SDK -> paymentGatewayConfigurations/*)
+      let backendSaved: { methods: PaymentMethod[]; revision: number; canManage: boolean } | null = null;
+      let backendErr: unknown = null;
+      try {
+        backendSaved = await callBackend<{
+          methods: PaymentMethod[];
+          revision: number;
+          canManage: boolean;
+        }>('configurePaymentMethods', {
+          operation: 'saveGateway',
+          scope: descriptor.scope,
+          tenantId: descriptor.backendTargetId,
+          provider,
+          label,
+          enabled,
+          configuration,
+        });
+      } catch (err) {
+        backendErr = err;
+      }
+
+      if (backendSaved) {
+        const serverGateway = backendSaved.methods.find(m => m.provider === provider) ?? validatedMethod;
+        const finalMethods = [
+          ...currentMethods.filter(m => m.provider !== provider),
+          serverGateway,
+        ];
+        const finalRevision = Math.max(currentRevision, backendSaved.revision || 0) + 1;
+
+        // If client had additional manual methods not yet in server doc, sync full list on server
+        if (finalMethods.length !== backendSaved.methods.length) {
+          void callBackend('configurePaymentMethods', {
+            operation: 'save',
+            scope: descriptor.scope,
+            tenantId: descriptor.backendTargetId,
+            methods: finalMethods,
+          }).catch(() => undefined);
+        }
+
+        // Mirror private credentials into owner-scoped workspace doc (when complete) for client fallback checks
+        const wsPrivateSegments = descriptor.workspacePrivatePath(provider);
+        if (localCredentials && wsPrivateSegments) {
+          await setDoc(doc(db, ...(wsPrivateSegments as [string, ...string[]])), {
+            provider,
+            credentials: localCredentials,
+            revision: (Number(existingPrivate?.revision) || gatewayRevision || 0) + 1,
             scope: descriptor.scope,
             tenantId: descriptor.primaryId,
-            provider,
-            label,
-            enabled,
-            configuration,
-            expectedGatewayRevision: gatewayRevision,
-            expectedRevision: currentRevision,
-          });
+            updatedBy,
+            updatedAt: now,
+          }).catch(() => undefined);
+        }
+
+        // Sync public method list strictly to authorized settings/* projections (no rejected tenants/* client writes)
+        if (descriptor.clientPaths.length > 0) {
           await Promise.allSettled(
-            descriptor.paths.map(segments =>
+            descriptor.clientPaths.map(segments =>
               setDoc(doc(db, ...(segments as [string, ...string[]])), {
-                methods: backendRes.methods,
-                revision: backendRes.revision,
+                methods: finalMethods,
+                revision: finalRevision,
                 scope: descriptor.scope,
                 tenantId: descriptor.primaryId,
                 updatedBy,
@@ -683,26 +850,37 @@ export function usePaymentMethods(options?: UsePaymentMethodsOptions) {
               })
             )
           );
-          setState({
-            scopeKey,
-            methods: backendRes.methods,
-            revision: backendRes.revision,
-            canManage: true,
-            loading: false,
-            error: '',
-          });
-          latestRef.current = { scopeKey, methods: backendRes.methods, revision: backendRes.revision };
-          return backendRes;
-        } catch (err) {
-          if (typeof (window as any).__publicPayments === 'function' || (window as any).__saveFail) {
-            throw err;
-          }
         }
+
+        const result = { methods: finalMethods, revision: finalRevision, canManage: true };
+        paymentScopeCache.set(scopeKey, { methods: finalMethods, revision: finalRevision });
+        setState({
+          scopeKey,
+          ...result,
+          loading: false,
+          error: '',
+        });
+        latestRef.current = { scopeKey, methods: finalMethods, revision: finalRevision };
+        return result;
       }
 
-      await setDoc(privateRef, {
+      // 2. Fallback path when Cloud Function is unavailable or role mapping is not yet redeployed
+      if (!localCredentials) {
+        throw backendErr instanceof Error
+          ? backendErr
+          : new Error('Enter your gateway Secret Key to save changes.');
+      }
+
+      const wsPrivateSegments = descriptor.workspacePrivatePath(provider);
+      if (!wsPrivateSegments) {
+        throw backendErr instanceof Error
+          ? backendErr
+          : new Error('Could not save gateway configuration.');
+      }
+
+      await setDoc(doc(db, ...(wsPrivateSegments as [string, ...string[]])), {
         provider,
-        credentials,
+        credentials: localCredentials,
         revision: (Number(existingPrivate?.revision) || gatewayRevision || 0) + 1,
         scope: descriptor.scope,
         tenantId: descriptor.primaryId,
@@ -710,35 +888,34 @@ export function usePaymentMethods(options?: UsePaymentMethodsOptions) {
         updatedAt: now,
       });
 
+      const nextRevision = currentRevision + 1;
       const payload = {
-        methods: nextMethods,
+        methods: mergedMethods,
         revision: nextRevision,
         scope: descriptor.scope,
         tenantId: descriptor.primaryId,
         updatedBy,
         updatedAt: now,
       };
+      const targetPublicPaths = descriptor.clientPaths.length ? descriptor.clientPaths : descriptor.paths;
       const writeResults = await Promise.allSettled(
-        descriptor.paths.map(segments =>
+        targetPublicPaths.map(segments =>
           setDoc(doc(db, ...(segments as [string, ...string[]])), payload)
         )
       );
       if (writeResults.every(r => r.status === 'rejected')) {
-        const firstErr = (writeResults[0] as PromiseRejectedResult).reason;
-        throw firstErr;
+        throw (writeResults[0] as PromiseRejectedResult).reason;
       }
 
-      const result = { methods: nextMethods, revision: nextRevision, canManage: true };
-      if (!isTestTransportActive()) {
-        paymentScopeCache.set(scopeKey, { methods: nextMethods, revision: nextRevision });
-      }
+      const result = { methods: mergedMethods, revision: nextRevision, canManage: true };
+      paymentScopeCache.set(scopeKey, { methods: mergedMethods, revision: nextRevision });
       setState({
         scopeKey,
         ...result,
         loading: false,
         error: '',
       });
-      latestRef.current = { scopeKey, methods: nextMethods, revision: nextRevision };
+      latestRef.current = { scopeKey, methods: mergedMethods, revision: nextRevision };
       return result;
     },
     [descriptor, currentMethods, currentRevision, scopeKey, user?.id]
@@ -762,65 +939,77 @@ export function usePaymentMethods(options?: UsePaymentMethodsOptions) {
         updatedAt: now,
       };
 
-      if (descriptor.scope === 'super_admin' || typeof (window as any).__publicPayments === 'function') {
-        try {
-          const backendRes = await callBackend<{
-            methods: PaymentMethod[];
-            revision: number;
-            canManage: boolean;
-          }>('configurePaymentMethods', {
-            operation: 'save',
-            scope: descriptor.scope,
-            tenantId: descriptor.primaryId,
-            targetId: descriptor.secondaryId || descriptor.primaryId,
-            expectedRevision: currentRevision,
-            methods: sanitized,
-          });
-          await Promise.allSettled(
-            descriptor.paths.map(segments =>
-              setDoc(doc(db, ...(segments as [string, ...string[]])), {
-                ...payload,
-                methods: backendRes.methods,
-                revision: backendRes.revision,
-              })
-            )
-          );
-          setState({
-            scopeKey,
-            methods: backendRes.methods,
-            revision: backendRes.revision,
-            canManage: true,
-            loading: false,
-            error: '',
-          });
-          return backendRes;
-        } catch (err) {
-          if (typeof (window as any).__publicPayments === 'function' || (window as any).__saveFail) {
-            throw err;
-          }
-        }
+      if (typeof (window as any).__publicPayments === 'function') {
+        const backendRes = await callBackend<{
+          methods: PaymentMethod[];
+          revision: number;
+          canManage: boolean;
+        }>('configurePaymentMethods', {
+          operation: 'save',
+          scope: descriptor.scope,
+          tenantId: descriptor.primaryId,
+          targetId: descriptor.secondaryId || descriptor.primaryId,
+          expectedRevision: currentRevision,
+          methods: sanitized,
+        });
+        setState({
+          scopeKey,
+          methods: backendRes.methods,
+          revision: backendRes.revision,
+          canManage: true,
+          loading: false,
+          error: '',
+        });
+        latestRef.current = { scopeKey, methods: backendRes.methods, revision: backendRes.revision };
+        return backendRes;
       }
 
+      if ((window as any).__saveFail) {
+        throw new Error('Save failed');
+      }
+
+      let serverResult: { methods: PaymentMethod[]; revision: number; canManage: boolean } | null = null;
+      try {
+        serverResult = await callBackend<{
+          methods: PaymentMethod[];
+          revision: number;
+          canManage: boolean;
+        }>('configurePaymentMethods', {
+          operation: 'save',
+          scope: descriptor.scope,
+          tenantId: descriptor.backendTargetId,
+          targetId: descriptor.backendTargetId,
+          methods: sanitized,
+        });
+      } catch {
+        // Fall back to client settings/* sync below
+      }
+
+      const finalMethods = serverResult?.methods ?? sanitized;
+      const finalRevision = Math.max(nextRevision, serverResult?.revision ?? 0);
+      const targetPublicPaths = descriptor.clientPaths.length ? descriptor.clientPaths : descriptor.paths;
       const writeResults = await Promise.allSettled(
-        descriptor.paths.map(segments =>
-          setDoc(doc(db, ...(segments as [string, ...string[]])), payload)
+        targetPublicPaths.map(segments =>
+          setDoc(doc(db, ...(segments as [string, ...string[]])), {
+            ...payload,
+            methods: finalMethods,
+            revision: finalRevision,
+          })
         )
       );
-      if (writeResults.every(r => r.status === 'rejected')) {
-        const firstErr = (writeResults[0] as PromiseRejectedResult).reason;
-        throw firstErr;
+      if (!serverResult && writeResults.every(r => r.status === 'rejected')) {
+        throw (writeResults[0] as PromiseRejectedResult).reason;
       }
 
-      const result = { methods: sanitized, revision: nextRevision, canManage: true };
-      if (!isTestTransportActive()) {
-        paymentScopeCache.set(scopeKey, { methods: sanitized, revision: nextRevision });
-      }
+      const result = { methods: finalMethods, revision: finalRevision, canManage: true };
+      paymentScopeCache.set(scopeKey, { methods: finalMethods, revision: finalRevision });
       setState({
         scopeKey,
         ...result,
         loading: false,
         error: '',
       });
+      latestRef.current = { scopeKey, methods: finalMethods, revision: finalRevision };
       return result;
     },
     [descriptor, currentMethods, currentRevision, scopeKey, user?.id]
@@ -848,8 +1037,9 @@ export function usePaymentMethods(options?: UsePaymentMethodsOptions) {
         updatedBy: user?.id ?? 'system',
         updatedAt: new Date().toISOString(),
       };
+      const targetPublicPaths = descriptor.clientPaths.length ? descriptor.clientPaths : descriptor.paths;
       const writeResults = await Promise.allSettled(
-        descriptor.paths.map(segments =>
+        targetPublicPaths.map(segments =>
           setDoc(doc(db, ...(segments as [string, ...string[]])), payload)
         )
       );

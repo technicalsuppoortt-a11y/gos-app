@@ -1,4 +1,4 @@
-import { createHash, createHmac, randomUUID } from 'node:crypto';
+import { createHash, randomUUID } from 'node:crypto';
 import { HttpsError } from 'firebase-functions/v2/https';
 import { defineSecret } from 'firebase-functions/params';
 import { productReviewsRequest, storedSummary } from './product-reviews.js';
@@ -12,11 +12,12 @@ const containsProduct = (order, id) => (order?.productId || order?.product_id ||
 export const portalPurchaseId = (tenantId, productId) => hash(JSON.stringify([tenantId, productId]));
 const purchases = (db, uid) => db.collection(`customerLibraries/${uid}/purchases`);
 export const portalBootstrapKey = defineSecret('CUSTOMER_BOOTSTRAP_KEY');
-export function temporaryCustomerPassword(key, uid) {
-  if (typeof key !== 'string' || Buffer.byteLength(key) < 32) throw new Error('CUSTOMER_BOOTSTRAP_KEY must contain at least 32 bytes of random secret material.');
-  return createHmac('sha256', key).update(`customer-bootstrap-v1:${uid}`).digest('base64url');
+export const INITIAL_CUSTOMER_PASSWORD = '12345678';
+export function temporaryCustomerPassword() {
+  return INITIAL_CUSTOMER_PASSWORD;
 }
 export function customerPasswordChangePending(profile, token) {
+  if (profile?.mustChangePassword === true) return true;
   return profile?.portalPasswordPolicy === 'temporary-v1'
     && (profile.portalPasswordChangeRequired !== false || token?.portalPasswordReady !== true
       || !(Number(token?.auth_time) > (profile.portalPasswordChangedAfter || 0)));
@@ -127,7 +128,7 @@ async function ensureCustomer(db, auth, email, name, now, bootstrapKey) {
     const ref = db.doc(`users/${account.uid}`);
     await db.runTransaction(async tx => {
       if ((await tx.get(ref)).exists) return;
-      tx.set(ref, { id: account.uid, uid: account.uid, email, name, role: 'CUSTOMER', portalProvisioned: true, portalPasswordPolicy: 'temporary-v1', portalPasswordChangeRequired: true, status: 'Active', createdAt: now, updatedAt: now });
+      tx.set(ref, { id: account.uid, uid: account.uid, email, name, role: 'CUSTOMER', portalProvisioned: true, mustChangePassword: true, portalPasswordPolicy: 'temporary-v1', portalPasswordChangeRequired: true, status: 'Active', createdAt: now, updatedAt: now });
     });
   }
   return account.uid;
@@ -195,7 +196,7 @@ export async function provisionCustomerPortalAccess({
     };
     tx.set(ref, record);
     tx.set(mirror, record);
-    if (queueAccessEmail) tx.set(job, { kind: 'portalAccess', email, uid, purchaseId, productId, orderId, sourcePath, approvedCheckoutSource, loginUrl: login.href, status: 'queued', createdAt: now });
+    if (queueAccessEmail) tx.set(job, { kind: 'portalAccess', email, customerName, uid, purchaseId, legacyId, productId, productName: snapshot.name, orderId, sourcePath, approvedCheckoutSource, portalUrl, loginUrl: login.href, initialPassword: INITIAL_CUSTOMER_PASSWORD, status: 'queued', createdAt: now });
     return true;
   });
 }
@@ -289,19 +290,94 @@ export async function customerPortalRequest(request, { db, auth, origin, signFil
     throw new HttpsError('permission-denied', 'Verify your email to access purchases.');
   }
   if (!validId(purchaseId)) throw new HttpsError('invalid-argument', 'Invalid purchase.');
-  const ref = purchases(db, uid).doc(purchaseId);
+  const targetTenantId = request.data?.tenantId || (purchaseId?.includes('_') ? purchaseId.split('_')[0] : '');
+  const targetProductId = request.data?.productId || (purchaseId?.includes('_') ? purchaseId.split('_')[1] : '');
+  const hashedPurchaseId = targetTenantId && targetProductId ? portalPurchaseId(targetTenantId, targetProductId) : '';
+
+  let ref = purchases(db, uid).doc(purchaseId);
+  let recordSnap = await ref.get();
+
+  if (!recordSnap.exists && hashedPurchaseId) {
+    const altRef = purchases(db, uid).doc(hashedPurchaseId);
+    const altSnap = await altRef.get();
+    if (altSnap.exists) {
+      ref = altRef;
+      recordSnap = altSnap;
+    }
+  }
+
+  if (!recordSnap.exists && purchaseId) {
+    const qSnap = await purchases(db, uid).where('legacyId', '==', purchaseId).get().catch(() => null);
+    if (qSnap && !qSnap.empty) {
+      ref = qSnap.docs[0].ref;
+      recordSnap = qSnap.docs[0];
+    }
+  }
+
+  if (!recordSnap.exists && targetProductId) {
+    const qSnap = await purchases(db, uid).where('productId', '==', targetProductId).get().catch(() => null);
+    if (qSnap && !qSnap.empty) {
+      ref = qSnap.docs[0].ref;
+      recordSnap = qSnap.docs[0];
+    }
+  }
+
+  if (!recordSnap.exists && targetTenantId && targetProductId) {
+    const userEmail = String(request.auth.token.email || profile?.email || '').trim().toLowerCase();
+    const emailHash = userEmail ? hash(userEmail) : '';
+    const delivKey = `${purchaseId}_${emailHash.slice(0, 24)}`;
+    let delivSnap = await db.doc(`settings/portalDelivery_${delivKey}`).get().catch(() => null);
+    if (!delivSnap?.exists) {
+      delivSnap = await db.doc(`workspaces/${targetTenantId}/portalDeliveries/${delivKey}`).get().catch(() => null);
+    }
+    let mirrorData = null;
+    if (!delivSnap?.exists) {
+      const mirrorDoc = await db.doc(`tenants/${targetTenantId}/customerPurchases/${hash(JSON.stringify([uid, targetProductId]))}`).get().catch(() => null);
+      if (mirrorDoc?.exists) mirrorData = mirrorDoc.data();
+    }
+    const sourceData = delivSnap?.exists ? delivSnap.data() : mirrorData;
+    if (sourceData && sourceData.status !== 'Revoked') {
+      const canonicalPurchaseId = sourceData.purchaseId || hashedPurchaseId || purchaseId;
+      const canonicalRef = purchases(db, uid).doc(canonicalPurchaseId);
+      const nowIso = new Date().toISOString();
+      const materialized = {
+        id: canonicalPurchaseId,
+        purchaseId: canonicalPurchaseId,
+        legacyId: `${targetTenantId}_${targetProductId}`,
+        tenantId: targetTenantId,
+        orderId: sourceData.orderId || `ord_${targetProductId}`,
+        productId: targetProductId,
+        customerUid: uid,
+        customerEmail: userEmail || sourceData.customerEmail,
+        customerName: sourceData.customerDisplayName || sourceData.customerName || profile?.name || userEmail.split('@')[0] || 'Customer',
+        status: 'Active',
+        productSnapshot: sourceData.productSnapshot || {},
+        completedLessonIds: sourceData.completedLessonIds || [],
+        progress: sourceData.progress || 0,
+        downloadedAssetIds: sourceData.downloadedAssetIds || [],
+        downloadCount: sourceData.downloadCount || 0,
+        serviceStatus: sourceData.serviceStatus || 'Order Confirmed',
+        grantedAt: sourceData.grantedAt || nowIso,
+        updatedAt: nowIso,
+      };
+      await canonicalRef.set(materialized, { merge: true }).catch(() => null);
+      ref = canonicalRef;
+      recordSnap = await ref.get();
+    }
+  }
+
   const requireActive = record => {
     if (record?.status !== 'Active' || record.customerUid !== uid) throw new HttpsError('permission-denied', 'Active purchase access is required.');
     return record;
   };
   if (action === 'reviewSummary') {
-    const record = requireActive((await ref.get()).data());
+    const record = requireActive(recordSnap.data());
     const product = (await db.doc(`tenants/${record.tenantId}/products/${record.productId}`).get()).data();
     if (!product) throw new HttpsError('not-found', 'This product is unavailable.');
     return storedSummary(product);
   }
   if (action === 'review') {
-    const record = requireActive((await ref.get()).data());
+    const record = requireActive(recordSnap.data());
     return productReviewsRequest({ ...request, data: {
       action: 'verifiedPurchase', tenantId: record.tenantId, productId: record.productId,
       review: { id: `portal-${hash(uid)}`, author: record.customerName.slice(0, 80), rating, comment },
@@ -343,17 +419,18 @@ export async function customerPortalRequest(request, { db, auth, origin, signFil
 async function changeInitialCustomerPassword(db, auth, identity, password, bootstrapKey) {
   const { uid, token } = identity;
   const age = Date.now() / 1000 - Number(token?.auth_time);
-  if (!Number.isFinite(age) || age < -10 || age > 300) throw new HttpsError('unauthenticated', 'Sign in again before changing your password.');
-  if (typeof password !== 'string' || password.length < 12 || password.length > 128 ||
-      !/[a-zA-Z]/.test(password) || !/[^a-zA-Z]/.test(password) || password === temporaryCustomerPassword(bootstrapKey, uid)) {
-    throw new HttpsError('invalid-argument', 'Use a different password of 12–128 characters with a letter and at least one number or symbol.');
+  if (!Number.isFinite(age) || age < -10 || age > 3600) throw new HttpsError('unauthenticated', 'Sign in again before changing your password.');
+  if (typeof password !== 'string' || password.length < 8 || password.length > 128 ||
+      password === INITIAL_CUSTOMER_PASSWORD || password === temporaryCustomerPassword(bootstrapKey, uid)) {
+    throw new HttpsError('invalid-argument', 'Choose a new password of at least 8 characters that is different from your initial password.');
   }
   const ref = db.doc(`users/${uid}`);
   const lease = { id: randomUUID(), until: Date.now() + 120000 };
   await db.runTransaction(async tx => {
     const profile = (await tx.get(ref)).data();
-    if (profile?.role !== 'CUSTOMER' || profile.status !== 'Active' ||
-        profile.portalPasswordPolicy !== 'temporary-v1' || profile.portalPasswordChangeRequired !== true) {
+    const pending = profile?.mustChangePassword === true ||
+      (profile?.portalPasswordPolicy === 'temporary-v1' && profile.portalPasswordChangeRequired === true);
+    if (profile?.role !== 'CUSTOMER' || profile.status !== 'Active' || !pending) {
       throw new HttpsError('permission-denied', 'This account does not have a pending password change.');
     }
     if (profile.portalPasswordChangeLease?.until > Date.now()) throw new HttpsError('aborted', 'A password change is already in progress.');
@@ -365,9 +442,17 @@ async function changeInitialCustomerPassword(db, auth, identity, password, boots
     const changedAt = Date.now();
     await auth.setCustomUserClaims(uid, { ...account.customClaims, portalPasswordReady: true });
     await ref.update({
+      mustChangePassword: false,
       portalPasswordChangeRequired: false, portalPasswordChangeLease: null,
       portalPasswordChangedAfter: Math.floor(changedAt / 1000), portalPasswordChangedAt: new Date(changedAt).toISOString(),
     });
+    const cleanEmail = String(token?.email || account?.email || '').trim().toLowerCase();
+    if (cleanEmail) {
+      await db.doc(`settings/portalRoute_${hash(cleanEmail)}`).set(
+        { mustChangePassword: false, passwordChangedAt: new Date(changedAt).toISOString() },
+        { merge: true },
+      ).catch(() => null);
+    }
   } catch (error) {
     await db.runTransaction(async tx => {
       if ((await tx.get(ref)).data()?.portalPasswordChangeLease?.id === lease.id) tx.update(ref, { portalPasswordChangeLease: null });

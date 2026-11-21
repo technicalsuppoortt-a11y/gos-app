@@ -29,6 +29,7 @@ service cloud.firestore {
     function tenant(tenantId) {
       return featureAdmin() || (signedIn() && !customerAccount() && (
         request.auth.uid == tenantId ||
+        tenantId == 'workspace-' + request.auth.uid ||
         request.auth.token.get('tenantId', '') == tenantId ||
         (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && profile().get('tenantId', '') == tenantId) ||
         (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && profile().get('role', '') in ['ADMIN', 'SUPER_ADMIN', 'admin', 'super_admin', 'platform_admin']) ||
@@ -458,8 +459,11 @@ service cloud.firestore {
         allow delete: if permit(tenantId, 'settings') || featureAdmin() || superAdmin();
       }
       match /{resource}/{recordId} {
-        allow read: if resource in ['handoffLogs', 'aiUsage', 'modelAllocations', 'integrations', 'auditLogs', 'transactions'] && (featureAdmin() || superAdmin() || permit(tenantId, 'analytics') || permit(tenantId, 'settings') || tenant(tenantId) || (resource == 'handoffLogs' && permit(tenantId, 'inbox')));
+        allow read: if resource in ['handoffLogs', 'aiUsage', 'modelAllocations', 'auditLogs', 'transactions'] && (featureAdmin() || superAdmin() || permit(tenantId, 'analytics') || permit(tenantId, 'settings') || tenant(tenantId) || (resource == 'handoffLogs' && permit(tenantId, 'inbox')));
         allow write: if false;
+      }
+      match /integrations/{integrationId} {
+        allow read, create, update, delete: if featureAdmin() || superAdmin() || permit(tenantId, 'settings') || permit(tenantId, 'products') || tenant(tenantId);
       }
       match /preferences/marketingTracking {
         allow read: if featureAdmin() || trackingWorkspaceMember(tenantId);
@@ -566,15 +570,18 @@ service cloud.firestore {
     match /workspaces/{workspaceId} {
       allow read: if signedIn() || platformTeamCan(['templates']);
       allow write: if featureAdmin() || superAdmin() || (signedIn() && !customerAccount() && (request.auth.uid == workspaceId || tenant(workspaceId)));
-      match /{allChildren=**} {
-        allow read: if signedIn() || platformTeamCan(['templates']);
+      match /privateIntegrations/{integrationId} {
+        allow read, write: if featureAdmin() || superAdmin() || (signedIn() && !customerAccount() && (request.auth.uid == workspaceId || tenant(workspaceId)));
+      }
+      match /{childCollection}/{allChildren=**} {
+        allow read: if childCollection != 'privateIntegrations' && (signedIn() || platformTeamCan(['templates']));
         allow write: if featureAdmin() || superAdmin() || (signedIn() && !customerAccount() && (request.auth.uid == workspaceId || tenant(workspaceId)));
       }
     }
     function customerPasswordReady() {
       return !exists(/databases/$(database)/documents/users/$(request.auth.uid))
-        || profile().get('portalPasswordPolicy', '') != 'temporary-v1'
-        || profile().get('portalPasswordChangeRequired', true) == false && request.auth.token.get('portalPasswordReady', false) == true
+        || profile().get('mustChangePassword', false) == false && profile().get('portalPasswordPolicy', '') != 'temporary-v1'
+        || profile().get('mustChangePassword', false) == false && profile().get('portalPasswordChangeRequired', true) == false && request.auth.token.get('portalPasswordReady', false) == true
           && request.auth.token.get('auth_time', 0) > profile().get('portalPasswordChangedAfter', 0);
     }
     match /customerLibraries/{uid}/purchases/{purchaseId} {

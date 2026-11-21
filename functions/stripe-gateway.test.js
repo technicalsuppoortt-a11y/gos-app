@@ -87,3 +87,60 @@ test('webhook rejects bad signatures and trusts only Stripe’s copy of the sess
   assert.equal(good.code, 200);
   assert.equal(db.documents.get('stripeCheckoutSessions/cs_test_1').fulfilled, true);
 });
+
+test('workspace owners with Owner/missing role test user-scoped Stripe and fulfill guest product checkouts', async () => {
+  const db = database({
+    'tenants/merchant-1/integrations/paymentGateway_stripe': { credentials },
+    'tenants/workspace-merchant-1/checkoutRequests/order-1': { status: 'Pending' },
+    'tenants/workspace-merchant-1/orders/order-1': { status: 'Pending' },
+    'settings/checkoutRequests_workspace-merchant-1/items/order-1': { status: 'Pending' },
+  });
+  const ownerOk = await stripeGatewayRequest(
+    { data: { operation: 'test', scope: 'user', tenantId: 'workspace-merchant-1' } },
+    { actor: async () => ({ uid: 'merchant-1', role: 'Owner', tenantId: 'workspace-merchant-1' }), db, fetcher: stripeApi() }
+  );
+  assert.equal(ownerOk.ok, true);
+
+  const unauthActor = async () => {
+    const err = new Error('Sign in to continue.');
+    err.code = 'unauthenticated';
+    throw err;
+  };
+  const rawRequest = { headers: { origin: 'https://app.example.com' } };
+  const created = await stripeGatewayRequest(
+    {
+      data: {
+        operation: 'createCheckout',
+        scope: 'user',
+        ownerId: 'merchant-1',
+        kind: 'product',
+        productOrderId: 'order-1',
+        tenantId: 'workspace-merchant-1',
+        customerEmail: 'customer@example.com',
+        buyerSessionId: 'sub-123',
+        planName: 'Sales Course',
+        amount: 99,
+        currency: 'USD',
+        successUrl: 'https://app.example.com/p/course?payment=success&session_id={CHECKOUT_SESSION_ID}',
+        cancelUrl: 'https://app.example.com/p/course?payment=cancelled',
+      },
+      rawRequest,
+    },
+    { actor: unauthActor, db, fetcher: stripeApi() }
+  );
+  assert.equal(created.sessionId, 'cs_test_1');
+
+  const productPaidSession = {
+    ...paidSession,
+    client_reference_id: 'guest_sub-123',
+    metadata: { kind: 'product', productOrderId: 'order-1', productTenantId: 'workspace-merchant-1', ownerScope: 'user', ownerId: 'merchant-1' },
+  };
+  const verified = await stripeGatewayRequest(
+    { data: { operation: 'verifySession', sessionId: 'cs_test_1' } },
+    { actor: unauthActor, db, fetcher: stripeApi(productPaidSession) }
+  );
+  assert.equal(verified.success, true);
+  assert.equal(db.documents.get('tenants/workspace-merchant-1/checkoutRequests/order-1').status, 'Approved');
+  assert.equal(db.documents.get('tenants/workspace-merchant-1/orders/order-1').status, 'Paid');
+  assert.equal(db.documents.get('settings/checkoutRequests_workspace-merchant-1/items/order-1').status, 'Approved');
+});

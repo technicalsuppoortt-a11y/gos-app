@@ -8,7 +8,7 @@ import { forceSignOut, SessionError } from './session';
 import { store, type RootState } from '../store';
 import { showToast } from '../utils/toast';
 import { hydrateCRM, type CanonicalLead } from '../store/slices/crmSlice';
-import type { Pipeline } from '../pages/crm/model';
+import { mergeCRMLeads, type Pipeline } from '../pages/crm/model';
 import { beginWrite } from './writeStatus';
 import { WorkspaceAccessError, WorkspaceLoading } from '../components/common/WorkspaceLoading';
 import { encodeFirestoreValue, decodeFirestoreValue } from './firestoreCodec';
@@ -801,8 +801,8 @@ function reconcileCommerceFromRequests() {
 
     cache.set('entity:leads', JSON.stringify(mergedLeads));
 
-    if (tenantId && initializedResources.has('leads') && leadsToPersistInFirestore.length > 0) {
-      const activeScope = tenantId;
+    const activeScope = tenantId || store.getState().auth.tenant?.id || '';
+    if (activeScope && leadsToPersistInFirestore.length > 0) {
       for (const lead of leadsToPersistInFirestore) {
         store.dispatch({ type: 'crm/setLeadBackend', payload: { scope: activeScope, id: lead.id, backend: 'firestore' } });
         const sigKey = `${activeScope}:${lead.id}`;
@@ -812,6 +812,21 @@ function reconcileCommerceFromRequests() {
           void setDoc(doc(db, 'tenants', activeScope, 'leads', lead.id), encodeFirestoreValue(lead), { merge: true }).catch(() => {});
         }
       }
+    }
+
+    try {
+      const currentCrm = store.getState().crm;
+      const combinedLeads = mergeCRMLeads(mergedLeads as CanonicalLead[], currentCrm.leads);
+      if (combinedLeads.length !== currentCrm.leads.length || JSON.stringify(combinedLeads) !== JSON.stringify(currentCrm.leads)) {
+        store.dispatch(hydrateCRM({
+          leads: combinedLeads,
+          pipelines: currentCrm.pipelines,
+          workspaceScope: activeScope || currentCrm.apiLeadScope,
+        }));
+      }
+      notify('gos-crm-leads-v1');
+    } catch {
+      /* ignore sync error */
     }
   }
 
@@ -978,16 +993,28 @@ function reconcileCommerceFromRequests() {
     }
 
     cache.set('entity:leads', JSON.stringify(currentLeads));
-    if (tenantId && initializedResources.has('leads') && bookingLeadsToPersist.length > 0) {
-      const activeScope = tenantId;
+    const activeScopeBooking = tenantId || store.getState().auth.tenant?.id || '';
+    if (activeScopeBooking && bookingLeadsToPersist.length > 0) {
       for (const lead of bookingLeadsToPersist) {
-        store.dispatch({ type: 'crm/setLeadBackend', payload: { scope: activeScope, id: lead.id, backend: 'firestore' } });
-        const sigKey = `${activeScope}:${lead.id}`;
+        store.dispatch({ type: 'crm/setLeadBackend', payload: { scope: activeScopeBooking, id: lead.id, backend: 'firestore' } });
+        const sigKey = `${activeScopeBooking}:${lead.id}`;
         const sig = JSON.stringify(lead);
         if (syncedCommerceLeadSignatures.get(sigKey) !== sig) {
           syncedCommerceLeadSignatures.set(sigKey, sig);
-          void setDoc(doc(db, 'tenants', activeScope, 'leads', lead.id), encodeFirestoreValue(lead), { merge: true }).catch(() => {});
+          void setDoc(doc(db, 'tenants', activeScopeBooking, 'leads', lead.id), encodeFirestoreValue(lead), { merge: true }).catch(() => {});
         }
+      }
+      try {
+        const currentCrm = store.getState().crm;
+        const combinedLeads = mergeCRMLeads(currentLeads as CanonicalLead[], currentCrm.leads);
+        store.dispatch(hydrateCRM({
+          leads: combinedLeads,
+          pipelines: currentCrm.pipelines,
+          workspaceScope: activeScopeBooking || currentCrm.apiLeadScope,
+        }));
+        notify('gos-crm-leads-v1');
+      } catch {
+        /* ignore sync error */
       }
     }
   }
