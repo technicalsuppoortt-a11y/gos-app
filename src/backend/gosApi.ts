@@ -14,6 +14,31 @@ export const gosStreamRequest = typeof createGosStreamTransport === 'function'
   ? createGosStreamTransport(gosBaseUrl, gosTokenProvider, fetch, checkGosToolPolicy)
   : (async () => { throw new Error('Stream transport unavailable.'); });
 
+/**
+ * A WhatsApp file the API saved for an inbox message, loaded with the signed-in token and kept as a
+ * blob URL (an <img> cannot send the Authorization header). Each file is fetched once per session.
+ */
+const inboxMediaCache = new Map<string, Promise<string>>();
+export function inboxMediaUrl(apiPath: string): Promise<string> {
+  const path = apiPath.replace(/^\/api\/v1/, '');
+  if (!/^\/inbox\/conversations\/[A-Za-z0-9_-]+\/messages\/[A-Za-z0-9_-]+\/media$/.test(path)) return Promise.reject(new Error('Invalid media path.'));
+  let pending = inboxMediaCache.get(path);
+  if (!pending) {
+    pending = (async () => {
+      for (let attempt = 0; attempt < 2; attempt++) {
+        const response = await fetch(`${gosBaseUrl.replace(/\/$/, '')}/api/v1${path}`, { headers: { Authorization: `Bearer ${await gosTokenProvider(attempt === 1)}` } });
+        if (response.status === 401 && attempt === 0) continue;
+        if (!response.ok) throw new Error('This file could not be loaded.');
+        return URL.createObjectURL(await response.blob());
+      }
+      throw new Error('This file could not be loaded.');
+    })();
+    pending.catch(() => inboxMediaCache.delete(path));
+    inboxMediaCache.set(path, pending);
+  }
+  return pending;
+}
+
 async function meteredRequest<T>(request: MeteredGosRequest, signal?: AbortSignal): Promise<T> {
   signal?.throwIfAborted();
   const result = await callBackend<T>('agencyGosUsage', request, 115000);
