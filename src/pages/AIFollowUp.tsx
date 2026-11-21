@@ -371,6 +371,7 @@ const channelDefinitions: Channel[] = [
     className: "af-instagram",
     conversations: "1,234 conversations",
   },
+  /* Facebook channel integration disabled:
   {
     id: "facebook",
     name: "Facebook",
@@ -378,6 +379,7 @@ const channelDefinitions: Channel[] = [
     className: "af-facebook",
     conversations: "856 conversations",
   },
+  */
   {
     id: "whatsapp",
     name: "WhatsApp",
@@ -1427,7 +1429,7 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent, section = "f
         {localizeNode([
           { value: "All", label: `All (${rows.length})` },
           { value: "Instagram", label: "Instagram", channel: "instagram" },
-          { value: "Facebook", label: "Facebook", channel: "facebook" },
+          // { value: "Facebook", label: "Facebook", channel: "facebook" },
           { value: "WhatsApp", label: "WhatsApp", channel: "whatsapp" },
           { value: "Messenger", label: "Messenger", channel: "messenger" },
           { value: "Website Chat", label: "Website Chat", channel: "website" },
@@ -2991,11 +2993,13 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent, section = "f
                   {channelBusy ? translateText('Opening Meta…') : translateText('Connect with Meta')}
                 </button>
               )}
+              {/* Facebook channel connection button disabled:
               {selectedChannel === 'facebook' && (
                 <button type="button" className="af-button-secondary" disabled={channelBusy} onClick={() => void connectLiveChannel('messenger')}>
                   {translateText('Connect Messenger')}
                 </button>
               )}
+              */}
               {metaPages && (
                 <div className="af-modal-copy">
                   <p>{translateText(metaPages.channel === 'instagram' ? 'Choose an Instagram account' : 'Choose a page')}</p>

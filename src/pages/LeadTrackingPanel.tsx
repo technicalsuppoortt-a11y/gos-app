@@ -430,7 +430,7 @@ export const LeadTrackingPanel: React.FC<Props> = ({ onConnectChannel }) => {
   const emailInfo = overview?.channels.email;
   const waConnected = Boolean(overview?.channels.whatsapp.connected);
   const igConnected = Boolean(overview?.channels.instagram.connected);
-  const msConnected = Boolean(overview?.channels.messenger.connected);
+  // const msConnected = Boolean(overview?.channels.messenger.connected);
   const approvedWaTemplates = overview?.channels.whatsapp_templates ?? [];
 
   return (
@@ -570,6 +570,7 @@ export const LeadTrackingPanel: React.FC<Props> = ({ onConnectChannel }) => {
               <span>Instagram: {igConnected ? t('Connected', 'مربوط') : t('Connect', 'ربط القناة')}</span>
             </button>
 
+            {/* Facebook channel integration disabled:
             <button
               type="button"
               onClick={() => onConnectChannel?.('messenger')}
@@ -582,6 +583,7 @@ export const LeadTrackingPanel: React.FC<Props> = ({ onConnectChannel }) => {
               <Share2 size={13} />
               <span>Facebook: {msConnected ? t('Connected', 'مربوط') : t('Connect', 'ربط القناة')}</span>
             </button>
+            */}
           </div>
 
           <button
@@ -1207,7 +1209,7 @@ export const LeadTrackingPanel: React.FC<Props> = ({ onConnectChannel }) => {
                   >
                     <option value="WhatsApp">{t('Meta — WhatsApp', 'ميتا — واتساب')}</option>
                     <option value="Instagram">{t('Meta — Instagram', 'ميتا — إنستجرام')}</option>
-                    <option value="Facebook">{t('Meta — Facebook', 'ميتا — فيسبوك')}</option>
+                    {/* <option value="Facebook">{t('Meta — Facebook', 'ميتا — فيسبوك')}</option> */}
                     <option value="Website Chat">{t('Website Chat', 'شات الموقع المباشر')}</option>
                     <option value="Booking">{t('Bookings & Calendar', 'الحجوزات والمواعيد')}</option>
                     <option value="Services">{t('Products & Services', 'المنتجات والخدمات')}</option>

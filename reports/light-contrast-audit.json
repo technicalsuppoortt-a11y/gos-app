@@ -1,6 +1,6 @@
 {
   "scannedStylesheets": 114,
-  "correctedDeclarations": 869,
+  "correctedDeclarations": 871,
   "correctedVariables": 12,
   "referenceSurface": "#ffffff",
   "minimumRatio": 4.5,
@@ -1088,72 +1088,72 @@
     },
     {
       "file": "src/pages/Inbox.tsx",
-      "line": 1111,
+      "line": 1112,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/Inbox.tsx",
-      "line": 1256,
+      "line": 1257,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/Inbox.tsx",
-      "line": 1320,
+      "line": 1321,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/Inbox.tsx",
-      "line": 1461,
+      "line": 1462,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/Inbox.tsx",
-      "line": 1536,
+      "line": 1537,
       "utility": "text-slate-400"
     },
     {
       "file": "src/pages/Inbox.tsx",
-      "line": 1554,
+      "line": 1555,
       "utility": "text-slate-400"
     },
     {
       "file": "src/pages/Inbox.tsx",
-      "line": 1711,
+      "line": 1712,
       "utility": "text-slate-400"
     },
     {
       "file": "src/pages/Inbox.tsx",
-      "line": 1742,
+      "line": 1743,
       "utility": "text-slate-400"
     },
     {
       "file": "src/pages/Inbox.tsx",
-      "line": 1774,
+      "line": 1775,
       "utility": "text-slate-400"
     },
     {
       "file": "src/pages/Inbox.tsx",
-      "line": 1853,
+      "line": 1854,
       "utility": "text-slate-400"
     },
     {
       "file": "src/pages/Inbox.tsx",
-      "line": 2005,
+      "line": 2006,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/Inbox.tsx",
-      "line": 2034,
+      "line": 2035,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/Inbox.tsx",
-      "line": 2082,
+      "line": 2083,
       "utility": "text-slate-300"
     },
     {
       "file": "src/pages/Inbox.tsx",
-      "line": 2094,
+      "line": 2095,
       "utility": "text-slate-400"
     },
     {
@@ -1168,117 +1168,117 @@
     },
     {
       "file": "src/pages/LeadTrackingPanel.tsx",
-      "line": 612,
+      "line": 614,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/LeadTrackingPanel.tsx",
-      "line": 622,
+      "line": 624,
       "utility": "text-slate-400"
     },
     {
       "file": "src/pages/LeadTrackingPanel.tsx",
-      "line": 782,
+      "line": 784,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/LeadTrackingPanel.tsx",
-      "line": 815,
+      "line": 817,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/LeadTrackingPanel.tsx",
-      "line": 859,
+      "line": 861,
       "utility": "text-slate-400"
     },
     {
       "file": "src/pages/LeadTrackingPanel.tsx",
-      "line": 875,
+      "line": 877,
       "utility": "text-slate-400"
     },
     {
       "file": "src/pages/LeadTrackingPanel.tsx",
-      "line": 904,
+      "line": 906,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/LeadTrackingPanel.tsx",
-      "line": 914,
+      "line": 916,
       "utility": "text-slate-400"
     },
     {
       "file": "src/pages/LeadTrackingPanel.tsx",
-      "line": 974,
+      "line": 976,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/LeadTrackingPanel.tsx",
-      "line": 984,
+      "line": 986,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/LeadTrackingPanel.tsx",
-      "line": 1014,
+      "line": 1016,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/LeadTrackingPanel.tsx",
-      "line": 1056,
+      "line": 1058,
       "utility": "text-slate-400"
     },
     {
       "file": "src/pages/LeadTrackingPanel.tsx",
-      "line": 1074,
+      "line": 1076,
       "utility": "text-slate-400"
     },
     {
       "file": "src/pages/LeadTrackingPanel.tsx",
-      "line": 1093,
+      "line": 1095,
       "utility": "text-slate-400"
     },
     {
       "file": "src/pages/LeadTrackingPanel.tsx",
-      "line": 1126,
+      "line": 1128,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/LeadTrackingPanel.tsx",
-      "line": 1182,
+      "line": 1184,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/LeadTrackingPanel.tsx",
-      "line": 1192,
+      "line": 1194,
       "utility": "text-slate-400"
     },
     {
       "file": "src/pages/LeadTrackingPanel.tsx",
-      "line": 1331,
+      "line": 1333,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/LeadTrackingPanel.tsx",
-      "line": 1341,
+      "line": 1343,
       "utility": "text-slate-400"
     },
     {
       "file": "src/pages/LeadTrackingPanel.tsx",
-      "line": 1403,
+      "line": 1405,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/LeadTrackingPanel.tsx",
-      "line": 1410,
+      "line": 1412,
       "utility": "text-slate-400"
     },
     {
       "file": "src/pages/LeadTrackingPanel.tsx",
-      "line": 1418,
+      "line": 1420,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/LeadTrackingPanel.tsx",
-      "line": 1431,
+      "line": 1433,
       "utility": "text-slate-400"
     },
     {
@@ -5089,6 +5089,22 @@
       "before": "#EDE9FE",
       "after": "#334155",
       "contrastOnWhite": 1.19
+    },
+    {
+      "file": "src/pages/booking/booking-editor-reference.css",
+      "line": 1913,
+      "selector": ".bk-copy-modal-close",
+      "before": "#94a3b8",
+      "after": "#334155",
+      "contrastOnWhite": 2.56
+    },
+    {
+      "file": "src/pages/booking/booking-editor-reference.css",
+      "line": 2004,
+      "selector": ".bk-copy-help",
+      "before": "#94a3b8",
+      "after": "#334155",
+      "contrastOnWhite": 2.56
     },
     {
       "file": "src/pages/booking/booking-workspace.css",

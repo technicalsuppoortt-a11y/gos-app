@@ -19,6 +19,7 @@ html.dark :is(
   .bl-brand-frame,
   .bl-receipt-zoom-img,
   .bk-availability-row,
+  .bk-copy-pill-check,
   .bk-segmented,
   .bk-builder-bar,
   .bk-question,
@@ -79,6 +80,7 @@ html.dark :is(
   .bc-month-placeholder svg,
   .bc-month-placeholder button,
   .bc-meeting-meta svg,
+  .bk-copy-empty-source svg,
   .ce-chart-caption b,
   .pp-card-actions svg,
   .dw-tag-form>button,
@@ -556,6 +558,8 @@ html.dark :is(
   .bc-calendar-hint,
   .bc-month-placeholder,
   .bc-powered,
+  .bk-copy-modal-close,
+  .bk-copy-help,
   .bk-wizard-steps,
   .cr-search-icon,
   .cr-page-ellipsis,
@@ -636,6 +640,8 @@ html.dark :is(
   .bc-link-icon.mint,
   .bc-link-icon.blue,
   .bc-link-icon.rose,
+  .bk-copy-dropdown-option:hover,
+  .bk-copy-dropdown-option.is-active,
   .cr-kpi-pill.pending,
   .cr-kpi-pill.approved,
   .cr-kpi-pill.rejected,
@@ -835,6 +841,7 @@ html.dark :is(
   .bc-state-pill,
   .bc-google-mark,
   .bc-view-toggle,
+  .bk-copy-count-badge,
   .bk-platform,
   .bk-error,
   .bk-diagnostic-slot,
@@ -962,6 +969,7 @@ html.dark :is(
   .an-type,
   .bc-day-switch,
   .bc-status,
+  .bk-copy-current-tag,
   .bk-success-orb,
   .bk-switch-track,
   .bk-diagnostic-reason,
@@ -1059,6 +1067,7 @@ html.dark :is(
   .bc-table-link,
   .bc-meeting-meta,
   .bc-meeting-description,
+  .bk-copy-chevron,
   .bk-filter,
   .bk-diagnostic-explanation,
   .cr-search-clear,
@@ -1403,6 +1412,8 @@ html.dark :is(
   .an-link,
   .aw-text-button,
   .aw-linked-asset,
+  .bk-copy-section-trigger,
+  .bk-copy-opt-check,
   .bk-selected-slot,
   .tw-type-selected,
   .pp-cell-icon,
@@ -1488,6 +1499,7 @@ html.dark :is(
   .an-score-num,
   .aw-workspace,
   .bc-page,
+  .bk-copy-label,
   .cr-review-label,
   .cr-decision-note,
   .pp-table-cell-with-icon,
@@ -1696,6 +1708,9 @@ html.dark :is(
   .bc-mini-cal-head button,
   .bc-mini-cal-head b,
   .bc-powered svg,
+  .bk-copy-modal-titles p,
+  .bk-copy-select-val small,
+  .bk-copy-option-copy small,
   .bk-subtabs button,
   .bk-table td,
   .bk-empty b,
@@ -1919,6 +1934,8 @@ html.dark :is(
   .bc-metric,
   .bc-calendar-connection,
   .bc-modal,
+  .bk-copy-dropdown-list,
+  .bk-copy-checkbox,
   .cr-detail-card,
   .cw-card,
   .cw-module,
@@ -2048,6 +2065,7 @@ html.dark :is(
   .bc-module-tabs,
   .bc-editor-tabs,
   .bc-preview-tabs,
+  .bk-copy-modal-header,
   .ce-activity,
   .ce-column-track,
   .ce-paired-columns,
@@ -2309,6 +2327,7 @@ html.dark :is(
   .bc-hours-row,
   .bc-automation-row,
   .bc-policy-toggle,
+  .bk-copy-modal-footer,
   .cr-detail-total-row,
   .course-lesson-row,
   .cx-upsell,
@@ -2649,6 +2668,7 @@ html.dark :is(
   .an-ghost:hover,
   .aw-clear-filters:hover,
   .aw-default.active,
+  .bk-copy-chevron.rotated,
   .bk-month-cells .bk-month-event,
   .tw-rich-toolbar .tw-editor-preview,
   .crm2-subnav-btn.active,
@@ -3292,6 +3312,7 @@ html.dark :is(
   .ai-formatted-bubble,
   .an-btn,
   .aw-select-popup,
+  .bk-copy-select-btn,
   .cr-page-btn,
   .cr-page-num,
   .cw-button,
@@ -3386,6 +3407,7 @@ html.dark :is(
   .an-ghost,
   .an-icon-btn,
   .aw-select-trigger,
+  .bk-copy-btn-cancel,
   .cr-mini-copy,
   .cw-icon-button,
   .pdd-icon-btn,
@@ -3632,7 +3654,8 @@ html.dark :is(
 }
 html.dark :is(
   .ai-iform-pill:hover:not(:disabled),
-  .bk-qual-remove-btn:hover:not(:disabled)
+  .bk-qual-remove-btn:hover:not(:disabled),
+  .bk-copy-inline-action:hover:not(:disabled)
 ):not([data-form-theme]):not([data-form-theme] *):not([data-public-asset]):not([data-public-asset] *):not(:where(.tb-block,.tb-form-showcase,.aw-live-preview,.aw-asset-image,.aw-step-image,.fb-site-window,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,[role=switch],.af-switch,.aw-default,.bk-switch-track,.aw-primary,.aw-primary-split,.button-primary,.bk-button.primary,.cw-button.primary,.st-button.primary,.crm-button.primary)):not(:where(.tb-block,.tb-form-showcase,.aw-live-preview,.aw-asset-image,.aw-step-image,.fb-site-window,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,[role=switch],.af-switch,.aw-default,.bk-switch-track,.aw-primary,.aw-primary-split,.button-primary,.bk-button.primary,.cw-button.primary,.st-button.primary,.crm-button.primary) *) {
     background: var(--ui-surface-raised)
 }
@@ -4521,6 +4544,7 @@ html.dark :is(
 }
 html.dark :is(
   .bl-receipt-zoom-close,
+  .bk-copy-modal-card,
   .cw-dialog,
   .fb-mini-canvas-inner,
   .fb-step-snapshot-content,
@@ -4786,6 +4810,54 @@ html.dark :is(
 ):not([data-form-theme]):not([data-form-theme] *):not([data-public-asset]):not([data-public-asset] *):not(:where(.tb-block,.tb-form-showcase,.aw-live-preview,.aw-asset-image,.aw-step-image,.fb-site-window,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,[role=switch],.af-switch,.aw-default,.bk-switch-track,.aw-primary,.aw-primary-split,.button-primary,.bk-button.primary,.cw-button.primary,.st-button.primary,.crm-button.primary)):not(:where(.tb-block,.tb-form-showcase,.aw-live-preview,.aw-asset-image,.aw-step-image,.fb-site-window,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,[role=switch],.af-switch,.aw-default,.bk-switch-track,.aw-primary,.aw-primary-split,.button-primary,.bk-button.primary,.cw-button.primary,.st-button.primary,.crm-button.primary) *) {
     background: var(--ui-surface);
     color: var(--ui-text)
+}
+html.dark :is(
+  .bk-copy-modal-icon
+):not([data-form-theme]):not([data-form-theme] *):not([data-public-asset]):not([data-public-asset] *):not(:where(.tb-block,.tb-form-showcase,.aw-live-preview,.aw-asset-image,.aw-step-image,.fb-site-window,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,[role=switch],.af-switch,.aw-default,.bk-switch-track,.aw-primary,.aw-primary-split,.button-primary,.bk-button.primary,.cw-button.primary,.st-button.primary,.crm-button.primary)):not(:where(.tb-block,.tb-form-showcase,.aw-live-preview,.aw-asset-image,.aw-step-image,.fb-site-window,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,[role=switch],.af-switch,.aw-default,.bk-switch-track,.aw-primary,.aw-primary-split,.button-primary,.bk-button.primary,.cw-button.primary,.st-button.primary,.crm-button.primary) *) {
+    background: linear-gradient(145deg, var(--ui-surface-raised), var(--ui-surface-hover));
+    border-color: var(--ui-border)
+}
+html.dark :is(
+  .bk-copy-modal-close:hover:not(:disabled),
+  .bk-copy-btn-cancel:hover:not(:disabled)
+):not([data-form-theme]):not([data-form-theme] *):not([data-public-asset]):not([data-public-asset] *):not(:where(.tb-block,.tb-form-showcase,.aw-live-preview,.aw-asset-image,.aw-step-image,.fb-site-window,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,[role=switch],.af-switch,.aw-default,.bk-switch-track,.aw-primary,.aw-primary-split,.button-primary,.bk-button.primary,.cw-button.primary,.st-button.primary,.crm-button.primary)):not(:where(.tb-block,.tb-form-showcase,.aw-live-preview,.aw-asset-image,.aw-step-image,.fb-site-window,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,[role=switch],.af-switch,.aw-default,.bk-switch-track,.aw-primary,.aw-primary-split,.button-primary,.bk-button.primary,.cw-button.primary,.st-button.primary,.crm-button.primary) *) {
+    background: var(--ui-surface-raised);
+    color: var(--ui-text)
+}
+html.dark :is(
+  .bk-copy-skel-line,
+  .bk-copy-skel-pill,
+  .bk-copy-skel-input
+):not([data-form-theme]):not([data-form-theme] *):not([data-public-asset]):not([data-public-asset] *):not(:where(.tb-block,.tb-form-showcase,.aw-live-preview,.aw-asset-image,.aw-step-image,.fb-site-window,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,[role=switch],.af-switch,.aw-default,.bk-switch-track,.aw-primary,.aw-primary-split,.button-primary,.bk-button.primary,.cw-button.primary,.st-button.primary,.crm-button.primary)):not(:where(.tb-block,.tb-form-showcase,.aw-live-preview,.aw-asset-image,.aw-step-image,.fb-site-window,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,[role=switch],.af-switch,.aw-default,.bk-switch-track,.aw-primary,.aw-primary-split,.button-primary,.bk-button.primary,.cw-button.primary,.st-button.primary,.crm-button.primary) *) {
+    background: linear-gradient(90deg, var(--ui-surface-raised) 0%, var(--ui-surface-raised) 50%, var(--ui-surface-raised) 100%)
+}
+html.dark :is(
+  .bk-copy-pill,
+  .pdd-buyer-pill,
+  .legal-search-input
+):not([data-form-theme]):not([data-form-theme] *):not([data-public-asset]):not([data-public-asset] *):not(:where(.tb-block,.tb-form-showcase,.aw-live-preview,.aw-asset-image,.aw-step-image,.fb-site-window,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,[role=switch],.af-switch,.aw-default,.bk-switch-track,.aw-primary,.aw-primary-split,.button-primary,.bk-button.primary,.cw-button.primary,.st-button.primary,.crm-button.primary)):not(:where(.tb-block,.tb-form-showcase,.aw-live-preview,.aw-asset-image,.aw-step-image,.fb-site-window,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,[role=switch],.af-switch,.aw-default,.bk-switch-track,.aw-primary,.aw-primary-split,.button-primary,.bk-button.primary,.cw-button.primary,.st-button.primary,.crm-button.primary) *) {
+    border-color: var(--ui-border);
+    background: var(--ui-surface-raised);
+    color: var(--ui-text)
+}
+html.dark :is(
+  .bk-copy-pill:hover:not(:disabled):not(.is-selected)
+):not([data-form-theme]):not([data-form-theme] *):not([data-public-asset]):not([data-public-asset] *):not(:where(.tb-block,.tb-form-showcase,.aw-live-preview,.aw-asset-image,.aw-step-image,.fb-site-window,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,[role=switch],.af-switch,.aw-default,.bk-switch-track,.aw-primary,.aw-primary-split,.button-primary,.bk-button.primary,.cw-button.primary,.st-button.primary,.crm-button.primary)):not(:where(.tb-block,.tb-form-showcase,.aw-live-preview,.aw-asset-image,.aw-step-image,.fb-site-window,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,[role=switch],.af-switch,.aw-default,.bk-switch-track,.aw-primary,.aw-primary-split,.button-primary,.bk-button.primary,.cw-button.primary,.st-button.primary,.crm-button.primary) *) {
+    background: var(--ui-surface-raised)
+}
+html.dark :is(
+  .bk-copy-empty-source,
+  .cw-url,
+  .dc-search,
+  .st-team-reset-btn,
+  .st-action-toggle,
+  .st-guide-trigger,
+  .st-support-mini-pill,
+  .st-support-day-btn
+):not([data-form-theme]):not([data-form-theme] *):not([data-public-asset]):not([data-public-asset] *):not(:where(.tb-block,.tb-form-showcase,.aw-live-preview,.aw-asset-image,.aw-step-image,.fb-site-window,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,[role=switch],.af-switch,.aw-default,.bk-switch-track,.aw-primary,.aw-primary-split,.button-primary,.bk-button.primary,.cw-button.primary,.st-button.primary,.crm-button.primary)):not(:where(.tb-block,.tb-form-showcase,.aw-live-preview,.aw-asset-image,.aw-step-image,.fb-site-window,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,[role=switch],.af-switch,.aw-default,.bk-switch-track,.aw-primary,.aw-primary-split,.button-primary,.bk-button.primary,.cw-button.primary,.st-button.primary,.crm-button.primary) *) {
+    border-color: var(--ui-border);
+    background: var(--ui-surface-raised);
+    color: var(--ui-text-secondary)
 }
 html.dark :is(
   .bk-button,
@@ -5268,19 +5340,6 @@ html.dark :is(
     color: var(--ui-accent-text)
 }
 html.dark :is(
-  .cw-url,
-  .dc-search,
-  .st-team-reset-btn,
-  .st-action-toggle,
-  .st-guide-trigger,
-  .st-support-mini-pill,
-  .st-support-day-btn
-):not([data-form-theme]):not([data-form-theme] *):not([data-public-asset]):not([data-public-asset] *):not(:where(.tb-block,.tb-form-showcase,.aw-live-preview,.aw-asset-image,.aw-step-image,.fb-site-window,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,[role=switch],.af-switch,.aw-default,.bk-switch-track,.aw-primary,.aw-primary-split,.button-primary,.bk-button.primary,.cw-button.primary,.st-button.primary,.crm-button.primary)):not(:where(.tb-block,.tb-form-showcase,.aw-live-preview,.aw-asset-image,.aw-step-image,.fb-site-window,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,[role=switch],.af-switch,.aw-default,.bk-switch-track,.aw-primary,.aw-primary-split,.button-primary,.bk-button.primary,.cw-button.primary,.st-button.primary,.crm-button.primary) *) {
-    border-color: var(--ui-border);
-    background: var(--ui-surface-raised);
-    color: var(--ui-text-secondary)
-}
-html.dark :is(
   .cw-metadata-row
 ):not([data-form-theme]):not([data-form-theme] *):not([data-public-asset]):not([data-public-asset] *):not(:where(.tb-block,.tb-form-showcase,.aw-live-preview,.aw-asset-image,.aw-step-image,.fb-site-window,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,[role=switch],.af-switch,.aw-default,.bk-switch-track,.aw-primary,.aw-primary-split,.button-primary,.bk-button.primary,.cw-button.primary,.st-button.primary,.crm-button.primary)):not(:where(.tb-block,.tb-form-showcase,.aw-live-preview,.aw-asset-image,.aw-step-image,.fb-site-window,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,[role=switch],.af-switch,.aw-default,.bk-switch-track,.aw-primary,.aw-primary-split,.button-primary,.bk-button.primary,.cw-button.primary,.st-button.primary,.crm-button.primary) *) {
     border-bottom-color: var(--ui-border);
@@ -5322,14 +5381,6 @@ html.dark :is(
 ):not([data-form-theme]):not([data-form-theme] *):not([data-public-asset]):not([data-public-asset] *):not(:where(.tb-block,.tb-form-showcase,.aw-live-preview,.aw-asset-image,.aw-step-image,.fb-site-window,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,[role=switch],.af-switch,.aw-default,.bk-switch-track,.aw-primary,.aw-primary-split,.button-primary,.bk-button.primary,.cw-button.primary,.st-button.primary,.crm-button.primary)):not(:where(.tb-block,.tb-form-showcase,.aw-live-preview,.aw-asset-image,.aw-step-image,.fb-site-window,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,[role=switch],.af-switch,.aw-default,.bk-switch-track,.aw-primary,.aw-primary-split,.button-primary,.bk-button.primary,.cw-button.primary,.st-button.primary,.crm-button.primary) *) {
     border-color: var(--ui-border);
     background: linear-gradient(135deg, var(--ui-surface-raised) 0%, var(--ui-surface-raised) 100%)
-}
-html.dark :is(
-  .pdd-buyer-pill,
-  .legal-search-input
-):not([data-form-theme]):not([data-form-theme] *):not([data-public-asset]):not([data-public-asset] *):not(:where(.tb-block,.tb-form-showcase,.aw-live-preview,.aw-asset-image,.aw-step-image,.fb-site-window,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,[role=switch],.af-switch,.aw-default,.bk-switch-track,.aw-primary,.aw-primary-split,.button-primary,.bk-button.primary,.cw-button.primary,.st-button.primary,.crm-button.primary)):not(:where(.tb-block,.tb-form-showcase,.aw-live-preview,.aw-asset-image,.aw-step-image,.fb-site-window,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,[role=switch],.af-switch,.aw-default,.bk-switch-track,.aw-primary,.aw-primary-split,.button-primary,.bk-button.primary,.cw-button.primary,.st-button.primary,.crm-button.primary) *) {
-    border-color: var(--ui-border);
-    background: var(--ui-surface-raised);
-    color: var(--ui-text)
 }
 html.dark :is(
   .pdd-btn-secondary:hover:not(:disabled)

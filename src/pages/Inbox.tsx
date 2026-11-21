@@ -497,7 +497,8 @@ export const Inbox: React.FC<Props> = ({ aiMode, setAiMode, setSent }) => {
       ? [linkedConversation, ...base]
       : base;
     return withLinked
-      .filter(c => !archivedLiveIds.has(c.id))
+      /* Facebook channel disabled across Inbox */
+      .filter(c => c.channel !== 'facebook' && !archivedLiveIds.has(c.id))
       .map(c => {
         const localPatch = demoInbox ? undefined : liveOverrides[c.id];
         const matchedLead = matchLeadForConv(c);

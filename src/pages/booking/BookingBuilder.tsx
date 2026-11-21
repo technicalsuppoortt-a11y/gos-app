@@ -7,9 +7,10 @@ import { validQualificationQuestions } from '../../../functions/booking-qualific
 import { EditorNotifications } from './EditorNotifications';
 import { EditorDurations } from './EditorDurations';
 import { BookingSelect } from './BookingSelect';
-import { useEffect, useState } from 'react';
+import { createContext, useContext, useEffect, useState } from 'react';
 import {
   ArrowLeft,
+  ArrowLeftRight,
   ChevronDown,
   Bell,
   CalendarDays,
@@ -26,6 +27,7 @@ import {
   Trash2,
   Users,
 } from 'lucide-react';
+import { CopyBookingSettingsModal } from './CopyBookingSettingsModal';
 import { generateBuilderDraft } from '../../backend/aiBuilders';
 import { BuilderBriefDialog } from '../BuilderBriefDialog';
 import {
@@ -71,6 +73,8 @@ const sectionTitles: Record<string, string> = {
   'Booking form': 'Booking form & questions',
 };
 
+const CopySectionContext = createContext<((sectionName: string) => void) | null>(null);
+
 function ConfiguratorSection({
   name,
   expanded,
@@ -84,23 +88,58 @@ function ConfiguratorSection({
   children: ReactNode;
   summary?: string;
 }) {
-  useUILanguage();
+  const ar = useUILanguage().startsWith('ar');
+  const openCopyModal = useContext(CopySectionContext);
   const Icon = tabs.find(t => t.name === name)?.icon || Users;
   const sectionId = 'booking-section-' + name.replaceAll(' ', '-').replaceAll('/', '-');
+  const displayTitle = sectionTitles[name] || name;
   return (
     <section id={sectionId} className={'bk-configurator-card ' + (expanded ? 'expanded' : '')}>
-      <button
-        type="button"
-        className="bk-configurator-heading"
-        onClick={toggle}
-        aria-expanded={expanded}
-        aria-controls={sectionId + '-body'}
-      >
-        <Icon size={16} />
-        <b>{localizeNode(sectionTitles[name] || name)}</b>
-        {localizeNode(!expanded && summary && <span className="bk-section-summary">{localizeNode(summary)}</span>)}
-        <ChevronDown size={15} className={`bk-accordion-chevron ${expanded ? 'rotated' : ''}`} />
-      </button>
+      <div className="bk-configurator-head-row">
+        <button
+          type="button"
+          className="bk-configurator-heading"
+          onClick={toggle}
+          aria-expanded={expanded}
+          aria-controls={sectionId + '-body'}
+        >
+          <Icon size={16} />
+          <b>{localizeNode(displayTitle)}</b>
+          {localizeNode(!expanded && summary && <span className="bk-section-summary">{localizeNode(summary)}</span>)}
+          {!expanded && <ChevronDown size={15} className="bk-accordion-chevron" />}
+        </button>
+        {expanded && (
+          <div className="bk-configurator-head-actions">
+            {openCopyModal && (
+              <button
+                type="button"
+                className="bk-copy-section-trigger"
+                onClick={e => {
+                  e.stopPropagation();
+                  openCopyModal(name);
+                }}
+                aria-label={
+                  ar
+                    ? `نسخ إعدادات ${translateText(displayTitle)}`
+                    : `Copy ${displayTitle} settings`
+                }
+                title={ar ? 'نسخ إعدادات صفحة الحجز' : 'Copy booking page settings'}
+              >
+                <ArrowLeftRight size={13.5} />
+              </button>
+            )}
+            <button
+              type="button"
+              className="bk-configurator-collapse-btn"
+              onClick={toggle}
+              aria-label={ar ? 'طي القسم' : 'Collapse section'}
+              tabIndex={-1}
+            >
+              <ChevronDown size={15} className="bk-accordion-chevron rotated" />
+            </button>
+          </div>
+        )}
+      </div>
       <div id={sectionId + '-body'} className={`bk-configurator-body ${expanded ? 'open' : ''}`}>
         <div className="bk-configurator-inner">{localizeNode(children)}</div>
       </div>
@@ -206,6 +245,7 @@ export function BookingBuilder({
 
   const [error, setError] = useState('');
   const [showAiDraft, setShowAiDraft] = useState(false);
+  const [copyModalSection, setCopyModalSection] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   const field = <K extends keyof BookingPage>(key: K, value: BookingPage[K]) =>
     setDraft(d => ({ ...d, [key]: value }));
@@ -436,7 +476,18 @@ export function BookingBuilder({
           }}
         />
       )}
+      {copyModalSection && !templateEditor && (
+        <CopyBookingSettingsModal
+          initialSectionName={copyModalSection}
+          currentDraft={draft}
+          isEditingExisting={Boolean(page)}
+          pages={pages}
+          onApplyToDraft={updated => setDraft(updated)}
+          onClose={() => setCopyModalSection(null)}
+        />
+      )}
       <div className="bk-editor-split">
+        <CopySectionContext.Provider value={templateEditor ? null : setCopyModalSection}>
         <div className="bk-editor-configurator custom-scrollbar">
           {localizeNode(
             error && (
@@ -1262,6 +1313,7 @@ export function BookingBuilder({
             </div>
           </ConfiguratorSection>
         </div>
+        </CopySectionContext.Provider>
         <BookingLivePreview key={draft.duration} page={draft} />
       </div>
       <footer className="bk-editor-footer">

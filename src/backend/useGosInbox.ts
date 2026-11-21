@@ -9,7 +9,7 @@ export function normalizeConversation(row: ApiRecord, messages: ApiRecord[] = ro
   const takenOver = aiPaused || aiState === 'handoff';
   return {
     id: row.id, name, initials: name.split(/\s+/).slice(0, 2).map((v: string) => v[0]).join(''),
-    channel: ['instagram', 'facebook', 'whatsapp', 'messenger', 'webchat', 'email'].includes(row.channel) ? row.channel : 'webchat',
+    channel: ['instagram', /* 'facebook', */ 'whatsapp', 'messenger', 'webchat', 'email'].includes(row.channel) ? row.channel : 'webchat',
     preview: row.last_message?.body || row.last_message_body || (typeof row.last_message === 'string' ? row.last_message : '') || messages.at(-1)?.body || '',
     time: row.updated_at || row.created_at || '', unread: row.unread_count ?? 0,
     tags: [], stage: row.stage || '', source: row.channel || '', phone: row.phone || '', email: row.email || '',

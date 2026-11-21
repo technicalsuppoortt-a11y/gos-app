@@ -37,7 +37,7 @@ const CHANNELS = [
   { value: 'instagram', label: 'Instagram' },
   { value: 'messenger', label: 'Messenger' },
   { value: 'webchat', label: 'Website Chat' },
-  { value: 'facebook', label: 'Facebook' },
+  // { value: 'facebook', label: 'Facebook' },
   { value: 'email', label: 'Email' },
 ] as const;
 

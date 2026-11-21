@@ -1,5 +1,5 @@
 import sarah from "../../assets/inbox/sarah.jpg";
-import omar from "../../assets/inbox/omar.jpg";
+// import omar from "../../assets/inbox/omar.jpg"; // Facebook demo contact disabled
 import lina from "../../assets/inbox/lina.jpg";
 import ahmed from "../../assets/inbox/ahmed.jpg";
 import nour from "../../assets/inbox/nour.jpg";
@@ -71,7 +71,14 @@ export const channelMeta: Record<ChannelId, { label: string }> = {
   webchat: { label: "Website Chat" },
 };
 
-export const channelOrder: ChannelId[] = ["instagram", "facebook", "whatsapp", "messenger", "webchat", "email"];
+export const channelOrder: ChannelId[] = [
+  "instagram",
+  // "facebook", // Facebook channel disabled
+  "whatsapp",
+  "messenger",
+  "webchat",
+  "email",
+];
 
 export const tagMeta: Record<TagId, { label: string; className: string }> = {
   new: {
@@ -151,6 +158,7 @@ export function demoConversations(assignee: string): Conversation[] {
         { id: 'demo-sarah-a3', kind: 'created', text: 'New enquiry from WhatsApp Business', time: '10:12 AM' },
       ],
     }),
+    /* Facebook demo thread disabled:
     contact('omar', 'Omar Hassan', 'facebook', omar, {
       preview: 'Could you send me the difference between the Starter and Growth packages?', time: '18 min', unread: 1,
       tags: ['new', 'question'], stage: 'New Lead', location: 'Alexandria, Egypt',
@@ -162,6 +170,7 @@ export function demoConversations(assignee: string): Conversation[] {
         { id: 'demo-omar-5', sender: 'customer', text: 'Could you send me the difference between the Starter and Growth packages?', time: '10:05 AM' },
       ],
     }),
+    */
     contact('lina', 'Lina Mostafa', 'instagram', lina, {
       preview: 'Amazing, thank you! I’ll bring the brand photos to our call 😊', time: '1 hr', unread: 0,
       tags: ['interested', 'booking'], stage: 'Customer', location: 'Giza, Egypt',
