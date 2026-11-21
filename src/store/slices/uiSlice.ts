@@ -1,4 +1,5 @@
 import { storageGet, storageSet } from '../../utils/browserStorage';
+import { resolveInitialLocale } from '../../i18n/initialLocale';
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 
 export type Theme = 'light' | 'dark';
@@ -14,7 +15,7 @@ interface UIState {
 
 const initialState: UIState = {
   theme: storageGet('theme') === 'dark' ? 'dark' : 'light',
-  language: storageGet('i18nextLng') === 'ar' ? 'ar' : 'en',
+  language: resolveInitialLocale(),
   currency: storageGet('preferred_currency') || 'USD',
   sidebarOpen: false,
   sidebarCollapsed: storageGet('sidebar_collapsed') === 'true',

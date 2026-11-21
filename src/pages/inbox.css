@@ -16,6 +16,22 @@ html.dark .inbox-scroll:hover::-webkit-scrollbar-thumb{background:#352c57}
 .inbox-scroll-x{scrollbar-width:none}
 .inbox-scroll-x::-webkit-scrollbar{display:none}
 
+/* Clean borderless focus state for Inbox message composer input */
+#inbox-message-input,
+#inbox-message-input:focus,
+#inbox-message-input:focus-visible {
+  outline: none !important;
+  outline-offset: 0 !important;
+  border: 0 !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
+  background: transparent !important;
+}
+.inbox-composer-box:focus-within {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
 /* Soft lavender wash behind the message thread */
 .inbox-thread-bg{background:radial-gradient(120% 60% at 100% 0%,rgba(124,92,252,.045),transparent 60%),linear-gradient(180deg,#fcfcff 0%,#fafbfe 100%)}
 html.dark .inbox-thread-bg{background:radial-gradient(120% 70% at 100% 0%,rgba(124,58,237,.13),transparent 62%),radial-gradient(90% 60% at 0% 100%,rgba(99,102,241,.07),transparent 58%),linear-gradient(180deg,#0f1224 0%,#0b0e1c 100%)}

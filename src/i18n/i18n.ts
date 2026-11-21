@@ -1,4 +1,4 @@
-import { storageGet } from '../utils/browserStorage';
+import { resolveInitialLocale } from './initialLocale';
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 
@@ -12,7 +12,7 @@ i18n
       en: { translation: en },
       ar: { translation: ar },
     },
-    lng: storageGet('i18nextLng') === 'ar' ? 'ar' : 'en',
+    lng: resolveInitialLocale(),
     fallbackLng: 'en',
     supportedLngs: ['en', 'ar'],
     interpolation: {

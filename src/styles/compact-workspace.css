@@ -51,7 +51,7 @@ body:has(:is(.layout-dashboard-shell, .role-shell, .adm-shell, .sa-shell)) { min
   (.aw-live-preview, .aw-thumbnail, .fb-live-preview-frame, .fn-focused-canvas, .pf-page, .pf-thumb, .pf-renderer, .pf-canvas, .bk-public, .bk-preview-frame, .bk-live-preview, .lp-page, .product-live-preview, .pp-live-preview, .cw-live-preview, .checkout-screen, .landing-page, .lp, [data-form-theme], [data-public-asset]) {
   :scope :is(button, input, textarea, select) { font-family: var(--gos-ui-font); }
   :scope :is(h1, h2, h3, h4) { font-family: var(--gos-heading-font); font-weight: 600; }
-  :scope :is(button, a, input, textarea, select, [role="combobox"]):focus-visible {
+  :scope :is(button, a, input, textarea, select, [role="combobox"]):not(#inbox-message-input):focus-visible {
     outline: 2px solid var(--gos-action);
     outline-offset: 3px;
   }

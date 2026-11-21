@@ -165,6 +165,11 @@ html.dark .layout-header .layout-header-breadcrumb > h1 {
   white-space: nowrap;
 }
 
+/* Profile Dropdown Billing & Balances Summary */
+.layout-profile-popup {
+  border-radius: 16px;
+}
+
 /* User Profile in Header */
 .layout-header .layout-header-user {
   display: flex;

@@ -94,7 +94,8 @@
 .is-dark .ws-brand-mark { background:linear-gradient(145deg,#0F172A,#7c3aed14);border-color:#a78bfa40;box-shadow:0 12px 32px #7c3aed26,inset 0 1px 0 #a78bfa20; }
 .is-dark .ws-splash-brand>span,.is-dark .ws-splash-caption { color:#A78BFA; }
 .is-dark .ws-splash-progress { background:#a78bfa26; }
-.ws-splash[dir=rtl] .ws-splash-brand>span,[dir=rtl] .ws-splash-brand>span { letter-spacing:0; }
+.ws-splash[dir=rtl], [dir=rtl] .ws-splash { font-family:'IBM Plex Sans Arabic','Cairo',system-ui,sans-serif; }
+.ws-splash[dir=rtl] .ws-splash-brand>span,[dir=rtl] .ws-splash-brand>span { letter-spacing:0; text-transform:none; font-size:11px; }
 @keyframes ws-brand-breathe { 0%,100% { transform:scale(.88);opacity:.12; } 50% { transform:scale(1.1);opacity:.24; } }
 @keyframes ws-splash-progress { 0% { inset-inline-start:-45%; } 100% { inset-inline-start:100%; } }
 .workspace-content-enter { animation: ws-loading-enter 240ms ease-out both; }

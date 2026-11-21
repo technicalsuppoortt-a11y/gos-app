@@ -18,6 +18,8 @@ import { usePhoenixBrand } from '../backend/phoenixBrand';
 import { setCurrency, setLanguage, setTheme } from '../store/slices/uiSlice';
 import type { RootState } from '../store';
 import { storageGet } from '../utils/browserStorage';
+import { readPersistedLocale } from '../i18n/initialLocale';
+import { useSessionReady } from '../backend/sessionState';
 import i18n from '../i18n/i18n';
 import { showToast } from '../utils/toast';
 import './workspace-customization.css';
@@ -38,7 +40,17 @@ export function WorkspaceCustomization({ children, publicPage }: { children: Rea
   const [lastTopbarChange, setLastTopbarChange] = useState<{ scope: string; patch: PersonalPreferences }>();
   const phoenix = usePhoenixBrand();
   const dispatch = useDispatch();
+  const sessionReady = useSessionReady();
   const role = useSelector((s: RootState) => s.auth.role);
+  const currentUiLang = useSelector((s: RootState) => s.ui.language);
+  const currentUiTheme = useSelector((s: RootState) => s.ui.theme);
+  const [initialPersistedLang] = useState<'ar' | 'en' | null>(() => readPersistedLocale());
+  const [initialPersistedTheme] = useState<'light' | 'dark' | null>(() => {
+    const raw = storageGet('theme');
+    return raw === 'light' || raw === 'dark' ? raw : null;
+  });
+  const [hadRemoteValues, setHadRemoteValues] = useState(() => Boolean(values));
+  if (values && !hadRemoteValues) setHadRemoteValues(true);
   const [draft, setDraft] = useState<{ scope: string; patch: Partial<WorkspacePreferences> } | null>(null);
   const [previewPersonal, setPreviewPersonal] = useState<PersonalPreferences>({});
   const [localPersonal, setLocalPersonal] = useState<{ scope: string; patch: PersonalPreferences }>({ scope: '', patch: {} });
@@ -90,15 +102,34 @@ export function WorkspaceCustomization({ children, publicPage }: { children: Rea
   const storedCustomerMode = role === 'CUSTOMER' ? storageGet('theme') : null;
   const legacyCurrency = isCurrencyCode(activePersonal.currency) ? activePersonal.currency : undefined;
   const displayCurrency = currencyPreference.value === undefined ? legacyCurrency : currencyPreference.value;
+  const isResolvingRemotePreferences = !launchBrandPreview && (!sessionReady || state.loading);
+  const hasExplicitRemoteSource = Boolean(values || usePhoenixDefaults || hadRemoteValues);
+  const resolvedLanguage = launchBrandPreview
+    ? (previewPersonal.language ?? workspace.language)
+    : isResolvingRemotePreferences
+    ? currentUiLang
+    : uid
+    ? (activePersonal.language ?? (storedCustomerLang === 'ar' || storedCustomerLang === 'en' ? storedCustomerLang : (hasExplicitRemoteSource ? workspace.language : currentUiLang)))
+    : !hasExplicitRemoteSource
+    ? currentUiLang
+    : initialPersistedLang
+    ? currentUiLang
+    : workspace.language;
   const effective = {
     ...workspace,
-    language: launchBrandPreview
-      ? (previewPersonal.language ?? workspace.language)
-      : (activePersonal.language ?? (storedCustomerLang === 'ar' || storedCustomerLang === 'en' ? storedCustomerLang : workspace.language)),
+    language: resolvedLanguage,
     currency: displayCurrency ?? workspace.currency,
     mode: launchBrandPreview
       ? (previewPersonal.mode ?? workspace.mode)
-      : (activePersonal.mode ?? (storedCustomerMode === 'dark' || storedCustomerMode === 'light' ? storedCustomerMode : workspace.mode)),
+      : isResolvingRemotePreferences
+      ? currentUiTheme
+      : uid
+      ? (activePersonal.mode ?? (storedCustomerMode === 'dark' || storedCustomerMode === 'light' ? storedCustomerMode : (hasExplicitRemoteSource ? workspace.mode : currentUiTheme)))
+      : !hasExplicitRemoteSource
+      ? currentUiTheme
+      : initialPersistedTheme
+      ? currentUiTheme
+      : workspace.mode,
     timezone: activePersonal.timezone ?? workspace.timezone,
     dateFormat: activePersonal.dateFormat ?? workspace.dateFormat,
     ...previewValues,
@@ -111,19 +142,21 @@ export function WorkspaceCustomization({ children, publicPage }: { children: Rea
     else root.dataset.workspaceTheme = theme;
   }, [theme, publicSync]);
   useLayoutEffect(() => {
+    if (isResolvingRemotePreferences) return;
     dispatch(setLanguage(language));
-  }, [scope, language, publicSync, dispatch]);
+  }, [scope, language, publicSync, isResolvingRemotePreferences, dispatch]);
   useLayoutEffect(() => {
     dispatch(setCurrency(currency));
   }, [scope, currency, publicSync, dispatch]);
   useLayoutEffect(() => {
+    if (isResolvingRemotePreferences) return;
     const media = window.matchMedia('(prefers-color-scheme: dark)');
     const apply = () => dispatch(setTheme(mode === 'system' ? (media.matches ? 'dark' : 'light') : mode));
     apply();
     if (mode !== 'system') return;
     media.addEventListener('change', apply);
     return () => media.removeEventListener('change', apply);
-  }, [scope, mode, publicSync, dispatch]);
+  }, [scope, mode, publicSync, isResolvingRemotePreferences, dispatch]);
 
   // Browser tab titles follow the workspace brand (the deployed Launch Brand name included).
   const titleName = launchBrandPreview ? phoenix?.brand.name.trim() : workspace.name !== DEFAULT_BRAND_NAME ? workspace.name : phoenix?.brand.name.trim();

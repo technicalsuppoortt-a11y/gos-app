@@ -1143,19 +1143,7 @@ body.layout-locked #root {
 }
 
 .layout-footer {
-  box-sizing: border-box;
-  display: flex;
-  min-height: 36px;
-  max-height: 36px;
-  flex: 0 0 36px !important;
-  flex-shrink: 0 !important;
-  align-items: center;
-  justify-content: space-between;
-  border-top: 1px solid #e9ebf1;
-  background: #fff;
-  padding: 0 22px;
-  color: #9699a7;
-  font-size: 8px;
+  display: none !important;
 }
 
 .layout-footer-status {

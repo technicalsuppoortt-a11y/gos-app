@@ -1,5 +1,5 @@
 import { useCurrency } from '../../context/CurrencyContext';
-import { Wallet } from 'lucide-react';
+import { ChevronRight, Wallet } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import type { RootState } from '../../store';
@@ -8,12 +8,12 @@ import { PLATFORM, useAgencyBilling, useBillingIdentity, useCommunicationWallet,
 import { isDemoAccount } from '../../backend/demoContext';
 import { translateText as t, useUILanguage } from '../../i18n/display';
 
-export function WalletBadge() {
+export function WalletBadge({ variant = 'pill', onSelect }: { variant?: 'pill' | 'menu'; onSelect?: () => void } = {}) {
   const visible = useSelector(canViewTopbarWallet);
-  return visible ? <CashWalletBadge/> : null;
+  return visible ? <CashWalletBadge variant={variant} onSelect={onSelect} /> : null;
 }
 
-function CashWalletBadge() {
+function CashWalletBadge({ variant = 'pill', onSelect }: { variant?: 'pill' | 'menu'; onSelect?: () => void }) {
   const language = useUILanguage();
   const { formatPrice } = useCurrency();
   const navigate = useNavigate();
@@ -57,10 +57,42 @@ function CashWalletBadge() {
     ? '/admin/plans?area=mine&view=wallet'
     : '/dashboard/settings/billing?tab=wallet';
 
+  const handleClick = () => {
+    navigate(targetHref);
+    onSelect?.();
+  };
+
+  if (variant === 'menu') {
+    return (
+      <button
+        type="button"
+        onClick={handleClick}
+        aria-label={t('Wallet balance')}
+        title={title}
+        className="group flex w-full items-center justify-between gap-2 rounded-xl px-2.5 py-2 text-start transition-colors hover:bg-emerald-50/80 dark:hover:bg-emerald-500/10"
+      >
+        <span className="flex min-w-0 items-center gap-2.5">
+          <span className="grid h-7 w-7 shrink-0 place-items-center rounded-lg bg-emerald-50 text-emerald-600 ring-1 ring-inset ring-emerald-200/70 dark:bg-emerald-500/15 dark:text-emerald-300 dark:ring-emerald-400/25">
+            <Wallet size={14} />
+          </span>
+          <span className="truncate text-xs font-semibold text-slate-700 dark:text-slate-200">
+            {t('Wallet')}
+          </span>
+        </span>
+        <span className="flex shrink-0 items-center gap-1.5">
+          <span aria-live="polite" dir="ltr" className="rounded-md bg-emerald-50/90 px-2 py-0.5 font-mono text-xs font-bold tracking-tight tabular-nums text-emerald-700 ring-1 ring-inset ring-emerald-200/70 dark:bg-emerald-500/15 dark:text-emerald-300 dark:ring-emerald-400/25">
+            {loading ? '—' : formatPrice(available, currency)}
+          </span>
+          <ChevronRight size={13} className="text-slate-400 transition-transform group-hover:translate-x-0.5 rtl:rotate-180 rtl:group-hover:-translate-x-0.5 dark:text-slate-500" />
+        </span>
+      </button>
+    );
+  }
+
   return (
     <button
       type="button"
-      onClick={() => navigate(targetHref)}
+      onClick={handleClick}
       aria-label={t('Wallet balance')}
       title={title}
       className="inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-emerald-200 bg-emerald-50/80 px-2.5 py-1.5 text-xs font-semibold text-emerald-700 transition-all hover:bg-emerald-100 hover:border-emerald-300 dark:border-emerald-500/20 dark:bg-emerald-500/10 dark:text-emerald-300 dark:hover:bg-emerald-500/20 shadow-xs"

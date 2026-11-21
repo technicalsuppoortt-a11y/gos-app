@@ -29,6 +29,12 @@
           document.documentElement.classList.add('dark');
         }
       } catch(e) {}
+      try {
+        var rawLang = localStorage.getItem('i18nextLng') || localStorage.getItem('user_selected_lang') || '';
+        var activeLang = rawLang.indexOf('ar') === 0 ? 'ar' : (rawLang.indexOf('en') === 0 ? 'en' : (document.documentElement.lang && document.documentElement.lang.indexOf('ar') === 0 ? 'ar' : 'en'));
+        document.documentElement.lang = activeLang;
+        document.documentElement.dir = activeLang === 'ar' ? 'rtl' : 'ltr';
+      } catch(e) {}
       // Launch Brand's live previews show their own snapshot while the page starts.
       try {
         if (window.parent !== window && /(?:^|[?&])launch-brand-preview=1(?:&|$)/.test(location.search)) {
@@ -114,10 +120,30 @@
         color: #7C3AED;
         letter-spacing: 1.5px;
         text-transform: uppercase;
-        margin-top: 4px;
+        margin-top: 6px;
+      }
+      html[lang="ar"] .pre-sub {
+        letter-spacing: 0;
+        text-transform: none;
+        font-size: 12px;
       }
       html.dark .pre-sub {
         color: #A78BFA;
+      }
+      .pre-caption {
+        margin: 14px 0 0;
+        font-size: 12px;
+        line-height: 1.6;
+        font-weight: 400;
+        color: #0F172A;
+        opacity: 0.65;
+      }
+      html.dark .pre-caption {
+        color: #A78BFA;
+      }
+      html[lang="ar"] .pre-lang-en,
+      html:not([lang="ar"]) .pre-lang-ar {
+        display: none;
       }
       .pre-progress {
         position: relative;
@@ -156,8 +182,11 @@
     </style>
   </head>
   <body dir="ltr">
+    <script>
+      try { document.body.dir = document.documentElement.dir || 'ltr'; } catch(e) {}
+    </script>
     <div id="root">
-      <div id="app-preloader" aria-label="Loading Upklick">
+      <div id="app-preloader" aria-label="Preparing your workspace...">
         <div class="pre-loader-brand">
           <span class="pre-glow"></span>
           <span class="pre-ring"></span>
@@ -166,12 +195,23 @@
           </div>
         </div>
         <h1 class="pre-title">Upklick</h1>
-        <span class="pre-sub">Ideas to impact</span>
+        <span class="pre-sub pre-lang-en">Ideas to impact</span>
+        <span class="pre-sub pre-lang-ar">من الأفكار إلى الأثر</span>
         <div class="pre-progress">
           <div class="pre-bar"></div>
         </div>
+        <p class="pre-caption pre-lang-en">Preparing your workspace...</p>
+        <p class="pre-caption pre-lang-ar">جاري تجهيز مساحة عملك</p>
       </div>
     </div>
+    <script>
+      try {
+        if (document.documentElement.lang === 'ar') {
+          var pl = document.getElementById('app-preloader');
+          if (pl) pl.setAttribute('aria-label', 'جاري تجهيز مساحة عملك');
+        }
+      } catch(e) {}
+    </script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

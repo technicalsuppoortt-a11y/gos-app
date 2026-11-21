@@ -1745,10 +1745,10 @@ export const Inbox: React.FC<Props> = ({ aiMode, setAiMode, setSent }) => {
                 </div>
               ) : (
                 <label
-                  className={`flex min-h-11 flex-1 items-end gap-2 rounded-xl border px-3.5 py-2.5 transition focus-within:ring-4 ${
+                  className={`inbox-composer-box flex min-h-11 flex-1 items-end gap-2 rounded-xl border px-3.5 py-2.5 transition ${
                     mode === "note"
-                      ? "border-amber-200 bg-amber-50/60 focus-within:border-amber-300 focus-within:ring-amber-100 dark:border-amber-400/20 dark:bg-amber-500/10 dark:focus-within:ring-amber-500/10"
-                      : "border-slate-200/80 bg-white focus-within:border-purple-300 focus-within:ring-purple-100 dark:border-white/10 dark:bg-white/[0.03] dark:focus-within:ring-purple-500/10"
+                      ? "border-amber-200 bg-amber-50/60 dark:border-amber-400/20 dark:bg-amber-500/10"
+                      : "border-slate-200/80 bg-white dark:border-white/10 dark:bg-white/[0.03]"
                   }`}
                 >
                   <textarea
@@ -1764,7 +1764,7 @@ export const Inbox: React.FC<Props> = ({ aiMode, setAiMode, setSent }) => {
                       }
                     }}
                     placeholder={translateText(mode === "note" ? "Write an internal note — only your team can see this..." : "Type a message...")}
-                    className="max-h-[120px] min-w-0 flex-1 resize-none bg-transparent text-[13px] leading-6 text-slate-700 outline-none placeholder:text-slate-400 dark:text-slate-100"
+                    className="max-h-[120px] min-w-0 flex-1 resize-none border-0 bg-transparent text-[13px] leading-6 text-slate-700 outline-none shadow-none ring-0 focus:border-0 focus:outline-none focus:shadow-none focus:ring-0 focus-visible:outline-none focus-visible:shadow-none focus-visible:ring-0 placeholder:text-slate-400 dark:text-slate-100"
                   />
                   <button
                     type="button"

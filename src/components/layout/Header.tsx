@@ -2,7 +2,7 @@ import { logoutFirebase } from '../../backend/session';
 import { useUILanguage, translateText, localizeNode } from '../../i18n/display';
 import React, { useState, useRef, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { ArrowLeft, ChevronDown, Menu, Search, Sparkles, User, Settings, LogOut, PanelsTopLeft } from 'lucide-react';
+import { ArrowLeft, ChevronDown, ChevronRight, Menu, Search, Sparkles, User, Settings, LogOut, PanelsTopLeft } from 'lucide-react';
 import { matchesLocalizedSearch } from '../../utils/arabicSearch';
 import { useDispatch, useSelector } from 'react-redux';
 import type { RootState } from '../../store';
@@ -283,7 +283,7 @@ export const Header: React.FC<HeaderProps> = ({ title, onMenu }) => {
 
       <GetAppButton/>
       <div className="layout-preference-controls"><CurrencySelector/><LanguageSwitcher/><ThemeToggle/></div>
-      <DemoAccountControl/><div className="layout-balance-badges"><CreditBadge/><WalletBadge/></div>
+      <DemoAccountControl/>
       {localizeNode(
         isTeamMember && ownerDisplayName && (
           <div
@@ -322,7 +322,6 @@ export const Header: React.FC<HeaderProps> = ({ title, onMenu }) => {
           </div>
         ),
       )}
-      <button type="button" onClick={() => navigate(role === 'ADMIN' ? '/admin/plans?area=mine' : (agency || isLive(subscription) ? '/dashboard/settings/billing' : '/dashboard/settings/billing?tab=plans'))} aria-label={planLabel} className="layout-plan-cta"><Sparkles size={15}/><span>{planLabel}</span></button>
       <NotificationCenter/>
       
       <div className="relative" ref={profileRef} onKeyDown={event => {
@@ -366,9 +365,9 @@ export const Header: React.FC<HeaderProps> = ({ title, onMenu }) => {
               exit={{ opacity: 0, y: 5, scale: 0.98 }}
               transition={{ duration: 0.15, ease: "easeOut" }}
               id="workspace-profile-menu"
-              className="layout-profile-popup absolute end-0 top-[calc(100%+8px)] w-64 rounded-xl bg-white shadow-[0_10px_35px_-5px_rgba(0,0,0,0.1),0_0_0_1px_rgba(0,0,0,0.05)] overflow-hidden z-50 dark:bg-gray-900 dark:shadow-[0_0_0_1px_rgba(255,255,255,0.1)]"
+              className="layout-profile-popup absolute end-0 top-[calc(100%+8px)] w-72 rounded-2xl bg-white shadow-[0_14px_40px_-8px_rgba(15,23,42,0.14),0_0_0_1px_rgba(15,23,42,0.06)] overflow-hidden z-50 dark:bg-gray-900 dark:shadow-[0_18px_44px_-10px_rgba(0,0,0,0.65),0_0_0_1px_rgba(255,255,255,0.1)]"
             >
-              <div className="p-4 border-b border-gray-100 dark:border-gray-800">
+              <div className="p-3.5 border-b border-gray-100 dark:border-gray-800">
                 <div className="flex items-center gap-3">
                   {currentUser?.avatar ? (
                     <img src={currentUser.avatar} alt={currentUser.name || ''} className="h-10 w-10 shrink-0 rounded-full object-cover" />
@@ -413,11 +412,32 @@ export const Header: React.FC<HeaderProps> = ({ title, onMenu }) => {
                   </div>
                 )}
               </div>
+              <div className="p-2 border-b border-gray-100 bg-slate-50/60 space-y-1 dark:border-gray-800 dark:bg-slate-800/30">
+                <button
+                  type="button"
+                  onClick={() => {
+                    navigate(role === 'ADMIN' ? '/admin/plans?area=mine' : (agency || isLive(subscription) ? '/dashboard/settings/billing' : '/dashboard/settings/billing?tab=plans'));
+                    setProfileOpen(false);
+                  }}
+                  aria-label={planLabel}
+                  className="group flex w-full items-center justify-between gap-2 rounded-xl bg-gradient-to-r from-[#7C3AED] to-[#9333EA] px-3 py-2 text-start text-white shadow-xs transition-all hover:brightness-105"
+                >
+                  <span className="flex min-w-0 items-center gap-2.5">
+                    <span className="grid h-7 w-7 shrink-0 place-items-center rounded-lg bg-white/15 text-white ring-1 ring-inset ring-white/25">
+                      <Sparkles size={14} />
+                    </span>
+                    <span className="truncate text-xs font-semibold text-white">
+                      {planLabel}
+                    </span>
+                  </span>
+                  <ChevronRight size={14} className="shrink-0 text-white/85 transition-transform group-hover:translate-x-0.5 rtl:rotate-180 rtl:group-hover:-translate-x-0.5" />
+                </button>
+                <CreditBadge variant="menu" onSelect={() => setProfileOpen(false)} />
+                <WalletBadge variant="menu" onSelect={() => setProfileOpen(false)} />
+              </div>
               <div className="p-1.5">
                 <button onClick={() => { navigate('/dashboard/settings/profile'); setProfileOpen(false); }} className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-lg transition-colors dark:text-gray-300 dark:hover:bg-gray-800/50">
                   <User size={15} className="text-gray-400" />{translateText(" View Profile")}</button>
-                <button onClick={() => { navigate(role === 'ADMIN' ? '/admin/plans?area=mine' : (agency || isLive(subscription) ? '/dashboard/settings/billing' : '/dashboard/settings/billing?tab=plans')); setProfileOpen(false); }} className="sm:hidden w-full flex items-center gap-2.5 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-lg transition-colors dark:text-gray-300 dark:hover:bg-gray-800/50">
-                  <Sparkles size={15} className="text-purple-500" /><span>{planLabel}</span></button>
                 <button onClick={() => { navigate('/dashboard/settings'); setProfileOpen(false); }} className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-lg transition-colors dark:text-gray-300 dark:hover:bg-gray-800/50">
                   <Settings size={15} className="text-gray-400" />{translateText(" Account Settings")}</button>
               </div>

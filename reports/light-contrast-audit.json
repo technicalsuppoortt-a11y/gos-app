@@ -1,10 +1,10 @@
 {
   "scannedStylesheets": 114,
-  "correctedDeclarations": 870,
+  "correctedDeclarations": 869,
   "correctedVariables": 12,
   "referenceSurface": "#ffffff",
   "minimumRatio": 4.5,
-  "utilityOccurrences": 266,
+  "utilityOccurrences": 268,
   "utilities": [
     {
       "file": "src/components/common/PagePlaceholder.tsx",
@@ -15,6 +15,11 @@
       "file": "src/components/common/PagePlaceholder.tsx",
       "line": 53,
       "utility": "text-slate-500"
+    },
+    {
+      "file": "src/components/layout/CreditBadge.tsx",
+      "line": 40,
+      "utility": "text-slate-400"
     },
     {
       "file": "src/components/layout/Header.tsx",
@@ -28,17 +33,17 @@
     },
     {
       "file": "src/components/layout/Header.tsx",
-      "line": 380,
+      "line": 379,
       "utility": "text-gray-500"
     },
     {
       "file": "src/components/layout/Header.tsx",
-      "line": 418,
+      "line": 440,
       "utility": "text-gray-400"
     },
     {
       "file": "src/components/layout/Header.tsx",
-      "line": 422,
+      "line": 442,
       "utility": "text-gray-400"
     },
     {
@@ -99,6 +104,11 @@
     {
       "file": "src/components/layout/SuperAdminLayout.tsx",
       "line": 183,
+      "utility": "text-slate-400"
+    },
+    {
+      "file": "src/components/layout/WalletBadge.tsx",
+      "line": 86,
       "utility": "text-slate-400"
     },
     {
@@ -1506,7 +1516,7 @@
     },
     {
       "file": "src/components/layout/product-header.css",
-      "line": 215,
+      "line": 220,
       "selector": ".layout-header .layout-header-user small",
       "before": "#94a3b8",
       "after": "#475569",
@@ -3354,15 +3364,7 @@
     },
     {
       "file": "src/layout-shell.css",
-      "line": 1157,
-      "selector": ".layout-footer",
-      "before": "#9699a7",
-      "after": "#475569",
-      "contrastOnWhite": 2.83
-    },
-    {
-      "file": "src/layout-shell.css",
-      "line": 1452,
+      "line": 1440,
       "selector": ".layout-mobile-close",
       "before": "#77798a",
       "after": "#334155",
@@ -5075,7 +5077,7 @@
     {
       "file": "src/pages/booking/booking-editor-reference.css",
       "line": 83,
-      "selector": ".bk-configurator-heading svg:first-child,\r\n.bk-reference-editor .bk-configurator-heading svg:first-child",
+      "selector": ".bk-configurator-heading svg:first-child,\n.bk-reference-editor .bk-configurator-heading svg:first-child",
       "before": "#979bb0",
       "after": "#334155",
       "contrastOnWhite": 2.75
@@ -5219,7 +5221,7 @@
     {
       "file": "src/pages/commerce/checkout-requests.css",
       "line": 409,
-      "selector": ".cr-ref-code,\r\n.cr-ref-tag",
+      "selector": ".cr-ref-code,\n.cr-ref-tag",
       "before": "#94a3b8",
       "after": "#334155",
       "contrastOnWhite": 2.56
