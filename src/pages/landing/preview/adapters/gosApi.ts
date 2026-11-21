@@ -18,3 +18,6 @@ export const gosApi: Record<string, (...args: any[]) => Promise<any>> = new Prox
     default: throw new Error('This is a read-only demonstration.');
   }
 } });
+
+/** Demo accounts have no stored WhatsApp media. */
+export const inboxMediaUrl = async (_apiPath: string): Promise<string> => { throw new Error("Media is not available in the demo."); };
