@@ -152,13 +152,13 @@ export function AppShell({ headerTarget }: { headerTarget?: HTMLElement | null }
           </Suspense>
         </div>
       </div>
-      {mode === "builder" && (
+      {(mode === "builder" || mode === "dashboard") && (
         <button
           className="landing-preview-exit"
           dir={language === "ar" ? "rtl" : "ltr"}
           type="button"
           onClick={() => {
-            dispatch(actions.setStep(18));
+            dispatch(actions.setStep(mode === "dashboard" ? 14 : 18));
             dispatch(actions.setMode("wizard"));
           }}
         >

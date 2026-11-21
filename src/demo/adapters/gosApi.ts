@@ -432,6 +432,20 @@ export async function gosRequest<T>(input: string, options: { method?: string; b
     }
   }
   if (parts[0] === 'inbox') {
+    if (parts[1] === 'conversations' && parts[2] && parts[3] === 'ai' && method === 'PATCH') {
+      const existing = rows('conversations').find(row => row.id === parts[2]);
+      const updated = { ...(existing ?? { id: parts[2] }), ai_paused: !body.ai_auto_reply, ai_state: body.ai_auto_reply ? 'answered' : 'human_takeover', updated_at: new Date().toISOString() };
+      entityMutation('conversations', parts[2], updated);
+      return { conversation: updated } as T;
+    }
+    if (parts[1] === 'conversations' && parts[2] && parts[3] === 'ai-reply' && method === 'POST') {
+      const existing = rows('conversations').find(row => row.id === parts[2]);
+      const now = new Date().toISOString();
+      const reply = { id: crypto.randomUUID(), conversation_id: parts[2], direction: 'outbound', actor: 'assistant', body: 'Hello! Thanks for reaching out — how can we help you today?', outcome: 'answered', citations: [{ source_id: 'demo', source_name: 'Knowledge Base' }], created_at: now };
+      const updated = { ...(existing ?? { id: parts[2] }), ai_paused: false, ai_state: 'answered', last_message: reply.body, updated_at: now, messages: [...(existing?.messages ?? []), reply] };
+      entityMutation('conversations', parts[2], updated);
+      return { conversation: updated, message: reply, outcome: 'answered' } as T;
+    }
     if (method === 'POST') { const conversation = created({ customer_name: body.customer_name ?? 'Demo customer', channel: body.channel ?? 'webchat', messages: [{ body: body.body, role: 'customer', created_at: new Date().toISOString() }] }); entityMutation('conversations', conversation.id, conversation); return { outcome: 'received', conversation, reply: null } as T; }
     const conversations = rows('conversations'), conversation = conversations.find(row => row.id === parts[2]);
     return (parts[2] ? { conversation, messages: conversation?.messages ?? [] } : { conversations }) as T;

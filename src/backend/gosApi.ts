@@ -240,6 +240,8 @@ export const gosApi = {
   conversation: (conversationId: string, signal?: AbortSignal) => gosRequest<{ conversation: ApiRecord; messages: ApiRecord[] }>(`/inbox/conversations/${id(conversationId)}`, { signal }),
   // A team member's reply, sent to the customer through the connected Messenger, Instagram or WhatsApp channel.
   replyToConversation: (conversationId: string, body: string) => gosRequest<{ conversation: ApiRecord; message: ApiRecord }>(`/inbox/conversations/${id(conversationId)}/replies`, { method: 'POST', body: { body } }),
+  setConversationAi: (conversationId: string, ai_auto_reply: boolean) => gosRequest<{ conversation: ApiRecord }>(`/inbox/conversations/${id(conversationId)}/ai`, { method: 'PATCH', body: { ai_auto_reply } }),
+  triggerConversationAiReply: (conversationId: string) => gosRequest<{ conversation: ApiRecord; message: ApiRecord | null; outcome: string }>(`/inbox/conversations/${id(conversationId)}/ai-reply`, { method: 'POST', body: {} }),
   deleteConversation: (conversationId: string) => gosRequest<{ deleted: boolean }>(`/inbox/conversations/${id(conversationId)}`, { method: 'DELETE' }),
   inboxSummary: (signal?: AbortSignal) => gosRequest<{ conversations_today: number; needed_team: number; conversations: ApiRecord[] }>('/inbox/summary', { signal }),
   // This ingests customer messages; it is not an outbound staff-reply API.
