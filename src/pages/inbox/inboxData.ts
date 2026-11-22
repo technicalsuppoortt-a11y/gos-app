@@ -15,7 +15,8 @@ export type TagId = "new" | "interested" | "booking" | "question";
 export type Sender = "customer" | "ai" | "agent" | "note";
 export type ActivityKind = "ai" | "customer" | "tag" | "created" | "agent" | "note" | "handoff";
 
-export type Attachment = { id: string; name: string; size: number; url: string; isImage: boolean };
+/** `remote` is an API path for a file the server stored (loaded with the user's token); `url` is a local preview. */
+export type Attachment = { id: string; name: string; size: number; url: string; isImage: boolean; remote?: string; mime?: string };
 export type VoiceNote = { url: string; duration: number };
 
 export type Message = {
