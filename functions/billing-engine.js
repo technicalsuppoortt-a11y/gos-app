@@ -461,6 +461,18 @@ export async function executeBilling(operation, data, actor, base, now = new Dat
   data = data && typeof data === 'object' ? data : {};
   const store = buffered(base);
   const role = actor.role;
+  let internalGatewayFulfillment = false;
+  const isUnfulfilledGatewayRow = row => {
+    if (!row || row.status !== 'pending') return false;
+    const hasReceipt = Boolean(
+      (row.receiptUrl && String(row.receiptUrl).trim()) ||
+      (row.imageUrl && String(row.imageUrl).trim()) ||
+      (row.fileUrl && String(row.fileUrl).trim())
+    );
+    if (hasReceipt) return false;
+    if (row.paymentType === 'gateway') return true;
+    return /\b(paymob|stripe|paddle|fawry|kashier|gateway)\b/i.test(String(row.paymentMethod || '').trim());
+  };
   const sharedBillingMessage = 'Billing for this Agency user is managed by the Platform Admin.';
   const requireIndependentBilling = account => {
     if (account?.accountType === 'agency') fail('failed-precondition', sharedBillingMessage);
@@ -1831,6 +1843,7 @@ export async function executeBilling(operation, data, actor, base, now = new Dat
         return { request };
       }
 
+      internalGatewayFulfillment = true;
       if (checkoutType === 'addon') {
         return handlers.requestAddon();
       }
@@ -1882,7 +1895,7 @@ export async function executeBilling(operation, data, actor, base, now = new Dat
     const totalAmount = Math.round((type === 'addon' && !cleanedAddons.length ? (plan.price * quantity) : (mainPlanPrice + addonsTotal)) * 100) / 100;
 
     const isWalletPayment = data.paymentType === 'wallet';
-    const isGatewayInstant = data.paymentType === 'gateway' && data.gatewayPaid === true;
+    const isGatewayInstant = internalGatewayFulfillment && data.paymentType === 'gateway' && data.gatewayPaid === true;
     const cleanGatewaySession = isGatewayInstant && typeof data.sessionId === 'string'
       ? data.sessionId.replace(/[^\w-]/g, '').slice(0, 80)
       : '';
@@ -1894,8 +1907,22 @@ export async function executeBilling(operation, data, actor, base, now = new Dat
       if (existingApproved && existingApproved.status === 'approved') return existingApproved;
     }
 
-    const open = (await store.query('billingRequests', 'requesterId', actor.uid)).find(item => item.status === 'pending' && item.planId === plan.id);
-    if (open && !isWalletPayment && !isGatewayInstant) {
+    const allOpenForPlan = (await store.query('billingRequests', 'requesterId', actor.uid)).filter(
+      item => item && item.status === 'pending' && item.planId === plan.id
+    );
+    const open = allOpenForPlan.find(item => !isUnfulfilledGatewayRow(item)) ?? allOpenForPlan[0];
+    if (open && !isWalletPayment && !isGatewayInstant && isUnfulfilledGatewayRow(open) && data.paymentType !== 'gateway') {
+      await releaseCoupon(open);
+      const supersededGateway = {
+        ...open,
+        status: 'cancelled',
+        decidedAt: now,
+        decidedBy: actor.uid,
+        reason: 'Superseded uncompleted gateway attempt',
+      };
+      writeRequest(open.id, supersededGateway);
+      await writeInvoiceForRequest(supersededGateway, 'cancelled');
+    } else if (open && !isWalletPayment && !isGatewayInstant) {
       if (receiptUrl || data.transactionId) {
         const updated = {
           ...open,
@@ -1910,6 +1937,7 @@ export async function executeBilling(operation, data, actor, base, now = new Dat
           receiptName: receiptName || open.receiptName || '',
           fileName: receiptName || open.fileName || '',
           paymentMethod: text(data.paymentMethod, 60, 'Payment method') || open.paymentMethod,
+          paymentType: data.paymentType === 'gateway' ? 'gateway' : 'manual',
           transactionId: text(data.transactionId, 120, 'Transaction ID') || open.transactionId,
           note: text(data.note, 300, 'Note') || open.note,
           updatedAt: now,
@@ -1920,17 +1948,20 @@ export async function executeBilling(operation, data, actor, base, now = new Dat
       }
       fail('already-exists', 'You already have a pending request for this item.');
     }
-    if (open && (isWalletPayment || (isGatewayInstant && open.id !== explicitGatewayId))) {
-      await releaseCoupon(open);
-      const superseded = {
-        ...open,
-        status: 'cancelled',
-        decidedAt: now,
-        decidedBy: actor.uid,
-        reason: isWalletPayment ? 'Paid from Wallet instead' : 'Paid via Gateway instead',
-      };
-      writeRequest(open.id, superseded);
-      await writeInvoiceForRequest(superseded, 'cancelled');
+    if (isWalletPayment || isGatewayInstant) {
+      for (const stale of allOpenForPlan) {
+        if (isGatewayInstant && stale.id === explicitGatewayId) continue;
+        await releaseCoupon(stale);
+        const superseded = {
+          ...stale,
+          status: 'cancelled',
+          decidedAt: now,
+          decidedBy: actor.uid,
+          reason: isWalletPayment ? 'Paid from Wallet instead' : 'Paid via Gateway instead',
+        };
+        writeRequest(stale.id, superseded);
+        await writeInvoiceForRequest(superseded, 'cancelled');
+      }
     }
 
     const id = explicitGatewayId || store.id();

@@ -198,6 +198,35 @@ export function toPaymobMinorUnits(amount, currency) {
   return Math.round(value * 100);
 }
 
+/**
+ * Builds a compact Paymob `extras` metadata dictionary strictly within Paymob's
+ * 10-key JSON object limit (`Object.keys(extras).length <= 8`).
+ * Full order metadata is always persisted server-side in `paymobCheckoutSessions/{sessionId}`.
+ */
+export function buildPaymobExtras({
+  sessionId = '',
+  ownerScope = '',
+  ownerId = '',
+  userId = '',
+  kind = '',
+  planId = '',
+  orderId = '',
+} = {}) {
+  const candidates = [
+    ['sessionId', sessionId],
+    ['ownerScope', ownerScope],
+    ['ownerId', ownerId],
+    ['userId', userId],
+    ['kind', kind],
+    ['planId', planId],
+    ['orderId', orderId],
+  ]
+    .filter(([, value]) => value !== undefined && value !== null && String(value).trim() !== '')
+    .slice(0, 8)
+    .map(([key, value]) => [key, String(value).trim().slice(0, 120)]);
+  return Object.fromEntries(candidates);
+}
+
 function safeReturnUrl(candidate, origin, fallbackPath) {
   const base = /^https?:\/\/[^\s/]+$/.test(origin || '') ? origin : '';
   if (typeof candidate === 'string' && candidate) {
@@ -985,22 +1014,15 @@ export async function paymobGatewayRequest(request, { actor, db, fetcher = fetch
         const tryCurrency = candidateCurrencies[idx];
         const tryAmount = convertPaymobAmount(data.amount, requestedCurrency, tryCurrency);
         const tryAmountCents = toPaymobMinorUnits(tryAmount, tryCurrency);
-        const extras = {
+        const extras = buildPaymobExtras({
           sessionId,
-          userId: user.uid,
           ownerScope: owner.scope,
           ownerId: owner.ownerId,
+          userId: user.uid,
+          kind,
           planId,
-          planName,
-          credits: String(credits),
-          currency: tryCurrency,
-          originalCurrency: requestedCurrency,
-          requestId,
-          ...(kind ? { kind } : {}),
-          ...(productOrderId ? { productOrderId } : {}),
-          ...(productTenantId ? { productTenantId } : {}),
-          ...(domainOrderId ? { domainOrderId } : {}),
-        };
+          orderId: productOrderId || domainOrderId || requestId,
+        });
         try {
           intention = await paymobFetch(fetcher, `${baseUrl}/v1/intention/`, {
             method: 'POST',
@@ -1011,12 +1033,6 @@ export async function paymobGatewayRequest(request, { actor, db, fetcher = fetch
               payment_methods: integrationIds,
               items: [{ name: planName, amount: tryAmountCents, description: planName, quantity: 1 }],
               billing_data: billingData,
-              customer: {
-                first_name: billingData.first_name,
-                last_name: billingData.last_name,
-                email: billingData.email,
-                extras,
-              },
               extras,
               special_reference: sessionId,
               notification_url: notificationUrl,
@@ -1060,22 +1076,15 @@ export async function paymobGatewayRequest(request, { actor, db, fetcher = fetch
         const tryAmount = convertPaymobAmount(data.amount, requestedCurrency, tryCurrency);
         const tryAmountCents = toPaymobMinorUnits(tryAmount, tryCurrency);
         const attemptMerchantRef = idx === 0 ? sessionId : `${sessionId}_${idx}`;
-        const extras = {
+        const extras = buildPaymobExtras({
           sessionId,
-          userId: user.uid,
           ownerScope: owner.scope,
           ownerId: owner.ownerId,
+          userId: user.uid,
+          kind,
           planId,
-          planName,
-          credits: String(credits),
-          currency: tryCurrency,
-          originalCurrency: requestedCurrency,
-          requestId,
-          ...(kind ? { kind } : {}),
-          ...(productOrderId ? { productOrderId } : {}),
-          ...(productTenantId ? { productTenantId } : {}),
-          ...(domainOrderId ? { domainOrderId } : {}),
-        };
+          orderId: productOrderId || domainOrderId || requestId,
+        });
         try {
           const orderRes = await paymobFetch(fetcher, `${baseUrl}/api/ecommerce/orders`, {
             method: 'POST',

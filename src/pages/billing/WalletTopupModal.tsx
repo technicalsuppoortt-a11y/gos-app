@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 import { 
   billing, 
+  isPendingGatewayRequest,
   WALLET_CURRENCY, 
   useBillingIdentity, 
   useRequests,
@@ -24,7 +25,7 @@ import { Modal, Spinner, useAction, useCopy } from './ui';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { auth, storage } from '../../backend/firebase';
 import { GatewayBrandIcon, hasGatewayBrand } from '../../components/payments/GatewayBrandIcon';
-import { localDemoEnabled } from '../../backend/localDemo';
+import { isDemoAccount } from '../../backend/demoContext';
 
 interface WalletTopupModalProps {
   initialAmount?: number;
@@ -89,7 +90,7 @@ export function WalletTopupModal({ initialAmount = 50, currency = WALLET_CURRENC
   const { data: userRequests } = useRequests('requesterId', uid);
   const pendingTopup = useMemo(() => {
     return (userRequests || []).find(
-      r => r && r.type === 'wallet_topup' && r.status === 'pending' && r.paymentType !== 'gateway'
+      r => r && r.type === 'wallet_topup' && r.status === 'pending' && !isPendingGatewayRequest(r)
     );
   }, [userRequests]);
 
@@ -407,7 +408,7 @@ export function WalletTopupModal({ initialAmount = 50, currency = WALLET_CURRENC
         onSuccess?.(res);
       }, c.t('Submitting top-up request…', 'جاري إرسال طلب الشحن…'));
 
-    } else if (selectedMethod.provider === 'paymob' && !localDemoEnabled) {
+    } else if (selectedMethod.provider === 'paymob' && !isDemoAccount) {
       const isPaymobWallet = selectedMethod.paymentOption === 'wallet' || selectedMethod.id === 'paymob_wallet';
       if (isPaymobWallet && walletPhone.replace(/\D/g, '').length < 8) {
         alert(c.t('Please enter a valid mobile wallet phone number.', 'يرجى إدخال رقم محفظة إلكترونية صالح.'));

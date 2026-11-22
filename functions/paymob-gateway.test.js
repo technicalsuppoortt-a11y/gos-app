@@ -4,6 +4,7 @@ import { createServer } from 'node:http';
 import { createRequire } from 'node:module';
 import { HttpsError } from 'firebase-functions/v2/https';
 import {
+  buildPaymobExtras,
   computePaymobHmac,
   convertPaymobAmount,
   createPaymobCallable,
@@ -62,6 +63,22 @@ function makePaymobFetcher({ intentionOrderId = 987654, clientSecret = 'cs_paymo
     const parsedBody = options.body ? JSON.parse(options.body) : null;
     calls.push({ url, method: options.method || 'GET', headers: options.headers || {}, body: parsedBody });
     if (url.endsWith('/v1/intention/')) {
+      // Enforce Paymob's real DRF schema validator: JSON objects (extras, customer.extras, items, body) must never exceed 10 keys
+      for (const candidate of [
+        parsedBody,
+        parsedBody?.extras,
+        parsedBody?.customer,
+        parsedBody?.customer?.extras,
+        ...(Array.isArray(parsedBody?.items) ? parsedBody.items : []),
+      ]) {
+        if (candidate && typeof candidate === 'object' && !Array.isArray(candidate) && Object.keys(candidate).length > 10) {
+          return {
+            ok: false,
+            status: 400,
+            json: async () => ({ detail: 'JSON object exceeds keys limit 10' }),
+          };
+        }
+      }
       return {
         ok: true,
         status: 201,
@@ -710,4 +727,19 @@ test('SaaS gateway checkout creates zero pending requests before payment and aut
   assert.equal(verifiedAddon.paid, true);
   assert.equal(db.documents.get('billingWallets/admin-1')?.balance, 1500, 'Add-on credits added automatically without manual approval');
   assert.equal(db.documents.get(`billingRequests/gtw_${addonSession.sessionId}`)?.status, 'approved');
+  assert.ok(Object.keys(addonFetcher.calls[0].body.extras).length <= 10, 'Paymob extras never exceeds 10 keys');
+  assert.ok(Object.keys(addonFetcher.calls[0].body).length <= 10, 'Paymob top-level intention payload never exceeds 10 keys');
+  assert.ok(
+    Object.keys(
+      buildPaymobExtras({
+        sessionId: 'pmob_1',
+        ownerScope: 'super_admin',
+        ownerId: 'platform',
+        userId: 'u1',
+        kind: 'addon',
+        planId: 'dynamic_units',
+        orderId: 'ord_1',
+      })
+    ).length <= 8
+  );
 });

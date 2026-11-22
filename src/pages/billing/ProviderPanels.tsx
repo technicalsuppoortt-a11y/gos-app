@@ -8,7 +8,7 @@ import {
 } from 'lucide-react';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { storage } from '../../backend/firebase';
-import { billing, effectiveStatus, PLATFORM, useBillingIdentity, useLedger, useProviderCommunicationWallets, WALLET_CURRENCY, type BillingPlan, type BillingRequest, type BillingSubscription, type BillingWallet, type LedgerEntry } from '../../backend/billing';
+import { billing, effectiveStatus, isPendingGatewayRequest, PLATFORM, useBillingIdentity, useLedger, useProviderCommunicationWallets, WALLET_CURRENCY, type BillingPlan, type BillingRequest, type BillingSubscription, type BillingWallet, type LedgerEntry } from '../../backend/billing';
 import { Empty, Modal, Spinner, StatusPill, Tabs, Toggle, billingLabel, downloadCsv, initials, useAction, useCopy, type Copy } from './ui';
 
 const typeLabel = (request: BillingRequest, c: Copy) => request.type === 'wallet_topup' ? c.t('Wallet top-up', 'شحن المحفظة') : request.type === 'addon' ? c.t('Add-on', 'إضافة') : request.type === 'renewal' ? c.t('Renewal', 'تجديد') : c.t('New plan', 'باقة جديدة');
@@ -199,7 +199,7 @@ export function RequestsPanel({ requests, mode, title }: { requests: BillingRequ
   const [isZoomOpen, setIsZoomOpen] = useState(false);
   const [copiedRef, setCopiedRef] = useState(false);
   const [reason, setReason] = useState('');
-  const visibleRequests = requests.filter(request => !(request.status === 'pending' && request.paymentType === 'gateway'));
+  const visibleRequests = requests.filter(request => !isPendingGatewayRequest(request));
   const pending = visibleRequests.filter(request => request.status === 'pending');
   const rejected = visibleRequests.filter(request => request.status === 'rejected');
   const rows = filter === 'pending' ? pending : filter === 'rejected' ? rejected : visibleRequests;

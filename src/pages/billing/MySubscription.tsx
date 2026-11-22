@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { AlertCircle, AlertTriangle, CalendarClock, Check, CheckCircle2, Coins, CreditCard, Crown, Eye, FileText, Gem, Gift, History, Inbox, Infinity as InfinityIcon, LayoutGrid, Package, Plus, RefreshCw, Sparkles, Users, Wallet, X, Zap } from 'lucide-react';
-import { billing, DEFAULT_BILLING_SETTINGS, effectiveStatus, entitledTools, isLive, useBillingIdentity, useBillingRefresh, useBillingSettings, useCommunicationWallet, useLedger, usePlans, useRequests, useSubscription, useWallet, WALLET_CURRENCY, type BillingPlan } from '../../backend/billing';
+import { billing, DEFAULT_BILLING_SETTINGS, effectiveStatus, entitledTools, isLive, isPendingGatewayRequest, useBillingIdentity, useBillingRefresh, useBillingSettings, useCommunicationWallet, useLedger, usePlans, useRequests, useSubscription, useWallet, WALLET_CURRENCY, type BillingPlan } from '../../backend/billing';
 import { consumeAndVerifyPaymobReturn } from '../../backend/paymobService';
 import { consumeAndVerifyStripeReturn } from '../../backend/stripeService';
 import { showToast } from '../../utils/toast';
@@ -101,7 +101,7 @@ export function MySubscription({ audience, section, onSectionChange }: {
   const trial = plans.find(plan => plan.kind === 'trial' && plan.enabled);
   const paidPlans = plans.filter(plan => plan.kind === 'plan' && (cycle === 'all' || plan.billingType === cycle));
   const addons = plans.filter(plan => plan.kind === 'addon');
-  const pending = requests.filter(request => request.status === 'pending' && request.paymentType !== 'gateway');
+  const pending = requests.filter(request => request.status === 'pending' && !isPendingGatewayRequest(request));
   const tools = entitledTools(sub);
   const providerLabel = audience === 'admin' ? c.t('the platform', 'المنصة') : c.t('your provider', 'مزود الخدمة');
 

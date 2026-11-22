@@ -22,6 +22,7 @@ import {
   Webhook,
 } from 'lucide-react';
 import { useAdminManagement } from '../../backend/adminManagement';
+import { isPendingGatewayRequest } from '../../backend/billing';
 import { primaryAuth, primaryDb } from '../../backend/firebase';
 import { useUILanguage } from '../../i18n/display';
 import type { RootState } from '../../store';
@@ -198,6 +199,20 @@ export function AdminOperations({ moduleId }: { moduleId: AdminOperationsModuleI
     }
   }, [moduleId, reload]);
 
+  const [params, setParams] = useSearchParams();
+  const tabs = moduleId === 'conversations'
+    ? [t('Threads', 'المحادثات'), t('Messages', 'الرسائل'), t('Human handoffs', 'التحويلات'), t('Channel health', 'صحة القنوات')]
+    : moduleId === 'analytics'
+      ? [t('Operational Events Log', 'سجل الأحداث'), t('Revenue trends', 'اتجاهات الإيرادات'), t('Workspace AI tokens', 'استهلاك الذكاء الاصطناعي')]
+      : moduleId === 'integrations'
+        ? [t('Connected Integrations', 'التطبيقات المتصلة'), t('Webhook & Sync Events', 'مستقبلات وسجل Webhooks')]
+        : moduleId === 'transactions'
+          ? [t('All Transactions', 'دفتر المعاملات'), t('Billing & Plan Requests', 'طلبات الباقات والرصيد'), t('Workspace Orders', 'طلبات المتاجر والمنتجات')]
+          : [t('Workspace usage', 'استخدام المساحات'), t('Model allocations', 'توزيع النماذج')];
+  const requested = Number(params.get('tab') ?? 0), tab = Number.isInteger(requested) && requested >= 0 && requested < tabs.length ? requested : 0;
+  const [search, setSearch] = useState(''), [status, setStatus] = useState(''), [page, setPage] = useState(1);
+  useEffect(() => { setPage(1); setStatus(''); }, [tab, moduleId]);
+
   if (moduleId === 'ai-usage') {
     return (
       <div className="adm-workspace">
@@ -212,19 +227,6 @@ export function AdminOperations({ moduleId }: { moduleId: AdminOperationsModuleI
       </div>
     );
   }
-  const [params, setParams] = useSearchParams();
-  const tabs = moduleId === 'conversations'
-    ? [t('Threads', 'المحادثات'), t('Messages', 'الرسائل'), t('Human handoffs', 'التحويلات'), t('Channel health', 'صحة القنوات')]
-    : moduleId === 'analytics'
-      ? [t('Operational Events Log', 'سجل الأحداث'), t('Revenue trends', 'اتجاهات الإيرادات'), t('Workspace AI tokens', 'استهلاك الذكاء الاصطناعي')]
-      : moduleId === 'integrations'
-        ? [t('Connected Integrations', 'التطبيقات المتصلة'), t('Webhook & Sync Events', 'مستقبلات وسجل Webhooks')]
-        : moduleId === 'transactions'
-          ? [t('All Transactions', 'دفتر المعاملات'), t('Billing & Plan Requests', 'طلبات الباقات والرصيد'), t('Workspace Orders', 'طلبات المتاجر والمنتجات')]
-          : [t('Workspace usage', 'استخدام المساحات'), t('Model allocations', 'توزيع النماذج')];
-  const requested = Number(params.get('tab') ?? 0), tab = Number.isInteger(requested) && requested >= 0 && requested < tabs.length ? requested : 0;
-  const [search, setSearch] = useState(''), [status, setStatus] = useState(''), [page, setPage] = useState(1);
-  useEffect(() => { setPage(1); setStatus(''); }, [tab, moduleId]);
   const stats = aggregateOperations(records);
   const scoped = (resource: string) => records.filter(r => resourceOf(r) === resource);
   const channelIntegrations = scoped('integrations').filter(r => ['whatsapp', 'email', 'sms', 'instagram', 'messenger', 'facebook', 'telegram', 'webchat', 'web'].includes(String(r.data.channel ?? r.id).toLowerCase()) || records.some(thread => resourceOf(thread) === 'conversations' && thread.workspaceId === r.workspaceId && thread.data.channel === (r.data.channel ?? r.id)));
@@ -447,7 +449,7 @@ export function AdminOperations({ moduleId }: { moduleId: AdminOperationsModuleI
     };
     const workspaceTxnRows = scoped('transactions').map(r => mapWorkspaceTxn(r, 'Transaction'));
     const workspaceOrderRows = scoped('orders').map(r => mapWorkspaceTxn(r, 'Order'));
-    const billingReqRows = billingRequests.map(mapBillingReq);
+    const billingReqRows = billingRequests.filter(req => !isPendingGatewayRequest(req as any)).map(mapBillingReq);
     const combined = tab === 1
       ? billingReqRows
       : tab === 2

@@ -19,7 +19,7 @@ import {
   type PaymobPublicConfig,
 } from '../../backend/paymobService';
 import { createCheckoutSession } from '../../backend/stripeService';
-import { localDemoEnabled } from '../../backend/localDemo';
+import { isDemoAccount } from '../../backend/demoContext';
 import { WalletTopupModal } from './WalletTopupModal';
 import { Modal, Spinner, billingLabel, useAction, useCopy } from './ui';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
@@ -648,7 +648,7 @@ export function CheckoutModal({ plan: initialPlan, quantity = 1, mode = 'plan', 
       const isPaymobWallet =
         selectedMethod.provider === 'paymob' &&
         (selectedMethod.paymentOption === 'wallet' || selectedMethod.id === 'paymob_wallet');
-      if (isPaymobWallet && !localDemoEnabled && walletPhone.replace(/\D/g, '').length < 8) {
+      if (isPaymobWallet && !isDemoAccount && walletPhone.replace(/\D/g, '').length < 8) {
         alert(c.t('Please enter a valid mobile wallet phone number.', 'يرجى إدخال رقم محفظة إلكترونية صالح.'));
         return;
       }
@@ -672,7 +672,7 @@ export function CheckoutModal({ plan: initialPlan, quantity = 1, mode = 'plan', 
           couponCode: couponState.status === 'valid' ? couponState.coupon?.code : undefined,
         };
 
-        if (!localDemoEnabled && finalAmount > 0 && typeof window !== 'undefined') {
+        if (!isDemoAccount && finalAmount > 0 && typeof window !== 'undefined') {
           const returnBase = new URL(window.location.href);
           stripPaymobReturnParams(returnBase);
           returnBase.searchParams.delete('payment');
@@ -730,9 +730,16 @@ export function CheckoutModal({ plan: initialPlan, quantity = 1, mode = 'plan', 
             window.location.assign(stripeSession.url);
             return;
           }
+
+          throw new Error(
+            c.t(
+              'Selected payment gateway is not connected yet. Choose another payment method.',
+              'بوابة الدفع المختارة غير متصلة بعد. يرجى اختيار طريقة دفع أخرى.'
+            )
+          );
         }
 
-        // Local demo mode or zero-amount (100% discount coupon) fallback
+        // Isolated demo workspace or zero-amount (100% discount coupon) activation
         const op = isAddon ? 'requestAddon' : 'requestPlan';
         const res = await billing<{ request: BillingRequest }>(op, {
           ...billingOrder,

@@ -144,9 +144,45 @@ export function useLedger(walletId: string | null) {
   return { ...state, data };
 }
 
+const GATEWAY_METHOD_PATTERN = /\b(paymob|stripe|paddle|fawry|kashier|gateway)\b/i;
+
+/**
+ * Returns true when a billing request represents an uncompleted external payment-gateway
+ * checkout (e.g. `Paymob · Cards`, `Paymob · Mobile Wallets`, `Stripe`) rather than a manual
+ * transfer receipt awaiting administrator review.
+ */
+export function isPendingGatewayRequest(
+  request?: Partial<Pick<BillingRequest, 'status' | 'paymentType' | 'paymentMethod' | 'receiptUrl' | 'imageUrl' | 'fileUrl'>> | null
+): boolean {
+  if (!request || request.status !== 'pending') return false;
+  const hasManualReceipt = Boolean(
+    (request.receiptUrl && String(request.receiptUrl).trim()) ||
+    (request.imageUrl && String(request.imageUrl).trim()) ||
+    (request.fileUrl && String(request.fileUrl).trim())
+  );
+  if (hasManualReceipt) return false;
+  if (request.paymentType === 'gateway') return true;
+  return GATEWAY_METHOD_PATTERN.test(String(request.paymentMethod || '').trim());
+}
+
+/** Returns true when a pending invoice belongs to an uncompleted external payment-gateway checkout. */
+export function isPendingGatewayInvoice(
+  invoice?: Partial<Pick<BillingInvoice, 'status' | 'paymentType' | 'paymentMethod'>> | null
+): boolean {
+  if (!invoice || invoice.status !== 'pending') return false;
+  if (invoice.paymentType === 'gateway') return true;
+  return GATEWAY_METHOD_PATTERN.test(String(invoice.paymentMethod || '').trim());
+}
+
 export function useRequests(field: 'requesterId' | 'providerId', value: string | null) {
   const state = useCollection<BillingRequest>('billingRequests', field, value);
-  const data = useMemo(() => [...state.data].sort((a, b) => b.createdAt.localeCompare(a.createdAt)), [state.data]);
+  const data = useMemo(
+    () =>
+      state.data
+        .filter(req => !isPendingGatewayRequest(req))
+        .sort((a, b) => b.createdAt.localeCompare(a.createdAt)),
+    [state.data]
+  );
   return { ...state, data };
 }
 
@@ -157,7 +193,7 @@ export function useUserRequests(uid: string | null, email?: string | null) {
   const data = useMemo(() => {
     const map = new Map<string, BillingRequest>();
     [...byId.data, ...byEmail.data].forEach(r => {
-      if (r && r.id) map.set(r.id, r);
+      if (r && r.id && !isPendingGatewayRequest(r)) map.set(r.id, r);
     });
     return Array.from(map.values()).sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''));
   }, [byId.data, byEmail.data]);
@@ -329,13 +365,13 @@ export function useInvoices(field: 'subscriberId' | 'providerId', value: string 
     const byRequestId = new Map<string, BillingInvoice>();
     const standalone: BillingInvoice[] = [];
     for (const inv of invoiceDocs.data) {
-      if (!inv) continue;
+      if (!inv || isPendingGatewayInvoice(inv)) continue;
       if (inv.requestId) byRequestId.set(inv.requestId, inv);
       else standalone.push(inv);
     }
     const allReqs = [...reqDocs.data, ...reqByEmail.data];
     for (const req of allReqs) {
-      if (!req || !req.id) continue;
+      if (!req || !req.id || isPendingGatewayRequest(req)) continue;
       if (!byRequestId.has(req.id)) {
         byRequestId.set(req.id, synthesizeInvoiceFromRequest(req));
       }
