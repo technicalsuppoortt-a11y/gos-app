@@ -18,8 +18,8 @@ const EMPTY_MANUAL = { external_id: '', access_token: '', app_secret: '' }
  * These are the same channels the AI replies on; live flows answer first, the AI answers the rest.
  */
 /** The real channel connections (Meta popup, page picker, WhatsApp manual, disconnect). Used by Channels and Settings › Integrations. */
-// Asked after the disconnect is confirmed. OK deletes, Cancel keeps the history.
-const DELETE_DATA_PROMPT = 'Also delete every conversation, message, file and contact from {{0}}? This cannot be undone. Press OK to delete them, or Cancel to keep them.'
+// Its own button, apart from Disconnect: the channel stays connected.
+const DELETE_DATA_PROMPT = 'Delete every conversation, message, file and contact from {{0}}? The channel stays connected. This cannot be undone.'
 
 export function useMetaChannels() {
   const [channels, setChannels] = useState<Channel[] | null>(null)
@@ -69,8 +69,7 @@ export function useMetaChannels() {
 
   const disconnectPage = (c: Channel, pageId: string, name: string) => {
     if (!confirm(formatDisplayMessage('Disconnect {{0}}? Automations and the AI will stop replying there.', name))) return
-    const deleteData = confirm(formatDisplayMessage(DELETE_DATA_PROMPT, name))
-    run(pageId, async () => update(await api.disconnectPage(c.channel, pageId, deleteData)))
+    run(pageId, async () => update(await api.disconnectPage(c.channel, pageId)))
   }
 
   const connectManual = (e: React.FormEvent) => {
@@ -90,16 +89,23 @@ export function useMetaChannels() {
   const disconnect = (c: Channel, title: string) => {
     const name = c.name ?? translateText(title)
     if (!confirm(formatDisplayMessage('Disconnect {{0}}? Automations and the AI will stop replying there.', name))) return
-    const deleteData = confirm(formatDisplayMessage(DELETE_DATA_PROMPT, name))
-    run(c.channel, async () => update(await api.disconnect(c.channel, deleteData)))
+    run(c.channel, async () => update(await api.disconnect(c.channel)))
   }
 
-  return { channels, config, picking, setPicking, busy, error, manual, setManual, connect, connectManual, pick, disconnect, disconnectPage }
+  const [deleted, setDeleted] = useState<string | null>(null)
+  const deleteData = (c: Channel, title: string) => {
+    const name = c.name ?? translateText(title)
+    if (!confirm(formatDisplayMessage(DELETE_DATA_PROMPT, name))) return
+    setDeleted(null)
+    run(`delete:${c.channel}`, async () => { await api.deleteChannelData(c.channel); setDeleted(c.channel) })
+  }
+
+  return { channels, config, picking, setPicking, busy, error, manual, setManual, connect, connectManual, pick, disconnect, disconnectPage, deleteData, deleted }
 }
 
 export function Channels() {
   useUILanguage()
-  const { channels, config, picking, busy, error, manual, setManual, connect, connectManual, disconnect, disconnectPage } = useMetaChannels()
+  const { channels, config, picking, busy, error, manual, setManual, connect, connectManual, disconnect, disconnectPage, deleteData, deleted } = useMetaChannels()
   return (
     <main className="fb-list-page">
       <h1>{translateText("Channels")}</h1>
@@ -119,6 +125,9 @@ export function Channels() {
               {connected
                 ? <button type="button" className="fb-btn fb-btn-ghost" onClick={() => disconnect(c!, card.title)} disabled={busy !== null}>{busy === card.id ? translateText("Disconnecting…") : translateText("Disconnect")}</button>
                 : <button type="button" className="fb-btn fb-btn-primary" onClick={() => connect(card.id)} disabled={busy !== null || channels === null}>{translateText(busy === card.id ? "Opening Meta…" : card.button)}</button>}
+              {connected && (
+                <button type="button" className="fb-btn fb-btn-ghost" onClick={() => deleteData(c!, card.title)} disabled={busy !== null}>{busy === `delete:${card.id}` ? translateText("Deleting…") : translateText("Delete data")}</button>
+              )}
               {!connected && card.id === 'instagram' && config?.instagram_page && (
                 <button type="button" className="fb-btn fb-btn-soft" onClick={() => connect('instagram', true)} disabled={busy !== null || channels === null}>{translateText("Connect through a Facebook Page")}</button>
               )}
@@ -143,6 +152,8 @@ export function Channels() {
                 </div>
               </form>
             )}
+
+            {deleted === card.id && <p className="fb-muted" role="status">{translateText("Deleting this channel's data. It can take a few minutes.")}</p>}
 
             {connected && (
               <ul className="fb-page-list">

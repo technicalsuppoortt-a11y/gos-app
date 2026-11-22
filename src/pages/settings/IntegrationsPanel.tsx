@@ -360,6 +360,14 @@ export function IntegrationsPanel({ data, refresh }: { data: SettingsData; refre
             </button>
           </div>
         )}
+        {connected && channel && (
+          <div className="st-channel-picker">
+            <button type="button" className="st-secondary small" disabled={meta.busy !== null} onClick={() => meta.deleteData(channel, p.name)}>
+              {translateText(meta.busy === `delete:${p.channel}` ? 'Deleting…' : 'Delete data')}
+            </button>
+            {meta.deleted === p.channel && <p role="status">{translateText("Deleting this channel's data. It can take a few minutes.")}</p>}
+          </div>
+        )}
         {p.channel === 'instagram' && !connected && meta.config?.instagram_page && (
           <button type="button" className="st-secondary small" disabled={meta.busy !== null} onClick={() => meta.connect('instagram', true)}>
             {translateText('Connect through a Facebook Page instead')}
