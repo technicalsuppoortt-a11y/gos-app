@@ -18,6 +18,9 @@ const EMPTY_MANUAL = { external_id: '', access_token: '', app_secret: '' }
  * These are the same channels the AI replies on; live flows answer first, the AI answers the rest.
  */
 /** The real channel connections (Meta popup, page picker, WhatsApp manual, disconnect). Used by Channels and Settings › Integrations. */
+// Asked after the disconnect is confirmed. OK deletes, Cancel keeps the history.
+const DELETE_DATA_PROMPT = 'Also delete every conversation, message, file and contact from {{0}}? This cannot be undone. Press OK to delete them, or Cancel to keep them.'
+
 export function useMetaChannels() {
   const [channels, setChannels] = useState<Channel[] | null>(null)
   const [config, setConfig] = useState<MetaConfig | null>(null)
@@ -66,7 +69,8 @@ export function useMetaChannels() {
 
   const disconnectPage = (c: Channel, pageId: string, name: string) => {
     if (!confirm(formatDisplayMessage('Disconnect {{0}}? Automations and the AI will stop replying there.', name))) return
-    run(pageId, async () => update(await api.disconnectPage(c.channel, pageId)))
+    const deleteData = confirm(formatDisplayMessage(DELETE_DATA_PROMPT, name))
+    run(pageId, async () => update(await api.disconnectPage(c.channel, pageId, deleteData)))
   }
 
   const connectManual = (e: React.FormEvent) => {
@@ -84,8 +88,10 @@ export function useMetaChannels() {
   })
 
   const disconnect = (c: Channel, title: string) => {
-    if (!confirm(formatDisplayMessage('Disconnect {{0}}? Automations and the AI will stop replying there.', c.name ?? translateText(title)))) return
-    run(c.channel, async () => update(await api.disconnect(c.channel)))
+    const name = c.name ?? translateText(title)
+    if (!confirm(formatDisplayMessage('Disconnect {{0}}? Automations and the AI will stop replying there.', name))) return
+    const deleteData = confirm(formatDisplayMessage(DELETE_DATA_PROMPT, name))
+    run(c.channel, async () => update(await api.disconnect(c.channel, deleteData)))
   }
 
   return { channels, config, picking, setPicking, busy, error, manual, setManual, connect, connectManual, pick, disconnect, disconnectPage }
