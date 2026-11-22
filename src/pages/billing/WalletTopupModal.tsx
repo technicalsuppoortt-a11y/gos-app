@@ -88,7 +88,9 @@ export function WalletTopupModal({ initialAmount = 50, currency = WALLET_CURRENC
   const uid = identity.uid || auth.currentUser?.uid || null;
   const { data: userRequests } = useRequests('requesterId', uid);
   const pendingTopup = useMemo(() => {
-    return (userRequests || []).find(r => r && r.type === 'wallet_topup' && r.status === 'pending');
+    return (userRequests || []).find(
+      r => r && r.type === 'wallet_topup' && r.status === 'pending' && r.paymentType !== 'gateway'
+    );
   }, [userRequests]);
 
   // Selected Amount & Custom Numeric Input
@@ -412,30 +414,31 @@ export function WalletTopupModal({ initialAmount = 50, currency = WALLET_CURRENC
         return;
       }
       await run('topup', async () => {
-        const res = await billing<any>('requestWalletTopup', {
-          amount: totalToPay,
-          currency,
-          paymentMethod: selectedMethod.name,
-          paymentType: 'gateway',
-          gatewayPaid: false,
-          couponCode: couponState.status === 'valid' ? couponState.coupon?.code : undefined,
-          subtotal,
-          discount,
-          creditAmount: totalCreditsReceived,
-          idempotencyKey,
-        });
-        const reqId = res?.request?.id || res?.id || '';
         if (totalToPay > 0 && typeof window !== 'undefined') {
           const returnBase = new URL(window.location.href);
           stripPaymobReturnParams(returnBase);
+          returnBase.searchParams.delete('payment');
+          returnBase.searchParams.delete('provider');
+          returnBase.searchParams.delete('session_id');
           const baseHref = `${returnBase.origin}${returnBase.pathname}${returnBase.search}`;
           const sep = returnBase.search ? '&' : '?';
           const paymobSession = await createPaymobCheckoutSession({
             scope: paymentScope,
             ownerId: paymentScope === 'super_admin' ? 'platform' : providerId,
             kind: 'wallet_topup',
-            paymentOption: selectedMethod.paymentOption || (isPaymobWallet ? 'wallet' : selectedMethod.id === 'paymob_card' ? 'card' : 'any'),
-            requestId: reqId,
+            paymentOption:
+              selectedMethod.paymentOption ||
+              (isPaymobWallet ? 'wallet' : selectedMethod.id === 'paymob_card' ? 'card' : 'any'),
+            billingOrder: {
+              checkoutType: 'wallet_topup',
+              amount: subtotal,
+              totalAmount: totalToPay,
+              credits: totalCreditsReceived,
+              currency,
+              couponCode: couponState.status === 'valid' ? couponState.coupon?.code : undefined,
+              note,
+              paymentMethod: selectedMethod.name,
+            },
             planId: 'wallet_topup',
             planName: 'Communication Wallet Top-Up',
             credits: totalCreditsReceived,
@@ -444,16 +447,16 @@ export function WalletTopupModal({ initialAmount = 50, currency = WALLET_CURRENC
             customerEmail: auth.currentUser?.email || '',
             customerName: auth.currentUser?.displayName || '',
             customerPhone: walletPhone.trim(),
-            successUrl: `${baseHref}${sep}payment=paymob_return&provider=paymob&gos_request_id=${encodeURIComponent(reqId)}`,
+            successUrl: `${baseHref}${sep}payment=paymob_return&provider=paymob`,
             cancelUrl: `${baseHref}${sep}payment=cancelled&provider=paymob`,
           });
-          if (paymobSession?.url) {
-            window.location.assign(paymobSession.url);
-            return;
+          if (!paymobSession?.url) {
+            throw new Error(c.t('Could not start Paymob checkout session.', 'تعذر بدء جلسة الدفع عبر Paymob.'));
           }
+          window.location.assign(paymobSession.url);
+          return;
         }
-        onSuccess?.(res);
-      }, c.t('Redirecting to Paymob Secure Checkout…', 'جاري التوجيه إلى بوابة Paymob الآمنة…'));
+      });
     } else {
       // Gateway Flow (Stripe / Instant Card)
       await run('topup', async () => {

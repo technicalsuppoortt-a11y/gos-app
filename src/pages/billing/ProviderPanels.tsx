@@ -199,9 +199,10 @@ export function RequestsPanel({ requests, mode, title }: { requests: BillingRequ
   const [isZoomOpen, setIsZoomOpen] = useState(false);
   const [copiedRef, setCopiedRef] = useState(false);
   const [reason, setReason] = useState('');
-  const pending = requests.filter(request => request.status === 'pending');
-  const rejected = requests.filter(request => request.status === 'rejected');
-  const rows = filter === 'pending' ? pending : filter === 'rejected' ? rejected : requests;
+  const visibleRequests = requests.filter(request => !(request.status === 'pending' && request.paymentType === 'gateway'));
+  const pending = visibleRequests.filter(request => request.status === 'pending');
+  const rejected = visibleRequests.filter(request => request.status === 'rejected');
+  const rows = filter === 'pending' ? pending : filter === 'rejected' ? rejected : visibleRequests;
 
   useEffect(() => {
     if (!viewingReceipt) {
@@ -365,7 +366,7 @@ export function RequestsPanel({ requests, mode, title }: { requests: BillingRequ
         <Tabs label={c.t('Request filter', 'تصفية الطلبات')} value={filter} onChange={setFilter} tabs={[
           { id: 'pending', label: c.t('Pending', 'قيد المراجعة'), count: pending.length, hot: mode === 'incoming' && pending.length > 0 },
           { id: 'rejected', label: c.t('Rejected', 'المرفوضة'), count: rejected.length, hot: mode === 'outgoing' && rejected.length > 0 },
-          { id: 'all', label: c.t('All', 'الكل'), count: requests.length }
+          { id: 'all', label: c.t('All', 'الكل'), count: visibleRequests.length }
         ]} />
       </div>
       {rows.length ? (

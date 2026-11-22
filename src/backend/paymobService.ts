@@ -54,6 +54,38 @@ const REGIONAL_CURRENCIES: Record<string, string> = {
   'https://pakistan.paymob.com': 'PKR',
   'https://accept.paymob.com': 'EGP',
 };
+const CLIENT_PAYMOB_RATES: Record<string, number> = {
+  USD: 1,
+  EUR: 0.897,
+  EGP: 54.03,
+  GBP: 0.748,
+  AED: 3.6725,
+  SAR: 3.75,
+  KWD: 0.31,
+  QAR: 3.64,
+  BHD: 0.376,
+  OMR: 0.3845,
+  JOD: 0.709,
+  MAD: 9.76,
+  TND: 2.988,
+  PKR: 278.5,
+};
+
+export interface PaymobBillingOrder {
+  checkoutType: 'plan' | 'addon' | 'wallet_topup';
+  planId?: string;
+  quantity?: number;
+  isDynamic?: boolean;
+  credits?: number;
+  price?: number;
+  totalAmount?: number;
+  amount?: number;
+  currency?: string;
+  addons?: unknown[];
+  couponCode?: string;
+  note?: string;
+  paymentMethod?: string;
+}
 
 const PAYMOB_CALLBACK_QUERY_KEYS = [
   'payment',
@@ -262,6 +294,41 @@ function resolveClientPaymobBaseUrl(credentials: Record<string, string>) {
   const match = /^(egy|are|uae|sau|ksa|omn|pak)_(?:sk|pk)_/.exec(probe);
   if (match && REGIONAL_HOSTS[match[1]]) return REGIONAL_HOSTS[match[1]];
   return 'https://accept.paymob.com';
+}
+
+function resolveClientPaymobRegionalCurrency(credentials: Record<string, string>) {
+  if (typeof credentials.currency === 'string' && /^[A-Za-z]{3}$/.test(credentials.currency.trim())) {
+    return credentials.currency.trim().toUpperCase();
+  }
+  const probe = `${credentials.secretKey || ''} ${credentials.publicKey || ''}`.trim().toLowerCase();
+  const match = /^(egy|are|uae|sau|ksa|omn|pak)_(?:sk|pk)_/.exec(probe);
+  if (match) {
+    const map: Record<string, string> = {
+      egy: 'EGP',
+      are: 'AED',
+      uae: 'AED',
+      sau: 'SAR',
+      ksa: 'SAR',
+      omn: 'OMR',
+      pak: 'PKR',
+    };
+    return map[match[1]] || 'EGP';
+  }
+  return REGIONAL_CURRENCIES[resolveClientPaymobBaseUrl(credentials)] || 'EGP';
+}
+
+function convertClientPaymobAmount(amount: number, fromCurrency: string, toCurrency: string) {
+  const from = String(fromCurrency || 'USD').trim().toUpperCase();
+  const to = String(toCurrency || from).trim().toUpperCase();
+  const toLower = to.toLowerCase();
+  const factor = ZERO_DECIMAL_CURRENCIES.has(toLower) ? 1 : THREE_DECIMAL_CURRENCIES.has(toLower) ? 1000 : 100;
+  const minUnit = 1 / factor;
+  if (from === to) {
+    return Math.max(minUnit, Math.round(amount * factor) / factor);
+  }
+  const fromRate = CLIENT_PAYMOB_RATES[from] || 1;
+  const toRate = CLIENT_PAYMOB_RATES[to] || 1;
+  return Math.max(minUnit, Math.round(((amount / fromRate) * toRate) * factor) / factor);
 }
 
 function isIntentionSecretKey(secretKey: string) {
@@ -493,6 +560,7 @@ export async function createPaymobCheckoutSession(params: {
   paymentOption?: PaymobPaymentOption;
   requestId?: string;
   kind?: 'product' | 'plan' | 'addon' | 'wallet_topup' | 'domain';
+  billingOrder?: PaymobBillingOrder;
   productOrderId?: string;
   domainOrderId?: string;
   tenantId?: string;
@@ -506,7 +574,13 @@ export async function createPaymobCheckoutSession(params: {
   const normalizedOwnerId =
     params.scope === 'super_admin' ? 'platform' : (params.ownerId || '').replace(/^workspace-/, '') || params.ownerId;
   try {
-    return await firebaseBackend.callBackend<{ url: string; sessionId: string; paymobOrderId?: string | null }>('paymobGateway', {
+    return await firebaseBackend.callBackend<{
+      url: string;
+      sessionId: string;
+      paymobOrderId?: string | null;
+      currency?: string;
+      amount?: number;
+    }>('paymobGateway', {
       operation: 'createCheckout',
       ...params,
       ownerId: normalizedOwnerId,
@@ -519,8 +593,9 @@ export async function createPaymobCheckoutSession(params: {
     const integrationIds = parseClientIntegrationIds(saved, params.paymentOption ?? 'any');
     if (!integrationIds.length) throw new Error('No active Paymob Integration ID is configured for this payment method.');
     const baseUrl = resolveClientPaymobBaseUrl(saved);
-    const currency = String(params.currency || 'EGP').trim().toUpperCase();
-    const amountCents = toClientMinorUnits(params.amount, currency);
+    const requestedCurrency = String(params.currency || 'EGP').trim().toUpperCase();
+    const regionalCurrency = resolveClientPaymobRegionalCurrency(saved);
+    const candidateCurrencies = Array.from(new Set([regionalCurrency, requestedCurrency, 'USD'].filter(Boolean)));
     const sessionId = `pmob_${crypto.randomUUID().replace(/-/g, '')}`;
     const returnUrl = new URL(params.successUrl || `${window.location.origin}/dashboard/settings/billing`);
     returnUrl.searchParams.set('payment', 'paymob_return');
@@ -538,40 +613,73 @@ export async function createPaymobCheckoutSession(params: {
       : 'customer@upklick.net';
 
     if (isIntentionSecretKey(saved.secretKey)) {
-      const res = await fetch(`${baseUrl}/v1/intention/`, {
-        method: 'POST',
-        headers: {
-          Authorization: `Token ${saved.secretKey}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          amount: amountCents,
-          currency,
-          payment_methods: integrationIds,
-          items: [{ name: String(params.planName || 'Purchase').slice(0, 200), amount: amountCents, description: String(params.planName || 'Purchase').slice(0, 200), quantity: 1 }],
-          billing_data: {
-            apartment: 'NA',
-            first_name: firstName,
-            last_name: lastName,
-            street: 'NA',
-            building: 'NA',
-            phone_number: cleanPhone,
-            city: 'Cairo',
-            country: 'EG',
-            email: cleanEmail,
-            floor: 'NA',
-            state: 'NA',
-            shipping_method: 'NA',
-            postal_code: 'NA',
+      let settledCurrency = regionalCurrency;
+      let settledAmount = convertClientPaymobAmount(params.amount, requestedCurrency, regionalCurrency);
+      let settledAmountCents = toClientMinorUnits(settledAmount, settledCurrency);
+      let payload: Record<string, unknown> = {};
+      let lastMessage = '';
+
+      for (let idx = 0; idx < candidateCurrencies.length; idx++) {
+        const tryCurrency = candidateCurrencies[idx];
+        const tryAmount = convertClientPaymobAmount(params.amount, requestedCurrency, tryCurrency);
+        const tryAmountCents = toClientMinorUnits(tryAmount, tryCurrency);
+        const res = await fetch(`${baseUrl}/v1/intention/`, {
+          method: 'POST',
+          headers: {
+            Authorization: `Token ${saved.secretKey}`,
+            'Content-Type': 'application/json',
           },
-          special_reference: sessionId,
-          notification_url: `${paymobWebhookUrl(params.scope, normalizedOwnerId)}&session_id=${encodeURIComponent(sessionId)}`,
-          redirection_url: returnUrl.href,
-        }),
-      });
-      const payload = (await res.json().catch(() => ({}))) as Record<string, unknown>;
-      if (!res.ok || typeof payload.client_secret !== 'string' || !payload.client_secret) {
-        throw new Error(extractClientPaymobError(payload, res.status));
+          body: JSON.stringify({
+            amount: tryAmountCents,
+            currency: tryCurrency,
+            payment_methods: integrationIds,
+            items: [
+              {
+                name: String(params.planName || 'Purchase').slice(0, 200),
+                amount: tryAmountCents,
+                description: String(params.planName || 'Purchase').slice(0, 200),
+                quantity: 1,
+              },
+            ],
+            billing_data: {
+              apartment: 'NA',
+              first_name: firstName,
+              last_name: lastName,
+              street: 'NA',
+              building: 'NA',
+              phone_number: cleanPhone,
+              city: 'Cairo',
+              country: 'EG',
+              email: cleanEmail,
+              floor: 'NA',
+              state: 'NA',
+              shipping_method: 'NA',
+              postal_code: 'NA',
+            },
+            special_reference: sessionId,
+            notification_url: `${paymobWebhookUrl(params.scope, normalizedOwnerId)}&session_id=${encodeURIComponent(sessionId)}`,
+            redirection_url: returnUrl.href,
+          }),
+        });
+        payload = (await res.json().catch(() => ({}))) as Record<string, unknown>;
+        if (res.ok && typeof payload.client_secret === 'string' && payload.client_secret) {
+          settledCurrency = tryCurrency;
+          settledAmount = tryAmount;
+          settledAmountCents = tryAmountCents;
+          lastMessage = '';
+          break;
+        }
+        lastMessage = extractClientPaymobError(payload, res.status);
+        const isCurrencyMismatch =
+          res.status !== 401 &&
+          res.status !== 403 &&
+          /currency|integration id/i.test(lastMessage);
+        if (!isCurrencyMismatch || idx === candidateCurrencies.length - 1) {
+          throw new Error(lastMessage);
+        }
+      }
+      if (lastMessage || typeof payload.client_secret !== 'string' || !payload.client_secret) {
+        throw new Error(lastMessage || 'Paymob did not return a checkout session.');
       }
       const paymobOrderId = String(payload.intention_order_id ?? payload.order_id ?? '');
       try {
@@ -580,8 +688,8 @@ export async function createPaymobCheckoutSession(params: {
           JSON.stringify({
             sessionId,
             paymobOrderId,
-            amountCents,
-            currency,
+            amountCents: settledAmountCents,
+            currency: settledCurrency,
             productOrderId: params.productOrderId || '',
             planId: params.planId || '',
             planName: params.planName || '',
@@ -593,6 +701,8 @@ export async function createPaymobCheckoutSession(params: {
         url: `${baseUrl}/unifiedcheckout/?publicKey=${encodeURIComponent(saved.publicKey)}&clientSecret=${encodeURIComponent(payload.client_secret)}`,
         sessionId,
         paymobOrderId: paymobOrderId || null,
+        currency: settledCurrency,
+        amount: settledAmount,
       };
     }
     throw error;

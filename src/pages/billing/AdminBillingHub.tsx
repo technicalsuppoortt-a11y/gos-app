@@ -69,7 +69,7 @@ export function AdminBillingHub({ ownerId, isPlatform = false }: AdminBillingHub
   // Fetch billing requests for top-up reviews
   const { data: allRequests, loading: requestsLoading } = useRequests('providerId', ownerId);
   const topupRequests = useMemo(() => {
-    return allRequests.filter(r => r.type === 'wallet_topup');
+    return allRequests.filter(r => r.type === 'wallet_topup' && !(r.status === 'pending' && r.paymentType === 'gateway'));
   }, [allRequests]);
   const pendingTopups = useMemo(() => {
     return topupRequests.filter(r => r.status === 'pending');

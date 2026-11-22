@@ -15,6 +15,8 @@
  */
 import { HttpsError, onCall } from 'firebase-functions/v2/https';
 import { createHash, createHmac, randomUUID, timingSafeEqual } from 'node:crypto';
+import { EXCHANGE_RATES, executeBilling } from './billing-engine.js';
+import { createBillingStore, stripUndefined, toHttpsError } from './billing-service.js';
 import { fulfillDomainOrder } from './domains/fulfillOrder.js';
 
 // Callable middleware answers browser OPTIONS preflights before actor authorization runs.
@@ -50,6 +52,36 @@ const REGIONAL_CURRENCIES = {
   'https://pakistan.paymob.com': 'PKR',
   'https://accept.paymob.com': 'EGP',
 };
+
+const PAYMOB_EXCHANGE_RATES = {
+  ...EXCHANGE_RATES,
+  PKR: 278.5,
+};
+
+function sanitizeBillingOrder(raw, fallbackKind = '', fallbackMethod = 'Paymob') {
+  if (!raw || typeof raw !== 'object') return null;
+  const checkoutType =
+    raw.checkoutType === 'wallet_topup' || fallbackKind === 'wallet_topup'
+      ? 'wallet_topup'
+      : raw.checkoutType === 'addon' || fallbackKind === 'addon'
+        ? 'addon'
+        : 'plan';
+  return stripUndefined({
+    checkoutType,
+    planId: typeof raw.planId === 'string' ? raw.planId.slice(0, 150) : '',
+    quantity: raw.quantity !== undefined ? Number(raw.quantity) : 1,
+    isDynamic: Boolean(raw.isDynamic),
+    credits: raw.credits !== undefined ? Number(raw.credits) : undefined,
+    price: raw.price !== undefined ? Number(raw.price) : undefined,
+    totalAmount: raw.totalAmount !== undefined ? Number(raw.totalAmount) : undefined,
+    amount: raw.amount !== undefined ? Number(raw.amount) : undefined,
+    currency: typeof raw.currency === 'string' && raw.currency.trim() ? raw.currency.trim().toUpperCase() : undefined,
+    addons: Array.isArray(raw.addons) ? raw.addons.slice(0, 50) : [],
+    couponCode: typeof raw.couponCode === 'string' && raw.couponCode.trim() ? raw.couponCode.trim().slice(0, 64) : undefined,
+    note: typeof raw.note === 'string' ? raw.note.slice(0, 300) : '',
+    paymentMethod: typeof raw.paymentMethod === 'string' && raw.paymentMethod.trim() ? raw.paymentMethod.trim().slice(0, 60) : fallbackMethod,
+  });
+}
 
 function cleanId(value) {
   const text = String(value ?? '').trim();
@@ -94,6 +126,40 @@ export function resolvePaymobBaseUrl(credentials = {}) {
   const match = /^(egy|are|uae|sau|ksa|omn|pak)_(?:sk|pk)_/.exec(probe);
   if (match && REGIONAL_HOSTS[match[1]]) return REGIONAL_HOSTS[match[1]];
   return 'https://accept.paymob.com';
+}
+
+/** Resolves the merchant's Paymob settlement currency from explicit config or regional key prefix. */
+export function resolvePaymobRegionalCurrency(credentials = {}) {
+  if (typeof credentials.currency === 'string' && /^[A-Za-z]{3}$/.test(credentials.currency.trim())) {
+    return credentials.currency.trim().toUpperCase();
+  }
+  const probe = `${credentials.secretKey || ''} ${credentials.publicKey || ''}`.trim().toLowerCase();
+  const match = /^(egy|are|uae|sau|ksa|omn|pak)_(?:sk|pk)_/.exec(probe);
+  if (match) {
+    const map = { egy: 'EGP', are: 'AED', uae: 'AED', sau: 'SAR', ksa: 'SAR', omn: 'OMR', pak: 'PKR' };
+    return map[match[1]] || 'EGP';
+  }
+  return REGIONAL_CURRENCIES[resolvePaymobBaseUrl(credentials)] || 'EGP';
+}
+
+/** Converts an amount between currencies for Paymob Integration ID settlement compatibility. */
+export function convertPaymobAmount(amount, fromCurrency, toCurrency) {
+  const value = Number(amount);
+  if (!Number.isFinite(value) || value <= 0 || value > 10_000_000) {
+    throw new HttpsError('invalid-argument', 'Enter a valid payment amount.');
+  }
+  const from = String(fromCurrency || 'USD').trim().toUpperCase();
+  const to = String(toCurrency || from).trim().toUpperCase();
+  const toLower = to.toLowerCase();
+  const factor = ZERO_DECIMAL.has(toLower) ? 1 : THREE_DECIMAL.has(toLower) ? 1000 : 100;
+  const minUnit = 1 / factor;
+  if (from === to) {
+    return Math.max(minUnit, Math.round(value * factor) / factor);
+  }
+  const fromRate = PAYMOB_EXCHANGE_RATES[from] || 1;
+  const toRate = PAYMOB_EXCHANGE_RATES[to] || 1;
+  const converted = (value / fromRate) * toRate;
+  return Math.max(minUnit, Math.round(converted * factor) / factor);
 }
 
 export function isPaymobIntentionKey(secretKey = '') {
@@ -426,8 +492,65 @@ export async function fulfillPaymobSession(db, sessionId, tx, extra = {}) {
     let invoiceData = null;
     let commWalletRef = null;
     let commWalletData = null;
+    const deferredBillingWrites = [];
+    let fulfilledBillingRequestId = requestId;
 
-    if (requestId && /^[\w-]{1,150}$/.test(requestId) && kind !== 'product') {
+    const payment = {
+      provider: 'paymob',
+      sessionId,
+      transactionId: tx.id || null,
+      paymobOrderId: tx.orderId || record.paymobOrderId || null,
+      paymentMethodSubType: tx.sourceSubType || tx.sourceType || null,
+      status: 'paid',
+      amountTotal: tx.amountCents || record.amountCents || null,
+      currency: String(tx.currency || record.currency || '').toUpperCase(),
+      verifiedAt: now,
+    };
+
+    if (record.billingOrder && typeof record.billingOrder === 'object' && userId && kind !== 'product' && kind !== 'domain') {
+      const userSnap = await transaction.get(db.doc(`users/${userId}`));
+      const userDoc = userSnap.exists ? (userSnap.data() || {}) : {};
+      const snapshotActor = record.userSnapshot && typeof record.userSnapshot === 'object' ? record.userSnapshot : {};
+      const mergedActor = {
+        ...snapshotActor,
+        ...userDoc,
+        uid: userId,
+        role: normalizeUserRole(userDoc.role ? userDoc : snapshotActor) || 'USER',
+        name: userDoc.name || userDoc.displayName || snapshotActor.name || record.customerName || '',
+        email: userDoc.email || snapshotActor.email || record.customerEmail || '',
+      };
+      const baseStore = createBillingStore(db, transaction);
+      const collectorStore = {
+        ...baseStore,
+        commit: writes => {
+          deferredBillingWrites.push(...writes);
+        },
+      };
+      try {
+        const billingResult = await executeBilling(
+          'fulfillGatewayBilling',
+          {
+            ...record.billingOrder,
+            paymentType: 'gateway',
+            gatewayPaid: true,
+            sessionId,
+            ...(requestId ? { requestId } : {}),
+            paymobSessionId: sessionId,
+            gatewayPayment: payment,
+            decidedBy: 'paymob-gateway',
+            transactionId: tx.id || sessionId,
+          },
+          mergedActor,
+          collectorStore,
+          now
+        );
+        if (billingResult?.request?.id) {
+          fulfilledBillingRequestId = billingResult.request.id;
+        }
+      } catch (error) {
+        throw toHttpsError(error);
+      }
+    } else if (requestId && /^[\w-]{1,150}$/.test(requestId) && kind !== 'product') {
       const candidate = db.doc(`billingRequests/${requestId}`);
       const requestDoc = await transaction.get(candidate);
       const owner = requestDoc.data()?.requesterId ?? requestDoc.data()?.userId;
@@ -446,21 +569,10 @@ export async function fulfillPaymobSession(db, sessionId, tx, extra = {}) {
       }
     }
 
-    const payment = {
-      provider: 'paymob',
-      sessionId,
-      transactionId: tx.id || null,
-      paymobOrderId: tx.orderId || record.paymobOrderId || null,
-      paymentMethodSubType: tx.sourceSubType || tx.sourceType || null,
-      status: 'paid',
-      amountTotal: tx.amountCents || record.amountCents || null,
-      currency: String(tx.currency || record.currency || '').toUpperCase(),
-      verifiedAt: now,
-    };
-
     transaction.set(ref, {
       ...record,
       sessionId,
+      ...(fulfilledBillingRequestId ? { requestId: fulfilledBillingRequestId } : {}),
       status: 'paid',
       fulfilled: true,
       fulfilledAt: now,
@@ -468,6 +580,10 @@ export async function fulfillPaymobSession(db, sessionId, tx, extra = {}) {
       ...(tx.orderId ? { paymobOrderId: tx.orderId } : {}),
       payment,
     }, { merge: true });
+
+    for (const [path, docData] of deferredBillingWrites) {
+      transaction.set(db.doc(path), stripUndefined(docData));
+    }
 
     if (requestRef) {
       if (requestData?.type === 'wallet_topup' && requestData?.status === 'pending' && commWalletRef) {
@@ -802,9 +918,11 @@ export async function paymobGatewayRequest(request, { actor, db, fetcher = fetch
     }
 
     const origin = request.rawRequest?.headers?.origin;
-    const currency = String(data.currency || 'egp').trim().toUpperCase();
-    if (!/^[A-Z]{3}$/.test(currency)) throw new HttpsError('invalid-argument', 'Invalid currency.');
-    const amountCents = toPaymobMinorUnits(data.amount, currency);
+    const requestedCurrency = String(data.currency || 'egp').trim().toUpperCase();
+    if (!/^[A-Z]{3}$/.test(requestedCurrency)) throw new HttpsError('invalid-argument', 'Invalid currency.');
+    // Validate base amount upfront before any network or database work
+    toPaymobMinorUnits(data.amount, requestedCurrency);
+
     const planName = String(data.planName || 'Purchase').slice(0, 200);
     const planId = String(data.planId || '').slice(0, 150);
     const credits = Math.max(0, Math.round(Number(data.credits) || 0));
@@ -818,6 +936,25 @@ export async function paymobGatewayRequest(request, { actor, db, fetcher = fetch
     const customerName = String(data.customerName || user.name || '').trim().slice(0, 150);
     const customerPhone = String(data.customerPhone || user.phone || '').trim().slice(0, 40);
 
+    const defaultMethodLabel = paymentOption === 'wallet' ? 'Paymob · Mobile Wallets' : paymentOption === 'card' ? 'Paymob · Cards' : 'Paymob';
+    const billingOrder =
+      kind !== 'product' && kind !== 'domain' && data.billingOrder && typeof data.billingOrder === 'object'
+        ? sanitizeBillingOrder(data.billingOrder, kind, defaultMethodLabel)
+        : null;
+
+    if (billingOrder) {
+      const billingActor = {
+        ...user,
+        uid: user.uid,
+        role: normalizeUserRole(user) || 'USER',
+      };
+      try {
+        await executeBilling('validateGatewayCheckout', billingOrder, billingActor, createBillingStore(db, null));
+      } catch (error) {
+        throw toHttpsError(error);
+      }
+    }
+
     const sessionId = `pmob_${randomUUID().replace(/-/g, '')}`;
     const baseReturnUrl = safeReturnUrl(data.successUrl, origin, '/dashboard/settings/billing?payment=paymob_return&provider=paymob');
     if (data.cancelUrl) safeReturnUrl(data.cancelUrl, origin, '/dashboard/settings/billing?payment=cancelled&provider=paymob');
@@ -830,49 +967,78 @@ export async function paymobGatewayRequest(request, { actor, db, fetcher = fetch
     });
     const notificationUrl = resolveWebhookUrl(request, owner, sessionId);
     const baseUrl = resolvePaymobBaseUrl(credentials);
+    const regionalCurrency = resolvePaymobRegionalCurrency(credentials);
+    const candidateCurrencies = [...new Set([regionalCurrency, requestedCurrency, 'USD'].filter(Boolean))];
     const billingData = buildBillingData({ customerName, customerEmail, customerPhone });
-    const extras = {
-      sessionId,
-      userId: user.uid,
-      ownerScope: owner.scope,
-      ownerId: owner.ownerId,
-      planId,
-      planName,
-      credits: String(credits),
-      currency,
-      requestId,
-      ...(kind ? { kind } : {}),
-      ...(productOrderId ? { productOrderId } : {}),
-      ...(productTenantId ? { productTenantId } : {}),
-      ...(domainOrderId ? { domainOrderId } : {}),
-    };
 
     let checkoutUrl = '';
     let paymobOrderId = '';
     let paymobIntentionId = '';
+    let settledCurrency = regionalCurrency;
+    let settledAmount = convertPaymobAmount(data.amount, requestedCurrency, regionalCurrency);
+    let settledAmountCents = toPaymobMinorUnits(settledAmount, settledCurrency);
 
     if (isPaymobIntentionKey(credentials.secretKey)) {
-      const intention = await paymobFetch(fetcher, `${baseUrl}/v1/intention/`, {
-        method: 'POST',
-        headers: { Authorization: `Token ${credentials.secretKey}` },
-        body: {
-          amount: amountCents,
-          currency,
-          payment_methods: integrationIds,
-          items: [{ name: planName, amount: amountCents, description: planName, quantity: 1 }],
-          billing_data: billingData,
-          customer: {
-            first_name: billingData.first_name,
-            last_name: billingData.last_name,
-            email: billingData.email,
-            extras,
-          },
-          extras,
-          special_reference: sessionId,
-          notification_url: notificationUrl,
-          redirection_url: redirectionUrl,
-        },
-      });
+      let intention = null;
+      let lastErr = null;
+      for (let idx = 0; idx < candidateCurrencies.length; idx++) {
+        const tryCurrency = candidateCurrencies[idx];
+        const tryAmount = convertPaymobAmount(data.amount, requestedCurrency, tryCurrency);
+        const tryAmountCents = toPaymobMinorUnits(tryAmount, tryCurrency);
+        const extras = {
+          sessionId,
+          userId: user.uid,
+          ownerScope: owner.scope,
+          ownerId: owner.ownerId,
+          planId,
+          planName,
+          credits: String(credits),
+          currency: tryCurrency,
+          originalCurrency: requestedCurrency,
+          requestId,
+          ...(kind ? { kind } : {}),
+          ...(productOrderId ? { productOrderId } : {}),
+          ...(productTenantId ? { productTenantId } : {}),
+          ...(domainOrderId ? { domainOrderId } : {}),
+        };
+        try {
+          intention = await paymobFetch(fetcher, `${baseUrl}/v1/intention/`, {
+            method: 'POST',
+            headers: { Authorization: `Token ${credentials.secretKey}` },
+            body: {
+              amount: tryAmountCents,
+              currency: tryCurrency,
+              payment_methods: integrationIds,
+              items: [{ name: planName, amount: tryAmountCents, description: planName, quantity: 1 }],
+              billing_data: billingData,
+              customer: {
+                first_name: billingData.first_name,
+                last_name: billingData.last_name,
+                email: billingData.email,
+                extras,
+              },
+              extras,
+              special_reference: sessionId,
+              notification_url: notificationUrl,
+              redirection_url: redirectionUrl,
+            },
+          });
+          settledCurrency = tryCurrency;
+          settledAmount = tryAmount;
+          settledAmountCents = tryAmountCents;
+          lastErr = null;
+          break;
+        } catch (err) {
+          lastErr = err;
+          const isCurrencyMismatch =
+            err?.code !== 'permission-denied' &&
+            /currency|integration id/i.test(String(err?.message || ''));
+          if (!isCurrencyMismatch || idx === candidateCurrencies.length - 1) {
+            throw err;
+          }
+        }
+      }
+      if (lastErr) throw lastErr;
       if (!intention?.client_secret) {
         throw new HttpsError('internal', 'No checkout client_secret returned from Paymob.');
       }
@@ -886,33 +1052,74 @@ export async function paymobGatewayRequest(request, { actor, db, fetcher = fetch
         body: { api_key: credentials.secretKey },
       });
       if (!authRes?.token) throw new HttpsError('failed-precondition', 'Paymob authentication failed.');
-      const orderRes = await paymobFetch(fetcher, `${baseUrl}/api/ecommerce/orders`, {
-        method: 'POST',
-        body: {
-          auth_token: authRes.token,
-          delivery_needed: 'false',
-          amount_cents: String(amountCents),
-          currency,
-          merchant_order_id: sessionId,
-          items: [{ name: planName, amount_cents: String(amountCents), description: planName, quantity: '1' }],
-        },
-      });
-      if (!orderRes?.id) throw new HttpsError('internal', 'Could not create Paymob order.');
-      paymobOrderId = String(orderRes.id);
-      const keyRes = await paymobFetch(fetcher, `${baseUrl}/api/acceptance/payment_keys`, {
-        method: 'POST',
-        body: {
-          auth_token: authRes.token,
-          amount_cents: String(amountCents),
-          expiration: 3600,
-          order_id: orderRes.id,
-          billing_data: billingData,
-          currency,
-          integration_id: integrationIds[0],
-          lock_order_when_paid: 'true',
-          extra: extras,
-        },
-      });
+
+      let keyRes = null;
+      let lastClassicErr = null;
+      for (let idx = 0; idx < candidateCurrencies.length; idx++) {
+        const tryCurrency = candidateCurrencies[idx];
+        const tryAmount = convertPaymobAmount(data.amount, requestedCurrency, tryCurrency);
+        const tryAmountCents = toPaymobMinorUnits(tryAmount, tryCurrency);
+        const attemptMerchantRef = idx === 0 ? sessionId : `${sessionId}_${idx}`;
+        const extras = {
+          sessionId,
+          userId: user.uid,
+          ownerScope: owner.scope,
+          ownerId: owner.ownerId,
+          planId,
+          planName,
+          credits: String(credits),
+          currency: tryCurrency,
+          originalCurrency: requestedCurrency,
+          requestId,
+          ...(kind ? { kind } : {}),
+          ...(productOrderId ? { productOrderId } : {}),
+          ...(productTenantId ? { productTenantId } : {}),
+          ...(domainOrderId ? { domainOrderId } : {}),
+        };
+        try {
+          const orderRes = await paymobFetch(fetcher, `${baseUrl}/api/ecommerce/orders`, {
+            method: 'POST',
+            body: {
+              auth_token: authRes.token,
+              delivery_needed: 'false',
+              amount_cents: String(tryAmountCents),
+              currency: tryCurrency,
+              merchant_order_id: attemptMerchantRef,
+              items: [{ name: planName, amount_cents: String(tryAmountCents), description: planName, quantity: '1' }],
+            },
+          });
+          if (!orderRes?.id) throw new HttpsError('internal', 'Could not create Paymob order.');
+          keyRes = await paymobFetch(fetcher, `${baseUrl}/api/acceptance/payment_keys`, {
+            method: 'POST',
+            body: {
+              auth_token: authRes.token,
+              amount_cents: String(tryAmountCents),
+              expiration: 3600,
+              order_id: orderRes.id,
+              billing_data: billingData,
+              currency: tryCurrency,
+              integration_id: integrationIds[0],
+              lock_order_when_paid: 'true',
+              extra: extras,
+            },
+          });
+          paymobOrderId = String(orderRes.id);
+          settledCurrency = tryCurrency;
+          settledAmount = tryAmount;
+          settledAmountCents = tryAmountCents;
+          lastClassicErr = null;
+          break;
+        } catch (err) {
+          lastClassicErr = err;
+          const isCurrencyMismatch =
+            err?.code !== 'permission-denied' &&
+            /currency|integration id/i.test(String(err?.message || ''));
+          if (!isCurrencyMismatch || idx === candidateCurrencies.length - 1) {
+            throw err;
+          }
+        }
+      }
+      if (lastClassicErr) throw lastClassicErr;
       if (!keyRes?.token) throw new HttpsError('internal', 'Could not create Paymob payment token.');
       if (paymentOption === 'wallet' && customerPhone) {
         const walletPay = await paymobFetch(fetcher, `${baseUrl}/api/acceptance/payments/pay`, {
@@ -947,11 +1154,25 @@ export async function paymobGatewayRequest(request, { actor, db, fetcher = fetch
       planId,
       planName,
       credits,
-      amount: Number(data.amount),
-      amountCents,
-      currency,
+      amount: settledAmount,
+      amountCents: settledAmountCents,
+      currency: settledCurrency,
+      originalAmount: Number(data.amount),
+      originalCurrency: requestedCurrency,
       requestId,
       ...(kind ? { kind } : {}),
+      ...(billingOrder
+        ? {
+            billingOrder,
+            userSnapshot: stripUndefined({
+              uid: user.uid,
+              role: normalizeUserRole(user) || 'USER',
+              name: user.name || customerName || '',
+              email: user.email || customerEmail || '',
+              supportParentId: user.supportParentId || '',
+            }),
+          }
+        : {}),
       ...(productOrderId ? { productOrderId } : {}),
       ...(productTenantId ? { productTenantId } : {}),
       ...(domainOrderId ? { domainOrderId } : {}),
@@ -973,7 +1194,13 @@ export async function paymobGatewayRequest(request, { actor, db, fetcher = fetch
       });
     }
 
-    return { url: checkoutUrl, sessionId, paymobOrderId: paymobOrderId || null };
+    return {
+      url: checkoutUrl,
+      sessionId,
+      paymobOrderId: paymobOrderId || null,
+      currency: settledCurrency,
+      amount: settledAmount,
+    };
   }
 
   // verifySession — client return verification (idempotent; verifies HMAC-SHA512 and/or server transaction inquiry).

@@ -56,6 +56,7 @@ type RequestRow = {
   customerPhone: string;
   currency: string;
   method: string;
+  paymentType?: string;
   transferAccount?: string;
   totals: { price: number; subtotal: number; discount: number; tax: number; dueToday: number };
   note: string;
@@ -595,7 +596,14 @@ function RequestsView({ tenantId, ownerId }: { tenantId: string; ownerId: string
     };
   }, [scopesKey, retry]);
 
-  const rows = source.rows.filter(
+  const isUncompletedGateway = (r: RequestRow) =>
+    r.status === 'Pending' &&
+    !r.receipt &&
+    (r.paymentType === 'gateway' || /^(paymob|stripe)\b/i.test(String(r.method || '').trim()));
+
+  const visibleRows = source.rows.filter(r => !isUncompletedGateway(r));
+
+  const rows = visibleRows.filter(
     row =>
       (status === 'All' || row.status === status) &&
       matchesLocalizedSearch(search, [
@@ -612,17 +620,17 @@ function RequestsView({ tenantId, ownerId }: { tenantId: string; ownerId: string
   );
 
   const counts = {
-    All: source.rows.length,
-    Pending: source.rows.filter(r => r.status === 'Pending').length,
-    Approved: source.rows.filter(r => r.status === 'Approved').length,
-    Rejected: source.rows.filter(r => r.status === 'Rejected').length,
+    All: visibleRows.length,
+    Pending: visibleRows.filter(r => r.status === 'Pending').length,
+    Approved: visibleRows.filter(r => r.status === 'Approved').length,
+    Rejected: visibleRows.filter(r => r.status === 'Rejected').length,
   };
 
   const totalPages = Math.max(1, Math.ceil(rows.length / pageSize));
   const safePage = Math.min(page, totalPages);
   const startIdx = (safePage - 1) * pageSize;
   const paginatedRows = rows.slice(startIdx, startIdx + pageSize);
-  const request = source.rows.find(row => row.id === selected);
+  const request = visibleRows.find(row => row.id === selected);
 
   async function quickApprove(row: RequestRow) {
     if (rowBusyId) return;

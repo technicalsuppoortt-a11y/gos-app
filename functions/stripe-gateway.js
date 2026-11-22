@@ -14,6 +14,8 @@
  */
 import { HttpsError } from 'firebase-functions/v2/https';
 import { createHmac, timingSafeEqual } from 'node:crypto';
+import { executeBilling } from './billing-engine.js';
+import { createBillingStore, stripUndefined, toHttpsError } from './billing-service.js';
 import { fulfillDomainOrder } from './domains/fulfillOrder.js';
 
 const STRIPE_API = 'https://api.stripe.com/v1';
@@ -99,10 +101,35 @@ function sessionUserId(session) {
   return session?.client_reference_id || session?.metadata?.userId || '';
 }
 
+function sanitizeStripeBillingOrder(raw, fallbackKind = '', fallbackMethod = 'Stripe') {
+  if (!raw || typeof raw !== 'object') return null;
+  const checkoutType =
+    raw.checkoutType === 'wallet_topup' || fallbackKind === 'wallet_topup'
+      ? 'wallet_topup'
+      : raw.checkoutType === 'addon' || fallbackKind === 'addon'
+        ? 'addon'
+        : 'plan';
+  return stripUndefined({
+    checkoutType,
+    planId: typeof raw.planId === 'string' ? raw.planId.slice(0, 150) : '',
+    quantity: raw.quantity !== undefined ? Number(raw.quantity) : 1,
+    isDynamic: Boolean(raw.isDynamic),
+    credits: raw.credits !== undefined ? Number(raw.credits) : undefined,
+    price: raw.price !== undefined ? Number(raw.price) : undefined,
+    totalAmount: raw.totalAmount !== undefined ? Number(raw.totalAmount) : undefined,
+    amount: raw.amount !== undefined ? Number(raw.amount) : undefined,
+    currency: typeof raw.currency === 'string' && raw.currency.trim() ? raw.currency.trim().toUpperCase() : undefined,
+    addons: Array.isArray(raw.addons) ? raw.addons.slice(0, 50) : [],
+    couponCode: typeof raw.couponCode === 'string' && raw.couponCode.trim() ? raw.couponCode.trim().slice(0, 64) : undefined,
+    note: typeof raw.note === 'string' ? raw.note.slice(0, 300) : '',
+    paymentMethod: typeof raw.paymentMethod === 'string' && raw.paymentMethod.trim() ? raw.paymentMethod.trim().slice(0, 60) : fallbackMethod,
+  });
+}
+
 /**
  * Shared, idempotent fulfillment used by the webhook and the client verification fallback.
- * Records the verified payment and attaches it to the related billing request (if any).
- * Plan activation stays with the existing billing approval flow.
+ * Records the verified payment and automatically fulfills `billingOrder` checkouts (or attaches
+ * payment metadata to legacy pre-created billing requests).
  */
 export async function fulfillCheckoutSession(db, session, extra = {}) {
   if (session?.payment_status !== 'paid') return { success: false, paid: false, status: session?.payment_status ?? 'unknown' };
@@ -131,12 +158,59 @@ export async function fulfillCheckoutSession(db, session, extra = {}) {
       verifiedAt: now,
     };
     let requestRef = null;
-    if (requestId && /^[\w-]{1,150}$/.test(requestId) && kind !== 'product') {
+    const deferredBillingWrites = [];
+    let fulfilledBillingRequestId = requestId;
+
+    if (record.billingOrder && typeof record.billingOrder === 'object' && userId && kind !== 'product' && kind !== 'domain') {
+      const userSnap = await tx.get(db.doc(`users/${userId}`));
+      const userDoc = userSnap.exists ? (userSnap.data() || {}) : {};
+      const snapshotActor = record.userSnapshot && typeof record.userSnapshot === 'object' ? record.userSnapshot : {};
+      const mergedActor = {
+        ...snapshotActor,
+        ...userDoc,
+        uid: userId,
+        role: normalizeUserRole(userDoc.role ? userDoc : snapshotActor) || 'USER',
+        name: userDoc.name || userDoc.displayName || snapshotActor.name || '',
+        email: userDoc.email || snapshotActor.email || record.customerEmail || '',
+      };
+      const baseStore = createBillingStore(db, tx);
+      const collectorStore = {
+        ...baseStore,
+        commit: writes => {
+          deferredBillingWrites.push(...writes);
+        },
+      };
+      try {
+        const billingResult = await executeBilling(
+          'fulfillGatewayBilling',
+          {
+            ...record.billingOrder,
+            paymentType: 'gateway',
+            gatewayPaid: true,
+            sessionId: session.id,
+            ...(requestId ? { requestId } : {}),
+            stripeSessionId: session.id,
+            gatewayPayment: payment,
+            decidedBy: 'stripe-gateway',
+            transactionId: typeof session.payment_intent === 'string' ? session.payment_intent : session.id,
+          },
+          mergedActor,
+          collectorStore,
+          now
+        );
+        if (billingResult?.request?.id) {
+          fulfilledBillingRequestId = billingResult.request.id;
+        }
+      } catch (error) {
+        throw toHttpsError(error);
+      }
+    } else if (requestId && /^[\w-]{1,150}$/.test(requestId) && kind !== 'product') {
       const candidate = db.doc(`billingRequests/${requestId}`);
       const requestDoc = await tx.get(candidate);
       const owner = requestDoc.data()?.requesterId ?? requestDoc.data()?.userId;
       if (requestDoc.exists && (!owner || owner === userId)) requestRef = candidate;
     }
+
     tx.set(ref, {
       ...record,
       sessionId: session.id,
@@ -146,7 +220,7 @@ export async function fulfillCheckoutSession(db, session, extra = {}) {
       planId: record.planId || metadata.planId || '',
       planName: record.planName || metadata.planName || '',
       credits: Number(record.credits ?? metadata.credits ?? 0) || 0,
-      requestId,
+      requestId: fulfilledBillingRequestId,
       ...(kind ? { kind } : {}),
       ...(domainOrderId ? { domainOrderId } : {}),
       ...(productOrderId ? { productOrderId } : {}),
@@ -156,6 +230,9 @@ export async function fulfillCheckoutSession(db, session, extra = {}) {
       fulfilledAt: now,
       payment,
     }, { merge: true });
+    for (const [path, docData] of deferredBillingWrites) {
+      tx.set(db.doc(path), stripUndefined(docData));
+    }
     if (requestRef) tx.set(requestRef, { gatewayPayment: payment, stripeSessionId: session.id }, { merge: true });
     return { success: true, alreadyProcessed: false, sessionId: session.id, planId: record.planId || metadata.planId || '', planName: record.planName || metadata.planName || '', kind, domainOrderId, productOrderId, productTenantId };
   });
@@ -284,10 +361,27 @@ export async function stripeGatewayRequest(request, { actor, db, fetcher = fetch
     const planId = String(data.planId || '').slice(0, 150);
     const credits = Math.max(0, Math.round(Number(data.credits) || 0));
     const requestId = typeof data.requestId === 'string' && /^[\w-]{1,150}$/.test(data.requestId) ? data.requestId : '';
-    const kind = data.kind === 'product' ? 'product' : '';
+    const allowedKinds = new Set(['product', 'plan', 'addon', 'wallet_topup', 'domain']);
+    const kind = allowedKinds.has(data.kind) ? data.kind : '';
     const productOrderId = kind === 'product' && typeof data.productOrderId === 'string' && /^[\w-]{1,150}$/.test(data.productOrderId) ? data.productOrderId : '';
     const productTenantId = kind === 'product' && typeof data.tenantId === 'string' && /^[\w-]{1,150}$/.test(data.tenantId) ? data.tenantId : '';
     const customerEmail = String(data.customerEmail || user.email || '').trim();
+    const billingOrder =
+      kind !== 'product' && kind !== 'domain' && data.billingOrder && typeof data.billingOrder === 'object'
+        ? sanitizeStripeBillingOrder(data.billingOrder, kind, 'Stripe')
+        : null;
+    if (billingOrder) {
+      const billingActor = {
+        ...user,
+        uid: user.uid,
+        role: normalizeUserRole(user) || 'USER',
+      };
+      try {
+        await executeBilling('validateGatewayCheckout', billingOrder, billingActor, createBillingStore(db, null));
+      } catch (error) {
+        throw toHttpsError(error);
+      }
+    }
     const fallbackLink = data.interval === 'year' ? credentials?.paymentLinkAnnual || credentials?.paymentLink : credentials?.paymentLink;
     const fallback = () => {
       if (!fallbackLink) return null;
@@ -341,6 +435,18 @@ export async function stripeGatewayRequest(request, { actor, db, fetcher = fetch
       sessionId: session.id, userId: user.uid, ownerScope: owner.scope, ownerId: owner.ownerId,
       planId, planName, credits, amount: Number(data.amount), currency: currency.toUpperCase(), requestId,
       ...(kind ? { kind } : {}),
+      ...(billingOrder
+        ? {
+            billingOrder,
+            userSnapshot: stripUndefined({
+              uid: user.uid,
+              role: normalizeUserRole(user) || 'USER',
+              name: user.name || '',
+              email: user.email || customerEmail || '',
+              supportParentId: user.supportParentId || '',
+            }),
+          }
+        : {}),
       ...(productOrderId ? { productOrderId } : {}),
       ...(productTenantId ? { productTenantId } : {}),
       ...(customerEmail ? { customerEmail } : {}),

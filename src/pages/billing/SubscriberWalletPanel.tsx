@@ -27,6 +27,7 @@ import {
   type WalletLedgerRow,
 } from '../../backend/billing';
 import { consumeAndVerifyPaymobReturn } from '../../backend/paymobService';
+import { consumeAndVerifyStripeReturn } from '../../backend/stripeService';
 import { showToast } from '../../utils/toast';
 import { LedgerTable } from './ProviderPanels';
 import { WalletTopupModal } from './WalletTopupModal';
@@ -68,7 +69,19 @@ export function SubscriberWalletPanel({ audience }: { audience: 'admin' | 'user'
         showToast.error(res.error);
       }
     });
-  }, [identity.uid]);
+    const stripeScope = identity.providerId === 'platform' || identity.role === 'ADMIN' ? 'super_admin' : 'admin';
+    const stripeOwner = stripeScope === 'super_admin' ? 'platform' : identity.providerId || '';
+    void consumeAndVerifyStripeReturn({ scope: stripeScope, ownerId: stripeOwner }).then(res => {
+      if (!res.handled) return;
+      if (res.cancelled) {
+        showToast.info(c.t('Stripe wallet top-up was cancelled.', 'تم إلغاء عملية شحن المحفظة عبر Stripe.'));
+      } else if (res.paid) {
+        showToast.success(c.t('Stripe payment verified! Your wallet balance has been updated.', 'تم تأكيد الدفع عبر Stripe وتحديث رصيد محفظتك!'));
+      } else if (res.error) {
+        showToast.error(res.error);
+      }
+    });
+  }, [identity.uid, identity.providerId, identity.role]);
 
   const [topupOpen, setTopupOpen] = useState(false);
   const [topupAmountInput, setTopupAmountInput] = useState('50');

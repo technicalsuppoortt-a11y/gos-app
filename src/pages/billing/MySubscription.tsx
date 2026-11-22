@@ -3,6 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 import { AlertCircle, AlertTriangle, CalendarClock, Check, CheckCircle2, Coins, CreditCard, Crown, Eye, FileText, Gem, Gift, History, Inbox, Infinity as InfinityIcon, LayoutGrid, Package, Plus, RefreshCw, Sparkles, Users, Wallet, X, Zap } from 'lucide-react';
 import { billing, DEFAULT_BILLING_SETTINGS, effectiveStatus, entitledTools, isLive, useBillingIdentity, useBillingRefresh, useBillingSettings, useCommunicationWallet, useLedger, usePlans, useRequests, useSubscription, useWallet, WALLET_CURRENCY, type BillingPlan } from '../../backend/billing';
 import { consumeAndVerifyPaymobReturn } from '../../backend/paymobService';
+import { consumeAndVerifyStripeReturn } from '../../backend/stripeService';
 import { showToast } from '../../utils/toast';
 import { LedgerTable, RequestsPanel } from './ProviderPanels';
 import { CheckoutModal } from './CheckoutModal';
@@ -32,12 +33,24 @@ export function MySubscription({ audience, section, onSectionChange }: {
       if (res.cancelled) {
         showToast.info(c.t('Paymob payment was cancelled.', 'تم إلغاء عملية الدفع عبر Paymob.'));
       } else if (res.paid) {
-        showToast.success(c.t('Paymob payment verified!', 'تم تأكيد الدفع عبر Paymob بنجاح!'));
+        showToast.success(c.t('Paymob payment verified! Your plan or credits are active now.', 'تم تأكيد الدفع عبر Paymob وتفعيل اشتراكك أو رصيدك بنجاح!'));
       } else if (res.error) {
         showToast.error(res.error);
       }
     });
-  }, [identity.uid]);
+    const stripeScope = identity.providerId === 'platform' || identity.role === 'ADMIN' ? 'super_admin' : 'admin';
+    const stripeOwner = stripeScope === 'super_admin' ? 'platform' : identity.providerId || '';
+    void consumeAndVerifyStripeReturn({ scope: stripeScope, ownerId: stripeOwner }).then(res => {
+      if (!res.handled) return;
+      if (res.cancelled) {
+        showToast.info(c.t('Stripe payment was cancelled.', 'تم إلغاء عملية الدفع عبر Stripe.'));
+      } else if (res.paid) {
+        showToast.success(c.t('Stripe payment verified! Your plan or credits are active now.', 'تم تأكيد الدفع عبر Stripe وتفعيل اشتراكك أو رصيدك بنجاح!'));
+      } else if (res.error) {
+        showToast.error(res.error);
+      }
+    });
+  }, [identity.uid, identity.providerId, identity.role]);
   const { data: sub, loading: subLoading } = useSubscription(identity.uid);
   const { data: wallet } = useWallet(identity.uid);
   const { data: commWallet } = useCommunicationWallet(identity.uid);
@@ -88,7 +101,7 @@ export function MySubscription({ audience, section, onSectionChange }: {
   const trial = plans.find(plan => plan.kind === 'trial' && plan.enabled);
   const paidPlans = plans.filter(plan => plan.kind === 'plan' && (cycle === 'all' || plan.billingType === cycle));
   const addons = plans.filter(plan => plan.kind === 'addon');
-  const pending = requests.filter(request => request.status === 'pending');
+  const pending = requests.filter(request => request.status === 'pending' && request.paymentType !== 'gateway');
   const tools = entitledTools(sub);
   const providerLabel = audience === 'admin' ? c.t('the platform', 'المنصة') : c.t('your provider', 'مزود الخدمة');
 

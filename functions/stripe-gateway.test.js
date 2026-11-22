@@ -144,3 +144,73 @@ test('workspace owners with Owner/missing role test user-scoped Stripe and fulfi
   assert.equal(db.documents.get('tenants/workspace-merchant-1/orders/order-1').status, 'Paid');
   assert.equal(db.documents.get('settings/checkoutRequests_workspace-merchant-1/items/order-1').status, 'Approved');
 });
+
+test('SaaS Stripe checkout with billingOrder creates zero premature pending requests and auto-activates plan on verified return', async () => {
+  const db = database({
+    'paymentGatewayConfigurations/stripe': { credentials },
+    'users/admin-stripe': { uid: 'admin-stripe', role: 'ADMIN', name: 'Stripe Admin', email: 'stripe@upklick.net' },
+    'billingPlans/pro_plan': {
+      id: 'pro_plan',
+      ownerId: 'platform',
+      audience: 'admin',
+      kind: 'plan',
+      name: { en: 'Pro Plan', ar: 'باقة برو' },
+      price: 50,
+      currency: 'USD',
+      billingType: 'monthly',
+      credits: 2000,
+      aiCredits: 2000,
+      emailCredits: 1000,
+      tools: ['crm-pipeline'],
+      channels: ['ai'],
+      limits: {},
+      visible: true,
+      enabled: true,
+      status: 'active',
+    },
+  });
+  const adminActor = async () => ({ uid: 'admin-stripe', role: 'ADMIN', name: 'Stripe Admin', email: 'stripe@upklick.net' });
+  const rawRequest = { headers: { origin: 'https://app.upklick.net' } };
+
+  const created = await stripeGatewayRequest(
+    {
+      data: {
+        operation: 'createCheckout',
+        scope: 'super_admin',
+        ownerId: 'platform',
+        kind: 'plan',
+        billingOrder: { checkoutType: 'plan', planId: 'pro_plan', quantity: 1, currency: 'USD', paymentMethod: 'Stripe' },
+        planId: 'pro_plan',
+        planName: 'Pro Plan',
+        credits: 2000,
+        amount: 50,
+        currency: 'USD',
+      },
+      rawRequest,
+    },
+    { actor: adminActor, db, fetcher: stripeApi() }
+  );
+  assert.equal([...db.documents.keys()].filter(k => k.startsWith('billingRequests/')).length, 0);
+
+  const verified = await stripeGatewayRequest(
+    { data: { operation: 'verifySession', sessionId: created.sessionId } },
+    {
+      actor: adminActor,
+      db,
+      fetcher: stripeApi({
+        id: created.sessionId,
+        payment_status: 'paid',
+        payment_intent: 'pi_stripe_999',
+        client_reference_id: 'admin-stripe',
+        amount_total: 5000,
+        currency: 'usd',
+        metadata: { userId: 'admin-stripe', ownerScope: 'super_admin', ownerId: 'platform', kind: 'plan', planId: 'pro_plan' },
+      }),
+    }
+  );
+  assert.equal(verified.success, true);
+  assert.equal(db.documents.get('billingSubscriptions/admin-stripe')?.status, 'active');
+  assert.equal(db.documents.get('billingWallets/admin-stripe')?.balance, 2000);
+  assert.equal(db.documents.get(`billingRequests/gtw_${created.sessionId}`)?.status, 'approved');
+  assert.equal(db.documents.get(`billingInvoices/inv_gtw_${created.sessionId}`)?.status, 'paid');
+});

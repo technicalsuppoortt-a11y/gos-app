@@ -628,6 +628,71 @@ function CheckoutForm({
             ? (remote.methods.find(item => item.provider === 'paymob')?.id ?? method.id)
             : method?.id;
 
+      // Initiate external gateway session FIRST so failed gateway sessions never create fake `Pending` checkout requests.
+      let gatewayRedirectUrl = '';
+      if (paymentDue && isGateway && method?.provider === 'paymob' && typeof window !== 'undefined') {
+        const returnBase = new URL(window.location.href);
+        stripPaymobReturnParams(returnBase);
+        const baseHref = `${returnBase.origin}${returnBase.pathname}${returnBase.search}`;
+        const sep = returnBase.search ? '&' : '?';
+        const paymobOption: PaymobPaymentOption =
+          method.paymentOption ||
+          (method.id === 'paymob_wallet' ? 'wallet' : method.id === 'paymob_card' ? 'card' : 'any');
+        const paymobSession = await createPaymobCheckoutSession({
+          scope: 'user',
+          ownerId: effectiveOwnerId || effectiveScope,
+          kind: 'product',
+          paymentOption: paymobOption,
+          productOrderId: computedId,
+          tenantId: effectiveScope,
+          customerEmail: cleanEmail,
+          customerName: cleanName,
+          customerPhone: cleanPhone,
+          buyerSessionId: submission.current,
+          planId: product.id,
+          planName: product.name,
+          amount: totals.dueToday,
+          currency: totals.currency,
+          requestId: computedId,
+          successUrl: `${baseHref}${sep}payment=paymob_return&provider=paymob&gos_order_id=${encodeURIComponent(computedId)}`,
+          cancelUrl: `${baseHref}${sep}payment=cancelled&provider=paymob`,
+        });
+        if (!paymobSession?.url) {
+          throw new Error('Could not start Paymob checkout session.');
+        }
+        gatewayRedirectUrl = paymobSession.url;
+      } else if (paymentDue && isGateway && method?.provider === 'stripe' && typeof window !== 'undefined') {
+        const returnBase = new URL(window.location.href);
+        returnBase.searchParams.delete('payment');
+        returnBase.searchParams.delete('session_id');
+        returnBase.searchParams.delete('order_id');
+        const sep = returnBase.search ? '&' : '?';
+        const baseHref = `${returnBase.origin}${returnBase.pathname}${returnBase.search}`;
+        const successUrl = `${baseHref}${sep}payment=success&order_id=${encodeURIComponent(computedId)}&session_id={CHECKOUT_SESSION_ID}`;
+        const cancelUrl = `${baseHref}${sep}payment=cancelled`;
+        const stripeSession = await createCheckoutSession({
+          scope: 'user',
+          ownerId: effectiveOwnerId || effectiveScope,
+          kind: 'product',
+          productOrderId: computedId,
+          tenantId: effectiveScope,
+          customerEmail: cleanEmail,
+          buyerSessionId: submission.current,
+          planId: product.id,
+          planName: product.name,
+          amount: totals.dueToday,
+          currency: totals.currency,
+          interval: String(quote.frequency || '').toLowerCase().includes('year') ? 'year' : 'once',
+          requestId: computedId,
+          successUrl,
+          cancelUrl,
+        });
+        if (!stripeSession?.url) {
+          throw new Error('Could not start Stripe checkout session.');
+        }
+        gatewayRedirectUrl = stripeSession.url;
+      }
+
       if (tenantId && remote?.revision) {
         try {
           const result = await callBackend<{ id: string }>('productCheckout', {
@@ -827,71 +892,10 @@ function CheckoutForm({
         }
       }
 
-      if (paymentDue && isGateway && method?.provider === 'paymob' && typeof window !== 'undefined') {
-        const returnBase = new URL(window.location.href);
-        stripPaymobReturnParams(returnBase);
-        const baseHref = `${returnBase.origin}${returnBase.pathname}${returnBase.search}`;
-        const sep = returnBase.search ? '&' : '?';
-        const paymobOption: PaymobPaymentOption =
-          method.paymentOption ||
-          (method.id === 'paymob_wallet' ? 'wallet' : method.id === 'paymob_card' ? 'card' : 'any');
-        const paymobSession = await createPaymobCheckoutSession({
-          scope: 'user',
-          ownerId: effectiveOwnerId || effectiveScope,
-          kind: 'product',
-          paymentOption: paymobOption,
-          productOrderId: finalId,
-          tenantId: effectiveScope,
-          customerEmail: cleanEmail,
-          customerName: cleanName,
-          customerPhone: cleanPhone,
-          buyerSessionId: submission.current,
-          planId: product.id,
-          planName: product.name,
-          amount: totals.dueToday,
-          currency: totals.currency,
-          requestId: finalId,
-          successUrl: `${baseHref}${sep}payment=paymob_return&provider=paymob&gos_order_id=${encodeURIComponent(finalId)}`,
-          cancelUrl: `${baseHref}${sep}payment=cancelled&provider=paymob`,
-        });
-        if (paymobSession?.url) {
-          track('InitiateCheckout', { productId: product.id, value: totals.dueToday, currency: totals.currency }, true);
-          window.location.assign(paymobSession.url);
-          return;
-        }
-      }
-
-      if (paymentDue && isGateway && method?.provider === 'stripe' && typeof window !== 'undefined') {
-        const returnBase = new URL(window.location.href);
-        returnBase.searchParams.delete('payment');
-        returnBase.searchParams.delete('session_id');
-        returnBase.searchParams.delete('order_id');
-        const sep = returnBase.search ? '&' : '?';
-        const baseHref = `${returnBase.origin}${returnBase.pathname}${returnBase.search}`;
-        const successUrl = `${baseHref}${sep}payment=success&order_id=${encodeURIComponent(finalId)}&session_id={CHECKOUT_SESSION_ID}`;
-        const cancelUrl = `${baseHref}${sep}payment=cancelled`;
-        const stripeSession = await createCheckoutSession({
-          scope: 'user',
-          ownerId: effectiveOwnerId || effectiveScope,
-          kind: 'product',
-          productOrderId: finalId,
-          tenantId: effectiveScope,
-          customerEmail: cleanEmail,
-          buyerSessionId: submission.current,
-          planId: product.id,
-          planName: product.name,
-          amount: totals.dueToday,
-          currency: totals.currency,
-          interval: String(quote.frequency || '').toLowerCase().includes('year') ? 'year' : 'once',
-          requestId: finalId,
-          successUrl,
-          cancelUrl,
-        });
-        if (stripeSession?.url) {
-          track('InitiateCheckout', { productId: product.id, value: totals.dueToday, currency: totals.currency }, true);
-          window.location.assign(stripeSession.url);
-          return;
-        }
+      if (gatewayRedirectUrl && typeof window !== 'undefined') {
+        track('InitiateCheckout', { productId: product.id, value: totals.dueToday, currency: totals.currency }, true);
+        window.location.assign(gatewayRedirectUrl);
+        return;
       }
 
       setPersistedSubmission(true);

@@ -146,7 +146,8 @@ export async function createCheckoutSession(params: {
   currency: string;
   interval?: 'month' | 'year' | 'once';
   requestId?: string;
-  kind?: 'product' | 'plan' | 'domain';
+  kind?: 'product' | 'plan' | 'addon' | 'wallet_topup' | 'domain';
+  billingOrder?: Record<string, unknown>;
   productOrderId?: string;
   tenantId?: string;
   customerEmail?: string;
@@ -229,5 +230,48 @@ export async function verifyCheckoutSession(sessionId: string, options?: { scope
       }
     }
     throw error;
+  }
+}
+
+/** Consumes Stripe return query parameters from `window.location` and verifies the session idempotently. */
+export async function consumeAndVerifyStripeReturn(options?: { scope?: PaymentScope; ownerId?: string }): Promise<{
+  handled: boolean;
+  paid: boolean;
+  cancelled: boolean;
+  sessionId?: string;
+  error?: string;
+}> {
+  if (typeof window === 'undefined') return { handled: false, paid: false, cancelled: false };
+  const params = new URLSearchParams(window.location.search);
+  const payment = params.get('payment') || '';
+  const provider = params.get('provider') || '';
+  const sessionId = params.get('session_id') || '';
+  if (provider === 'paymob' || payment === 'paymob_return' || /^pmob_/.test(sessionId)) {
+    return { handled: false, paid: false, cancelled: false };
+  }
+  const isStripeSuccess = payment === 'success' && /^cs_[A-Za-z0-9_]+$/.test(sessionId);
+  const isStripeCancelled = payment === 'cancelled' && (provider === 'stripe' || !provider);
+  if (!isStripeSuccess && !isStripeCancelled) {
+    return { handled: false, paid: false, cancelled: false };
+  }
+  const cleanUrl = new URL(window.location.href);
+  cleanUrl.searchParams.delete('payment');
+  cleanUrl.searchParams.delete('provider');
+  cleanUrl.searchParams.delete('session_id');
+  window.history.replaceState({}, '', `${cleanUrl.pathname}${cleanUrl.search}${cleanUrl.hash}`);
+  if (isStripeCancelled) {
+    return { handled: true, paid: false, cancelled: true, sessionId };
+  }
+  try {
+    const res = await verifyCheckoutSession(sessionId, options);
+    return { handled: true, paid: Boolean(res?.success || res?.paid), cancelled: false, sessionId };
+  } catch (err) {
+    return {
+      handled: true,
+      paid: false,
+      cancelled: false,
+      sessionId,
+      error: err instanceof Error ? err.message : 'Could not verify Stripe payment.',
+    };
   }
 }

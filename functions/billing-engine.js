@@ -1228,8 +1228,9 @@ export async function executeBilling(operation, data, actor, base, now = new Dat
 
     async requestAddon() {
       const providerId = providerOf(actor);
+      const isDynamicUnit = Boolean(data.isDynamic || data.planId === 'dynamic_units');
       let plan;
-      if (data.isDynamic || data.planId === 'dynamic_units') {
+      if (isDynamicUnit) {
         const credits = int(data.credits ?? 100, 'Credits', 1, 10000000);
         const price = Math.max(0, Math.round(Number(data.price ?? data.totalAmount ?? 0) * 100) / 100);
         const currency = CURRENCIES.includes(data.currency) ? data.currency : 'USD';
@@ -1244,7 +1245,8 @@ export async function executeBilling(operation, data, actor, base, now = new Dat
       }
       const { sub } = await freshen(actor.uid);
       if (!isLive(sub, now)) fail('failed-precondition', 'An active subscription is required before requesting add-ons.');
-      return { request: await createRequest(providerId, plan, 'addon', int(data.quantity ?? 1, 'Quantity', 1, 100)) };
+      const effectiveQty = isDynamicUnit ? 1 : int(data.quantity ?? 1, 'Quantity', 1, 100);
+      return { request: await createRequest(providerId, plan, 'addon', effectiveQty) };
     },
 
     async cancelRequest() {
@@ -1702,6 +1704,138 @@ export async function executeBilling(operation, data, actor, base, now = new Dat
       for (const entry of report.entries) { const who = names[entry.subscriber_id]; if (who) entry.account_name = who.name || who.email; }
       return { scope: platform ? 'platform' : 'provider', ...report };
     },
+
+    /**
+     * Read-only preflight check before initiating an external payment gateway session (Paymob / Stripe).
+     * Ensures plan/add-on/coupon/subscription eligibility without creating a `pending` manual-review request.
+     */
+    async validateGatewayCheckout() {
+      const providerId = providerOf(actor);
+      const checkoutType = data.checkoutType === 'wallet_topup' ? 'wallet_topup' : data.checkoutType === 'addon' ? 'addon' : 'plan';
+
+      if (checkoutType === 'wallet_topup') {
+        const rawVal = amount(data.amount, 'Top-up amount');
+        const sourceCurr = typeof data.currency === 'string' && data.currency.trim() ? data.currency.trim().toUpperCase() : WALLET_CURRENCY;
+        const value = sourceCurr === WALLET_CURRENCY ? rawVal : convertMoney(rawVal, sourceCurr, WALLET_CURRENCY);
+        if (value < 1 || value > 100000) fail('invalid-argument', 'Top-up amount must be between 1 and 100,000.');
+        const resolved = data.couponCode ? await resolveCoupon(providerId, data.couponCode, 'wallet_topup', value, WALLET_CURRENCY) : null;
+        const payable = resolved ? resolved.payable : value;
+        const creditAmount = round2(value + (resolved?.bonus ?? 0));
+        return { valid: true, providerId, checkoutType, payable, creditAmount, currency: WALLET_CURRENCY };
+      }
+
+      if (checkoutType === 'addon') {
+        const isDynamicUnit = Boolean(data.isDynamic || data.planId === 'dynamic_units');
+        let plan;
+        if (isDynamicUnit) {
+          const credits = int(data.credits ?? 100, 'Credits', 1, 10000000);
+          const price = Math.max(0, Math.round(Number(data.price ?? data.totalAmount ?? 0) * 100) / 100);
+          const currency = CURRENCIES.includes(data.currency) ? data.currency : 'USD';
+          plan = {
+            id: 'dynamic_units', ownerId: providerId, kind: 'addon',
+            name: { en: `${credits.toLocaleString()} Custom Credits`, ar: `${credits.toLocaleString()} رصيد مخصص` },
+            price, currency, billingType: 'once', credits, addonType: 'credits', status: 'active', visible: true, tools: [],
+          };
+        } else {
+          plan = await providerPlan(data.planId, providerId, ['addon']);
+          if (!plan.visible) fail('not-found', 'This add-on is not available.');
+        }
+        const sub = await store.get(`billingSubscriptions/${actor.uid}`);
+        if (!isLive(sub, now)) fail('failed-precondition', 'An active subscription is required before requesting add-ons.');
+        const quantity = isDynamicUnit ? 1 : int(data.quantity ?? 1, 'Quantity', 1, 100);
+        const totalAmount = Math.round((plan.price * quantity) * 100) / 100;
+        const resolved = data.couponCode ? await resolveCoupon(providerId, data.couponCode, 'addon', totalAmount, plan.currency) : null;
+        return { valid: true, providerId, checkoutType, payable: resolved ? resolved.payable : totalAmount, currency: plan.currency };
+      }
+
+      const plan = await providerPlan(data.planId, providerId, ['plan']);
+      if (!plan.visible) fail('not-found', 'This plan is not available.');
+      const sub = await store.get(`billingSubscriptions/${actor.uid}`);
+      const renewal = isLive(sub, now) && sub.planId === plan.id;
+      if (renewal && !sub.currentPeriodEnd) fail('failed-precondition', 'Lifetime plans never expire and do not need renewal.');
+      await enforceClientLimit(providerId, actor.uid);
+      const rawAddons = Array.isArray(data.addons) ? data.addons : [];
+      if (rawAddons.length > 50) fail('invalid-argument', 'Choose up to 50 add-ons.');
+      let addonsTotal = 0;
+      for (const item of rawAddons) {
+        const qty = int(item?.qty ?? 1, 'Add-on quantity', 1, 1000);
+        if (item?.type === 'unit') {
+          int(item.credits, 'AI credits', 1, 10000000);
+          addonsTotal += amount(item.price, 'Price');
+        } else {
+          const addon = await providerPlan(item?.id, providerId, ['addon']);
+          if (!addon.visible || addon.currency !== plan.currency) fail('invalid-argument', 'Choose a compatible add-on.');
+          addonsTotal += addon.price * qty;
+        }
+      }
+      const totalAmount = Math.round((plan.price + addonsTotal) * 100) / 100;
+      const resolved = data.couponCode ? await resolveCoupon(providerId, data.couponCode, 'plan', totalAmount, plan.currency) : null;
+      return { valid: true, providerId, checkoutType: renewal ? 'renewal' : 'plan', payable: resolved ? resolved.payable : totalAmount, currency: plan.currency };
+    },
+
+    /**
+     * Server-only fulfillment invoked after cryptographic verification of Paymob or Stripe payment.
+     * Creates an immediately approved billing request + paid invoice and activates the plan, add-on, or wallet top-up.
+     */
+    async fulfillGatewayBilling() {
+      const checkoutType = data.checkoutType === 'wallet_topup' ? 'wallet_topup' : data.checkoutType === 'addon' ? 'addon' : 'plan';
+      const cleanSession = String(data.sessionId || '').replace(/[^\w-]/g, '').slice(0, 64);
+      if (checkoutType === 'wallet_topup') {
+        const providerId = providerOf(actor);
+        const rawVal = amount(data.amount, 'Top-up amount');
+        const sourceCurr = typeof data.currency === 'string' && data.currency.trim() ? data.currency.trim().toUpperCase() : WALLET_CURRENCY;
+        const value = sourceCurr === WALLET_CURRENCY ? rawVal : convertMoney(rawVal, sourceCurr, WALLET_CURRENCY);
+        const key = cleanSession || (typeof data.idempotencyKey === 'string' && /^[\w-]{8,80}$/.test(data.idempotencyKey) ? data.idempotencyKey : store.id());
+        const id = data.requestId && /^[\w-]{1,150}$/.test(data.requestId) ? data.requestId : `topup_${actor.uid}_${key}`;
+        const existing = await store.get(`billingRequests/${id}`);
+        if (existing && existing.status === 'approved') return { request: existing, duplicate: true };
+
+        let resolved = null;
+        if (data.couponCode) {
+          try {
+            resolved = await resolveCoupon(providerId, data.couponCode, 'wallet_topup', value, WALLET_CURRENCY);
+          } catch {
+            resolved = null;
+          }
+        }
+        const payable = resolved ? resolved.payable : value;
+        const creditAmount = round2(value + (resolved?.bonus ?? 0));
+        const paymentMethod = text(data.paymentMethod, 60, 'Payment method') || 'Gateway';
+        const label = `${value.toFixed(2)} ${WALLET_CURRENCY}`;
+        const invoiceId = existing?.invoiceId || `inv_${id}`;
+        const invoiceNumber = existing?.invoiceNumber || formatInvoiceNumber(id, now);
+        const request = {
+          ...(existing || {}),
+          id, invoiceId, invoiceNumber, requesterId: actor.uid, requesterRole: actor.role, requesterName: actor.name ?? '', requesterEmail: actor.email ?? '',
+          providerId, type: 'wallet_topup', planId: 'wallet_topup', quantity: 1,
+          plan: { name: { en: `Wallet top-up · ${label}`, ar: `شحن المحفظة · ${label}` }, kind: 'addon', price: payable, currency: WALLET_CURRENCY, credits: 0, billingType: 'once', addonType: null },
+          mainPlanPrice: 0, addons: [], subtotal: value, discount: resolved?.discount ?? 0, totalAmount: payable, total: payable, creditAmount, currency: WALLET_CURRENCY,
+          coupon: resolved ? redeemCoupon(resolved, id) : (existing?.coupon ?? null),
+          note: text(data.note, 300, 'Note'), status: 'approved', createdAt: existing?.createdAt || now,
+          decidedAt: now, decidedBy: text(data.decidedBy, 60, 'Decided by') || 'gateway-webhook',
+          paymentMethod, paymentType: 'gateway',
+          receiptUrl: '', receiptPath: '', imageUrl: '', fileUrl: '', receiptName: '', fileName: '',
+          transactionId: text(data.transactionId, 120, 'Transaction ID') || cleanSession || id,
+          ...(data.gatewayPayment && typeof data.gatewayPayment === 'object' ? { gatewayPayment: data.gatewayPayment } : {}),
+          ...(data.paymobSessionId ? { paymobSessionId: String(data.paymobSessionId) } : {}),
+          ...(data.stripeSessionId ? { stripeSessionId: String(data.stripeSessionId) } : {}),
+        };
+        await creditCommunicationWallet(actor, providerId, creditAmount, WALLET_CURRENCY, `Wallet top-up (${paymentMethod})`, {
+          ref_type: 'gateway_payment',
+          ref_id: id,
+          payment_method: paymentMethod,
+          ...(request.coupon?.code ? { coupon_code: request.coupon.code } : {}),
+        });
+        writeRequest(id, request);
+        await writeInvoiceForRequest(request, 'paid');
+        return { request };
+      }
+
+      if (checkoutType === 'addon') {
+        return handlers.requestAddon();
+      }
+      return handlers.requestPlan();
+    },
   };
 
   // Preserve the existing approval queue and atomically expose add-on requests
@@ -1748,8 +1882,20 @@ export async function executeBilling(operation, data, actor, base, now = new Dat
     const totalAmount = Math.round((type === 'addon' && !cleanedAddons.length ? (plan.price * quantity) : (mainPlanPrice + addonsTotal)) * 100) / 100;
 
     const isWalletPayment = data.paymentType === 'wallet';
+    const isGatewayInstant = data.paymentType === 'gateway' && data.gatewayPaid === true;
+    const cleanGatewaySession = isGatewayInstant && typeof data.sessionId === 'string'
+      ? data.sessionId.replace(/[^\w-]/g, '').slice(0, 80)
+      : '';
+    const explicitGatewayId = isGatewayInstant && typeof data.requestId === 'string' && /^[\w-]{1,150}$/.test(data.requestId)
+      ? data.requestId
+      : (cleanGatewaySession ? `gtw_${cleanGatewaySession}` : '');
+    if (isGatewayInstant && explicitGatewayId) {
+      const existingApproved = await store.get(`billingRequests/${explicitGatewayId}`);
+      if (existingApproved && existingApproved.status === 'approved') return existingApproved;
+    }
+
     const open = (await store.query('billingRequests', 'requesterId', actor.uid)).find(item => item.status === 'pending' && item.planId === plan.id);
-    if (open && !isWalletPayment) {
+    if (open && !isWalletPayment && !isGatewayInstant) {
       if (receiptUrl || data.transactionId) {
         const updated = {
           ...open,
@@ -1774,18 +1920,77 @@ export async function executeBilling(operation, data, actor, base, now = new Dat
       }
       fail('already-exists', 'You already have a pending request for this item.');
     }
-    if (open && isWalletPayment) {
+    if (open && (isWalletPayment || (isGatewayInstant && open.id !== explicitGatewayId))) {
       await releaseCoupon(open);
-      const superseded = { ...open, status: 'cancelled', decidedAt: now, decidedBy: actor.uid, reason: 'Paid from Wallet instead' };
+      const superseded = {
+        ...open,
+        status: 'cancelled',
+        decidedAt: now,
+        decidedBy: actor.uid,
+        reason: isWalletPayment ? 'Paid from Wallet instead' : 'Paid via Gateway instead',
+      };
       writeRequest(open.id, superseded);
       await writeInvoiceForRequest(superseded, 'cancelled');
     }
 
-    const id = store.id();
+    const id = explicitGatewayId || store.id();
     const invoiceId = `inv_${id}`;
     const invoiceNumber = formatInvoiceNumber(id, now);
-    const resolved = data.couponCode ? await resolveCoupon(providerId, data.couponCode, type === 'addon' ? 'addon' : 'plan', totalAmount, plan.currency) : null;
+    let resolved = null;
+    if (data.couponCode) {
+      try {
+        resolved = await resolveCoupon(providerId, data.couponCode, type === 'addon' ? 'addon' : 'plan', totalAmount, plan.currency);
+      } catch (err) {
+        if (!isGatewayInstant) throw err;
+        resolved = null;
+      }
+    }
     const payable = resolved ? resolved.payable : totalAmount;
+
+    if (isGatewayInstant) {
+      const redeemedCoupon = resolved ? redeemCoupon(resolved, id) : null;
+      const account = { uid: actor.uid, role: actor.role, name: actor.name ?? '', email: actor.email ?? '' };
+      const ref = { refType: 'request', refId: id };
+      if (cleanedAddons.length > 0) {
+        if (type !== 'addon') await startPeriod(account, providerId, plan, 'plan', ref);
+        for (const addon of cleanedAddons) await applyAddonItem(account, providerId, addon, ref);
+      } else if (type === 'addon') {
+        await applyAddon(account, providerId, plan, quantity, ref);
+      } else {
+        await startPeriod(account, providerId, plan, 'plan', ref);
+      }
+      const request = {
+        id, invoiceId, invoiceNumber, requesterId: actor.uid, requesterRole: actor.role, requesterName: actor.name ?? '', requesterEmail: actor.email ?? '',
+        providerId, type, planId: plan.id, quantity,
+        plan: { name: plan.name, kind: plan.kind, price: plan.price, currency: plan.currency, credits: plan.credits, emailCredits: plan.emailCredits ?? 0, billingType: plan.billingType, addonType: plan.addonType ?? null },
+        mainPlanPrice,
+        addons: cleanedAddons,
+        totalAmount: payable,
+        total: payable,
+        ...(resolved ? { subtotal: totalAmount, discount: resolved.discount, coupon: redeemedCoupon } : {}),
+        note: text(data.note, 300, 'Note'),
+        status: 'approved',
+        createdAt: now,
+        decidedAt: now,
+        decidedBy: text(data.decidedBy, 60, 'Decided by') || 'gateway-webhook',
+        paymentMethod: text(data.paymentMethod, 60, 'Payment method') || 'Gateway',
+        paymentType: 'gateway',
+        receiptUrl: '',
+        receiptPath: '',
+        imageUrl: '',
+        fileUrl: '',
+        receiptName: '',
+        fileName: '',
+        transactionId: text(data.transactionId, 120, 'Transaction ID') || cleanGatewaySession || id,
+        ...(data.gatewayPayment && typeof data.gatewayPayment === 'object' ? { gatewayPayment: data.gatewayPayment } : {}),
+        ...(data.paymobSessionId ? { paymobSessionId: String(data.paymobSessionId) } : {}),
+        ...(data.stripeSessionId ? { stripeSessionId: String(data.stripeSessionId) } : {}),
+      };
+      if (redeemedCoupon) await grantCouponBonus(account, providerId, request, ref);
+      writeRequest(id, request);
+      await writeInvoiceForRequest(request, 'paid');
+      return request;
+    }
 
     if (isWalletPayment) {
       const cw = await commWallet(actor.uid, actor.role, providerId);

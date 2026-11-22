@@ -34,7 +34,7 @@ function ProviderConsole({ ownerId, isPlatform, allowedTools, locked }: { ownerI
   const { data: subscribers } = useSubscribers(ownerId);
   const { data: wallets } = useProviderWallets(ownerId);
   const { data: requests } = useRequests('providerId', ownerId);
-  const pending = requests.filter(request => request.status === 'pending').length;
+  const pending = requests.filter(request => request.status === 'pending' && request.paymentType !== 'gateway').length;
   const live = subscribers.filter(sub => isLive(sub));
   const issued = wallets.reduce((sum, wallet) => sum + (wallet.balance ?? 0), 0);
   const currencies = [...new Set(plans.filter(plan => plan.kind === 'plan').map(plan => plan.currency))];

@@ -18,6 +18,8 @@ import {
   type PaymobPaymentOption,
   type PaymobPublicConfig,
 } from '../../backend/paymobService';
+import { createCheckoutSession } from '../../backend/stripeService';
+import { localDemoEnabled } from '../../backend/localDemo';
 import { WalletTopupModal } from './WalletTopupModal';
 import { Modal, Spinner, billingLabel, useAction, useCopy } from './ui';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
@@ -181,6 +183,7 @@ export function CheckoutModal({ plan: initialPlan, quantity = 1, mode = 'plan', 
   const [qty, setQty] = useState(quantity);
   const [note, setNote] = useState('');
   const [txId, setTxId] = useState('');
+  const [walletPhone, setWalletPhone] = useState('');
   const [copied, setCopied] = useState(false);
   
   // Receipt file state
@@ -642,10 +645,19 @@ export function CheckoutModal({ plan: initialPlan, quantity = 1, mode = 'plan', 
       }, c.t('Submitting transfer request…', 'جاري إرسال طلب التحويل…'));
 
     } else {
-      // Submit the gateway choice (redirecting to Paymob Unified Checkout when Paymob is selected).
+      const isPaymobWallet =
+        selectedMethod.provider === 'paymob' &&
+        (selectedMethod.paymentOption === 'wallet' || selectedMethod.id === 'paymob_wallet');
+      if (isPaymobWallet && !localDemoEnabled && walletPhone.replace(/\D/g, '').length < 8) {
+        alert(c.t('Please enter a valid mobile wallet phone number.', 'يرجى إدخال رقم محفظة إلكترونية صالح.'));
+        return;
+      }
+
+      // Initiate the external payment gateway session FIRST without creating a premature `pending` review request.
+      // Fulfillment and plan/credit activation run automatically once payment is cryptographically verified.
       await run('checkout', async () => {
-        const op = isAddon ? 'requestAddon' : 'requestPlan';
-        const res = await billing<{ request: BillingRequest }>(op, {
+        const billingOrder = {
+          checkoutType: isAddon ? ('addon' as const) : ('plan' as const),
           planId: plan.id,
           quantity: isDynamicStandalone ? standaloneDynamicUnits : qty,
           mainPlanPrice,
@@ -657,49 +669,87 @@ export function CheckoutModal({ plan: initialPlan, quantity = 1, mode = 'plan', 
           price: isDynamicStandalone ? dynamicStandaloneCost : finalAmount,
           currency: plan.currency,
           paymentMethod: selectedMethod.name,
-          paymentType: 'gateway',
-          transactionId: txId.trim(),
           couponCode: couponState.status === 'valid' ? couponState.coupon?.code : undefined,
+        };
+
+        if (!localDemoEnabled && finalAmount > 0 && typeof window !== 'undefined') {
+          const returnBase = new URL(window.location.href);
+          stripPaymobReturnParams(returnBase);
+          returnBase.searchParams.delete('payment');
+          returnBase.searchParams.delete('provider');
+          returnBase.searchParams.delete('session_id');
+          const baseHref = `${returnBase.origin}${returnBase.pathname}${returnBase.search}`;
+          const sep = returnBase.search ? '&' : '?';
+
+          if (selectedMethod.provider === 'paymob') {
+            const paymobSession = await createPaymobCheckoutSession({
+              scope: paymentScope,
+              ownerId: paymentScope === 'super_admin' ? 'platform' : providerId,
+              kind: isAddon ? 'addon' : 'plan',
+              paymentOption:
+                selectedMethod.paymentOption ||
+                (isPaymobWallet ? 'wallet' : selectedMethod.id === 'paymob_card' ? 'card' : 'any'),
+              billingOrder,
+              planId: plan.id,
+              planName: c.pick(plan.name) || 'Subscription Plan',
+              credits: finalCredits,
+              amount: finalAmount,
+              currency: plan.currency,
+              customerEmail: auth.currentUser?.email || '',
+              customerName: auth.currentUser?.displayName || '',
+              customerPhone: walletPhone.trim(),
+              successUrl: `${baseHref}${sep}payment=paymob_return&provider=paymob`,
+              cancelUrl: `${baseHref}${sep}payment=cancelled&provider=paymob`,
+            });
+            if (!paymobSession?.url) {
+              throw new Error(c.t('Could not start Paymob checkout session.', 'تعذر بدء جلسة الدفع عبر Paymob.'));
+            }
+            window.location.assign(paymobSession.url);
+            return;
+          }
+
+          if (selectedMethod.provider === 'stripe') {
+            const stripeSession = await createCheckoutSession({
+              scope: paymentScope,
+              ownerId: paymentScope === 'super_admin' ? 'platform' : providerId,
+              kind: isAddon ? 'addon' : 'plan',
+              billingOrder,
+              planId: plan.id,
+              planName: c.pick(plan.name) || 'Subscription Plan',
+              credits: finalCredits,
+              amount: finalAmount,
+              currency: plan.currency,
+              interval: plan.billingType === 'annual' ? 'year' : plan.billingType === 'monthly' ? 'month' : 'once',
+              customerEmail: auth.currentUser?.email || '',
+              successUrl: `${baseHref}${sep}payment=success&provider=stripe&session_id={CHECKOUT_SESSION_ID}`,
+              cancelUrl: `${baseHref}${sep}payment=cancelled&provider=stripe`,
+            });
+            if (!stripeSession?.url) {
+              throw new Error(c.t('Could not start Stripe checkout session.', 'تعذر بدء جلسة الدفع عبر Stripe.'));
+            }
+            window.location.assign(stripeSession.url);
+            return;
+          }
+        }
+
+        // Local demo mode or zero-amount (100% discount coupon) fallback
+        const op = isAddon ? 'requestAddon' : 'requestPlan';
+        const res = await billing<{ request: BillingRequest }>(op, {
+          ...billingOrder,
+          paymentType: finalAmount <= 0 ? 'wallet' : 'gateway',
           subtotal: totalAmount,
           discount,
           creditAmount: finalCredits,
         });
 
-        if (selectedMethod.provider === 'paymob' && finalAmount > 0 && typeof window !== 'undefined') {
-          const returnBase = new URL(window.location.href);
-          stripPaymobReturnParams(returnBase);
-          const baseHref = `${returnBase.origin}${returnBase.pathname}${returnBase.search}`;
-          const sep = returnBase.search ? '&' : '?';
-          const paymobSession = await createPaymobCheckoutSession({
-            scope: paymentScope,
-            ownerId: paymentScope === 'super_admin' ? 'platform' : providerId,
-            kind: isAddon ? 'addon' : 'plan',
-            paymentOption: selectedMethod.paymentOption || (selectedMethod.id === 'paymob_wallet' ? 'wallet' : selectedMethod.id === 'paymob_card' ? 'card' : 'any'),
-            requestId: res.request?.id,
-            planId: plan.id,
-            planName: c.pick(plan.name) || 'Subscription Plan',
-            credits: finalCredits,
-            amount: finalAmount,
-            currency: plan.currency,
-            customerEmail: auth.currentUser?.email || '',
-            customerName: auth.currentUser?.displayName || '',
-            successUrl: `${baseHref}${sep}payment=paymob_return&provider=paymob&gos_request_id=${encodeURIComponent(res.request?.id || '')}`,
-            cancelUrl: `${baseHref}${sep}payment=cancelled&provider=paymob`,
-          });
-          if (paymobSession?.url) {
-            window.location.assign(paymobSession.url);
-            return;
-          }
-        }
-
         setCompleted({
           type: res.request?.status === 'approved' ? 'gateway' : 'manual',
           message: res.request?.status === 'approved'
-            ? c.t('Your request was approved and your plan or credits are ready.', 'تمت الموافقة وأصبحت الباقة أو الأرصدة جاهزة.')
+            ? c.t('Your subscription and credits are active now.', 'تم تفعيل اشتراكك وأرصدتك الآن بنجاح.')
             : c.t('Your request is pending payment review. Credits are issued after approval.', 'طلبك قيد مراجعة الدفع. يتم إصدار الرصيد بعد الموافقة.'),
         });
         onSuccess(res);
-      }, c.t('Submitting payment request…', 'جارٍ إرسال طلب الدفع…'));
+      });
     }
   };
 
@@ -736,7 +786,7 @@ export function CheckoutModal({ plan: initialPlan, quantity = 1, mode = 'plan', 
                 ? c.t('Pay From Wallet · Instant', 'ادفع من المحفظة · تفعيل فوري')
                 : selectedMethod?.type === 'manual'
                 ? c.t('Submit Transfer & Receipt', 'تأكيد التحويل وإرسال الإيصال')
-                : c.t('Pay Now · Submit Request', 'ادفع الآن · إرسال الطلب')}
+                : c.t('Pay Now · Instant Activation', 'ادفع الآن · تفعيل فوري')}
             </button>
           </div>
         )
@@ -1741,13 +1791,34 @@ export function CheckoutModal({ plan: initialPlan, quantity = 1, mode = 'plan', 
                   </label>
                 </div>
               ) : (
-                /* Gateway payment reference for provider review. */
-                <div style={{ padding: 14, borderRadius: 12, background: 'var(--bl-surface-2)', border: '1px solid var(--bl-border)', display: 'grid', gap: 12, minWidth: 0 }}>
-                  <p>{c.t('Your provider will review this request before issuing credits.', 'سيراجع مزود الخدمة طلبك قبل إصدار الرصيد.')}</p>
-                  <label className="bl-field" style={{ margin: 0, minWidth: 0 }}>
-                    <span>{c.t('Payment reference (optional)', 'مرجع الدفع (اختياري)')}</span>
-                    <input className="bl-input" maxLength={120} value={txId} onChange={event => setTxId(event.target.value)} />
-                  </label>
+                /* Instant automated gateway checkout notice (no manual provider review required). */
+                <div style={{ padding: 14, borderRadius: 12, background: 'var(--bl-surface-2)', border: '1px solid var(--bl-border)', display: 'grid', gap: 10, minWidth: 0 }}>
+                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: 9 }}>
+                    <ShieldCheck size={17} color="var(--bl-success)" style={{ flexShrink: 0, marginTop: 1 }} />
+                    <p style={{ margin: 0, fontSize: 12.5, lineHeight: 1.5, color: 'var(--bl-text)' }}>
+                      {c.t(
+                        'Instant automatic activation: you will complete payment securely on the payment gateway, and your plan or credits will activate immediately once confirmed—no manual review required.',
+                        'تفعيل فوري وتلقائي: ستُكمل عملية الدفع بأمان عبر بوابة الدفع الإلكترونية، وسيتم تفعيل الباقة أو الرصيد تلقائيًا فور تأكيد العملية دون الحاجة لمراجعة يدوية.'
+                      )}
+                    </p>
+                  </div>
+                  {selectedMethod.provider === 'paymob' &&
+                    (selectedMethod.paymentOption === 'wallet' || selectedMethod.id === 'paymob_wallet') && (
+                      <label className="bl-field" style={{ margin: 0, minWidth: 0 }}>
+                        <span style={{ fontSize: 12, fontWeight: 600 }}>
+                          {c.t('Mobile Wallet Number', 'رقم المحفظة الإلكترونية')}
+                        </span>
+                        <input
+                          type="tel"
+                          dir="ltr"
+                          className="bl-input"
+                          maxLength={24}
+                          placeholder="01012345678"
+                          value={walletPhone}
+                          onChange={event => setWalletPhone(event.target.value)}
+                        />
+                      </label>
+                    )}
                 </div>
               )
             )}
