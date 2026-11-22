@@ -1036,6 +1036,9 @@
 :scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .bg-amber-50\/70{
   background-color: color-mix(in srgb, var(--gp-surface, rgb(255 251 235 / 0.7)) 70%, transparent) !important;
 }
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .bg-black{
+  background-color: color-mix(in srgb, var(--gp-surface, rgb(0 0 0 / var(--tw-bg-opacity, 1))) calc(var(--tw-bg-opacity, 1) * 100%), transparent) !important;
+}
 :scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .bg-black\/40{
   background-color: color-mix(in srgb, var(--gp-surface, rgb(0 0 0 / 0.4)) 40%, transparent) !important;
 }

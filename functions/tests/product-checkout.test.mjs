@@ -254,6 +254,54 @@ test('quote pulls active payment methods and brand providers from the product ow
   assert.equal(quote.methods[0].account, '01099998888');
 });
 
+test('Paymob gateway exposes Cards and Mobile Wallets options and submits without manual receipt', async () => {
+  const { call, read, rows } = fixture();
+  rows.set('tenants/shop/paymentMethods/config', {
+    methods: [
+      { id: 'paymob', provider: 'paymob', name: 'Paymob', type: 'gateway', account: 'Paymob Egypt', instructions: '', enabled: true, status: 'Connected' },
+    ],
+  });
+  rows.set('settings/paymobPublic_user_shop', { enabled: true, publicKey: 'egy_pk_test_1', hasCard: true, hasWallet: true, mode: 'sandbox' });
+
+  const quote = await call({ action: 'quote', email: 'buyer@example.com' });
+  assert.deepEqual(
+    quote.methods.map(m => ({ id: m.id, provider: m.provider, paymentOption: m.paymentOption, type: m.type })),
+    [
+      { id: 'paymob_card', provider: 'paymob', paymentOption: 'card', type: 'gateway' },
+      { id: 'paymob_wallet', provider: 'paymob', paymentOption: 'wallet', type: 'gateway' },
+    ]
+  );
+
+  // Mobile wallet option requires valid phone number
+  await assert.rejects(
+    call({
+      action: 'submit',
+      submissionId: randomUUID(),
+      revision: quote.revision,
+      methodId: 'paymob_wallet',
+      name: 'Mariam Ali',
+      email: 'buyer@example.com',
+      phone: '',
+    }),
+    e => e.code === 'invalid-argument'
+  );
+
+  // Card option and Mobile Wallet option succeed without any manual transfer receipt
+  const { id } = await call({
+    action: 'submit',
+    submissionId: randomUUID(),
+    revision: quote.revision,
+    methodId: 'paymob_wallet',
+    name: 'Mariam Ali',
+    email: 'buyer@example.com',
+    phone: '01012345678',
+  });
+  const saved = read('checkoutRequests/' + id);
+  assert.equal(saved.status, 'Pending');
+  assert.equal(saved.receipt, null);
+  assert.equal(saved.method, 'Paymob · Mobile Wallets');
+});
+
 test('approval provisions 12345678 with mustChangePassword:true and sends product access email; rejection sends reason email', async () => {
   const { call, read, rows, form, deps, staff } = fixture();
   read('products/item').config.automations.confirmation = false;

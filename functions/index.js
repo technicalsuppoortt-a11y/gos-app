@@ -9,6 +9,7 @@ import { captureAssetLeadRequest } from './lead-capture.js';
 import { recordPublicAnalytics } from './public-analytics.js';
 import { configurePaymentMethodsRequest } from './payment-methods.js';
 import { stripeGatewayRequest, createStripeWebhookHandler } from './stripe-gateway.js';
+import { createPaymobCallable, createPaymobWebhookHandler } from './paymob-gateway.js';
 import { billingServiceRequest, executeUsage, toHttpsError } from './billing-service.js';
 import { chargeAction, meteredGosRequest } from './gos-metering.js';
 import { copilotAction } from './credit-actions.js';
@@ -74,11 +75,15 @@ export const adminDashboardStatus = onCall({ cors: true, invoker: 'public', time
 export const configurePaymentMethods = onCall({ cors: true, invoker: 'public' }, request => configurePaymentMethodsRequest(request, { actor, db }));
 // Stripe (multi-tenant): credential test, Checkout Session creation and return verification.
 export const stripeGateway = onCall({ cors: true, invoker: 'public', timeoutSeconds: 30 }, request => stripeGatewayRequest(request, { actor, db }));
+// Paymob (multi-tenant): credential test, Unified Checkout intention/payment-key creation and return verification.
+export const paymobGateway = createPaymobCallable({ actor, db });
 // Multi-tier Domain Provider & Registrar System (Superadmin root provider, Admin delegated scope, User domain hub).
 export const domainProvider = onCall({ cors: true, invoker: 'public', timeoutSeconds: 60 }, request => domainProviderRequest(request, { actor, db }));
 export const domainProviderApi = onRequest({ cors: true, timeoutSeconds: 60 }, (req, res) => createDomainProviderApiHandler({ db, auth, actor })(req, res));
 // Register in Stripe Dashboard → Developers → Webhooks (event: checkout.session.completed).
 export const stripeWebhook = onRequest({ timeoutSeconds: 30 }, (req, res) => createStripeWebhookHandler({ db })(req, res));
+// Register in Paymob Dashboard → Payment Integrations → Transaction Processed / Response Callback.
+export const paymobWebhook = onRequest({ cors: true, invoker: 'public', timeoutSeconds: 30 }, (req, res) => createPaymobWebhookHandler({ db })(req, res));
 export const billingService = onCall({ cors: true, invoker: 'public' }, request => billingServiceRequest(request, { actor, db }));
 export const marketingTrackingConfiguration = onCall({ cors: true, invoker: 'public' }, request => marketingTrackingConfigurationRequest(request, { actor, db }));
 export const productReviews = onCall({ cors: true, invoker: 'public' }, request => productReviewsRequest(request, { db, workspace }));

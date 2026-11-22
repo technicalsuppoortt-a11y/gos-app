@@ -9,7 +9,15 @@ import {
   ChevronDown, ChevronUp, Sparkles, Coins, Tag, Wallet, Zap
 } from 'lucide-react';
 import { billing, convertMoney, DEFAULT_BILLING_SETTINGS, useBillingIdentity, useBillingSettings, useCommunicationWallet, usePlans, WALLET_CURRENCY, type AddonItem, type BillingPlan, type BillingCoupon, type BillingRequest } from '../../backend/billing';
-import { usePaymentMethods } from '../../backend/paymentMethods';
+import { usePaymentMethods, type PaymentMethod } from '../../backend/paymentMethods';
+import {
+  createPaymobCheckoutSession,
+  expandPaymobCheckoutOptions,
+  readPaymobPublicConfig,
+  stripPaymobReturnParams,
+  type PaymobPaymentOption,
+  type PaymobPublicConfig,
+} from '../../backend/paymobService';
 import { WalletTopupModal } from './WalletTopupModal';
 import { Modal, Spinner, billingLabel, useAction, useCopy } from './ui';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
@@ -69,6 +77,14 @@ export function CheckoutModal({ plan: initialPlan, quantity = 1, mode = 'plan', 
     scope: paymentScope,
     targetId: paymentScope === 'super_admin' ? 'platform' : providerId,
   });
+  const [paymobPublic, setPaymobPublic] = useState<PaymobPublicConfig | null>(null);
+  useEffect(() => {
+    let active = true;
+    void readPaymobPublicConfig(paymentScope, paymentScope === 'super_admin' ? 'platform' : providerId).then(cfg => {
+      if (active) setPaymobPublic(cfg);
+    });
+    return () => { active = false; };
+  }, [paymentScope, providerId]);
   const { data: availablePlans } = usePlans(providerId);
   const { data: billingSettings } = useBillingSettings(providerId);
   const rate = billingSettings?.unitRate || DEFAULT_BILLING_SETTINGS.unitRate;
@@ -181,9 +197,22 @@ export function CheckoutModal({ plan: initialPlan, quantity = 1, mode = 'plan', 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Filter ONLY active (enabled) payment methods configured in Payment Methods dashboard (/admin/payments-gateways)
-  const activeMethods = useMemo(() => {
-    return (savedMethods || []).filter(m => m && m.enabled);
-  }, [savedMethods]);
+  const activeMethods = useMemo<(PaymentMethod & { paymentOption?: PaymobPaymentOption })[]>(() => {
+    return (savedMethods || [])
+      .filter(m => m && m.enabled)
+      .flatMap(m => {
+        if (m.type === 'gateway' && m.provider === 'paymob') {
+          return expandPaymobCheckoutOptions(m.name, paymobPublic).map(opt => ({
+            ...m,
+            id: opt.id,
+            provider: 'paymob',
+            name: opt.name,
+            paymentOption: opt.paymentOption,
+          }));
+        }
+        return [m];
+      });
+  }, [savedMethods, paymobPublic]);
 
   // Set selected payment method
   const selectedMethod = useMemo(() => {
@@ -613,7 +642,7 @@ export function CheckoutModal({ plan: initialPlan, quantity = 1, mode = 'plan', 
       }, c.t('Submitting transfer request…', 'جاري إرسال طلب التحويل…'));
 
     } else {
-      // Submit the gateway choice for provider review.
+      // Submit the gateway choice (redirecting to Paymob Unified Checkout when Paymob is selected).
       await run('checkout', async () => {
         const op = isAddon ? 'requestAddon' : 'requestPlan';
         const res = await billing<{ request: BillingRequest }>(op, {
@@ -635,6 +664,33 @@ export function CheckoutModal({ plan: initialPlan, quantity = 1, mode = 'plan', 
           discount,
           creditAmount: finalCredits,
         });
+
+        if (selectedMethod.provider === 'paymob' && finalAmount > 0 && typeof window !== 'undefined') {
+          const returnBase = new URL(window.location.href);
+          stripPaymobReturnParams(returnBase);
+          const baseHref = `${returnBase.origin}${returnBase.pathname}${returnBase.search}`;
+          const sep = returnBase.search ? '&' : '?';
+          const paymobSession = await createPaymobCheckoutSession({
+            scope: paymentScope,
+            ownerId: paymentScope === 'super_admin' ? 'platform' : providerId,
+            kind: isAddon ? 'addon' : 'plan',
+            paymentOption: selectedMethod.paymentOption || (selectedMethod.id === 'paymob_wallet' ? 'wallet' : selectedMethod.id === 'paymob_card' ? 'card' : 'any'),
+            requestId: res.request?.id,
+            planId: plan.id,
+            planName: c.pick(plan.name) || 'Subscription Plan',
+            credits: finalCredits,
+            amount: finalAmount,
+            currency: plan.currency,
+            customerEmail: auth.currentUser?.email || '',
+            customerName: auth.currentUser?.displayName || '',
+            successUrl: `${baseHref}${sep}payment=paymob_return&provider=paymob&gos_request_id=${encodeURIComponent(res.request?.id || '')}`,
+            cancelUrl: `${baseHref}${sep}payment=cancelled&provider=paymob`,
+          });
+          if (paymobSession?.url) {
+            window.location.assign(paymobSession.url);
+            return;
+          }
+        }
 
         setCompleted({
           type: res.request?.status === 'approved' ? 'gateway' : 'manual',

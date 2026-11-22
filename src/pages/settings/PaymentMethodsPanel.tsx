@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import { paymentProviders, usePaymentMethods, type PaymentMethod, type GatewayConfiguration, type PaymentScope } from '../../backend/paymentMethods';
 import { stripeWebhookUrl, syncStripePublicConfig, testStripeConnection } from '../../backend/stripeService';
+import { paymobWebhookUrl, syncPaymobPublicConfig, testPaymobConnection } from '../../backend/paymobService';
 import { gatewayFields, paytabsRegions, type GatewayProvider } from '../../../functions/payment-gateway-model.js';
 import type { RootState } from '../../store';
 import { translateText as t, useUILanguage } from '../../i18n/display';
@@ -76,16 +77,20 @@ const gatewayGuides: Record<string, GatewayGuideInfo> = {
     urlText: 'Open Paymob Dashboard ↗',
     steps: [
       {
-        en: 'Log in to Paymob Portal and navigate to Settings > Account Info to find your Public Key and Secret Key.',
-        ar: 'سجل الدخول إلى Paymob وافتح Settings > Account Info لنسخ Public Key و Secret Key.',
+        en: 'Log in to Paymob Portal and navigate to Settings > Account Info to copy your Public Key (egy_pk_...) and Secret Key (egy_sk_...).',
+        ar: 'سجّل الدخول إلى لوحة Paymob وانتقل إلى Settings > Account Info لنسخ المفتاح العام Public Key والمفتاح السري Secret Key.',
       },
       {
-        en: 'Navigate to Developers > Payment Integrations to copy your Card/Wallet Integration IDs (comma-separated).',
-        ar: 'انتقل إلى Payment Integrations لنسخ معرفات التكامل Integration IDs مفصولة بفواصل.',
+        en: 'Open Developers > Payment Integrations and enter your Card Integration ID, Mobile Wallet Integration ID, or comma-separated Integration IDs.',
+        ar: 'افتح Developers > Payment Integrations وأدخل معرف تكامل البطاقات Card Integration ID أو المحافظ الإلكترونية Mobile Wallet Integration ID.',
       },
       {
-        en: 'Copy your HMAC Secret from Settings to verify incoming transaction callbacks.',
-        ar: 'انسخ مفتاح HMAC Secret من صفحة الإعدادات للتحقق من إشعارات الدفع.',
+        en: 'Add the Transaction Callback URL shown below to your integration callbacks, and copy your HMAC Secret from Settings > Account Info.',
+        ar: 'أضف رابط إشعارات المعاملات الموضح بالأسفل في إعدادات التكامل، وانسخ مفتاح HMAC Secret من صفحة الإعدادات.',
+      },
+      {
+        en: 'Select Sandbox for test keys or Live for production keys, then click "Test Connection" to verify.',
+        ar: 'اختر وضع الاختبار Sandbox لمفاتيح التجربة أو Live للتشغيل الفعلي، ثم اضغط "اختبار الاتصال" للتحقق.',
       },
     ],
   },
@@ -204,7 +209,7 @@ const gateways = [
   { ids: ['stripe'], name: 'Stripe', description: 'International payments via Visa & Mastercard', comingSoon: false },
   { ids: ['paddle'], name: 'Paddle', description: 'Subscriptions and global payments', comingSoon: true },
   { ids: ['fawry', 'kashier'], name: 'Fawry / Kashier', description: 'Local Egyptian payments and cards', comingSoon: true },
-  { ids: ['paymob'], name: 'Paymob', description: 'Cards and mobile wallets in Egypt and the Middle East', comingSoon: true },
+  { ids: ['paymob'], name: 'Paymob', description: 'Cards and mobile wallets in Egypt and the Middle East', comingSoon: false },
 ];
 const comingSoonProviders = new Set(gateways.filter(gateway => gateway.comingSoon).flatMap(gateway => gateway.ids));
 const brandAssets: Record<string, string> = { vodafone: 'vodafone.svg', instapay: 'instapay.png', etisalat: 'etisalat.ico', orange: 'orange.svg', stc: 'stc.svg' };
@@ -235,11 +240,23 @@ export function PaymentMethodsPanel({ scope }: { scope?: PaymentScope } = {}) {
       .finally(() => { if (active) setGatewayLoading(false); });
     return () => { active = false; };
   }, [gatewayProvider, getGateway]);
-  const identityChanged = !!gatewayProvider && !!gateway && (credentials.mode !== gateway.mode || gatewayProvider === 'paytabs' && credentials.region !== gateway.region || gatewayFields[gatewayProvider].some(field => !field.secret && !field.link && credentials[field.key]?.trim() !== gateway.fields[field.key]));
+  const identityChanged = !!gatewayProvider && !!gateway && (credentials.mode !== gateway.mode || gatewayProvider === 'paytabs' && credentials.region !== gateway.region || gatewayFields[gatewayProvider].some(field => !field.secret && !field.link && (credentials[field.key]?.trim() ?? '') !== (gateway.fields[field.key] ?? '')));
   const added = methods;
   const enabledCount = methods.filter(method => method.enabled).length;
   const disabled = busy || loading || !admin || !!error;
   const webhookUrl = stripeWebhookUrl(source.scope, source.tenantId);
+  const paymobCallbackUrl = paymobWebhookUrl(source.scope, source.tenantId);
+  function gatewayFieldPlaceholder(provider: GatewayProvider, key: string, link?: boolean) {
+    if (link) return 'https://buy.stripe.com/...';
+    if (provider === 'paymob') {
+      if (key === 'publicKey') return credentials.mode === 'live' ? 'egy_pk_live_...' : 'egy_pk_test_...';
+      if (key === 'cardIntegrationId') return '4512345';
+      if (key === 'walletIntegrationId') return '4512346';
+      if (key === 'integrationIds') return '4512345, 4512346';
+      if (key === 'iframeId') return '845120';
+    }
+    return undefined;
+  }
   function configure(id: string) {
     const provider = paymentProviders.find(([key]) => key === id);
     if (!provider || disabled || comingSoonProviders.has(id)) return;
@@ -269,6 +286,20 @@ export function PaymentMethodsPanel({ scope }: { scope?: PaymentScope } = {}) {
       setTestResult({ ok: false, message: error instanceof Error ? error.message : 'Stripe did not confirm these credentials.' });
     } finally { setTesting(false); }
   }
+  async function runPaymobTest(configuration: Record<string, string>) {
+    const result = await testPaymobConnection({ scope: source.scope, tenantId: source.tenantId, configuration });
+    return result.ok;
+  }
+  async function testPaymob() {
+    if (!draft || gatewayProvider !== 'paymob' || testing) return;
+    setTesting(true); setTestResult(null);
+    try {
+      await runPaymobTest(credentials);
+      setTestResult({ ok: true, message: 'Paymob credentials verified successfully.' });
+    } catch (error) {
+      setTestResult({ ok: false, message: error instanceof Error ? error.message : 'Paymob did not confirm these credentials.' });
+    } finally { setTesting(false); }
+  }
   async function persistGateway() {
     if (!draft || !gatewayProvider || !gateway || busy || gatewayLoading) return;
     setBusy(true); setFailure('');
@@ -290,8 +321,25 @@ export function PaymentMethodsPanel({ scope }: { scope?: PaymentScope } = {}) {
           const rejectedByStripe = /(failed-precondition|permission-denied)$/.test(String((testError as { code?: string })?.code ?? ''));
           verified = rejectedByStripe || credentials.secretKey?.trim() || identityChanged ? false : null;
         }
-        if (verified !== null) await source.setGatewayStatus('stripe', verified ? 'Connected' : 'Configured').catch(() => undefined);
+        if (verified !== null) await source.setGatewayStatus?.('stripe', verified ? 'Connected' : 'Configured')?.catch(() => undefined);
         if (verified === false) showToast.error(t('Stripe settings saved, but the connection could not be verified. Check your keys and mode.'));
+      }
+      if (gatewayProvider === 'paymob') {
+        await syncPaymobPublicConfig(source.scope, source.tenantId, {
+          enabled: draft.enabled,
+          publicKey: credentials.publicKey?.trim() ?? '',
+          hasCard: /^\d+$/.test(credentials.cardIntegrationId?.trim() ?? ''),
+          hasWallet: /^\d+$/.test(credentials.walletIntegrationId?.trim() ?? ''),
+          mode: credentials.mode === 'live' ? 'live' : 'sandbox',
+        }, userId).catch(() => undefined);
+        let verified: boolean | null = null;
+        try { verified = await runPaymobTest(credentials); }
+        catch (testError) {
+          const rejectedByPaymob = /(failed-precondition|permission-denied)$/.test(String((testError as { code?: string })?.code ?? ''));
+          verified = rejectedByPaymob ? false : null;
+        }
+        if (verified !== null) await source.setGatewayStatus?.('paymob', verified ? 'Connected' : 'Configured')?.catch(() => undefined);
+        if (verified === false) showToast.error(t('Paymob settings saved, but the connection could not be verified. Check your keys, mode and integration IDs.'));
       }
       setDraft(null); setCredentials({}); setGateway(null); setSelected(''); setTestResult(null); showToast.success('Payment methods saved');
     } catch (error) { setFailure(error instanceof Error ? error.message : 'Could not save payment methods.'); }
@@ -370,15 +418,15 @@ export function PaymentMethodsPanel({ scope }: { scope?: PaymentScope } = {}) {
           </> : <>
             <Field label={t("Account label")}><input required maxLength={150} value={draft.account} onChange={event => setDraft({ ...draft, account: event.target.value })}/></Field>
             {gatewayProvider && <GatewaySetupGuide provider={gatewayProvider} />}
-            {gatewayProvider === 'stripe' && <Field label={t("Webhook endpoint (checkout.session.completed)")}>
+            {(gatewayProvider === 'stripe' || gatewayProvider === 'paymob') && <Field label={t(gatewayProvider === 'paymob' ? "Transaction callback URL (Processed & Response)" : "Webhook endpoint (checkout.session.completed)")}>
               <div className="st-password-wrap">
-                <input type="text" readOnly spellCheck={false} value={webhookUrl} onFocus={event => event.currentTarget.select()}/>
+                <input type="text" readOnly spellCheck={false} value={gatewayProvider === 'paymob' ? paymobCallbackUrl : webhookUrl} onFocus={event => event.currentTarget.select()}/>
                 <button
                   type="button"
                   className="st-password-toggle"
                   aria-label={t(webhookCopied ? 'Copied' : 'Copy webhook URL')}
                   title={t(webhookCopied ? 'Copied' : 'Copy webhook URL')}
-                  onClick={() => { void navigator.clipboard?.writeText(webhookUrl).then(() => { setWebhookCopied(true); showToast.success(t('Webhook URL copied')); window.setTimeout(() => setWebhookCopied(false), 1800); }); }}
+                  onClick={() => { void navigator.clipboard?.writeText(gatewayProvider === 'paymob' ? paymobCallbackUrl : webhookUrl).then(() => { setWebhookCopied(true); showToast.success(t('Webhook URL copied')); window.setTimeout(() => setWebhookCopied(false), 1800); }); }}
                 >
                   {webhookCopied ? <Check size={15} /> : <Copy size={15} />}
                 </button>
@@ -388,7 +436,7 @@ export function PaymentMethodsPanel({ scope }: { scope?: PaymentScope } = {}) {
             {gateway && gatewayProvider && <>
               <Field label={t("Mode")}><DashboardSelect aria-label={t('Mode')} value={credentials.mode} onChange={event => setCredentials({ ...credentials, mode: event.target.value })}><option value="sandbox">{t('Sandbox')}</option><option value="live">{t('Live')}</option></DashboardSelect></Field>
               {gatewayProvider === 'paytabs' && <Field label={t("PayTabs region")}><DashboardSelect aria-label={t('PayTabs region')} value={credentials.region} onChange={event => setCredentials({ ...credentials, region: event.target.value })}>{paytabsRegions.map(region => <option key={region} value={region}>{t(({ SAU: 'Saudi Arabia', ARE: 'United Arab Emirates', EGY: 'Egypt', OMN: 'Oman', JOR: 'Jordan', IRQ: 'Iraq', KWT: 'Kuwait', GLOBAL: 'Global' })[region] ?? region)}</option>)}</DashboardSelect></Field>}
-              {gatewayFields[gatewayProvider].map(field => <Field key={`${gatewayProvider}-${field.key}`} label={field.optional ? `${field.label} (optional)` : field.label}>
+              {gatewayFields[gatewayProvider].map(field => <Field key={`${gatewayProvider}-${field.key}`} label={t(field.optional ? `${field.label} (optional)` : field.label)}>
                 {field.secret ? (
                   <div className="st-password-wrap">
                     <input 
@@ -418,15 +466,15 @@ export function PaymentMethodsPanel({ scope }: { scope?: PaymentScope } = {}) {
                     spellCheck={false} 
                     required={!field.optional} 
                     maxLength={4096} 
-                    placeholder={field.link ? 'https://buy.stripe.com/...' : undefined}
+                    placeholder={gatewayFieldPlaceholder(gatewayProvider, field.key, field.link)}
                     value={credentials[field.key] ?? ''} 
                     onChange={event => setCredentials({ ...credentials, [field.key]: event.target.value })}
                   />
                 )}
               </Field>)}
-              {gatewayProvider === 'stripe' && <div className="st-preference">
-                <span>{t('Verify these Stripe keys before enabling checkout.')}</span>
-                <button type="button" className="st-secondary small" disabled={testing || busy} onClick={() => void testStripe()}>
+              {(gatewayProvider === 'stripe' || gatewayProvider === 'paymob') && <div className="st-preference">
+                <span>{t(gatewayProvider === 'paymob' ? 'Verify these Paymob credentials before enabling checkout.' : 'Verify these Stripe keys before enabling checkout.')}</span>
+                <button type="button" className="st-secondary small" disabled={testing || busy} onClick={() => void (gatewayProvider === 'paymob' ? testPaymob() : testStripe())}>
                   {testing ? <Loader2 size={13} className="animate-spin" /> : <Plug size={13} />}{t(testing ? 'Testing…' : 'Test Connection')}
                 </button>
               </div>}

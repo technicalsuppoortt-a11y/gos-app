@@ -12,6 +12,14 @@ import {
   type BillingCoupon 
 } from '../../backend/billing';
 import { usePaymentMethods, type PaymentMethod } from '../../backend/paymentMethods';
+import {
+  createPaymobCheckoutSession,
+  expandPaymobCheckoutOptions,
+  readPaymobPublicConfig,
+  stripPaymobReturnParams,
+  type PaymobPaymentOption,
+  type PaymobPublicConfig,
+} from '../../backend/paymobService';
 import { Modal, Spinner, useAction, useCopy } from './ui';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { auth, storage } from '../../backend/firebase';
@@ -68,6 +76,15 @@ export function WalletTopupModal({ initialAmount = 50, currency = WALLET_CURRENC
     scope: paymentScope,
     targetId: paymentScope === 'super_admin' ? 'platform' : providerId,
   });
+  const [paymobPublic, setPaymobPublic] = useState<PaymobPublicConfig | null>(null);
+  const [walletPhone, setWalletPhone] = useState('');
+  useEffect(() => {
+    let active = true;
+    void readPaymobPublicConfig(paymentScope, paymentScope === 'super_admin' ? 'platform' : providerId).then(cfg => {
+      if (active) setPaymobPublic(cfg);
+    });
+    return () => { active = false; };
+  }, [paymentScope, providerId]);
   const uid = identity.uid || auth.currentUser?.uid || null;
   const { data: userRequests } = useRequests('requesterId', uid);
   const pendingTopup = useMemo(() => {
@@ -191,8 +208,21 @@ export function WalletTopupModal({ initialAmount = 50, currency = WALLET_CURRENC
   const totalCreditsReceived = Math.round((subtotal + creditBonus) * 100) / 100;
 
   // Active payment methods
-  const activeMethods = useMemo(() => {
-    const list = (savedMethods || []).filter(m => m && m.enabled);
+  const activeMethods = useMemo<(PaymentMethod & { paymentOption?: PaymobPaymentOption })[]>(() => {
+    const list = (savedMethods || [])
+      .filter(m => m && m.enabled)
+      .flatMap(m => {
+        if (m.type === 'gateway' && m.provider === 'paymob') {
+          return expandPaymobCheckoutOptions(m.name, paymobPublic).map(opt => ({
+            ...m,
+            id: opt.id,
+            provider: 'paymob',
+            name: opt.name,
+            paymentOption: opt.paymentOption,
+          }));
+        }
+        return [m];
+      });
     if (list.length > 0) return list;
     // Default fallback list if none configured yet
     return [
@@ -220,7 +250,7 @@ export function WalletTopupModal({ initialAmount = 50, currency = WALLET_CURRENC
   }, [savedMethods]);
 
   const [selectedMethodId, setSelectedMethodId] = useState<string>('');
-  const selectedMethod = useMemo<PaymentMethod | null>(() => {
+  const selectedMethod = useMemo<(PaymentMethod & { paymentOption?: PaymobPaymentOption }) | null>(() => {
     if (!activeMethods.length) return null;
     return activeMethods.find(m => (m.id || m.provider) === selectedMethodId) || activeMethods[0];
   }, [activeMethods, selectedMethodId]);
@@ -375,6 +405,55 @@ export function WalletTopupModal({ initialAmount = 50, currency = WALLET_CURRENC
         onSuccess?.(res);
       }, c.t('Submitting top-up request…', 'جاري إرسال طلب الشحن…'));
 
+    } else if (selectedMethod.provider === 'paymob' && !localDemoEnabled) {
+      const isPaymobWallet = selectedMethod.paymentOption === 'wallet' || selectedMethod.id === 'paymob_wallet';
+      if (isPaymobWallet && walletPhone.replace(/\D/g, '').length < 8) {
+        alert(c.t('Please enter a valid mobile wallet phone number.', 'يرجى إدخال رقم محفظة إلكترونية صالح.'));
+        return;
+      }
+      await run('topup', async () => {
+        const res = await billing<any>('requestWalletTopup', {
+          amount: totalToPay,
+          currency,
+          paymentMethod: selectedMethod.name,
+          paymentType: 'gateway',
+          gatewayPaid: false,
+          couponCode: couponState.status === 'valid' ? couponState.coupon?.code : undefined,
+          subtotal,
+          discount,
+          creditAmount: totalCreditsReceived,
+          idempotencyKey,
+        });
+        const reqId = res?.request?.id || res?.id || '';
+        if (totalToPay > 0 && typeof window !== 'undefined') {
+          const returnBase = new URL(window.location.href);
+          stripPaymobReturnParams(returnBase);
+          const baseHref = `${returnBase.origin}${returnBase.pathname}${returnBase.search}`;
+          const sep = returnBase.search ? '&' : '?';
+          const paymobSession = await createPaymobCheckoutSession({
+            scope: paymentScope,
+            ownerId: paymentScope === 'super_admin' ? 'platform' : providerId,
+            kind: 'wallet_topup',
+            paymentOption: selectedMethod.paymentOption || (isPaymobWallet ? 'wallet' : selectedMethod.id === 'paymob_card' ? 'card' : 'any'),
+            requestId: reqId,
+            planId: 'wallet_topup',
+            planName: 'Communication Wallet Top-Up',
+            credits: totalCreditsReceived,
+            amount: totalToPay,
+            currency,
+            customerEmail: auth.currentUser?.email || '',
+            customerName: auth.currentUser?.displayName || '',
+            customerPhone: walletPhone.trim(),
+            successUrl: `${baseHref}${sep}payment=paymob_return&provider=paymob&gos_request_id=${encodeURIComponent(reqId)}`,
+            cancelUrl: `${baseHref}${sep}payment=cancelled&provider=paymob`,
+          });
+          if (paymobSession?.url) {
+            window.location.assign(paymobSession.url);
+            return;
+          }
+        }
+        onSuccess?.(res);
+      }, c.t('Redirecting to Paymob Secure Checkout…', 'جاري التوجيه إلى بوابة Paymob الآمنة…'));
     } else {
       // Gateway Flow (Stripe / Instant Card)
       await run('topup', async () => {
@@ -812,6 +891,34 @@ export function WalletTopupModal({ initialAmount = 50, currency = WALLET_CURRENC
                         />
                       </div>
                     </div>
+                  </div>
+                ) : selectedMethod?.provider === 'paymob' ? (
+                  /* Paymob Hosted Unified Checkout Notice */
+                  <div className="space-y-3 pt-3 border-t border-slate-100 dark:border-slate-800">
+                    <div className="p-3 bg-emerald-50/70 dark:bg-emerald-950/30 rounded-xl border border-emerald-200 dark:border-emerald-800 flex items-center gap-2 text-xs text-emerald-800 dark:text-emerald-200">
+                      <ShieldCheck size={16} className="text-emerald-600 shrink-0" />
+                      <span>
+                        {c.t(
+                          'You will complete payment securely on Paymob Unified Checkout. Your wallet updates automatically upon verified callback.',
+                          'ستُكمل عملية الدفع بأمان عبر بوابة Paymob الموحدة، وسيتم شحن محفظتك تلقائيًا فور تأكيد الدفع.'
+                        )}
+                      </span>
+                    </div>
+                    {(selectedMethod?.paymentOption === 'wallet' || selectedMethod?.id === 'paymob_wallet') && (
+                      <div>
+                        <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                          {c.t('Mobile Wallet Number', 'رقم المحفظة الإلكترونية')}
+                        </label>
+                        <input
+                          type="tel"
+                          dir="ltr"
+                          value={walletPhone}
+                          onChange={e => setWalletPhone(e.target.value)}
+                          placeholder="01012345678"
+                          className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-800 dark:text-slate-200 font-mono"
+                        />
+                      </div>
+                    )}
                   </div>
                 ) : (
                   /* Gateway Card Input Simulation */

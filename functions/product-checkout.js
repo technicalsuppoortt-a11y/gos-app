@@ -103,13 +103,56 @@ async function buildQuote(read, db, root, data, now, verifiedEmail) {
         : bareMirrorPaymentSnap?.exists
           ? bareMirrorPaymentSnap.data()
           : (await read(db.doc('settings/paymentMethods'))).data();
-  const methods = (settings?.methods || []).flatMap(method => {
+  const rawMethods = settings?.methods || [];
+  let paymobHasCard = false;
+  let paymobHasWallet = false;
+  if (rawMethods.some(m => m?.enabled && m.type === 'gateway' && (m.provider === 'paymob' || m.id === 'paymob'))) {
+    const ownerKey = bareTenantId || data.tenantId || '';
+    const candidateDocs = [
+      ...(data.tenantId ? [`settings/paymobPublic_user_${data.tenantId}`] : []),
+      ...(bareTenantId && bareTenantId !== data.tenantId ? [`settings/paymobPublic_user_${bareTenantId}`] : []),
+      ...(ownerKey ? [`paymentGatewayConfigurations/user_${ownerKey}_paymob`, `workspaces/${ownerKey}/privateIntegrations/paymentGateway_paymob`] : []),
+      'paymentGatewayConfigurations/paymob',
+    ];
+    for (const path of candidateDocs) {
+      const snap = await read(db.doc(path));
+      const d = snap?.data?.();
+      if (!d) continue;
+      if (typeof d.hasCard === 'boolean' || typeof d.hasWallet === 'boolean') {
+        paymobHasCard = Boolean(d.hasCard);
+        paymobHasWallet = Boolean(d.hasWallet);
+        break;
+      }
+      if (d.credentials && typeof d.credentials === 'object') {
+        paymobHasCard = /^\d+$/.test(String(d.credentials.cardIntegrationId ?? '').trim());
+        paymobHasWallet = /^\d+$/.test(String(d.credentials.walletIntegrationId ?? '').trim());
+        break;
+      }
+    }
+  }
+  const methods = rawMethods.flatMap(method => {
     if (!method?.enabled || !validId(method.id) || !text(method.name, 60)) return [];
     if (method.type === 'manual' && text(method.account, 150)) {
       return [{ id: method.id, provider: method.provider || method.id, type: 'manual', name: method.name, account: method.account, instructions: method.instructions }];
     }
     if (method.type === 'gateway' && (!method.status || method.status === 'Connected' || method.status === 'Configured')) {
-      return [{ id: method.id, provider: method.provider || method.id, type: 'gateway', name: method.name }];
+      const provider = method.provider || method.id;
+      if (provider === 'paymob') {
+        if (paymobHasCard && paymobHasWallet) {
+          return [
+            { id: 'paymob_card', provider: 'paymob', paymentOption: 'card', type: 'gateway', name: 'Paymob · Cards' },
+            { id: 'paymob_wallet', provider: 'paymob', paymentOption: 'wallet', type: 'gateway', name: 'Paymob · Mobile Wallets' },
+          ];
+        }
+        if (paymobHasCard) {
+          return [{ id: 'paymob_card', provider: 'paymob', paymentOption: 'card', type: 'gateway', name: 'Paymob · Cards' }];
+        }
+        if (paymobHasWallet) {
+          return [{ id: 'paymob_wallet', provider: 'paymob', paymentOption: 'wallet', type: 'gateway', name: 'Paymob · Mobile Wallets' }];
+        }
+        return [{ id: method.id, provider: 'paymob', paymentOption: 'any', type: 'gateway', name: method.name }];
+      }
+      return [{ id: method.id, provider, type: 'gateway', name: method.name }];
     }
     return [];
   });
@@ -158,11 +201,17 @@ export async function productCheckoutRequest(request, { db, workspace, bucket, f
     if (existing.status === 'Approved' && existing.customerEmail === customer.email) await fulfillPaidCheckout?.(root, id);
     return { id };
   }
+  const findQuoteMethod = (list, methodId) =>
+    list.find(item => item.id === methodId) ||
+    (String(methodId || '').startsWith('paymob') ? list.find(item => item.provider === 'paymob') : undefined);
   const checkQuote = ({ quote }) => {
     if (data.revision !== quote.revision) throw new HttpsError('aborted', 'Checkout details changed. Review the latest total and payment instructions.');
     if (!quote.guestAllowed && customer.email !== authEmail) throw new HttpsError('failed-precondition', 'Sign in with the email address used at checkout.');
-    const method = quote.totals.dueToday > 0 ? quote.methods.find(method => method.id === data.methodId) : undefined;
+    const method = quote.totals.dueToday > 0 ? findQuoteMethod(quote.methods, data.methodId) : undefined;
     if (quote.totals.dueToday > 0 && !method) throw new HttpsError('failed-precondition', 'Choose an available transfer method.');
+    if (method?.provider === 'paymob' && method?.paymentOption === 'wallet' && customer.phone.replace(/\D/g, '').length < 8) {
+      throw new HttpsError('invalid-argument', 'Enter a valid mobile wallet phone number.');
+    }
     if (quote.requiresTerms && data.acceptedTerms !== true) throw new HttpsError('invalid-argument', 'Accept the terms and privacy policy to continue.');
     const fields = quote.fields.map(field => ({ label: field.label, value: text(data.fields?.[field.id], 500), required: field.required }));
     if (fields.some(field => field.required && !field.value)) throw new HttpsError('invalid-argument', 'Complete the required checkout fields.');
@@ -177,7 +226,7 @@ export async function productCheckoutRequest(request, { db, workspace, bucket, f
   const currentLimit = (await limitRef.get()).data();
   if (currentLimit && at - currentLimit.at < 60000 && currentLimit.count >= 8) throw new HttpsError('resource-exhausted', 'Too many submissions. Please wait a minute and try again.');
   const contactQuery = root.collection('contacts').where('email', '==', customer.email).limit(1);
-  const initialMethod = initial.quote.totals.dueToday > 0 ? initial.quote.methods.find(item => item.id === data.methodId) : null;
+  const initialMethod = initial.quote.totals.dueToday > 0 ? findQuoteMethod(initial.quote.methods, data.methodId) : null;
   const receipt = initial.quote.totals.dueToday > 0 && initialMethod?.type !== 'gateway' ? receiptFile(data.receipt) : null;
   const attachment = receipt && { name: receipt.name, type: receipt.type, path: `checkoutReceipts/${root.id}/${id}/${randomUUID()}` };
   const object = attachment ? bucket.file(attachment.path) : null;

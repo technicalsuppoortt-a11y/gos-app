@@ -26,6 +26,7 @@ import {
   useWallet,
   type WalletLedgerRow,
 } from '../../backend/billing';
+import { consumeAndVerifyPaymobReturn } from '../../backend/paymobService';
 import { showToast } from '../../utils/toast';
 import { LedgerTable } from './ProviderPanels';
 import { WalletTopupModal } from './WalletTopupModal';
@@ -54,6 +55,20 @@ export function SubscriberWalletPanel({ audience }: { audience: 'admin' | 'user'
     commWallet?.updatedAt,
   );
   const { data: creditEntries } = useLedger(identity.uid);
+
+  useEffect(() => {
+    if (!identity.uid) return;
+    void consumeAndVerifyPaymobReturn().then(res => {
+      if (!res.handled) return;
+      if (res.cancelled) {
+        showToast.info(c.t('Paymob wallet top-up was cancelled.', 'تم إلغاء عملية شحن المحفظة عبر Paymob.'));
+      } else if (res.paid) {
+        showToast.success(c.t('Paymob payment verified! Your wallet balance has been updated.', 'تم تأكيد الدفع عبر Paymob وتحديث رصيد محفظتك!'));
+      } else if (res.error) {
+        showToast.error(res.error);
+      }
+    });
+  }, [identity.uid]);
 
   const [topupOpen, setTopupOpen] = useState(false);
   const [topupAmountInput, setTopupAmountInput] = useState('50');

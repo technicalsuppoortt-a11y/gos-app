@@ -301,6 +301,7 @@ export function paymentMethod(row: AnalyticsRow): string {
   if (/insta\s*pay/i.test(method)) return 'InstaPay';
   if (/vodafone/i.test(method)) return 'Vodafone Cash';
   if (/fawry/i.test(method)) return 'Fawry';
+  if (/paymob/i.test(method)) return 'Paymob';
   if (/stripe/i.test(method)) return 'Stripe';
   if (/paypal/i.test(method)) return 'PayPal';
   if (/apple\s*pay/i.test(method)) return 'Apple Pay';

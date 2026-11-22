@@ -112,7 +112,7 @@ function validateGatewayConfiguration(
   const identityChanged =
     previous.mode !== input.mode ||
     (provider === 'paytabs' && previous.region !== input.region) ||
-    gatewayFields[provider].some(f => !f.secret && !f.link && previous[f.key] !== input[f.key]?.trim());
+    gatewayFields[provider].some(f => !f.secret && !f.link && (previous[f.key] ?? '') !== (input[f.key]?.trim() ?? ''));
   for (const field of gatewayFields[provider]) {
     const value = input[field.key];
     if (value !== undefined && (typeof value !== 'string' || value.length > 4096)) {
@@ -144,8 +144,32 @@ function validateGatewayConfiguration(
     }
   }
   if (provider === 'paymob') {
-    if (!/^\d+(\s*,\s*\d+)*$/.test(result.integrationIds)) {
+    const expectedKeyMode = input.mode === 'live' ? 'live' : 'test';
+    const pkMatch = /^(?:[a-z]{3}_)?pk_(test|live)_/i.exec(result.publicKey);
+    if (pkMatch && pkMatch[1].toLowerCase() !== expectedKeyMode) {
+      throw new Error('Public Key must match the selected Paymob mode.');
+    }
+    const skMatch = /^(?:[a-z]{3}_)?sk_(test|live)_/i.exec(result.secretKey);
+    if (skMatch && skMatch[1].toLowerCase() !== expectedKeyMode) {
+      throw new Error('Secret Key must match the selected Paymob mode.');
+    }
+    if (result.cardIntegrationId && !/^\d+$/.test(result.cardIntegrationId)) {
+      throw new Error('Card Integration ID must contain digits only.');
+    }
+    if (result.walletIntegrationId && !/^\d+$/.test(result.walletIntegrationId)) {
+      throw new Error('Mobile Wallet Integration ID must contain digits only.');
+    }
+    if (result.iframeId && !/^\d+$/.test(result.iframeId)) {
+      throw new Error('Iframe ID must contain digits only.');
+    }
+    if (result.integrationIds && !/^\d+(\s*,\s*\d+)*$/.test(result.integrationIds)) {
       throw new Error('Enter numeric Paymob integration IDs separated by commas.');
+    }
+    if (!result.integrationIds && !result.cardIntegrationId && !result.walletIntegrationId) {
+      throw new Error('Enter at least one Paymob Integration ID (Card, Mobile Wallet, or comma-separated IDs).');
+    }
+    if (!result.integrationIds) {
+      result.integrationIds = [result.cardIntegrationId, result.walletIntegrationId].filter(Boolean).join(', ');
     }
   }
   if (provider === 'paddle' && !result.clientToken.startsWith(input.mode === 'live' ? 'live_' : 'test_')) {

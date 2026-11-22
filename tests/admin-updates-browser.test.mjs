@@ -18,7 +18,7 @@ export function onSnapshot(ref,callback){const notify=()=>callback({docs:ref.pat
 export const serverTimestamp=()=>new Date();export const runTransaction=async(_,fn)=>fn({get:async()=>({data:()=>({})}),set:()=>{}});
 `;
 const backendFixture = `
-export const db={};export const storage={};export const auth={currentUser:{uid:'admin'}};export const backendError=e=>e.message;
+export const db={};export const primaryDb=db;export const storage={app:{options:{storageBucket:'fixture'}}};export const auth={currentUser:{uid:'admin'}};export const primaryAuth=auth;export const firebaseConfig={projectId:'gos-app-3c7fb'};export const backendError=e=>e.message;
 window.fixtureMessages=[];window.fixtureRooms=[];window.fixtureRole='ADMIN';
 const stamp=()=>({toDate:()=>new Date(),toMillis:()=>Date.now()});
 const roomKey=recipient=>['admin',recipient].sort().join('~');
@@ -104,16 +104,18 @@ try {
   assert.equal(await page.locator('.pm-brand-logo').count(), 5);
   await page.waitForFunction(() => [...document.querySelectorAll('.pm-brand-logo')].every(img => img.complete && img.naturalWidth > 0));
   await page.screenshot({ path: 'artifacts/admin-updates/payments-light.png' });
-  for (const provider of ['Paddle', 'Fawry / Kashier', 'Paymob']) {
+  for (const provider of ['Paddle', 'Fawry / Kashier']) {
     const card = page.locator('.pm-gateway-card').filter({ has: page.getByText(provider, { exact: true }) });
     assert.ok(await card.getByText('Coming Soon').first().isVisible());
     assert.ok(await card.getByRole('button', { name: 'Coming Soon' }).isDisabled());
   }
-  const stripeCard = page.locator('.pm-gateway-card').filter({ has: page.getByText('Stripe', { exact: true }) });
-  await stripeCard.getByRole('button', { name: 'Configure Account' }).click();
-  await page.getByRole('dialog').waitFor();
-  assert.ok(await page.getByRole('dialog').locator('input[type=password]').count() >= 2);
-  await page.getByRole('dialog').getByRole('button', { name: 'Cancel', exact: true }).click();
+  for (const provider of ['Stripe', 'Paymob']) {
+    const card = page.locator('.pm-gateway-card').filter({ has: page.getByText(provider, { exact: true }) });
+    await card.getByRole('button', { name: 'Configure Account' }).click();
+    await page.getByRole('dialog').waitFor();
+    assert.ok(await page.getByRole('dialog').locator('input[type=password]').count() >= 2);
+    await page.getByRole('dialog').getByRole('button', { name: 'Cancel', exact: true }).click();
+  }
   await page.getByRole('button', { name: 'Open quick support chat' }).click();
   await page.getByRole('dialog', { name: 'Quick Support' }).waitFor();
   await page.getByRole('dialog', { name: 'Quick Support' }).getByRole('button', { name: 'Close dialog', exact: true }).click();

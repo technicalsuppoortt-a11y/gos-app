@@ -4,7 +4,7 @@
   "correctedVariables": 12,
   "referenceSurface": "#ffffff",
   "minimumRatio": 4.5,
-  "utilityOccurrences": 268,
+  "utilityOccurrences": 270,
   "utilities": [
     {
       "file": "src/components/common/PagePlaceholder.tsx",
@@ -683,132 +683,132 @@
     },
     {
       "file": "src/pages/billing/SubscriberWalletPanel.tsx",
-      "line": 249,
-      "utility": "text-slate-400"
-    },
-    {
-      "file": "src/pages/billing/SubscriberWalletPanel.tsx",
-      "line": 258,
-      "utility": "text-slate-400"
-    },
-    {
-      "file": "src/pages/billing/SubscriberWalletPanel.tsx",
       "line": 264,
       "utility": "text-slate-400"
     },
     {
       "file": "src/pages/billing/SubscriberWalletPanel.tsx",
-      "line": 272,
+      "line": 273,
       "utility": "text-slate-400"
     },
     {
       "file": "src/pages/billing/SubscriberWalletPanel.tsx",
-      "line": 275,
+      "line": 279,
+      "utility": "text-slate-400"
+    },
+    {
+      "file": "src/pages/billing/SubscriberWalletPanel.tsx",
+      "line": 287,
+      "utility": "text-slate-400"
+    },
+    {
+      "file": "src/pages/billing/SubscriberWalletPanel.tsx",
+      "line": 290,
       "utility": "text-slate-200"
     },
     {
       "file": "src/pages/billing/SubscriberWalletPanel.tsx",
-      "line": 281,
+      "line": 296,
       "utility": "text-slate-300"
     },
     {
       "file": "src/pages/billing/SubscriberWalletPanel.tsx",
-      "line": 389,
+      "line": 404,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/billing/SubscriberWalletPanel.tsx",
-      "line": 433,
+      "line": 448,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/billing/SubscriberWalletPanel.tsx",
-      "line": 532,
+      "line": 547,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/billing/SubscriberWalletPanel.tsx",
-      "line": 563,
+      "line": 578,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/billing/SubscriberWalletPanel.tsx",
-      "line": 582,
+      "line": 597,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/billing/SubscriberWalletPanel.tsx",
-      "line": 645,
+      "line": 660,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/billing/WalletTopupModal.tsx",
-      "line": 473,
+      "line": 552,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/billing/WalletTopupModal.tsx",
-      "line": 477,
+      "line": 556,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/billing/WalletTopupModal.tsx",
-      "line": 510,
+      "line": 589,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/billing/WalletTopupModal.tsx",
-      "line": 538,
+      "line": 617,
       "utility": "text-slate-400"
     },
     {
       "file": "src/pages/billing/WalletTopupModal.tsx",
-      "line": 561,
+      "line": 640,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/billing/WalletTopupModal.tsx",
-      "line": 630,
+      "line": 709,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/billing/WalletTopupModal.tsx",
-      "line": 653,
+      "line": 732,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/billing/WalletTopupModal.tsx",
-      "line": 687,
+      "line": 766,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/billing/WalletTopupModal.tsx",
-      "line": 739,
+      "line": 818,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/billing/WalletTopupModal.tsx",
-      "line": 753,
+      "line": 832,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/billing/WalletTopupModal.tsx",
-      "line": 777,
+      "line": 856,
       "utility": "text-slate-400"
     },
     {
       "file": "src/pages/billing/WalletTopupModal.tsx",
-      "line": 781,
+      "line": 860,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/billing/WalletTopupModal.tsx",
-      "line": 878,
+      "line": 985,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/billing/WalletTopupModal.tsx",
-      "line": 926,
+      "line": 1033,
       "utility": "text-slate-500"
     },
     {
@@ -1072,88 +1072,98 @@
       "utility": "text-slate-400"
     },
     {
-      "file": "src/pages/Inbox.tsx",
-      "line": 109,
+      "file": "src/pages/inbox/RemoteAttachment.tsx",
+      "line": 27,
       "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/inbox/RemoteAttachment.tsx",
+      "line": 34,
+      "utility": "text-slate-400"
     },
     {
       "file": "src/pages/Inbox.tsx",
       "line": 110,
-      "utility": "text-slate-400"
-    },
-    {
-      "file": "src/pages/Inbox.tsx",
-      "line": 112,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/Inbox.tsx",
-      "line": 1112,
-      "utility": "text-slate-500"
-    },
-    {
-      "file": "src/pages/Inbox.tsx",
-      "line": 1257,
-      "utility": "text-slate-500"
-    },
-    {
-      "file": "src/pages/Inbox.tsx",
-      "line": 1321,
-      "utility": "text-slate-500"
-    },
-    {
-      "file": "src/pages/Inbox.tsx",
-      "line": 1462,
-      "utility": "text-slate-500"
-    },
-    {
-      "file": "src/pages/Inbox.tsx",
-      "line": 1537,
+      "line": 111,
       "utility": "text-slate-400"
     },
     {
       "file": "src/pages/Inbox.tsx",
-      "line": 1555,
-      "utility": "text-slate-400"
-    },
-    {
-      "file": "src/pages/Inbox.tsx",
-      "line": 1712,
-      "utility": "text-slate-400"
-    },
-    {
-      "file": "src/pages/Inbox.tsx",
-      "line": 1743,
-      "utility": "text-slate-400"
-    },
-    {
-      "file": "src/pages/Inbox.tsx",
-      "line": 1775,
-      "utility": "text-slate-400"
-    },
-    {
-      "file": "src/pages/Inbox.tsx",
-      "line": 1854,
-      "utility": "text-slate-400"
-    },
-    {
-      "file": "src/pages/Inbox.tsx",
-      "line": 2006,
+      "line": 113,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/Inbox.tsx",
-      "line": 2035,
+      "line": 1113,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/Inbox.tsx",
-      "line": 2083,
+      "line": 1258,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/Inbox.tsx",
+      "line": 1322,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/Inbox.tsx",
+      "line": 1463,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/Inbox.tsx",
+      "line": 1540,
+      "utility": "text-slate-400"
+    },
+    {
+      "file": "src/pages/Inbox.tsx",
+      "line": 1558,
+      "utility": "text-slate-400"
+    },
+    {
+      "file": "src/pages/Inbox.tsx",
+      "line": 1715,
+      "utility": "text-slate-400"
+    },
+    {
+      "file": "src/pages/Inbox.tsx",
+      "line": 1746,
+      "utility": "text-slate-400"
+    },
+    {
+      "file": "src/pages/Inbox.tsx",
+      "line": 1778,
+      "utility": "text-slate-400"
+    },
+    {
+      "file": "src/pages/Inbox.tsx",
+      "line": 1857,
+      "utility": "text-slate-400"
+    },
+    {
+      "file": "src/pages/Inbox.tsx",
+      "line": 2009,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/Inbox.tsx",
+      "line": 2038,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/Inbox.tsx",
+      "line": 2086,
       "utility": "text-slate-300"
     },
     {
       "file": "src/pages/Inbox.tsx",
-      "line": 2095,
+      "line": 2098,
       "utility": "text-slate-400"
     },
     {

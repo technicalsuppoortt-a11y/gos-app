@@ -1,7 +1,15 @@
 // Shared field definitions only. Credential values are kept in server-only documents.
 export const gatewayFields = {
   paddle: [{ key: 'clientToken', label: 'Client-side Token' }, { key: 'apiKey', label: 'API Key', secret: true }, { key: 'webhookSecret', label: 'Webhook Secret', secret: true }],
-  paymob: [{ key: 'publicKey', label: 'Public Key' }, { key: 'secretKey', label: 'Secret Key', secret: true }, { key: 'integrationIds', label: 'Integration IDs (comma-separated)' }, { key: 'hmacSecret', label: 'HMAC Secret', secret: true }],
+  paymob: [
+    { key: 'publicKey', label: 'Public Key' },
+    { key: 'secretKey', label: 'Secret Key', secret: true },
+    { key: 'cardIntegrationId', label: 'Card Integration ID', optional: true },
+    { key: 'walletIntegrationId', label: 'Mobile Wallet Integration ID', optional: true },
+    { key: 'integrationIds', label: 'Integration IDs (comma-separated)', optional: true },
+    { key: 'iframeId', label: 'Iframe ID', optional: true },
+    { key: 'hmacSecret', label: 'HMAC Secret', secret: true },
+  ],
   // Payment links are public fallback URLs (used if a dynamic Checkout Session cannot be created); they are not merchant identity.
   stripe: [{ key: 'publishableKey', label: 'Publishable Key' }, { key: 'secretKey', label: 'Secret Key', secret: true }, { key: 'webhookSecret', label: 'Webhook Secret', secret: true, optional: true }, { key: 'paymentLink', label: 'Payment Link (monthly fallback)', optional: true, link: true }, { key: 'paymentLinkAnnual', label: 'Payment Link (annual fallback)', optional: true, link: true }],
   paypal: [{ key: 'clientId', label: 'Client ID' }, { key: 'clientSecret', label: 'Client Secret', secret: true }],

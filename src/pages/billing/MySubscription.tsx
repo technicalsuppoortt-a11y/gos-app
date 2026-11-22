@@ -1,7 +1,9 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { AlertCircle, AlertTriangle, CalendarClock, Check, CheckCircle2, Coins, CreditCard, Crown, Eye, FileText, Gem, Gift, History, Inbox, Infinity as InfinityIcon, LayoutGrid, Package, Plus, RefreshCw, Sparkles, Users, Wallet, X, Zap } from 'lucide-react';
 import { billing, DEFAULT_BILLING_SETTINGS, effectiveStatus, entitledTools, isLive, useBillingIdentity, useBillingRefresh, useBillingSettings, useCommunicationWallet, useLedger, usePlans, useRequests, useSubscription, useWallet, WALLET_CURRENCY, type BillingPlan } from '../../backend/billing';
+import { consumeAndVerifyPaymobReturn } from '../../backend/paymobService';
+import { showToast } from '../../utils/toast';
 import { LedgerTable, RequestsPanel } from './ProviderPanels';
 import { CheckoutModal } from './CheckoutModal';
 import { InvoicesPanel } from './InvoicesPanel';
@@ -23,6 +25,19 @@ export function MySubscription({ audience, section, onSectionChange }: {
   const [searchParams, setSearchParams] = useSearchParams();
   const identity = useBillingIdentity();
   useBillingRefresh(!!identity.uid && !identity.loading);
+  useEffect(() => {
+    if (!identity.uid) return;
+    void consumeAndVerifyPaymobReturn().then(res => {
+      if (!res.handled) return;
+      if (res.cancelled) {
+        showToast.info(c.t('Paymob payment was cancelled.', 'تم إلغاء عملية الدفع عبر Paymob.'));
+      } else if (res.paid) {
+        showToast.success(c.t('Paymob payment verified!', 'تم تأكيد الدفع عبر Paymob بنجاح!'));
+      } else if (res.error) {
+        showToast.error(res.error);
+      }
+    });
+  }, [identity.uid]);
   const { data: sub, loading: subLoading } = useSubscription(identity.uid);
   const { data: wallet } = useWallet(identity.uid);
   const { data: commWallet } = useCommunicationWallet(identity.uid);

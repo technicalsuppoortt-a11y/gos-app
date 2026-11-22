@@ -1,4 +1,5 @@
 import { HttpsError } from 'firebase-functions/v2/https';
+import { isPaymobIntentionKey, resolvePaymobBaseUrl, resolvePaymobIntegrationIds } from './paymob-gateway.js';
 
 async function checkGateway(method, config, fetcher) {
   const base = { id: method.provider, name: method.name || method.provider, kind: 'Payment gateway', mode: config?.credentials?.mode ?? 'unknown', status: 'unverified', detail: 'No provider availability probe is configured.', latencyMs: null };
@@ -11,12 +12,40 @@ async function checkGateway(method, config, fetcher) {
   } else if (method.provider === 'paypal' && credentials.clientId && credentials.clientSecret && ['live', 'sandbox'].includes(credentials.mode)) {
     url = `https://api-m.${credentials.mode === 'sandbox' ? 'sandbox.' : ''}paypal.com/v1/oauth2/token`;
     options = { method: 'POST', headers: { Authorization: `Basic ${Buffer.from(`${credentials.clientId}:${credentials.clientSecret}`).toString('base64')}`, 'Content-Type': 'application/x-www-form-urlencoded' }, body: 'grant_type=client_credentials' };
-  } else return { ...base, detail: ['stripe', 'paypal'].includes(method.provider) ? 'Provider credentials or environment are not configured.' : `Saved connection state: ${String(method.status ?? 'Unknown')}. Availability is unverified.` };
+  } else if (method.provider === 'paymob' && credentials.secretKey) {
+    const baseUrl = resolvePaymobBaseUrl(credentials);
+    const integrationIds = resolvePaymobIntegrationIds(credentials, 'any');
+    if (isPaymobIntentionKey(credentials.secretKey) && integrationIds.length > 0) {
+      url = `${baseUrl}/v1/intention/`;
+      options = {
+        method: 'POST',
+        headers: { Authorization: `Token ${credentials.secretKey}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          amount: 100,
+          currency: 'EGP',
+          payment_methods: [integrationIds[0]],
+          items: [{ name: 'Health Check', amount: 100, description: 'Gateway check', quantity: 1 }],
+          billing_data: { apartment: 'NA', first_name: 'Health', last_name: 'Check', street: 'NA', building: 'NA', phone_number: '+201000000000', city: 'Cairo', country: 'EG', email: 'verify@upklick.net', floor: 'NA', state: 'NA', shipping_method: 'NA', postal_code: 'NA' },
+        }),
+      };
+    } else if (!isPaymobIntentionKey(credentials.secretKey)) {
+      url = `${baseUrl}/api/auth/tokens`;
+      options = { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ api_key: credentials.secretKey }) };
+    } else {
+      return { ...base, detail: 'Provider credentials or environment are not configured.' };
+    }
+  } else return { ...base, detail: ['stripe', 'paypal', 'paymob'].includes(method.provider) ? 'Provider credentials or environment are not configured.' : `Saved connection state: ${String(method.status ?? 'Unknown')}. Availability is unverified.` };
   const start = performance.now();
   try {
     const response = await fetcher(url, { ...options, redirect: 'error', signal: AbortSignal.timeout(8000) });
     const payload = await response.json();
-    const verified = response.ok && (method.provider === 'stripe' ? payload?.object === 'balance' : typeof payload?.access_token === 'string');
+    const verified = response.ok && (
+      method.provider === 'stripe'
+        ? payload?.object === 'balance'
+        : method.provider === 'paymob'
+          ? Boolean(payload?.client_secret || typeof payload?.token === 'string')
+          : typeof payload?.access_token === 'string'
+    );
     const mode = method.provider === 'stripe' && typeof payload?.livemode === 'boolean' ? payload.livemode ? 'live' : 'sandbox' : base.mode;
     return { ...base, mode, status: verified ? 'healthy' : 'error', detail: verified ? 'Provider authentication verified. Payment delivery is not tested.' : `Provider check failed (HTTP ${response.status}).`, latencyMs: Math.round(performance.now() - start) };
   } catch { return { ...base, status: 'unreachable', detail: 'The provider check timed out or could not connect.', latencyMs: null }; }
@@ -45,7 +74,7 @@ export async function adminDashboardStatusRequest(request, { actor, db, apiBase,
   })();
   const methods = Array.isArray(paymentDoc.data()?.methods) ? paymentDoc.data().methods.filter(m => m.type === 'gateway') : [];
   const gateways = await Promise.all(methods.map(async method => {
-    if (!['stripe', 'paypal'].includes(method.provider)) return checkGateway(method, null, fetcher);
+    if (!['stripe', 'paypal', 'paymob'].includes(method.provider)) return checkGateway(method, null, fetcher);
     try { return await checkGateway(method, (await db.doc(`paymentGatewayConfigurations/${method.provider}`).get()).data(), fetcher); }
     catch { return { id: method.provider, name: method.name || method.provider, kind: 'Payment gateway', status: 'error', mode: 'unknown', latencyMs: null, detail: 'Gateway configuration could not be read.' }; }
   }));

@@ -42,6 +42,7 @@ test('administrators and superadmins persist sanitized methods with audit identi
 
 const configurations = {
   stripe: { mode: 'sandbox', publishableKey: 'pk_test_example', secretKey: 'sk_test_private', webhookSecret: 'whsec_private' },
+  paymob: { mode: 'sandbox', publicKey: 'egy_pk_test_example', secretKey: 'egy_sk_test_private', cardIntegrationId: '451001', walletIntegrationId: '451002', integrationIds: '451001, 451002', hmacSecret: 'paymob-hmac-private' },
   paypal: { mode: 'sandbox', clientId: 'paypal-client', clientSecret: 'paypal-private' },
   paytabs: { mode: 'live', region: 'EGY', profileId: '1234', serverKey: 'paytabs-private' },
   fawry: { mode: 'sandbox', merchantCode: 'fawry-merchant', secureKey: 'fawry-private' },

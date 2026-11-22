@@ -35,7 +35,7 @@ async function demoRequest(name: string, data: any): Promise<any> {
           else fields[field.key] = data.configuration[field.key] ?? '';
         }
         write(key, { fields, configuredSecrets, mode: data.configuration.mode, region: data.configuration.region ?? 'SAU', gatewayRevision: before.gatewayRevision + 1 });
-        methods = [...previous.methods.filter((method: any) => method.provider !== data.provider), { id: data.provider, provider: data.provider, name: ({ stripe: 'Stripe', paypal: 'PayPal', paytabs: 'PayTabs', fawry: 'Fawry', kashier: 'Kashier' } as any)[data.provider], type: 'gateway', account: data.label, instructions: 'Demo only', enabled: data.enabled, status: 'Configured' }];
+        methods = [...previous.methods.filter((method: any) => method.provider !== data.provider), { id: data.provider, provider: data.provider, name: ({ paddle: 'Paddle', paymob: 'Paymob', stripe: 'Stripe', paypal: 'PayPal', paytabs: 'PayTabs', fawry: 'Fawry', kashier: 'Kashier' } as any)[data.provider], type: 'gateway', account: data.label, instructions: 'Demo only', enabled: data.enabled, status: 'Configured' }];
       }
       const result = { methods, revision: previous.revision + 1 };
       write('doc:settings/paymentMethods', result); return { ...result, canManage: true };

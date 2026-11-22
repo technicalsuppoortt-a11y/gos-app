@@ -8,6 +8,16 @@ import { encodeFirestoreValue } from '../../backend/firestoreCodec';
 import { sha256Hex } from '../../backend/customerPortal';
 import { manualBrandLogos, resolvePaymentProviderKey, usePaymentMethods } from '../../backend/paymentMethods';
 import { createCheckoutSession, verifyCheckoutSession } from '../../backend/stripeService';
+import {
+  createPaymobCheckoutSession,
+  expandPaymobCheckoutOptions,
+  extractPaymobReturnParams,
+  readPaymobPublicConfig,
+  stripPaymobReturnParams,
+  verifyPaymobCheckoutSession,
+  type PaymobPaymentOption,
+  type PaymobPublicConfig,
+} from '../../backend/paymobService';
 import { track } from '../../backend/marketingTracking';
 import { translateText as t, useUILanguage } from '../../i18n/display';
 import { showToast } from '../../utils/toast';
@@ -21,7 +31,7 @@ import './product-checkout.css';
 import { GatewayBrandIcon, hasGatewayBrand } from '../../components/payments/GatewayBrandIcon';
 
 type Totals = ReturnType<typeof checkoutTotals> & { currency: string };
-type Method = { id: string; provider?: string; type?: 'manual' | 'gateway'; name: string; account?: string; instructions?: string };
+type Method = { id: string; provider?: string; paymentOption?: PaymobPaymentOption; type?: 'manual' | 'gateway'; name: string; account?: string; instructions?: string };
 
 function CheckoutMethodIcon({ provider, id, name, isManual }: { provider?: string; id?: string; name: string; isManual: boolean }) {
   const key = resolvePaymentProviderKey(provider, id, name);
@@ -135,6 +145,15 @@ function PreviewCheckout({
 }) {
   const config = product.config!, experience = config.experience ?? defaultExperience();
   const payments = usePaymentMethods({ scope: 'user' }), products = useProducts();
+  const [paymobPublic, setPaymobPublic] = useState<PaymobPublicConfig | null>(null);
+  useEffect(() => {
+    let active = true;
+    if (!payments.tenantId) return;
+    void readPaymobPublicConfig('user', payments.tenantId).then(cfg => {
+      if (active) setPaymobPublic(cfg);
+    });
+    return () => { active = false; };
+  }, [payments.tenantId]);
   const [discounts] = useCloudState<Discount[]>('gos-discounts-v1', []);
   const addOn = experience.checkout.bumpEnabled && products.find(item => item.id === experience.checkout.bumpProductId && item.id !== product.id && item.status === 'Active' && item.config?.currency === config.currency && item.config.billing === 'One-time');
   const bump = addOn ? { id: addOn.id, name: addOn.name, amount: addOn.config!.amount } : null;
@@ -162,6 +181,9 @@ function PreviewCheckout({
           type: 'gateway',
           name: label,
         }));
+      }
+      if (providerKey === 'paymob') {
+        return expandPaymobCheckoutOptions(item.name, paymobPublic);
       }
       return [{
         id: item.id || providerKey || item.name,
@@ -203,9 +225,104 @@ function CheckoutForm({
 
   const [persistedSubmission, setPersistedSubmission] = useState(false);
 
-  // Verify Stripe Checkout return (?payment=success&session_id=cs_...)
+  // Verify Paymob or Stripe Checkout return
   useEffect(() => {
     if (typeof window === 'undefined') return;
+    const paymobReturn = extractPaymobReturnParams(window.location.search);
+    if (paymobReturn) {
+      const cleanUrl = new URL(window.location.href);
+      stripPaymobReturnParams(cleanUrl);
+      window.history.replaceState({}, '', `${cleanUrl.pathname}${cleanUrl.search}${cleanUrl.hash}`);
+      if (paymobReturn.isCancelled) {
+        setSubmitError('Paymob payment was not completed. Please try again or choose another payment method.');
+        return;
+      }
+      if (paymobReturn.isPaymobReturn && paymobReturn.sessionId) {
+        const effectiveScope = (tenantId || submissionScope?.tenantId || '').trim();
+        const effectiveOwnerId = (submissionScope?.ownerId || effectiveScope.replace(/^workspace-/, '')).trim();
+        setBusy(true);
+        verifyPaymobCheckoutSession(paymobReturn.sessionId, paymobReturn.callbackParams, {
+          scope: 'user',
+          ownerId: effectiveOwnerId || effectiveScope,
+        })
+          .then(async res => {
+            if (res?.success || res?.paid) {
+              const finalOrderId = res.productOrderId || paymobReturn.orderId || paymobReturn.sessionId;
+              if (effectiveScope && finalOrderId && !/^pmob_/.test(finalOrderId)) {
+                const targetScopes = Array.from(
+                  new Set([effectiveScope, effectiveOwnerId ? `workspace-${effectiveOwnerId}` : '', effectiveOwnerId].filter(Boolean))
+                );
+                await Promise.allSettled(
+                  targetScopes.map(sc =>
+                    setDoc(
+                      doc(db, 'settings', `checkoutRequests_${sc}`, 'items', finalOrderId),
+                      { status: 'Approved', paymobSessionId: paymobReturn.sessionId, paymentProvider: 'paymob', reviewedAt: new Date().toISOString() },
+                      { merge: true }
+                    )
+                  )
+                );
+                try {
+                  const paidEmail = String(primaryAuth.currentUser?.email || '').trim().toLowerCase();
+                  if (paidEmail) {
+                    const leadSlug = paidEmail.replace(/[^a-z0-9]/g, '').slice(0, 24);
+                    const leadId = `lead-order-${leadSlug || finalOrderId.slice(0, 16)}`;
+                    const paidAmount = Number(product?.config?.amount || 0);
+                    const paidCurrency = String(product?.config?.currency || 'EGP');
+                    const paymobLead = {
+                      id: leadId,
+                      name: paidEmail.split('@')[0] || 'Customer',
+                      email: paidEmail,
+                      source: 'Services',
+                      pipelineId: product?.config?.crmRouting?.pipelineId || 'main',
+                      stage: product?.config?.crmRouting?.stageId || 'PAYMENT_COMPLETED',
+                      lifecycleStage: product?.config?.crmRouting?.stageId || 'PAYMENT_COMPLETED',
+                      owner: 'Unassigned',
+                      value: paidAmount,
+                      currency: paidCurrency,
+                      interest: product?.name || 'Product',
+                      orderId: finalOrderId,
+                      qualificationStatus: 'Qualified',
+                      followUpState: 'CUSTOMER',
+                      attachedProducts: [{
+                        productId: product?.id,
+                        productName: product?.name || 'Product',
+                        productType: product?.type || 'Course',
+                        attachedAt: new Date().toISOString(),
+                      }],
+                      tags: ['Customer', product?.type || 'Course', product?.name].filter(Boolean),
+                      activities: [{
+                        id: `act-paymob-${finalOrderId}`,
+                        type: 'payment',
+                        title: 'Product purchased (Paymob)',
+                        detail: `${product?.name || 'Product'} · ${paidCurrency} ${paidAmount.toFixed(2)}`,
+                        at: new Date().toISOString(),
+                      }],
+                      lastActivity: new Date().toISOString(),
+                    };
+                    for (const sc of targetScopes) {
+                      void setDoc(doc(db, 'tenants', sc, 'leads', leadId), encodeFirestoreValue(paymobLead), { merge: true }).catch(() => null);
+                    }
+                    window.dispatchEvent(new CustomEvent('gos-booking-change', { detail: 'gos-crm-leads-v1' }));
+                    window.dispatchEvent(new Event('gos-settings-changed'));
+                  }
+                } catch {
+                  /* ignore optional lead write error */
+                }
+              }
+              setPersistedSubmission(true);
+              setInstantAccess(true);
+              setConfirmation(finalOrderId);
+              showToast.success(t('Payment confirmed!'));
+            } else {
+              setSubmitError('Paymob payment was not confirmed yet. Please check your transaction status or try again.');
+            }
+          })
+          .catch(err => setSubmitError(backendError(err)))
+          .finally(() => setBusy(false));
+      }
+      return;
+    }
+
     const params = new URLSearchParams(window.location.search);
     const paymentState = params.get('payment');
     const sessionId = params.get('session_id') || '';
@@ -317,7 +434,7 @@ function CheckoutForm({
         // Fallback to direct public paymentMethods lookup when Cloud Function quote is unavailable
         try {
           const bareTenant = tenantId.replace(/^workspace-/, '');
-          const [tenantPay, userPay, bareTenantPay, bareUserPay, globalPay] = await Promise.all([
+          const [tenantPay, userPay, bareTenantPay, bareUserPay, globalPay, paymobPublic] = await Promise.all([
             getDoc(doc(db, 'tenants', tenantId, 'paymentMethods', 'config')).catch(() => null),
             getDoc(doc(db, 'settings', `paymentMethods_user_${tenantId}`)).catch(() => null),
             bareTenant && bareTenant !== tenantId
@@ -327,6 +444,7 @@ function CheckoutForm({
               ? getDoc(doc(db, 'settings', `paymentMethods_user_${bareTenant}`)).catch(() => null)
               : Promise.resolve(null),
             getDoc(doc(db, 'settings', 'paymentMethods')).catch(() => null),
+            readPaymobPublicConfig('user', tenantId).catch(() => null),
           ]);
           const payData =
             (tenantPay?.exists() ? tenantPay.data() : null) ??
@@ -349,6 +467,9 @@ function CheckoutForm({
                 }];
               }
               if (item.type === 'gateway' && (!item.status || item.status === 'Connected' || item.status === 'Configured')) {
+                if (providerKey === 'paymob') {
+                  return expandPaymobCheckoutOptions(String(item.name), paymobPublic);
+                }
                 return [{
                   id: String(item.id || providerKey || item.name),
                   provider: providerKey,
@@ -494,10 +615,18 @@ function CheckoutForm({
       const isFreeInstant = totals.dueToday === 0 && !hasManualReceipt && config.delivery !== 'After approval';
       let finalId = computedId;
       let savedViaBackend = false;
+      const gatewayMethodLabel =
+        method?.provider === 'paymob'
+          ? (method.name || 'Paymob')
+          : method?.provider === 'stripe'
+            ? 'Stripe'
+            : (method?.name || 'Stripe');
       const backendMethodId =
         isGateway && method?.provider === 'stripe' && remote?.methods?.some(item => item.id === 'stripe')
           ? 'stripe'
-          : method?.id;
+          : isGateway && method?.provider === 'paymob' && remote?.methods && !remote.methods.some(item => item.id === method.id)
+            ? (remote.methods.find(item => item.provider === 'paymob')?.id ?? method.id)
+            : method?.id;
 
       if (tenantId && remote?.revision) {
         try {
@@ -554,7 +683,7 @@ function CheckoutForm({
                 tax: totals.tax,
                 dueToday: totals.dueToday,
               },
-              method: isGateway ? 'Stripe' : (method?.name || (paymentDue ? 'Manual transfer' : 'No payment due')),
+              method: isGateway ? gatewayMethodLabel : (method?.name || (paymentDue ? 'Manual transfer' : 'No payment due')),
               paymentType: isGateway ? 'gateway' : 'manual',
               transferAccount: isGateway ? '' : (method?.account || ''),
               note: note.trim(),
@@ -613,7 +742,7 @@ function CheckoutForm({
                 tax: totals.tax,
                 dueToday: totals.dueToday,
               },
-              method: isGateway ? 'Stripe' : (method?.name || (paymentDue || method?.account ? 'Manual transfer' : 'No payment due')),
+              method: isGateway ? gatewayMethodLabel : (method?.name || (paymentDue || method?.account ? 'Manual transfer' : 'No payment due')),
               paymentType: isGateway ? 'gateway' : 'manual',
               transferAccount: isGateway ? '' : (method?.account || ''),
               note: note.trim(),
@@ -695,6 +824,40 @@ function CheckoutForm({
           window.dispatchEvent(new Event('gos-settings-changed'));
         } catch {
           /* ignore optional lead write error */
+        }
+      }
+
+      if (paymentDue && isGateway && method?.provider === 'paymob' && typeof window !== 'undefined') {
+        const returnBase = new URL(window.location.href);
+        stripPaymobReturnParams(returnBase);
+        const baseHref = `${returnBase.origin}${returnBase.pathname}${returnBase.search}`;
+        const sep = returnBase.search ? '&' : '?';
+        const paymobOption: PaymobPaymentOption =
+          method.paymentOption ||
+          (method.id === 'paymob_wallet' ? 'wallet' : method.id === 'paymob_card' ? 'card' : 'any');
+        const paymobSession = await createPaymobCheckoutSession({
+          scope: 'user',
+          ownerId: effectiveOwnerId || effectiveScope,
+          kind: 'product',
+          paymentOption: paymobOption,
+          productOrderId: finalId,
+          tenantId: effectiveScope,
+          customerEmail: cleanEmail,
+          customerName: cleanName,
+          customerPhone: cleanPhone,
+          buyerSessionId: submission.current,
+          planId: product.id,
+          planName: product.name,
+          amount: totals.dueToday,
+          currency: totals.currency,
+          requestId: finalId,
+          successUrl: `${baseHref}${sep}payment=paymob_return&provider=paymob&gos_order_id=${encodeURIComponent(finalId)}`,
+          cancelUrl: `${baseHref}${sep}payment=cancelled&provider=paymob`,
+        });
+        if (paymobSession?.url) {
+          track('InitiateCheckout', { productId: product.id, value: totals.dueToday, currency: totals.currency }, true);
+          window.location.assign(paymobSession.url);
+          return;
         }
       }
 
@@ -794,7 +957,7 @@ function CheckoutForm({
               {quote?.guestAllowed === false && <p>{t('Use your signed-in email for this checkout.')} <a href="/auth/login" target="_blank" rel="noopener noreferrer">{t('Sign in')}</a></p>}
               <label className="pco-field">{t('Email address')}<input type="email" autoComplete="email" placeholder="you@example.com" maxLength={254} value={email} required onChange={event => setEmail(event.target.value)} onBlur={() => { if (tenantId && discountCode) setDiscountEmail(email.trim()); }}/></label>
               {(!preview || experience.checkout.collectInfo) && <label className="pco-field">{t('Full name')}<input autoComplete="name" maxLength={150} required value={name} onChange={event => setName(event.target.value)}/></label>}
-              {(!preview || experience.checkout.requirePhone) && <label className="pco-field">{t('Phone number')}<input type="tel" autoComplete="tel" maxLength={50} required value={phone} onChange={event => setPhone(event.target.value)}/></label>}
+              {(!preview || experience.checkout.requirePhone || (method?.provider === 'paymob' && (method?.paymentOption === 'wallet' || method?.id === 'paymob_wallet'))) && <label className="pco-field">{t('Phone number')}<input type="tel" autoComplete="tel" maxLength={50} required value={phone} onChange={event => setPhone(event.target.value)}/></label>}
               {quote?.fields.map(field => <label key={field.id} className="pco-field">{field.label}{field.required && ' *'}<input name={'custom-' + field.id} required={field.required} maxLength={500}/></label>)}
             </section>
             {(paymentDue || preview) && <section className="pco-methods" aria-label={t('Choose Payment Method')}>
