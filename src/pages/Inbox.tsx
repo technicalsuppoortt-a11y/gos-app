@@ -1337,6 +1337,19 @@ export const Inbox: React.FC<Props> = ({ aiMode, setAiMode, setSent }) => {
                     : translateText('AI paused')}
                 </span>
               ))}
+              {active.lastAction?.type === 'book' && (
+                <button
+                  type="button"
+                  onClick={() => navigate('/dashboard/booking?tab=bookings')}
+                  className="inline-flex h-[22px] items-center gap-1 rounded-md border border-emerald-200 bg-emerald-50 px-2 text-[11px] font-semibold text-emerald-700 transition hover:bg-emerald-100 dark:border-emerald-400/25 dark:bg-emerald-500/15 dark:text-emerald-300"
+                >
+                  <CalendarDays size={11} />
+                  <span>
+                    {isAr ? 'تم الحجز' : 'Booked'}
+                    {active.lastAction.booking_code ? ` · #${active.lastAction.booking_code}` : ''}
+                  </span>
+                </button>
+              )}
             </div>
             <button
               id="inbox-star"
@@ -1421,7 +1434,7 @@ export const Inbox: React.FC<Props> = ({ aiMode, setAiMode, setSent }) => {
                       ? (isAr ? 'الرد التلقائي بالذكاء الاصطناعي متوقف حالياً على مستوى مساحة العمل.' : translateText('AI auto-reply is currently paused workspace-wide.'))
                       : !activeChannelLive
                         ? (isAr ? `الرد التلقائي متوقف على قناة ${channelMeta[active.channel].label}.` : `AI auto-reply is paused on ${channelMeta[active.channel].label}.`)
-                        : (isAr ? 'تم تحويل آخر رسالة للفريق لعدم تطابقها مع قاعدة المعرفة — يمكنك الرد يدوياً أو تجربة رد الذكاء الاصطناعي الآن.' : translateText('Last message was handed off to your team — reply manually or let AI answer from your Knowledge Base now.'))}
+                        : (isAr ? 'تم تحويل المحادثة للفريق وإيقاف الرد التلقائي مؤقتاً حتى يتواصل أحد ممثلي الفريق مع العميل.' : 'Conversation handed off to your team — AI auto-reply is paused so a teammate can take over cleanly.')}
                 </span>
               </div>
               <div className="flex shrink-0 items-center gap-2">
@@ -1452,15 +1465,24 @@ export const Inbox: React.FC<Props> = ({ aiMode, setAiMode, setSent }) => {
                     {isAr ? `تفعيل ${channelMeta[active.channel].label}` : `Enable ${channelMeta[active.channel].label}`}
                   </button>
                 ) : (
-                  <button
-                    type="button"
-                    disabled={aiReplySending}
-                    onClick={() => void triggerAiReplyNow()}
-                    className="inline-flex items-center gap-1 rounded-lg bg-[#7C3AED] px-2.5 py-1 text-[11px] font-semibold text-white hover:bg-purple-700 disabled:opacity-60"
-                  >
-                    {aiReplySending ? <LoaderCircle size={12} className="animate-spin" /> : <Sparkles size={12} />}
-                    <span>{aiReplySending ? (isAr ? 'جارٍ الرد…' : translateText('Replying…')) : (isAr ? 'رد بالذكاء الاصطناعي' : translateText('Reply with AI'))}</span>
-                  </button>
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => void toggleTakeover()}
+                      className="rounded-lg border border-amber-300 bg-white px-2.5 py-1 text-[11px] font-semibold text-amber-800 hover:bg-amber-50 dark:border-amber-400/30 dark:bg-white/10 dark:text-amber-200"
+                    >
+                      {isAr ? 'إعادة تشغيل الرد التلقائي' : 'Resume AI'}
+                    </button>
+                    <button
+                      type="button"
+                      disabled={aiReplySending}
+                      onClick={() => void triggerAiReplyNow()}
+                      className="inline-flex items-center gap-1 rounded-lg bg-[#7C3AED] px-2.5 py-1 text-[11px] font-semibold text-white hover:bg-purple-700 disabled:opacity-60"
+                    >
+                      {aiReplySending ? <LoaderCircle size={12} className="animate-spin" /> : <Sparkles size={12} />}
+                      <span>{aiReplySending ? (isAr ? 'جارٍ الرد…' : translateText('Replying…')) : (isAr ? 'رد بالذكاء الاصطناعي' : translateText('Reply with AI'))}</span>
+                    </button>
+                  </>
                 )}
               </div>
             </div>
@@ -1534,6 +1556,27 @@ export const Inbox: React.FC<Props> = ({ aiMode, setAiMode, setSent }) => {
                               ))}
                             </div>
                           ))}
+                          {m.action?.type === 'book' && (
+                            <button
+                              type="button"
+                              onClick={() => navigate('/dashboard/booking?tab=bookings')}
+                              className="group mt-3 flex w-full items-center gap-3 rounded-xl border border-emerald-200 bg-emerald-50/90 p-3 text-start shadow-sm transition hover:border-emerald-300 hover:bg-emerald-50 dark:border-emerald-400/25 dark:bg-emerald-500/10"
+                            >
+                              <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-emerald-600 text-white">
+                                <CalendarDays size={17} />
+                              </span>
+                              <span className="min-w-0 flex-1">
+                                <b className="block text-[12.5px] font-bold text-emerald-900 dark:text-emerald-200">
+                                  {isAr ? 'تم تأكيد وحفظ الموعد في التقويم' : 'Booking Saved in Calendar'}
+                                  {m.action.booking_code ? ` · #${m.action.booking_code}` : ''}
+                                </b>
+                                <small className="block truncate text-[11.5px] text-emerald-700 dark:text-emerald-300">
+                                  {[m.action.service_name, m.action.date && m.action.time ? `${m.action.date} · ${m.action.time}` : m.action.detail, m.action.location].filter(Boolean).join(' · ')}
+                                </small>
+                              </span>
+                              <ChevronRight size={15} className="shrink-0 text-emerald-600 transition group-hover:translate-x-0.5 dark:text-emerald-300" />
+                            </button>
+                          )}
                           {localizeNode(m.card === "consultation" && (
                             <button
                               onClick={() => navigate("/dashboard/booking")}

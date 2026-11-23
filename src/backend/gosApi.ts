@@ -72,6 +72,19 @@ export type CopilotFormMeta = {
   leads?: Array<{ id: string; name: string; stage: string; pipelineId: string; phone?: string; email?: string }>;
   currency?: string;
 };
+export type CopilotAssetSummary = {
+  assetId: string;
+  name: string;
+  assetKind: 'funnel' | 'website';
+  funnelType: string;
+  language: 'ar' | 'en';
+  accentColor: string;
+  headline: string;
+  stepsCount: number;
+  totalSections: number;
+  firstPageId?: string;
+  steps: Array<{ id: string; name: string; category: string; sectionCount: number }>;
+};
 export type CopilotForm = {
   id: string;
   kind: CopilotFormKind;
@@ -81,6 +94,7 @@ export type CopilotForm = {
   resultNote?: string;
   resultHref?: string;
   resultHrefLabel?: string;
+  resultSummary?: CopilotAssetSummary | null;
 };
 export type CopilotHistoryMessage = { id?: string; role: 'user' | 'assistant'; text: string; transcript?: string };
 export type CopilotInput = { text: string; conversationId?: string; webSearch?: boolean; deepResearch?: boolean; thinkingLevel?: CopilotThinkingLevel; uiLanguage?: string; isNewConversation?: boolean; history?: CopilotHistoryMessage[] };
@@ -247,7 +261,7 @@ export const gosApi = {
       throw error;
     }
   },
-  submitCopilotAction: (body: CopilotActionInput, signal?: AbortSignal) => gosRequest<{ ok: boolean; kind: CopilotFormKind; formId?: string | null; recordId?: string; message: string; href?: string; hrefLabel?: string; leads?: ApiRecord[] | null; conversation?: ApiRecord | null }>('/ai/copilot/action', { method: 'POST', body, signal }),
+  submitCopilotAction: (body: CopilotActionInput, signal?: AbortSignal) => gosRequest<{ ok: boolean; kind: CopilotFormKind; formId?: string | null; recordId?: string; message: string; href?: string; hrefLabel?: string; leads?: ApiRecord[] | null; asset?: ApiRecord | null; summary?: CopilotAssetSummary | null; conversation?: ApiRecord | null }>('/ai/copilot/action', { method: 'POST', body, signal }),
   transcribeCopilotAudio: (body: { audio: string; format: string; language?: string } | FormData, signal?: AbortSignal) => gosRequest<{ transcript: string }>('/ai/copilot/transcribe', { method: 'POST', body, signal }),
   copilotVoice: (body: { audio: string; format: string; conversationId?: string; requestId?: string; focus?: string; thinkingLevel?: CopilotThinkingLevel; uiLanguage?: string; language?: string; isNewConversation?: boolean; history?: CopilotHistoryMessage[] }, signal?: AbortSignal) => gosRequest<ApiRecord>('/ai/copilot/voice', { method: 'POST', body, signal }),
   copilotVoiceStream: async (body: { audio: string; format: string; conversationId?: string; requestId?: string; focus?: string; thinkingLevel?: CopilotThinkingLevel; uiLanguage?: string; language?: string; isNewConversation?: boolean; history?: CopilotHistoryMessage[] }, handlers: GosStreamHandlers = {}, signal?: AbortSignal): Promise<ApiRecord> => {

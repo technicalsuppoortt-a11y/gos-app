@@ -1,5 +1,7 @@
 import { read, write, rows, entityMutation, spendCredits } from '../store';
 import { makeLead, mainPipeline, parseCSV } from '../../pages/crm/model';
+import { buildAIFunnelAsset, synthesizeTailoredDraft, type AIFunnelBrief, type AIFunnelGoal, type AIFunnelTone } from '../../backend/aiFunnelArchitect';
+import type { CurrencyCode } from '../../utils/currency';
 export type ApiRecord = Record<string, any>;
 export type GosSource = { id: string; name: string; type: any; status: string; content?: string; chunk_count?: number; error?: string };
 export type GosAssistant = { live_enabled: boolean; channels: Record<string, boolean> };
@@ -312,10 +314,66 @@ export async function gosRequest<T>(input: string, options: { method?: string; b
           write('assistant', { live_enabled: values.live_enabled === 'true', channels: { whatsapp: values.whatsapp === 'true', instagram: values.instagram === 'true', messenger: values.messenger === 'true', webchat: values.webchat === 'true' } });
           return { ok: true, kind, recordId: 'assistant', message: ar ? 'تم تحديث إعدادات المساعد الذكي بنجاح.' : 'Updated AI Assistant settings.', href: '/dashboard/follow-up', hrefLabel: ar ? 'فتح المتابعة الذكية' : 'Open AI Follow-Up' } as T;
         }
-        const resource = kind === 'landing' ? 'assets' : kind === 'campaign' ? 'templates' : kind === 'booking' ? 'calendars' : 'products';
-        const href = kind === 'landing' ? '/dashboard/funnels' : kind === 'campaign' ? '/dashboard/follow-up' : kind === 'booking' ? '/dashboard/booking' : '/dashboard/products';
+        if (kind === 'landing') {
+          const lang: 'ar' | 'en' = (values.language === 'ar' || values.language === 'en') ? values.language : (ar ? 'ar' : 'en');
+          const funnelGoal: AIFunnelGoal = values.funnelType === 'sale' ? 'sale' : values.funnelType === 'booking' ? 'booking' : 'audience';
+          const tone: AIFunnelTone = (['persuasive', 'executive', 'friendly', 'urgent'].includes(values.tone || '') ? values.tone : 'persuasive') as AIFunnelTone;
+          const brief: AIFunnelBrief = {
+            funnelName: values.name || (lang === 'ar' ? 'فانل احترافي' : 'High-Converting Funnel'),
+            businessName: values.businessName || values.name || 'UpKlick Workspace',
+            niche: values.niche || (lang === 'ar' ? 'الخدمات والاستشارات' : 'Digital Business'),
+            goal: funnelGoal,
+            audienceAndPainPoints: [values.targetAudience, values.painPoints].filter(Boolean).join(' — ') || (lang === 'ar' ? 'العملاء الباحثون عن نتائج واضحة' : 'Ideal customers seeking fast results'),
+            offer: values.offerSummary || values.content || values.name || 'Core Offer',
+            price: values.price || '0',
+            currency: ((values.currency || 'USD') as CurrencyCode),
+            language: lang,
+            tone,
+            accentColor: values.accentColor || '#7C3AED',
+          };
+          const draftCopy = synthesizeTailoredDraft(brief);
+          if (values.headline?.trim()) draftCopy.headline = values.headline.trim();
+          if (values.primaryCta?.trim()) {
+            draftCopy.cta = values.primaryCta.trim();
+            draftCopy.formCta = values.primaryCta.trim();
+          }
+          const builtAsset = buildAIFunnelAsset(brief, draftCopy);
+          builtAsset.id = id;
+          if (values.assetKind === 'website') builtAsset.kind = 'website';
+          entityMutation('assets', id, builtAsset);
+          write('gos.assets.workspace.v1', { assets: rows('assets'), domains: rows('domains') });
+          const pages = builtAsset.document.pages ?? [];
+          const totalSections = pages.reduce((sum, p) => sum + (p.sections?.length ?? 0), 0);
+          const summary = {
+            assetId: id,
+            name: builtAsset.name,
+            assetKind: builtAsset.kind,
+            funnelType: values.funnelType || funnelGoal,
+            language: lang,
+            accentColor: brief.accentColor || '#7C3AED',
+            headline: draftCopy.headline,
+            stepsCount: pages.length,
+            totalSections,
+            firstPageId: pages[0]?.id ?? '',
+            steps: pages.map(p => ({ id: p.id, name: p.name, category: p.stepCategory || 'Landing', sectionCount: p.sections?.length ?? 0 })),
+          };
+          const targetHref = `/${builtAsset.kind === 'website' ? 'dashboard/websites' : 'dashboard/funnels'}/${id}`;
+          return {
+            ok: true,
+            kind,
+            recordId: id,
+            message: lang === 'ar'
+              ? `تم تصميم وبناء الفانل **${builtAsset.name}** (${pages.length} خطوات · ${totalSections} قسماً).`
+              : `Built your AI funnel **${builtAsset.name}** (${pages.length} steps · ${totalSections} sections).`,
+            href: targetHref,
+            hrefLabel: lang === 'ar' ? 'فتح الفانل في المحرر' : 'Open Funnel Builder',
+            asset: builtAsset,
+            summary,
+          } as T;
+        }
+        const resource = kind === 'campaign' ? 'templates' : kind === 'booking' ? 'calendars' : 'products';
+        const href = kind === 'campaign' ? '/dashboard/follow-up' : kind === 'booking' ? '/dashboard/booking' : '/dashboard/products';
         entityMutation(resource, id, { ...(body.record ?? values), id, name: values.name });
-        if (resource === 'assets') write('gos.assets.workspace.v1', { assets: rows('assets'), domains: rows('domains') });
         return { ok: true, kind, recordId: id, message: ar ? `تم حفظ **${values.name}** بنجاح.` : `Saved **${values.name}** in your workspace.`, href, hrefLabel: ar ? 'فتح في مساحة العمل' : 'Open in Workspace' } as T;
       }
       spendCredits();
@@ -379,6 +437,13 @@ export async function gosRequest<T>(input: string, options: { method?: string; b
         href = '/dashboard/crm';
         hrefLabel = ar ? 'فتح إدارة العملاء (CRM)' : 'Open CRM & Leads';
         text = ar ? `إليك أبرز **${leadsOut.length}** عملاء محتملين في مساحة عملك حالياً:` : `Here are the top **${leadsOut.length}** leads in your CRM right now:`;
+      } else if (/(?:انشئ|أنشئ|اعمل|ابني|صمم)\s+(?:صفحة\s+هبوط|فانل|مسار)|\b(create|build|design|new)\s+(a\s+)?(high-converting\s+)?(landing\s+page|funnel)/i.test(rawPrompt) && rawPrompt.length < 75 && !/افتح\s+نموذج|open.*brief|open.*form/i.test(rawPrompt)) {
+        text = ar
+          ? 'ممتاز جداً! عشان أبني لك **فانل احترافي متكامل** بدل قالب ضعيف، جاوبني سريعاً على 4 أسئلة بسيطة:\n\n1. **اسم النشاط أو المنتج والمجال (Niche):** بتقدم إيه بالضبط؟\n2. **هدف الفانل:** تجميع عملاء (Lead Magnet)، بيع مباشر + Checkout، حجز استشارة، ولا ورشة/ويبينار؟\n3. **الجمهور المستهدف وأكبر مشكلة بيواجهها:** مين عميلك المثالي وإيه اللي مزعّله؟\n4. **تفاصيل العرض والسعر واللغة المفضلة (عربي RTL ولا إنجليزي)؟**\n\nتقدر تكتبلي إجابتك في رسالة أو فويس نوت، أو تضغط تحت لفتح **نموذج مهندس الفانلز الشامل** فوراً!'
+          : "Awesome! So I can build a **truly high-converting, multi-step funnel** instead of a weak generic template, tell me 4 quick things:\n\n1. **Business / Product & Niche:** What are we promoting?\n2. **Funnel Goal:** Lead Generation (2 steps), Direct Sales + Checkout (3–4 steps), Booking / Consultation (3 steps), or Webinar?\n3. **Target Audience & #1 Pain Point:** Who is your ideal buyer and what frustrates them most?\n4. **Core Offer, Price & Preferred Language (English LTR or Arabic RTL)?**\n\nReply right here (or send a voice note), or click below to open the **full AI Funnel Architect Brief** right away!";
+        followUps = ar
+          ? ['افتح نموذج تصميم الفانل الشامل', 'فانل حجز استشارة مجانية بالعربي لعيادة تجميل', 'فانل بيع كورس أونلاين بـ 199 دولار']
+          : ['Open the full Funnel Architect Brief', 'Build a 3-step booking funnel for my agency', 'Build a sales funnel for my $199 course'];
       } else {
         const formKind = isQuestionOrAdvice
           ? null
@@ -389,7 +454,7 @@ export async function gosRequest<T>(input: string, options: { method?: string; b
             /خدمة\s+حجز|نظام\s+حجز|booking\s+flow|booking\s+service/i.test(rawPrompt) ? 'booking' :
             /(?:انشئ|أنشئ|اعمل|جهز|اطلق)\s+حملة|\b(create|launch|build|new)\s+(a\s+)?(whatsapp\s+|email\s+|marketing\s+)?campaign/i.test(rawPrompt) ? 'campaign' :
             /(?:انشئ|أنشئ|اعمل|اضف|أضف|ضيف)\s+(?:منتج|كورس)|\b(create|build|add|new)\s+(a\s+)?(course|product)/i.test(rawPrompt) ? 'product' :
-            /(?:انشئ|أنشئ|اعمل|صمم)\s+(?:صفحة\s+هبوط|فانل)|\b(create|build|design|new)\s+(a\s+)?(landing\s+page|funnel)/i.test(rawPrompt) ? 'landing' :
+            /(?:افتح\s+نموذج|open.*brief|(?:انشئ|أنشئ|اعمل|ابني|صمم)\s+(?:صفحة\s+هبوط|فانل)|\b(create|build|design|new)\s+(a\s+)?(landing\s+page|funnel))/i.test(rawPrompt) ? 'landing' :
             /(?:اضف|أضف|ضيف|درب)\s+(?:معلومة|قاعدة\s+المعرفة)|\b(add|train)\s+.*knowledge/i.test(rawPrompt) ? 'create_knowledge' : null;
         if (formKind) {
           grounded = true;
@@ -404,7 +469,7 @@ export async function gosRequest<T>(input: string, options: { method?: string; b
             booking: { name: ar ? 'جلسة استشارية' : 'Strategy Session', duration: '45', price: '0', currency: 'USD', location: 'Google Meet', content: ar ? 'جلسة تشخيص وخطة عمل مخصصة.' : 'One-on-one strategy consultation.' },
             campaign: { name: ar ? 'حملة متابعة واتساب' : 'WhatsApp Growth Campaign', channel: 'WhatsApp', audience: 'All Leads', content: ar ? 'أهلاً بك! حابين نساعدك تبدأ معانا خطوة بخطوة — تحب نحجز مكالمة سريعة؟' : 'Hi! Ready to take the next step? Reply here to claim your spot.' },
             product: { name: ar ? 'البرنامج التدريبي المتكامل' : 'Signature Coaching Program', productType: 'Online Course', price: '199', currency: 'USD', billing: 'One-time', content: ar ? 'برنامج عملي متكامل لمضاعفة المبيعات.' : 'Step-by-step program to scale your revenue.' },
-            landing: { name: ar ? 'صفحة العرض الرئيسي' : 'High-Converting Offer Page', headline: ar ? 'ضاعف نتائج أعمالك بخطوات واضحة' : 'Grow Faster With a Proven System', goal: 'Capture Leads', content: ar ? 'صفحة هبوط احترافية مصممة لتحويل الزوار إلى عملاء.' : 'Conversion-focused landing page tailored to your audience.' },
+            landing: { name: '', assetKind: 'funnel', funnelType: /حجز|استشار|book/i.test(rawPrompt) ? 'booking' : /بيع|كورس|sale|course/i.test(rawPrompt) ? 'sale' : 'audience', stepsCount: '3', businessName: '', niche: '', targetAudience: '', painPoints: '', offerSummary: '', uniqueValue: '', price: '0', currency: 'USD', headline: '', primaryCta: '', tone: 'persuasive', language: ar ? 'ar' : 'en', accentColor: '#7C3AED', goal: 'Capture Leads', content: '' },
             create_knowledge: { name: ar ? 'معلومات عن خدماتنا' : 'Business Overview', sourceType: 'text', url: '', content: '' },
           };
           form = { id: `form-${crypto.randomUUID()}`, kind: formKind, status: 'pending', values: defaults[formKind] ?? {}, meta };

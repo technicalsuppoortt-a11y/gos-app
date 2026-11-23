@@ -1108,57 +1108,57 @@
     },
     {
       "file": "src/pages/Inbox.tsx",
-      "line": 1472,
+      "line": 1494,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/Inbox.tsx",
-      "line": 1549,
+      "line": 1592,
       "utility": "text-slate-400"
     },
     {
       "file": "src/pages/Inbox.tsx",
-      "line": 1567,
+      "line": 1610,
       "utility": "text-slate-400"
     },
     {
       "file": "src/pages/Inbox.tsx",
-      "line": 1724,
+      "line": 1767,
       "utility": "text-slate-400"
     },
     {
       "file": "src/pages/Inbox.tsx",
-      "line": 1755,
+      "line": 1798,
       "utility": "text-slate-400"
     },
     {
       "file": "src/pages/Inbox.tsx",
-      "line": 1787,
+      "line": 1830,
       "utility": "text-slate-400"
     },
     {
       "file": "src/pages/Inbox.tsx",
-      "line": 1866,
+      "line": 1909,
       "utility": "text-slate-400"
     },
     {
       "file": "src/pages/Inbox.tsx",
-      "line": 2018,
+      "line": 2061,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/Inbox.tsx",
-      "line": 2047,
+      "line": 2090,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/Inbox.tsx",
-      "line": 2095,
+      "line": 2138,
       "utility": "text-slate-300"
     },
     {
       "file": "src/pages/Inbox.tsx",
-      "line": 2107,
+      "line": 2150,
       "utility": "text-slate-400"
     },
     {
@@ -5058,7 +5058,7 @@
     {
       "file": "src/pages/booking/booking-editor-reference.css",
       "line": 83,
-      "selector": ".bk-configurator-heading svg:first-child,\n.bk-reference-editor .bk-configurator-heading svg:first-child",
+      "selector": ".bk-configurator-heading svg:first-child,\r\n.bk-reference-editor .bk-configurator-heading svg:first-child",
       "before": "#979bb0",
       "after": "#334155",
       "contrastOnWhite": 2.75
@@ -5218,7 +5218,7 @@
     {
       "file": "src/pages/commerce/checkout-requests.css",
       "line": 409,
-      "selector": ".cr-ref-code,\n.cr-ref-tag",
+      "selector": ".cr-ref-code,\r\n.cr-ref-tag",
       "before": "#94a3b8",
       "after": "#334155",
       "contrastOnWhite": 2.56
@@ -5386,7 +5386,7 @@
     {
       "file": "src/pages/commerce/customer-portal.css",
       "line": 1904,
-      "selector": ".cportal-password-input-wrap button.cportal-password-toggle,\n.cportal-password-toggle",
+      "selector": ".cportal-password-input-wrap button.cportal-password-toggle,\r\n.cportal-password-toggle",
       "before": "#94a3b8",
       "after": "#334155",
       "contrastOnWhite": 2.56
