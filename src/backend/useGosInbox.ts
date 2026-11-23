@@ -69,26 +69,45 @@ export function useGosInbox(enabled: boolean, selectedId: string) {
     const controller = new AbortController();
     let timer: ReturnType<typeof setTimeout>;
     setLoading(true); setError('');
+    let running = false;
+    const schedule = (ms: number) => { clearTimeout(timer); timer = setTimeout(load, ms); };
     const load = async () => {
+      if (running || controller.signal.aborted) return;
+      running = true;
       try {
-        const result = await gosApi.conversations(controller.signal);
+        // The open conversation is fetched alongside the list instead of after it.
+        const [result, early] = await Promise.all([
+          gosApi.conversations(controller.signal),
+          selectedId ? gosApi.conversation(selectedId, controller.signal).catch(() => null) : Promise.resolve(null),
+        ]);
         if (!Array.isArray(result.conversations)) throw new Error('The Upklick API returned an invalid conversation list.');
         const target = result.conversations.find(row => row.id === selectedId)?.id || result.conversations[0]?.id;
-        const detail = target && result.conversations.some(row => row.id === target) ? await gosApi.conversation(target, controller.signal) : null;
+        const detail = early && early.conversation.id === target
+          ? early
+          : target ? await gosApi.conversation(target, controller.signal) : null;
         if (controller.signal.aborted) return;
         setConversations(result.conversations.map(row => detail && detail.conversation.id === row.id ? normalizeConversation(detail.conversation, detail.messages) : normalizeConversation(row)));
         setSettledOnce(true);
-        setLoading(false); timer = setTimeout(load, document.hidden ? 15000 : 3000);
+        setLoading(false);
+        setError('');
+        schedule(document.hidden ? 15000 : 3000);
       } catch (e) {
         if (!controller.signal.aborted) {
           setSettledOnce(true);
           setLoading(false);
           setError((e as Error).message);
+          // A failed refresh no longer stops the inbox: try again shortly.
+          schedule(document.hidden ? 15000 : 5000);
         }
+      } finally {
+        running = false;
       }
     };
+    // Coming back to the tab refreshes at once instead of waiting out the 15s background interval.
+    const onVisible = () => { if (!document.hidden) { schedule(0); } };
+    document.addEventListener('visibilitychange', onVisible);
     void load();
-    return () => { controller.abort(); clearTimeout(timer); };
+    return () => { controller.abort(); clearTimeout(timer); document.removeEventListener('visibilitychange', onVisible); };
   }, [enabled, selectedId, revision]);
   const initialLoading = enabled && (!settledOnce || (loading && conversations.length === 0));
   return { conversations, loading, initialLoading, error, retry };
