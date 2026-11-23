@@ -25,19 +25,19 @@ export function ChangePasswordCard({ className = '' }: { className?: string }) {
     setError('');
 
     if (!currentPassword) {
-      setError(ar ? 'يرجى إدخال كلمة المرور الحالية.' : 'Please enter your current password.');
+      setError(ar ? 'يرجى إدخال كلمة المرور الحالية.' : translateText('Please enter your current password.'));
       return;
     }
     if (newPassword.length < 8) {
-      setError(ar ? 'استخدم 8 أحرف على الأقل لكلمة المرور الجديدة.' : 'Use at least 8 characters for the new password.');
+      setError(ar ? 'استخدم 8 أحرف على الأقل لكلمة المرور الجديدة.' : translateText('Use at least 8 characters for the new password.'));
       return;
     }
     if (newPassword !== confirmPassword) {
-      setError(ar ? 'كلمتا المرور الجديدتان غير متطابقتين.' : 'The new passwords do not match.');
+      setError(ar ? 'كلمتا المرور الجديدتان غير متطابقتين.' : translateText('The new passwords do not match.'));
       return;
     }
     if (currentPassword === newPassword) {
-      setError(ar ? 'اختر كلمة مرور جديدة مختلفة عن كلمة المرور الحالية.' : 'Choose a new password different from your current password.');
+      setError(ar ? 'اختر كلمة مرور جديدة مختلفة عن كلمة المرور الحالية.' : translateText('Choose a new password different from your current password.'));
       return;
     }
 

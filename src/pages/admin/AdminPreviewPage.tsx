@@ -1,3 +1,4 @@
+import { translateTextForLanguage } from '../../i18n/display';
 import { useMemo } from 'react';
 import { localizeManagedTemplate } from './managed-template';
 import { useSearchParams } from 'react-router-dom';
@@ -25,7 +26,7 @@ export function AdminPreviewPage() {
 
 function AdminStepTemplatePreview({ templateId, language }: { templateId: string; language: string }) {
   const ar = language.startsWith('ar');
-  const t = (en: string, arabic: string) => (ar ? arabic : en);
+  const t = (en: string, arabic: string) => (ar ? arabic : translateTextForLanguage(en, language || 'en'));
   const { templates, loading, error } = useGlobalFunnelTemplates({ includeDrafts: true, language });
   const selected = templates.find(item => item.id === templateId);
   const asset = useMemo<Asset | undefined>(() => {
@@ -82,7 +83,7 @@ function AdminStepTemplatePreview({ templateId, language }: { templateId: string
 
 function AdminCatalogOrRecordPreview({ language }: { language: string }) {
   const [params] = useSearchParams();
-  const ar = language.startsWith('ar'), t = (en: string, arabic: string) => ar ? arabic : en;
+  const ar = language.startsWith('ar'), t = (en: string, arabic: string) => ar ? arabic : translateTextForLanguage(en, language || 'en');
   const templateId = params.get('template') || '', recordPath = params.get('record') || '';
   const resources = useMemo<ManagementResource[]>(() => recordPath ? ['assets'] : [], [recordPath]);
   const preview = useManagedTemplatePreview(templateId, params.get('source'));

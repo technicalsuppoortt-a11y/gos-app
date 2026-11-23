@@ -40,7 +40,7 @@ import {
 } from '../../backend/globalFunnelTemplates';
 import type { FunnelTemplateCategory } from '../funnel-systeme-model';
 import type { Asset } from '../asset-model';
-import { useUILanguage } from '../../i18n/display';
+import { useUILanguage, translateText } from '../../i18n/display';
 import { showToast } from '../../utils/toast';
 import '../funnel-systeme.css';
 
@@ -73,7 +73,7 @@ function makePreviewAsset(page: BuilderPage, title: string, color: string): Asse
 export function SuperAdminFunnelTemplates() {
   const lang = useUILanguage();
   const ar = lang.startsWith('ar');
-  const t = (en: string, arabic: string) => (ar ? arabic : en);
+  const t = (en: string, arabic: string) => (ar ? arabic : translateText(en));
 
   const { templates, loading, error } = useGlobalFunnelTemplates({
     includeDrafts: true,

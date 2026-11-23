@@ -6,6 +6,7 @@ import { auth, db, primaryDb, storage, backendError } from './firebase';
 import { store, type RootState } from '../store';
 import { updateUserProfile } from '../store/slices/authSlice';
 import { isCurrencyCode } from '../utils/currency';
+import { isSupportedLocale, normalizeLocale, type SupportedLocale } from '../i18n/initialLocale';
 
 export const DEFAULT_BRAND_NAME = 'Upklick';
 export const DEFAULT_BRAND_LOGO_URL = '/upclick-logo.svg';
@@ -28,7 +29,7 @@ export type WorkspacePreferences = {
   name: string;
   logoUrl: string;
   theme: keyof typeof workspaceThemes;
-  language: 'en' | 'ar';
+  language: SupportedLocale;
   currency: string;
   mode: 'light' | 'dark' | 'system';
   timezone: string;
@@ -66,7 +67,7 @@ export function sanitizeWorkspacePreferences(
   const rawTheme = typeof obj.theme === 'string' && Object.hasOwn(workspaceThemes, obj.theme)
     ? (obj.theme as WorkspacePreferences['theme'])
     : 'violet';
-  const rawLang: 'en' | 'ar' = obj.language === 'en' ? 'en' : 'ar';
+  const rawLang: SupportedLocale = isSupportedLocale(obj.language) ? obj.language : 'ar';
   const rawMode: 'light' | 'dark' | 'system' =
     obj.mode === 'light' || obj.mode === 'dark' || obj.mode === 'system' ? obj.mode : 'light';
   const rawCurr = isCurrencyCode(obj.currency) ? obj.currency : preferenceDefaults.currency;
@@ -114,7 +115,7 @@ function readPersonal(data?: Record<string, unknown>): PersonalPreferences {
   if (!data) return {};
   const { language, currency, mode, timezone, dateFormat } = data;
   return {
-    ...(language === 'ar' || language === 'en' || language === null ? { language } : {}),
+    ...(isSupportedLocale(language) || language === null ? { language } : {}),
     ...((typeof currency === 'string' && /^[A-Z]{3}$/.test(currency)) || currency === null ? { currency } : {}),
     ...(mode === 'system' || mode === 'dark' || mode === 'light' || mode === null ? { mode } : {}),
     ...(validTimezone(timezone) || timezone === null ? { timezone } : {}),
@@ -288,7 +289,7 @@ export function useWorkspacePreferenceState() {
           }
           legacy = saved?.hasUserOverrides === true ? readPersonal({
             ...saved,
-            language: saved.language === 'Arabic' ? 'ar' : saved.language === 'English' ? 'en' : undefined,
+            language: typeof saved.language === 'string' ? normalizeLocale(saved.language) ?? undefined : undefined,
           }) : {};
           publish('legacy');
         }, cause => failed('legacy', cause));

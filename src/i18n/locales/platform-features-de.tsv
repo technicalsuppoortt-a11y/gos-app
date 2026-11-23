@@ -1,0 +1,148 @@
+Get App	App installieren
+Manual Transfer Methods	Manuelle Überweisungsmethoden
+Professional Payment Gateways	Professionelle Zahlungs-Gateways
+Currently Added Methods	Aktuell hinzugefügte Methoden
+Select a method to add its details:	Wähle eine Methode aus, um deren Details hinzuzufügen:
+Configure wallet or bank transfer details for your customers.	Konfiguriere Wallet- oder Banküberweisungsdaten für deine Kunden.
+No transfer methods added yet.	Noch keine Überweisungsmethoden hinzugefügt.
+Add a transfer method	Überweisungsmethode hinzufügen
+Connect a payment gateway for local or international card payments.	Verbinde ein Zahlungs-Gateway für lokale oder internationale Kartenzahlungen.
+International payments via Visa & Mastercard	Internationale Zahlungen per Visa & Mastercard
+Global digital wallet	Globales digitales Wallet
+Payment gateway for the Middle East & GCC	Zahlungs-Gateway für den Nahen Osten & GCC
+Local Egyptian payments and cards	Lokale Zahlungen und Karten in Ägypten
+Manage Account	Konto verwalten
+Recorded events	Erfasste Ereignisse
+Recorded conversions	Erfasste Conversions
+Tracking scope authorized	Tracking-Umfang autorisiert
+Install Upklick	Upklick installieren
+Your workspace, one tap away.	Dein Arbeitsbereich – nur einen Fingertipp entfernt.
+Fast access	Schneller Zugriff
+Standalone app	Eigenständige App
+Secure workspace	Sicherer Arbeitsbereich
+Open this page in Safari.	Öffne diese Seite in Safari.
+Tap Share in the browser toolbar.	Tippe in der Browser-Symbolleiste auf „Teilen“.
+Choose Add to Home Screen, then tap Add.	Wähle „Zum Home-Bildschirm“ und tippe dann auf „Hinzufügen“.
+Install Upklick for quick access from your home screen or desktop.	Installiere Upklick für schnellen Zugriff über deinen Startbildschirm oder Desktop.
+Open your browser menu and choose Install app or Add to Home Screen. If unavailable, try Chrome or Edge over HTTPS.	Öffne dein Browsermenü und wähle „App installieren“ oder „Zum Startbildschirm hinzufügen“. Falls nicht verfügbar, versuche es mit Chrome oder Edge über HTTPS.
+Install Now	Jetzt installieren
+Not now	Nicht jetzt
+Marketing Tracking	Marketing-Tracking
+Connect Accounts	Konten verbinden
+Event SDK	Event-SDK
+Event Library	Ereignisbibliothek
+Realtime	Echtzeit
+Health Check	Systemprüfung
+Debug Logs	Debug-Protokolle
+Test Center	Testcenter
+AI Optimization	KI-Optimierung
+Readiness checks	Bereitschaftsprüfungen
+Session events	Sitzungsereignisse
+Session conversions	Sitzungs-Conversions
+Quick setup	Schnelleinrichtung
+Loading tracking settings…	Tracking-Einstellungen werden geladen…
+Pixel setup	Pixel-Einrichtung
+Advanced configuration	Erweiterte Konfiguration
+Meta Pixel ID	Meta-Pixel-ID
+GA4 Measurement ID	GA4-Mess-ID
+Enable tracking	Tracking aktivieren
+Enable tracking after reviewing your consent requirements	Aktiviere das Tracking, nachdem du deine Einwilligungsanforderungen geprüft hast
+Developer mode	Entwicklermodus
+Custom events	Benutzerdefinierte Ereignisse
+Add custom event	Benutzerdefiniertes Ereignis hinzufügen
+No custom events configured.	Keine benutzerdefinierten Ereignisse konfiguriert.
+Local test	Lokaler Test
+Local only	Nur lokal
+Dispatched	Gesendet
+No events observed in this session.	In dieser Sitzung wurden keine Ereignisse erfasst.
+Session conversion pipeline	Sitzungs-Conversion-Pipeline
+This session	Diese Sitzung
+of previous stage	der vorherigen Phase
+Event distribution	Ereignisverteilung
+No production events observed.	Keine Produktionsereignisse erfasst.
+Infrastructure checks	Infrastrukturprüfungen
+Local test events	Lokale Testereignisse
+Configuration recommendations	Konfigurationsempfehlungen
+Mapped to Meta & GA4	Zugeordnet zu Meta & GA4
+Custom event	Benutzerdefiniertes Ereignis
+Transfer account / wallet number	Überweisungskonto / Wallet-Nummer
+Merchant account reference	Händlerkonto-Referenz
+Customer instructions	Kundenanweisungen
+Enable payment method	Zahlungsmethode aktivieren
+Configure Account	Konto konfigurieren
+Add Method	Methode hinzufügen
+Wallet or direct bank transfer	Wallet oder direkte Banküberweisung
+Secure provider checkout	Sicherer Anbieter-Checkout
+Loading payment methods…	Zahlungsmethoden werden geladen…
+Contact your administrator to configure payment methods.	Wende dich an deinen Admin, um Zahlungsmethoden zu konfigurieren.
+Payment methods could not be loaded.	Zahlungsmethoden konnten nicht geladen werden.
+No payment methods configured.	Keine Zahlungsmethoden konfiguriert.
+Manage payment methods	Zahlungsmethoden verwalten
+No payment methods enabled. Contact your administrator to configure payment methods.	Keine Zahlungsmethoden aktiviert. Wende dich an deinen Admin, um Zahlungsmethoden zu konfigurieren.
+Manual transfers require verification before fulfillment. This is a checkout preview.	Manuelle Überweisungen erfordern vor der Bereitstellung eine Überprüfung. Dies ist eine Checkout-Vorschau.
+Standard event catalog	Standard-Ereigniskatalog
+Unified tracking SDK	Einheitliches Tracking-SDK
+Mode	Modus
+Destinations	Ziele
+Payload	Payload
+Account label	Kontobezeichnung
+Publishable Key	Öffentlicher Schlüssel (Publishable Key)
+Secret Key	Geheimer Schlüssel (Secret Key)
+Webhook Secret (optional)	Webhook-Secret (optional)
+Client ID	Client-ID
+Client Secret	Client-Secret
+Profile ID	Profil-ID
+Server Key	Server-Schlüssel
+Merchant Code	Händlercode
+Secure Key	Sicherheitsschlüssel
+Merchant ID	Händler-ID
+Payment API Key	Zahlungs-API-Schlüssel
+Secret API Key	Geheimer API-Schlüssel
+PayTabs region	PayTabs-Region
+Sandbox	Sandbox
+Try Demo Account	Demo-Konto testen
+Available credits	Verfügbares Guthaben
+Demo credits	Demo-Guthaben
+Demo credits · simulated balance	Demo-Guthaben · simulierter Kontostand
+Exit demo · all changes are simulated	Demo beenden · alle Änderungen sind simuliert
+Exit Demo Account	Demo-Konto verlassen
+Loading gateway configuration…	Gateway-Konfiguration wird geladen…
+Saved securely — leave blank to keep	Sicher gespeichert — leer lassen, um beizubehalten
+Secrets are stored privately and never shown again. Changing the account, mode or region requires new secrets. Checkout is enabled after the provider connection is verified.	Geheime Schlüssel werden vertraulich gespeichert und nie wieder angezeigt. Bei Änderung von Konto, Modus oder Region sind neue Schlüssel erforderlich. Der Checkout wird aktiviert, sobald die Anbieterverbindung verifiziert wurde.
+Project Management	Projektmanagement
+B2B	B2B
+Medical	Medizin
+Product Development	Produktentwicklung
+Coaching	Coaching
+SaaS/Agency	SaaS/Agentur
+Fitness/Coaching	Fitness/Coaching
+Healthcare/Clinic	Gesundheitswesen/Klinik
+Professional Services	Professionelle Dienstleistungen
+Lead Generation	Lead-Generierung
+Cards and mobile wallets in Egypt and the Middle East	Karten und mobile Wallets in Ägypten und im Nahen Osten
+Configure Paymob	Paymob konfigurieren
+Edit Paymob	Paymob bearbeiten
+Remove Paymob	Paymob entfernen
+Enable Paymob	Paymob aktivieren
+Disable Paymob	Paymob deaktivieren
+Public Key	Öffentlicher Schlüssel (Public Key)
+Card Integration ID	Karten-Integrations-ID
+Card Integration ID (optional)	Karten-Integrations-ID (optional)
+Mobile Wallet Integration ID	Mobile-Wallet-Integrations-ID
+Mobile Wallet Integration ID (optional)	Mobile-Wallet-Integrations-ID (optional)
+Integration IDs (comma-separated)	Integrations-IDs (kommagetrennt)
+Integration IDs (comma-separated) (optional)	Integrations-IDs (kommagetrennt) (optional)
+Iframe ID	Iframe-ID
+Iframe ID (optional)	Iframe-ID (optional)
+HMAC Secret	HMAC-Secret
+Transaction callback URL (Processed & Response)	Transaktions-Callback-URL (Verarbeitet & Antwort)
+Verify these Paymob credentials before enabling checkout.	Verifiziere diese Paymob-Zugangsdaten, bevor du den Checkout aktivierst.
+Paymob credentials verified successfully.	Paymob-Zugangsdaten erfolgreich verifiziert.
+Paymob did not confirm these credentials.	Paymob hat diese Zugangsdaten nicht bestätigt.
+Paymob settings saved, but the connection could not be verified. Check your keys, mode and integration IDs.	Paymob-Einstellungen gespeichert, aber die Verbindung konnte nicht verifiziert werden. Prüfe deine Schlüssel, den Modus und die Integrations-IDs.
+Paymob · Cards	Paymob · Karten
+Paymob · Mobile Wallets	Paymob · Mobile Wallets
+Paymob payment was not completed. Please try again or choose another payment method.	Die Paymob-Zahlung wurde nicht abgeschlossen. Bitte versuche es erneut oder wähle eine andere Zahlungsmethode.
+Paymob payment was not confirmed yet. Please check your transaction status or try again.	Die Paymob-Zahlung wurde noch nicht bestätigt. Bitte prüfe deinen Transaktionsstatus oder versuche es erneut.
+Test Connection	Verbindung testen
+Copy webhook URL	Webhook-URL kopieren

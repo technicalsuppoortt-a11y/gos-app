@@ -2,14 +2,14 @@ import { useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { Link } from 'react-router-dom';
 import { ArrowUpRight, BookOpen, CalendarDays, Mail, MessageCircle, Plug, ShieldCheck, Users, X } from 'lucide-react';
-import { uiDirection, useUILanguage } from '../../i18n/display';
+import { uiDirection, useUILanguage, translateText } from '../../i18n/display';
 import './help-drawer.css';
 
 export function HelpDrawer({ close }: { close: () => void }) {
   useUILanguage();
   const ar = uiDirection() === 'rtl';
   const dialog = useRef<HTMLDialogElement>(null);
-  const t = (en: string, arabic: string) => ar ? arabic : en;
+  const t = (en: string, arabic: string) => ar ? arabic : translateText(en);
   useEffect(() => {
     const previous = document.activeElement as HTMLElement | null;
     const overflow = document.body.style.overflow;

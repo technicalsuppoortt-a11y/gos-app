@@ -17,7 +17,7 @@ import {
   Users,
   X,
 } from 'lucide-react';
-import { useUILanguage } from '../../i18n/display';
+import { useUILanguage, translateText } from '../../i18n/display';
 import { showToast } from '../../utils/toast';
 import {
   bookingColor,
@@ -208,7 +208,7 @@ export function CopyBookingSettingsModal({
   onClose,
 }: CopyBookingSettingsModalProps) {
   const ar = useUILanguage().startsWith('ar');
-  const t = (en: string, arabic: string) => (ar ? arabic : en);
+  const t = (en: string, arabic: string) => (ar ? arabic : translateText(en));
 
   const initialCopyId = SECTION_NAME_TO_COPY_ID[initialSectionName] ?? 'availability';
   const [selectedSections, setSelectedSections] = useState<Set<CopyableSectionId>>(
@@ -539,7 +539,7 @@ export function CopyBookingSettingsModal({
                         </span>
                       )}
                       <SecIcon size={13} className="bk-copy-pill-icon" aria-hidden="true" />
-                      <span>{ar ? sec.ar : sec.en}</span>
+                      <span>{ar ? sec.ar : translateText(sec.en)}</span>
                     </button>
                   );
                 })}

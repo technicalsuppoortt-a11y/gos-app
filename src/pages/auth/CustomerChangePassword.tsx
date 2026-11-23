@@ -20,7 +20,7 @@ import '../commerce/customer-portal.css';
 
 export function CustomerChangePassword() {
   const ar = useUILanguage().startsWith('ar');
-  const t = (en: string, arabic: string) => (ar ? arabic : en);
+  const t = (en: string, arabic: string) => (ar ? arabic : translateText(en));
   const user = useSelector((state: RootState) => state.auth.user);
   const [params] = useSearchParams();
   const navigate = useNavigate();

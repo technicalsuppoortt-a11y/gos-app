@@ -10,7 +10,7 @@ import {
   Activity, Building2, CreditCard, Bot, Trash2, RefreshCw, ShieldCheck, Users,
   TrendingUp, Globe, Plug, Database, Receipt, Grid2X2, Rocket, BarChart3
 } from 'lucide-react';
-import { useUILanguage } from '../../i18n/display';
+import { localizePair, translateText, useUILanguage } from '../../i18n/display';
 import { modules, labels, templateHubTabs, type RecordRow, type Field } from './catalog';
 import { readRows, saveRows, downloadCSV } from './repository';
 import { AdminSelect } from './AdminSelect';
@@ -43,8 +43,8 @@ export function AdminWorkspace() {
 function Workspace({ module }: { module: typeof modules[number] }) {
   const { formatPrice } = useCurrency();
   const ar = useUILanguage().startsWith('ar');
-  const t = (en: string, arabic: string) => ar ? arabic : en;
-  const display = (value: string) => ar ? labels[value] ?? value : value;
+  const t = (en: string, arabic: string) => ar ? arabic : translateText(en);
+  const display = (value: string) => ar ? labels[value] ?? value : translateText(value);
   const [params, setParams] = useSearchParams();
   const requested = Number(params.get('tab') ?? 0);
   const index = Number.isInteger(requested) && requested >= 0 && requested < module.tabs.length ? requested : 0;
@@ -122,8 +122,8 @@ function Workspace({ module }: { module: typeof modules[number] }) {
       <div className="adm-page-head">
         <div>
           <span className="adm-eyebrow">{t('PLATFORM OPERATIONS', 'عمليات المنصة')}</span>
-          <h1>{module.title[ar ? 1 : 0]}</h1>
-          <p>{module.description[ar ? 1 : 0]}</p>
+          <h1>{localizePair(module.title)}</h1>
+          <p>{localizePair(module.description)}</p>
         </div>
         {section && (
           <div className="adm-actions">
@@ -177,7 +177,7 @@ function Workspace({ module }: { module: typeof modules[number] }) {
             />
           </div>
 
-          <div className="adm-tabs" role="tablist" aria-label={module.title[ar ? 1 : 0]} aria-orientation="horizontal">
+          <div className="adm-tabs" role="tablist" aria-label={localizePair(module.title)} aria-orientation="horizontal">
             {module.tabs.map((tab, n) => (
               <button
                 key={n}
@@ -197,7 +197,7 @@ function Workspace({ module }: { module: typeof modules[number] }) {
                 }}
                 onClick={() => setParams({ tab: String(n) })}
               >
-                {tab.label[ar ? 1 : 0]}
+                {localizePair(tab.label)}
               </button>
             ))}
           </div>
@@ -205,7 +205,7 @@ function Workspace({ module }: { module: typeof modules[number] }) {
           <section className="adm-panel" id="adm-panel" role="tabpanel" aria-labelledby={`adm-tab-${index}`}>
             <div className="adm-panel-heading">
               <div>
-                <h2>{section?.label[ar ? 1 : 0]}</h2>
+                <h2>{localizePair(section?.label)}</h2>
                 <p>{readOnly ? t('Monitor and filter records. Editing is disabled.', 'راقب السجلات وصنفها. التعديل غير متاح.') : t('Review, filter and manage your records.', 'راجع السجلات وصنفها وأدرها.')}</p>
               </div>
               <span className="adm-badge neutral">{visible.length} {t('records', 'سجل')}</span>
@@ -228,13 +228,13 @@ function Workspace({ module }: { module: typeof modules[number] }) {
               </label>
               {filteredFields.map(field => (
                 <label key={field.key}>
-                  <span className="adm-sr">{field.label[ar ? 1 : 0]}</span>
+                  <span className="adm-sr">{localizePair(field.label)}</span>
                   <AdminSelect
-                    label={field.label[ar ? 1 : 0]}
+                    label={localizePair(field.label)}
                     filter
                     value={filters[field.key] ?? ''}
                     onChange={value => { setFilters({ ...filters, [field.key]: value }); setPage(1); }}
-                    options={[{ value: '', label: `${t('All', 'كل')} ${field.label[ar ? 1 : 0]}` }, ...(field.options ?? []).map(option => ({ value: option, label: display(option) }))]}
+                    options={[{ value: '', label: `${t('All', 'كل')} ${localizePair(field.label)}` }, ...(field.options ?? []).map(option => ({ value: option, label: display(option) }))]}
                   />
                 </label>
               ))}
@@ -269,7 +269,7 @@ function Workspace({ module }: { module: typeof modules[number] }) {
                   <tr>
                     <th>{t('Name / reference', 'الاسم / المرجع')}</th>
                     {section?.fields.map(field => (
-                      <th key={field.key}>{field.label[ar ? 1 : 0]}</th>
+                      <th key={field.key}>{localizePair(field.label)}</th>
                     ))}
                     {!readOnly && <th>{t('Actions', 'الإجراءات')}</th>}
                   </tr>
@@ -408,7 +408,7 @@ function FieldControl({ field, ar, value, onChange }: { field: Field; ar: boolea
     const enabled = value.split(',').map(v => v.trim());
     return (
       <fieldset className="adm-feature-flags">
-        <legend>{field.label[ar ? 1 : 0]}</legend>
+        <legend>{localizePair(field.label)}</legend>
         {[
           ['CRM', 'علاقات العملاء'],
           ['Booking', 'الحجوزات'],
@@ -421,7 +421,7 @@ function FieldControl({ field, ar, value, onChange }: { field: Field; ar: boolea
               checked={enabled.includes(en)}
               onChange={e => onChange((e.target.checked ? [...enabled, en] : enabled.filter(v => v !== en)).join(', '))}
             />
-            {ar ? arabic : en}
+            {ar ? arabic : translateText(en)}
           </label>
         ))}
       </fieldset>
@@ -429,11 +429,11 @@ function FieldControl({ field, ar, value, onChange }: { field: Field; ar: boolea
   }
   return (
     <label>
-      {field.label[ar ? 1 : 0]}
+      {localizePair(field.label)}
       {field.options ? (
-        <AdminSelect label={field.label[ar ? 1 : 0]} value={value} onChange={onChange} options={field.options.map(v => ({ value: v, label: ar ? labels[v] ?? v : v }))} />
+        <AdminSelect label={localizePair(field.label)} value={value} onChange={onChange} options={field.options.map(v => ({ value: v, label: ar ? labels[v] ?? v : translateText(v) }))} />
       ) : ['content', 'features', 'message', 'value'].includes(field.key) ? (
-        <textarea aria-label={field.label[ar ? 1 : 0]} required value={value} onChange={e => onChange(e.target.value)} />
+        <textarea aria-label={localizePair(field.label)} required value={value} onChange={e => onChange(e.target.value)} />
       ) : (
         <input
           required
@@ -484,10 +484,10 @@ export function Dialog({ title, close, children }: { title: string; close: () =>
       <div ref={ref} className="adm-dialog" role="dialog" aria-modal="true" aria-labelledby="adm-dialog-title">
         <header>
           <div>
-            <span className="adm-eyebrow">{ar ? 'إدارة Upklick' : 'Upklick ADMIN'}</span>
+            <span className="adm-eyebrow">{ar ? 'إدارة Upklick' : translateText('Upklick ADMIN')}</span>
             <h2 id="adm-dialog-title">{title}</h2>
           </div>
-          <button onClick={close} aria-label={ar ? 'إغلاق' : 'Close'}>
+          <button onClick={close} aria-label={ar ? 'إغلاق' : translateText('Close')}>
             <X size={20} />
           </button>
         </header>
@@ -522,7 +522,7 @@ function Metric({ label, value, icon, detail }: { label: string; value: string; 
 function AnalyticsOverview() {
   const { formatPrice } = useCurrency();
   const ar = useUILanguage().startsWith('ar');
-  const t = (en: string, arabic: string) => ar ? arabic : en;
+  const t = (en: string, arabic: string) => ar ? arabic : translateText(en);
   const [range, setRange] = useState<'month' | 'week' | '90d'>('month');
   const [eventSearch, setEventSearch] = useState('');
   const [eventStatus, setEventStatus] = useState<string>('all');
@@ -544,7 +544,7 @@ function AnalyticsOverview() {
 
   const points = range === 'week' ? [18, 26, 21, 35, 42, 38, 54] : range === '90d' ? [12, 16, 20, 24, 22, 30, 36, 44, 48, 56, 62, 78] : [14, 22, 18, 32, 29, 42, 38, 51, 47, 62, 58, 74];
   const pointLabels = range === 'week'
-    ? (ar ? ['السبت', 'الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة'] : ['Sat', 'Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri'])
+    ? (ar ? ['السبت', 'الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة'] : ['Sat', 'Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri'].map(d => translateText(d)))
     : points.map((_, i) => `${i + 1}`);
 
   const filteredEvents = eventRows.filter(ev => {
@@ -776,7 +776,7 @@ function AnalyticsOverview() {
                   <td><b>{ev.event ?? '—'}</b></td>
                   <td><span className="adm-ltr">{ev.date ?? '—'}</span></td>
                   <td>
-                    <Badge value={ev.status} label={ar ? (labels[ev.status] ?? ev.status) : ev.status} />
+                    <Badge value={ev.status} label={ar ? (labels[ev.status] ?? ev.status) : translateText(ev.status)} />
                   </td>
                 </tr>
               ))}
@@ -812,11 +812,11 @@ function MiniPager({ label, page, pages, change }: { label: string; page: number
   const ar = useUILanguage().startsWith('ar');
   return (
     <div className="adm-mini-pagination" role="group" aria-label={label}>
-      <button aria-label={ar ? `السابق: ${label}` : `Previous: ${label}`} disabled={page <= 1} onClick={() => change(page - 1)}>
+      <button aria-label={ar ? `السابق: ${label}` : translateText(`Previous: ${label}`)} disabled={page <= 1} onClick={() => change(page - 1)}>
         {ar ? <ChevronRight size={13} /> : <ChevronLeft size={13} />}
       </button>
       <span>{page} / {pages}</span>
-      <button aria-label={ar ? `التالي: ${label}` : `Next: ${label}`} disabled={page >= pages} onClick={() => change(page + 1)}>
+      <button aria-label={ar ? `التالي: ${label}` : translateText(`Next: ${label}`)} disabled={page >= pages} onClick={() => change(page + 1)}>
         {ar ? <ChevronLeft size={13} /> : <ChevronRight size={13} />}
       </button>
     </div>

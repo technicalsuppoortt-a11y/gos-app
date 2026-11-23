@@ -5,7 +5,7 @@ import type { RootState } from '../store';
 import { useLocation } from 'react-router-dom';
 import { db, auth, backendError } from './firebase';
 import { initialTools, type ToolItem } from '../pages/admin/tools-data';
-import { useUILanguage } from '../i18n/display';
+import { localizePair, translateText, useUILanguage } from '../i18n/display';
 import { toolPolicyAllows } from './toolPolicy';
 import { effectiveStatus, entitledTools, useSubscription } from './billing';
 import { isDemoAccount } from './demoContext';
@@ -43,6 +43,10 @@ const routes: Record<string, string> = { copilot: 'ai-copilot', funnels: 'funnel
 /** Wrap only authenticated user layouts; existing pages and permissions remain in place. */
 export function PlatformToolBoundary({ children }: { children: ReactNode }) {
   if (isDemoAccount || isDemoSessionActive()) return children;
+  return <AuthenticatedPlatformToolBoundary>{children}</AuthenticatedPlatformToolBoundary>;
+}
+
+function AuthenticatedPlatformToolBoundary({ children }: { children: ReactNode }) {
   const { pathname } = useLocation();
   const ar = useUILanguage().startsWith('ar');
   const { tools, loading, error } = usePlatformTools();
@@ -62,15 +66,15 @@ export function PlatformToolBoundary({ children }: { children: ReactNode }) {
   }, [tenantId]);
   // Optional policy lookup must not block the original workspace while the
   // settings rules are being deployed, or when this auxiliary read is offline.
-  if (!loading && !error && !toolPolicyAllows(tool, plan)) return <section className="module-access-message"><h1>{initialTools.find(t => t.id === id)?.name[ar ? 1 : 0]}</h1><p>{tool?.maintenanceNotice || (ar ? 'هذه الأداة غير متاحة حاليًا. تواصل مع المسؤول.' : 'This tool is currently unavailable. Contact your administrator.')}</p><a href="/dashboard/support">{ar ? 'الدعم' : 'Contact support'}</a></section>;
+  if (!loading && !error && !toolPolicyAllows(tool, plan)) return <section className="module-access-message"><h1>{localizePair(initialTools.find(t => t.id === id)?.name)}</h1><p>{tool?.maintenanceNotice || (ar ? 'هذه الأداة غير متاحة حاليًا. تواصل مع المسؤول.' : translateText('This tool is currently unavailable. Contact your administrator.'))}</p><a href="/dashboard/support">{ar ? 'الدعم' : translateText('Contact support')}</a></section>;
   // Billing entitlement: only enforced once the account has a billing subscription,
   // so workspaces that were never placed on a plan keep their existing access.
   if (id && sub && !subLoading) {
     const status = effectiveStatus(sub);
-    const name = initialTools.find(t => t.id === id)?.name[ar ? 1 : 0];
-    const billingLink = <a href="/dashboard/settings/billing?tab=plans">{ar ? 'الاشتراك والباقات' : 'View plans'}</a>;
-    if (status === 'expired' || status === 'cancelled') return <section className="module-access-message"><h1>{name}</h1><p>{ar ? 'انتهى اشتراكك. جدّد باقتك لمتابعة استخدام هذه الأداة.' : 'Your subscription has ended. Renew your plan to keep using this tool.'}</p>{billingLink}</section>;
-    if (sub.plan?.tools?.length && !entitledTools(sub).includes(id)) return <section className="module-access-message"><h1>{name}</h1><p>{ar ? 'هذه الأداة غير مشمولة في باقتك الحالية. قم بالترقية أو اطلب إضافة.' : 'This tool is not included in your current plan. Upgrade or request an add-on.'}</p>{billingLink}</section>;
+    const name = localizePair(initialTools.find(t => t.id === id)?.name);
+    const billingLink = <a href="/dashboard/settings/billing?tab=plans">{ar ? 'الاشتراك والباقات' : translateText('View plans')}</a>;
+    if (status === 'expired' || status === 'cancelled') return <section className="module-access-message"><h1>{name}</h1><p>{ar ? 'انتهى اشتراكك. جدّد باقتك لمتابعة استخدام هذه الأداة.' : translateText('Your subscription has ended. Renew your plan to keep using this tool.')}</p>{billingLink}</section>;
+    if (sub.plan?.tools?.length && !entitledTools(sub).includes(id)) return <section className="module-access-message"><h1>{name}</h1><p>{ar ? 'هذه الأداة غير مشمولة في باقتك الحالية. قم بالترقية أو اطلب إضافة.' : translateText('This tool is not included in your current plan. Upgrade or request an add-on.')}</p>{billingLink}</section>;
   }
   return children;
 }

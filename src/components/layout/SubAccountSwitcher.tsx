@@ -61,7 +61,7 @@ export function WorkspaceSwitcher({ isCollapsed = false, className = '', liveInv
   sourceMessage?: string;
   onOpenChange?: (open: boolean) => void;
 }) {
-  const agencyLabel = useUILanguage().startsWith('ar') ? 'مستخدم وكالة' : 'Agency user';
+  const agencyLabel = useUILanguage().startsWith('ar') ? 'مستخدم وكالة' : translateText('Agency user');
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
   useEffect(() => { onOpenChange?.(isOpen); }, [isOpen, onOpenChange]);

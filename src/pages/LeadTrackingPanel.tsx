@@ -35,7 +35,7 @@ import {
   type TrackedLead,
   type TrackId,
 } from '../backend/gosApi';
-import { uiDirection, useUILanguage } from '../i18n/display';
+import { uiDirection, useUILanguage, translateText } from '../i18n/display';
 import { showToast } from '../utils/toast';
 
 type Props = {
@@ -121,7 +121,7 @@ export const LeadTrackingPanel: React.FC<Props> = ({ onConnectChannel }) => {
   const isAr = lang.startsWith('ar');
   const dir = uiDirection();
   const navigate = useNavigate();
-  const t = React.useCallback((en: string, ar: string) => (isAr ? ar : en), [isAr]);
+  const t = React.useCallback((en: string, ar: string) => (isAr ? ar : translateText(en)), [isAr, lang]);
 
   const [overview, setOverview] = React.useState<LeadTrackingOverview | null>(null);
   const [draftSettings, setDraftSettings] = React.useState<LeadTrackingSettings | null>(null);
@@ -812,10 +812,10 @@ export const LeadTrackingPanel: React.FC<Props> = ({ onConnectChannel }) => {
                   </span>
                   <div>
                     <h3 className="text-sm font-bold text-slate-900 dark:text-white">
-                      {isAr ? meta.titleAr : meta.titleEn}
+                      {isAr ? meta.titleAr : translateText(meta.titleEn)}
                     </h3>
                     <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
-                      {isAr ? meta.descAr : meta.descEn}
+                      {isAr ? meta.descAr : translateText(meta.descEn)}
                     </p>
                   </div>
                 </div>
@@ -963,7 +963,7 @@ export const LeadTrackingPanel: React.FC<Props> = ({ onConnectChannel }) => {
                   : 'text-slate-600 hover:bg-slate-200/60 dark:text-slate-300 dark:hover:bg-white/10'
               }`}
             >
-              {isAr ? tr.titleAr : tr.titleEn} ({overview?.track_stats?.[tr.id]?.total ?? 0})
+              {isAr ? tr.titleAr : translateText(tr.titleEn)} ({overview?.track_stats?.[tr.id]?.total ?? 0})
             </button>
           ))}
         </div>

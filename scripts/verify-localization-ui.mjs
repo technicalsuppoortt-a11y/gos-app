@@ -17,18 +17,31 @@ await page.addInitScript(()=>{
 await page.goto('http://127.0.0.1:5173/dashboard',{waitUntil:'domcontentloaded'});
 await page.waitForTimeout(2000);
 fs.writeFileSync('scripts/localization-browser-initial.json',JSON.stringify({url:page.url(),errors,text:await page.locator('body').innerText()},null,2));
+async function switchDropdownLanguage(p, targetLang) {
+  const trigger = p.locator('.global-language-control .global-language-trigger').first();
+  await trigger.click();
+  await p.locator(`.global-language-menu button[lang="${targetLang}"]`).first().click();
+}
 await page.locator('.global-language-control').waitFor();
-await page.locator('.global-language-control button[lang="en"]').click();
+await switchDropdownLanguage(page, 'en');
 assert.equal(await page.locator('html').getAttribute('dir'),'ltr');
 const search=page.locator('.layout-search input');
 if(await search.count()) await search.fill('Unchanged input');
-await page.locator('.global-language-control button[lang="ar"]').click();
+await switchDropdownLanguage(page, 'nl');
+await page.waitForTimeout(200);
+assert.equal(await page.locator('html').getAttribute('dir'),'ltr');
+assert.equal(await page.locator('html').getAttribute('lang'),'nl');
+await switchDropdownLanguage(page, 'de');
+await page.waitForTimeout(200);
+assert.equal(await page.locator('html').getAttribute('dir'),'ltr');
+assert.equal(await page.locator('html').getAttribute('lang'),'de');
+await switchDropdownLanguage(page, 'ar');
 await page.waitForTimeout(250);
 assert.equal(await page.locator('html').getAttribute('dir'),'rtl');
 assert.equal(await page.locator('html').getAttribute('lang'),'ar');
 if(await search.count()) assert.equal(await search.inputValue(),'Unchanged input');
 assert.match(await page.locator('.layout-nav').first().innerText(),/حجز|المنتجات|التحليلات/);
-await page.locator('.global-language-control button[lang="en"]').click();
+await switchDropdownLanguage(page, 'en');
 assert.equal(await page.locator('html').getAttribute('dir'),'ltr');
 if(await search.count()) assert.equal(await search.inputValue(),'Unchanged input');
 
@@ -46,7 +59,7 @@ for(const route of routes) {
     editedField=await field.elementHandle();
   }
   const formValues=await page.locator('input,select,textarea').evaluateAll(nodes=>nodes.map(n=>({value:n.value,name:n.name,type:n.type})));
-  await page.locator('.global-language-control button[lang="ar"]').first().click();
+  await switchDropdownLanguage(page, 'ar');
   await page.waitForTimeout(400);
   assert.deepEqual(await page.locator('input,select,textarea').evaluateAll(nodes=>nodes.map(n=>({value:n.value,name:n.name,type:n.type}))),formValues,'Form values changed on language switch: '+route);
   if(editedField)assert.equal(await editedField.evaluate(n=>n.isConnected&&n.value==='Unsaved draft مسودة اختبار'),true,'Editor input remounted or draft changed');

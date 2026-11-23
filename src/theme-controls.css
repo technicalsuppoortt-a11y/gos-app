@@ -81,7 +81,6 @@ html[dir=rtl] .aw-default[aria-checked=true] > span::after, html[dir=rtl] .bk-tr
   .layout-header-breadcrumb { min-width: 0; overflow: hidden; }
   .layout-header-breadcrumb > span, .layout-header-breadcrumb > i { display: none; }
   .layout-header-actions { gap: 3px; }
-  .layout-header .layout-search { display: none; }
   .layout-header-user > span:nth-child(2), .layout-header-user > svg { display: none; }
   .layout-header-user .layout-profile-avatar { width: 28px; height: 28px; }
   .layout-header.discount-flow-header .layout-preference-controls { display: flex; }

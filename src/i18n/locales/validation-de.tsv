@@ -1,0 +1,127 @@
+A name is required.	Ein Name ist erforderlich.
+A product name and price are needed before I can create this product. Enter those values in the draft.	Bevor ich dieses Produkt erstellen kann, werden ein Produktname und ein Preis benötigt. Trage diese Werte im Entwurf ein.
+A service name, price, and appointment duration are needed before I can create this service. Enter those values in the draft.	Bevor ich diese Dienstleistung erstellen kann, werden Name, Preis und Termindauer benötigt. Trage diese Werte im Entwurf ein.
+Thumbnail	Vorschaubild
+Add a booking link or service fulfillment instructions.	Füge einen Buchungslink oder Anweisungen zur Leistungserbringung hinzu.
+Add a campaign name and message first.	Füge zuerst einen Kampagnennamen und eine Nachricht hinzu.
+Add a clear message for your visitors.	Füge eine klare Nachricht für deine Besucher hinzu.
+Add a community URL or modules with named lessons.	Füge eine Community-URL oder Module mit benannten Lektionen hinzu.
+Add a description before publishing.	Füge vor dem Veröffentlichen eine Beschreibung hinzu.
+Add a description for this offer.	Füge eine Beschreibung für dieses Angebot hinzu.
+Add a link before copying.	Füge vor dem Kopieren einen Link hinzu.
+Add a page name first.	Füge zuerst einen Seitennamen hinzu.
+Add a page to your customer experience.	Füge deinem Kundenerlebnis eine Seite hinzu.
+Add a product name and price first.	Füge zuerst einen Produktnamen und einen Preis hinzu.
+Add a service name, price, and duration first.	Füge zuerst Dienstleistungsname, Preis und Dauer hinzu.
+Add a source name and source content before saving.	Füge vor dem Speichern einen Quellennamen und Quelleninhalt hinzu.
+Add a template title and prompt instructions before saving.	Füge vor dem Speichern einen Vorlagentitel und Prompt-Anweisungen hinzu.
+Add an SEO description in page settings.	Füge in den Seiteneinstellungen eine SEO-Beschreibung hinzu.
+Add an approved answer to help Upklick respond accurately.	Füge eine freigegebene Antwort hinzu, damit Upklick präzise antworten kann.
+Add an instructor profile and introduction.	Füge ein Kursleiterprofil und eine Vorstellung hinzu.
+Add at least one duration.	Füge mindestens eine Dauer hinzu.
+Add at least one meeting location with a label.	Füge mindestens einen Besprechungsort mit Bezeichnung hinzu.
+Add at least one named digital asset with a delivery URL or uploaded file.	Füge mindestens eine benannte digitale Datei mit Liefer-URL oder hochgeladener Datei hinzu.
+Add at least one weekly interval or date override.	Füge mindestens ein wöchentliches Zeitfenster oder eine Datumsausnahme hinzu.
+Add event on	Termin hinzufügen am
+Line	Linie
+List item	Listeneintrag
+Post image	Beitragsbild
+Program details	Programmdetails
+Add the visit to your calendar	Besuch zum Kalender hinzufügen
+Add this consultation to your calendar.	Füge dieses Beratungsgespräch zu deinem Kalender hinzu.
+Add to Google Calendar	Zu Google Calendar hinzufügen
+Add to favorites	Zu Favoriten hinzufügen
+Add useful information about your product or service here.	Füge hier hilfreiche Informationen zu deinem Produkt oder deiner Dienstleistung hinzu.
+Add your content here.	Füge hier deine Inhalte ein.
+CSV must include Name and Email headers. Phone and Company are optional.	Die CSV-Datei muss die Spaltenüberschriften Name und Email enthalten. Phone und Company sind optional.
+Choose JPG, PNG or WebP images under 2 MB.	Wähle JPG-, PNG- oder WebP-Bilder unter 2 MB aus.
+Choose Service, Digital Product or Course as the product type.	Wähle Dienstleistung, Digitales Produkt oder Kurs als Produkttyp aus.
+Choose a JPG, PNG or WebP image under 2 MB.	Wähle ein JPG-, PNG- oder WebP-Bild unter 2 MB aus.
+Choose a PDF or video file up to 5 GB.	Wähle eine PDF- oder Videodatei mit bis zu 5 GB aus.
+Choose a consultation time with our team.	Wähle einen Beratungstermin mit unserem Team aus.
+Choose a date and time for your 30-minute introduction.	Wähle Datum und Uhrzeit für dein 30-minütiges Kennenlerngespräch.
+Choose a date for every date override.	Wähle für jede Datumsausnahme ein Datum aus.
+Choose a different new password.	Wähle ein anderes neues Passwort.
+Choose a product type to start your tailored commerce workflow.	Wähle einen Produkttyp, um deinen passenden Commerce-Workflow zu starten.
+Choose a valid product access date.	Wähle ein gültiges Datum für den Produktzugang.
+Choose at least two products for your bundle.	Wähle mindestens zwei Produkte für dein Paket aus.
+Compare price must be higher than the selling price.	Der Vergleichspreis muss höher als der Verkaufspreis sein.
+Could not attach lesson file.	Lektionsdatei konnte nicht angehängt werden.
+Could not copy the link. Please copy it from the address bar.	Link konnte nicht kopiert werden. Bitte kopiere ihn aus der Adressleiste.
+Could not copy the link. Please copy the URL manually.	Link konnte nicht kopiert werden. Bitte kopiere die URL manuell.
+Could not delete product.	Produkt konnte nicht gelöscht werden.
+Could not download file.	Datei konnte nicht heruntergeladen werden.
+Could not duplicate product.	Produkt konnte nicht dupliziert werden.
+Could not export this report. Try again.	Dieser Bericht konnte nicht exportiert werden. Versuche es erneut.
+Could not read file	Datei konnte nicht gelesen werden
+Could not read image.	Bild konnte nicht gelesen werden.
+Could not read this file.	Diese Datei konnte nicht gelesen werden.
+Could not read this image.	Dieses Bild konnte nicht gelesen werden.
+Could not save product.	Produkt konnte nicht gespeichert werden.
+Could not save settings.	Einstellungen konnten nicht gespeichert werden.
+Could not save your booking. Please try again.	Deine Buchung konnte nicht gespeichert werden. Bitte versuche es erneut.
+Could not start microphone recording.	Mikrofonaufnahme konnte nicht gestartet werden.
+Could not update course status.	Kursstatus konnte nicht aktualisiert werden.
+Could not upload file.	Datei konnte nicht hochgeladen werden.
+Coupon usage limit must be a positive whole number.	Das Einlöselimit des Gutscheins muss eine positive ganze Zahl sein.
+Download limit must be a positive whole number.	Das Download-Limit muss eine positive ganze Zahl sein.
+Drip release interval must be a positive whole number of days.	Das Freigabeintervall muss eine positive ganze Anzahl an Tagen sein.
+Durations must be between 1 and 1440 minutes.	Die Dauer muss zwischen 1 und 1440 Minuten liegen.
+Enter a booking title and a valid booking URL.	Gib einen Buchungstitel und eine gültige Buchungs-URL ein.
+Enter a discount code.	Gib einen Rabattcode ein.
+Enter a domain name without a protocol or path.	Gib einen Domainnamen ohne Protokoll oder Pfad ein.
+Enter a lesson title.	Gib einen Lektionstitel ein.
+Enter a password or turn off password protection.	Gib ein Passwort ein oder deaktiviere den Passwortschutz.
+Enter a positive whole number.	Gib eine positive ganze Zahl ein.
+Enter a product name.	Gib einen Produktnamen ein.
+Enter a store name and valid billing email.	Gib einen Shop-Namen und eine gültige Abrechnungs-E-Mail-Adresse ein.
+Enter a valid HTTP(S) redirect URL.	Gib eine gültige HTTP(S)-Weiterleitungs-URL ein.
+Enter a valid HTTP(S) webhook URL.	Gib eine gültige HTTP(S)-Webhook-URL ein.
+Enter a valid discount value. Percentages must be between 1 and 100.	Gib einen gültigen Rabattwert ein. Prozentsätze müssen zwischen 1 und 100 liegen.
+Enter a valid http:// or https:// resource URL.	Gib eine gültige http://- oder https://-Ressourcen-URL ein.
+Enter an HTTP or HTTPS redirect URL.	Gib eine HTTP- oder HTTPS-Weiterleitungs-URL ein.
+Enter an assistant name and role to continue.	Gib einen Namen und eine Rolle für den Assistenten ein, um fortzufahren.
+Enter labels for both first and last names.	Gib Bezeichnungen für Vor- und Nachname ein.
+Enter percentages from 0 to 100 with minimum no greater than maximum.	Gib Prozentsätze von 0 bis 100 ein, wobei das Minimum nicht größer als das Maximum sein darf.
+Enter the booking-page template ID.	Gib die Vorlagen-ID der Buchungsseite ein.
+Enter the confirmation template ID.	Gib die Vorlagen-ID der Bestätigung ein.
+Enter the email template ID.	Gib die E-Mail-Vorlagen-ID ein.
+Every interval must end after it starts.	Jedes Zeitfenster muss nach seiner Startzeit enden.
+Invalid booking storage	Ungültiger Buchungsspeicher
+Invalid content	Ungültiger Inhalt
+Invalid credentials. Please try again.	Ungültige Anmeldedaten. Bitte versuche es erneut.
+Minimum purchase must be positive or zero. Usage limit must be a whole number or zero for unlimited.	Der Mindestbestellwert muss positiv oder null sein. Das Nutzungslimit muss eine ganze Zahl oder null für unbegrenzt sein.
+No archived assets	Keine archivierten Dateien
+No consent recorded	Keine Einwilligung erfasst
+No description added yet.	Noch keine Beschreibung hinzugefügt.
+No domain assigned	Keine Domain zugewiesen
+No expiry	Kein Ablaufdatum
+No global style	Kein globaler Stil
+No matching	Keine passenden
+No matching booking pages	Keine passenden Buchungsseiten
+No members match your search.	Keine Mitglieder entsprechen deiner Suche.
+No messages yet	Noch keine Nachrichten
+No phone added	Keine Telefonnummer hinzugefügt
+No prior revenue	Kein vorheriger Umsatz
+No working hours are configured for this weekday or date.	Für diesen Wochentag oder dieses Datum sind keine Arbeitszeiten konfiguriert.
+One-time price must be zero or greater.	Der Einmalpreis muss null oder größer sein.
+Please answer:	Bitte beantworte:
+Please contact the host to arrange an appointment.	Bitte kontaktiere den Gastgeber, um einen Termin zu vereinbaren.
+Please wait for your uploads to finish.	Bitte warte, bis deine Uploads abgeschlossen sind.
+Price must be zero or greater.	Der Preis muss null oder größer sein.
+Service duration must be greater than zero.	Die Dauer der Dienstleistung muss größer als null sein.
+Student limit must be a whole number of zero or greater.	Das Teilnehmerlimit muss eine ganze Zahl ab null sein.
+Tax rate must be between 0 and 100.	Der Steuersatz muss zwischen 0 und 100 liegen.
+The appointment duration overlaps another booking.	Die Termindauer überschneidet sich mit einer anderen Buchung.
+The current demo password is incorrect.	Das aktuelle Demo-Passwort ist falsch.
+The daily or configured booking limit has been reached.	Das tägliche oder konfigurierte Buchungslimit wurde erreicht.
+The demo tool returned an unverified result. Nothing was published.	Das Demo-Tool hat ein nicht verifiziertes Ergebnis geliefert. Es wurde nichts veröffentlicht.
+The fixed date range must end after it starts.	Der feste Datumsbereich muss nach dem Startdatum enden.
+The lead profile and activity history are updated.	Das Lead-Profil und der Aktivitätsverlauf wurden aktualisiert.
+The look-busy minimum must not exceed its maximum.	Das Minimum für die Auslastungsanzeige darf das Maximum nicht überschreiten.
+The provider could not complete the test. Reauthorize access and try again.	Der Anbieter konnte den Test nicht abschließen. Autorisiere den Zugriff erneut und versuche es noch einmal.
+The provider returned an invalid link. Contact your workspace administrator.	Der Anbieter hat einen ungültigen Link zurückgegeben. Wende dich an den Admin deines Arbeitsbereichs.
+The service is temporarily unavailable. Your changes have been kept; please try again shortly.	Der Dienst ist vorübergehend nicht verfügbar. Deine Änderungen wurden beibehalten; bitte versuche es in Kürze erneut.
+The template could not be installed.	Die Vorlage konnte nicht installiert werden.
+Trial days must be a whole number of zero or greater.	Die Anzahl der Testtage muss eine ganze Zahl ab null sein.
+· Provider connection required	· Anbieterverbindung erforderlich

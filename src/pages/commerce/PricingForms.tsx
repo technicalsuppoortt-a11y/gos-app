@@ -19,7 +19,7 @@ export function CardSwitch({ label, checked, onChange, disabled }: { label: stri
 function Currency({ config: c, configure, editing, label }: FormProps & { label?: string }) {
   const language = useUILanguage(); const ar = language.startsWith('ar');
   const options = React.useMemo(() => currencyOptions(ar ? 'ar' : 'en'), [ar]);
-  return <Combobox label={label || (ar ? 'العملة' : 'Currency')} disabled={!editing} value={c.currency} options={options} dir={ar ? 'rtl' : 'ltr'} searchable searchLabel={ar ? 'ابحث عن عملة…' : 'Search currencies…'} emptyLabel={ar ? 'لم يتم العثور على عملات' : 'No currencies found'} onChange={currency => configure({ currency })}/>; }
+  return <Combobox label={label || (ar ? 'العملة' : translateText('Currency'))} disabled={!editing} value={c.currency} options={options} dir={ar ? 'rtl' : 'ltr'} searchable searchLabel={ar ? 'ابحث عن عملة…' : translateText('Search currencies…')} emptyLabel={ar ? 'لم يتم العثور على عملات' : translateText('No currencies found')} onChange={currency => configure({ currency })}/>; }
 export function PricingForm(props: FormProps) {
   useUILanguage();
   const { config: c, experience: e, configure, customize, editing, product } = props;

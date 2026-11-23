@@ -123,7 +123,7 @@ function ConfiguratorSection({
                     ? `نسخ إعدادات ${translateText(displayTitle)}`
                     : `Copy ${displayTitle} settings`
                 }
-                title={ar ? 'نسخ إعدادات صفحة الحجز' : 'Copy booking page settings'}
+                title={ar ? 'نسخ إعدادات صفحة الحجز' : translateText('Copy booking page settings')}
               >
                 <ArrowLeftRight size={13.5} />
               </button>
@@ -132,7 +132,7 @@ function ConfiguratorSection({
               type="button"
               className="bk-configurator-collapse-btn"
               onClick={toggle}
-              aria-label={ar ? 'طي القسم' : 'Collapse section'}
+              aria-label={ar ? 'طي القسم' : translateText('Collapse section')}
               tabIndex={-1}
             >
               <ChevronDown size={15} className="bk-accordion-chevron rotated" />

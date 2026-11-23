@@ -129,7 +129,8 @@ try {
   await page.getByRole('option', { name: /مصر/ }).waitFor();
   await page.screenshot({ path: 'artifacts/flow-refinements/combobox-dark-ar.png' });
   await page.keyboard.press('Escape');
-  await page.locator('.global-language-control button[lang=en]').click();
+  await page.locator('.global-language-control .global-language-trigger').first().click();
+  await page.locator('.global-language-menu button[lang=en]').first().click();
   await page.getByRole('heading', { name: 'Localization', exact: true }).waitFor();
   assert.equal(await page.locator('.ob-wizard').getAttribute('dir'), 'ltr');
   assert.deepEqual(errors, []); fs.writeFileSync('artifacts/flow-refinements/report.json', JSON.stringify({ errors, results }, null, 2));

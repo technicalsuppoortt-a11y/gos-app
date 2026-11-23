@@ -1,5 +1,6 @@
 import { useSyncExternalStore } from 'react';
 import type { Role } from '../../types/auth';
+import type { SupportedLocale } from '../../i18n/initialLocale';
 import { showToast } from '../../utils/toast';
 
 export type Setup = {
@@ -13,7 +14,7 @@ export type Setup = {
   country: string;
   timezone: string;
   currency: string;
-  language: 'en' | 'ar';
+  language: SupportedLocale;
   description: string;
   website: string;
   facts: string[];

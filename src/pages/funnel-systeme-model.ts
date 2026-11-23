@@ -1,3 +1,4 @@
+import { translateText } from '../i18n/display';
 import type { BuilderDocument, BuilderPage, BuilderSection, FunnelStep } from './BuilderWorkspace';
 import type { Asset } from './asset-model';
 import type { CRMRoute } from './CRMRouting';
@@ -351,7 +352,7 @@ export function createSystemeFunnelAsset(params: {
   arabic?: boolean;
 }): Asset {
   const { name, domain, currency, goalType, arabic = false } = params;
-  const title = name.trim() || (arabic ? 'مسار جديد' : 'Untitled funnel');
+  const title = name.trim() || (arabic ? 'مسار جديد' : translateText('Untitled funnel'));
   const slugSuffix = makeSlugSuffix();
 
   let steps: FunnelStep[] = [];
@@ -362,8 +363,8 @@ export function createSystemeFunnelAsset(params: {
     goalLabel = 'Sales';
     const orderId = crypto.randomUUID();
     const thanksId = crypto.randomUUID();
-    const orderName = arabic ? 'نموذج الطلب' : 'Order Form';
-    const thanksName = arabic ? 'صفحة الشكر' : 'Thank You Page';
+    const orderName = arabic ? 'نموذج الطلب' : translateText('Order Form');
+    const thanksName = arabic ? 'صفحة الشكر' : translateText('Thank You Page');
     const orderPage = buildDefaultStepPage({
       id: orderId,
       name: orderName,
@@ -388,8 +389,8 @@ export function createSystemeFunnelAsset(params: {
     goalLabel = 'Lead generation';
     const optinId = crypto.randomUUID();
     const thanksId = crypto.randomUUID();
-    const optinName = arabic ? 'صفحة الاشتراك' : 'Opt-in Page';
-    const thanksName = arabic ? 'صفحة الشكر' : 'Thank You Page';
+    const optinName = arabic ? 'صفحة الاشتراك' : translateText('Opt-in Page');
+    const thanksName = arabic ? 'صفحة الشكر' : translateText('Thank You Page');
     const optinPage = buildDefaultStepPage({
       id: optinId,
       name: optinName,

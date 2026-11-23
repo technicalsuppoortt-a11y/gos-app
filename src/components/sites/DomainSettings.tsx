@@ -13,7 +13,7 @@ import {
   Zap,
 } from 'lucide-react';
 import type { RootState } from '../../store';
-import { useUILanguage } from '../../i18n/display';
+import { useUILanguage, translateText } from '../../i18n/display';
 import { callBackend, backendError } from '../../backend/firebase';
 import { showToast } from '../../utils/toast';
 import { DomainsClient } from '../../lib/domains/client';
@@ -50,7 +50,7 @@ export const DomainSettings: React.FC<SiteDomainSettingsProps> = ({
   const lang = useUILanguage();
   const isRTL = lang.startsWith('ar');
   const theme = useSelector((s: RootState) => s.ui.theme);
-  const t = (en: string, ar: string) => (isRTL ? ar : en);
+  const t = (en: string, ar: string) => (isRTL ? ar : translateText(en));
 
   const [input, setInput] = useState(initialDomain);
   const [savedDomain, setSavedDomain] = useState(initialDomain);

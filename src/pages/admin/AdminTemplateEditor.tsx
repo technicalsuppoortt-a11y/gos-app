@@ -62,7 +62,7 @@ export function AdminTemplateEditor({ template, save, close, busy, preview, pres
   template: ManagedTemplate; save: (template: ManagedTemplate) => Promise<string | null>; close: () => void;
   busy: boolean; preview: (value: SitePreview) => void; presets?: ManagedTemplate[]; ownerUid?: string;
 }) {
-  const ar = useUILanguage().startsWith('ar'), t = (en: string, arabic: string) => ar ? arabic : en;
+  const ar = useUILanguage().startsWith('ar'), t = (en: string, arabic: string) => ar ? arabic : translateText(en);
   const [draft, setDraft] = useState(() => initializeTemplateAsset({
     ...template, ...templateArabicMetadata(template),
     name: template.title_en || template.name,

@@ -17,6 +17,7 @@ import { seedDemo } from './adapters/workspace';
 import { previewScreens } from './screens';
 import { TOOL_IDS } from '../../../../functions/billing-engine.js';
 import i18n from '../../../i18n/i18n';
+import { normalizeLocale } from '../../../i18n/initialLocale';
 import '../../../index.css';
 import '../../../layout-shell.css';
 import '../../../global-controls.css';
@@ -64,7 +65,7 @@ window.addEventListener('message', event => {
   if (event.source !== parent || event.origin !== window.location.origin || event.data?.type !== 'gos-demo-view') return;
   const screen = previewScreens.find(item => item.id === event.data.screen);
   if (!screen) return;
-  const lang = event.data.language === 'ar' ? 'ar' : 'en';
+  const lang = normalizeLocale(event.data.language) ?? 'en';
   if (store.getState().ui.language !== lang) store.dispatch(setLanguage(lang));
   void i18n.changeLanguage(lang);
   const dark = event.data.theme === 'dark';

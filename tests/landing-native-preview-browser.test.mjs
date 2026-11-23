@@ -59,10 +59,17 @@ try {
   assert.ok(Math.abs((await preview.locator('.lp-static-document').boundingBox()).height-frameHeight)<1,'Static native content fills the preview height on mobile');
   await page.locator('.lp-mock').screenshot({ path: `${artifacts}/mobile.png` });
   await page.locator('#lp-lang-toggle').click();
+  await page.locator('.global-language-menu button[lang="nl"]').click();
+  await page.waitForFunction(() => document.querySelector('.lp')?.getAttribute('lang') === 'nl' && document.querySelector('.lp').dir === 'ltr');
+  await page.locator('#lp-lang-toggle').click();
+  await page.locator('.global-language-menu button[lang="de"]').click();
+  await page.waitForFunction(() => document.querySelector('.lp')?.getAttribute('lang') === 'de' && document.querySelector('.lp').dir === 'ltr');
+  await page.locator('#lp-lang-toggle').click();
+  await page.locator('.global-language-menu button[lang="ar"]').click();
   await page.waitForFunction(() => document.querySelector('.lp').dir === 'rtl');
   assert.equal(await page.locator('#pricing,a[href="#pricing"]').count(), 0);
   await page.locator('.lp-mock').screenshot({ path: `${artifacts}/arabic.png` });
   assert.deepEqual(previewRequests, [], 'Static preview must not boot the dashboard iframe or entry bundle'); assert.deepEqual(errors, []);
-  console.log('PASS: static demo screens, no pricing/broken anchors, keyboard tabs, stable hero layout, mobile, dark and Arabic.');
+  console.log('PASS: static demo screens, no pricing/broken anchors, keyboard tabs, stable hero layout, mobile, dark and en/nl/de/ar.');
   console.log(`Screenshots: ${artifacts}`);
 } catch (e) { console.error(e); throw e; } finally { await browser?.close(); if (production) { server.httpServer.closeAllConnections(); await new Promise(resolve => server.httpServer.close(resolve)); } else await server.close(); }

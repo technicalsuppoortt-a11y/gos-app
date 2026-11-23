@@ -36,14 +36,14 @@ function FacebookIcon({ size = 20, className = '' }: { size?: number; className?
   );
 }
 import type { RootState } from '../store';
-import { useUILanguage, uiDirection, translateText } from '../i18n/display';
+import { localizeObject, useUILanguage, uiDirection, translateText } from '../i18n/display';
 import { ThemeToggle } from '../components/ui/ThemeToggle';
 import { LanguageSwitcher } from '../components/ui/LanguageSwitcher';
 import { showToast } from '../utils/toast';
 import './legal-pages.css';
 
 export function DataDeletionPage() {
-  useUILanguage();
+  const uiLang = useUILanguage();
   const isRtl = uiDirection() === 'rtl';
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -127,7 +127,7 @@ export function DataDeletionPage() {
         ]
       };
     }
-    return {
+    return localizeObject({
       title: `User Data Deletion Instructions & Request - ${appName}`,
       subtitle: 'In accordance with Meta Platform policies and international privacy frameworks (GDPR/CCPA), you have the full right to delete your personal data and revoke platform connections.',
       badgeCompliance: 'Meta Platform Data Deletion Compliant',
@@ -166,8 +166,8 @@ export function DataDeletionPage() {
           desc: 'Check the confirmation options and click "Remove". Meta will automatically issue a verified Data Deletion Callback URL request to our backend API to erase stored platform tokens.'
         }
       ]
-    };
-  }, [isRtl, appName]);
+    }, uiLang);
+  }, [isRtl, uiLang, appName]);
 
   const handleToggleScope = (scopeId: string) => {
     setSelectedScopes(prev =>
@@ -178,11 +178,11 @@ export function DataDeletionPage() {
   const handleSubmitRequest = (e: React.FormEvent) => {
     e.preventDefault();
     if (!emailInput.trim() && !facebookIdInput.trim()) {
-      showToast.error(isRtl ? 'يرجى إدخال البريد الإلكتروني أو معرّف Meta / Facebook.' : 'Please enter your email or Meta / Facebook User ID.');
+      showToast.error(isRtl ? 'يرجى إدخال البريد الإلكتروني أو معرّف Meta / Facebook.' : translateText('Please enter your email or Meta / Facebook User ID.'));
       return;
     }
     if (selectedScopes.length === 0) {
-      showToast.error(isRtl ? 'يرجى تحديد نوع واحد على الأقل من البيانات المطلوب حذفها.' : 'Please select at least one data scope to delete.');
+      showToast.error(isRtl ? 'يرجى تحديد نوع واحد على الأقل من البيانات المطلوب حذفها.' : translateText('Please select at least one data scope to delete.'));
       return;
     }
 
@@ -193,7 +193,7 @@ export function DataDeletionPage() {
       setConfirmationCode(generatedCode);
       setConfirmationDate(timestamp);
       setIsSubmitting(false);
-      showToast.success(isRtl ? 'تم تسجيل وتأكيد طلب حذف البيانات بنجاح!' : 'Data deletion request registered and confirmed!');
+      showToast.success(isRtl ? 'تم تسجيل وتأكيد طلب حذف البيانات بنجاح!' : translateText('Data deletion request registered and confirmed!'));
     }, 700);
   };
 
@@ -201,7 +201,7 @@ export function DataDeletionPage() {
     e.preventDefault();
     const query = checkCodeInput.trim().toUpperCase();
     if (!query) {
-      showToast.error(isRtl ? 'يرجى إدخال رمز المتابعة.' : 'Please enter a valid tracking code.');
+      showToast.error(isRtl ? 'يرجى إدخال رمز المتابعة.' : translateText('Please enter a valid tracking code.'));
       return;
     }
 
@@ -211,7 +211,7 @@ export function DataDeletionPage() {
       status: 'VERIFIED_PURGED',
       details: isRtl
         ? 'تم مسح رموز الوصول لـ Meta وإلغاء صلاحيات التطبيق وتطهير البيانات المحددة بنجاح وفق معايير الحماية.'
-        : 'Meta access tokens revoked, external integrations disconnected, and target records purged from active clusters.',
+        : translateText('Meta access tokens revoked, external integrations disconnected, and target records purged from active clusters.'),
       appUrl: appUrl
     });
   };

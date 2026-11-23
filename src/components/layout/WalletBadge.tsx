@@ -6,7 +6,7 @@ import type { RootState } from '../../store';
 import { canViewTopbarWallet } from '../../store/cashWalletVisibility';
 import { PLATFORM, useAgencyBilling, useBillingIdentity, useCommunicationWallet, useProviderCommunicationWallets, WALLET_CURRENCY } from '../../backend/billing';
 import { isDemoAccount } from '../../backend/demoContext';
-import { translateText as t, useUILanguage } from '../../i18n/display';
+import { translateText as t, useUILanguage, translateText } from '../../i18n/display';
 
 export function WalletBadge({ variant = 'pill', onSelect }: { variant?: 'pill' | 'menu'; onSelect?: () => void } = {}) {
   const visible = useSelector(canViewTopbarWallet);
@@ -41,14 +41,14 @@ function CashWalletBadge({ variant = 'pill', onSelect }: { variant?: 'pill' | 'm
   const ar = language.startsWith('ar');
   const title = t(
     agency
-      ? (ar ? 'محفظة الوكالة المشتركة' : 'Shared Agency Wallet')
+      ? (ar ? 'محفظة الوكالة المشتركة' : translateText('Shared Agency Wallet'))
       : isSuperAdmin
-      ? (ar ? 'إجمالي أرصدة محافظ الأدمن' : 'Platform Admin Wallets Balance')
+      ? (ar ? 'إجمالي أرصدة محافظ الأدمن' : translateText('Platform Admin Wallets Balance'))
       : role === 'ADMIN'
-      ? (ar ? 'رصيد المحفظة · باقات المنصة ومستخدمي الوكالة' : 'Admin Wallet · Platform Billing & Agency Users')
+      ? (ar ? 'رصيد المحفظة · باقات المنصة ومستخدمي الوكالة' : translateText('Admin Wallet · Platform Billing & Agency Users'))
       : isDemoAccount
       ? 'Wallet Balance (Demo)'
-      : (ar ? 'رصيد المحفظة المتاح' : 'Available Wallet Balance')
+      : (ar ? 'رصيد المحفظة المتاح' : translateText('Available Wallet Balance'))
   );
 
   const targetHref = role === 'SUPER_ADMIN'

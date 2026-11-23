@@ -8,11 +8,13 @@ import { emptySetup, mockPasswordDigest, updateOnboarding, useOnboarding } from 
 import { ThemeToggle } from '../../components/ui/ThemeToggle';
 import { LanguageSwitcher } from '../../components/ui/LanguageSwitcher';
 import { Toggle } from '../../components/ui/Toggle';
+import { translateText, useUILanguage } from '../../i18n/display';
+import { normalizeLocale } from '../../i18n/initialLocale';
 import './onboarding.css';
 
 export function ActivationPage() {
   const [params] = useSearchParams(); const navigate = useNavigate(); const dispatch = useDispatch();
-  const ar = useSelector((s: RootState) => s.ui.language === 'ar'); const t = (en: string, arabic: string) => ar ? arabic : en;
+  const uiLang = useUILanguage(); const ar = uiLang.startsWith('ar'); const t = (en: string, arabic: string) => ar ? arabic : translateText(en);
   const { invites } = useOnboarding(); const invite = invites.find(i => i.id === params.get('invite'));
   const [password, setPassword] = React.useState(''), [confirm, setConfirm] = React.useState('');
   const [visible, setVisible] = React.useState(false), [verified, setVerified] = React.useState(false), [mfa, setMfa] = React.useState(false);
@@ -27,7 +29,7 @@ export function ActivationPage() {
     setBusy(true); setError('');
     try {
       const passwordDigest = await mockPasswordDigest(password, invite.id);
-      updateOnboarding(s => ({ invites: s.invites.map(i => i.id === invite.id ? { ...i, status: 'Activated', mfa, passwordDigest } : i), setups: { ...s.setups, [invite.email]: { ...emptySetup(), language: ar ? 'ar' : 'en' } } }));
+      updateOnboarding(s => ({ invites: s.invites.map(i => i.id === invite.id ? { ...i, status: 'Activated', mfa, passwordDigest } : i), setups: { ...s.setups, [invite.email]: { ...emptySetup(), language: normalizeLocale(uiLang) ?? 'en' } } }));
       dispatch(loginSuccess({ user: { id: invite.id, email: invite.email, name: invite.email.split('@')[0] }, role: invite.role, tenant: { id: invite.id, name: t('Your workspace', 'مساحة عملك') }, token: `mock-${invite.id}` }));
       setPassword(''); setConfirm(''); navigate('/onboarding', { replace: true });
     } catch { setError(t('Activation could not finish. Please try again.', 'تعذر إتمام التفعيل. حاول مرة أخرى.')); setBusy(false); }

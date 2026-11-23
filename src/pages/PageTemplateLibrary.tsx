@@ -97,7 +97,7 @@ export function PageTemplateLibrary({install,initialCategory='All',showStepTempl
       <div
         className="sys-user-funnel-scope-bar"
         role="group"
-        aria-label={ar ? 'نوع قوالب المسارات' : 'Funnel template type'}
+        aria-label={ar ? 'نوع قوالب المسارات' : translateText('Funnel template type')}
         dir={ar ? 'rtl' : 'ltr'}
       >
         <button
@@ -108,7 +108,7 @@ export function PageTemplateLibrary({install,initialCategory='All',showStepTempl
           onClick={() => setFunnelSubMode('full')}
         >
           <Layers3 size={15} />
-          <span>{ar ? 'مسارات متكاملة جاهزة' : 'Complete Multi-Step Funnels'}</span>
+          <span>{ar ? 'مسارات متكاملة جاهزة' : translateText('Complete Multi-Step Funnels')}</span>
           <b>{categoryTemplates.length}</b>
         </button>
         <button
@@ -122,7 +122,7 @@ export function PageTemplateLibrary({install,initialCategory='All',showStepTempl
           <span>
             {ar
               ? 'قوالب الخطوات (الاشتراك · المبيعات · الطلب · الشكر)'
-              : 'Step Templates (Opt-in · Sales · Order Form · Thank You)'}
+              : translateText('Step Templates (Opt-in · Sales · Order Form · Thank You)')}
           </span>
         </button>
       </div>

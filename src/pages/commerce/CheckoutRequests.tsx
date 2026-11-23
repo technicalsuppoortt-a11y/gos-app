@@ -29,7 +29,7 @@ import {
   type CustomerPurchaseRecord,
 } from '../../backend/customerPortal';
 import { QuickDetails } from '../../components/ui/QuickDetails';
-import { translateText as t, useUILanguage } from '../../i18n/display';
+import { translateText as t, useUILanguage, translateText } from '../../i18n/display';
 import { matchesLocalizedSearch } from '../../utils/arabicSearch';
 import { showToast } from '../../utils/toast';
 import { store, type RootState } from '../../store';
@@ -645,7 +645,7 @@ function RequestsView({ tenantId, ownerId }: { tenantId: string; ownerId: string
           scopes,
           workspaceProducts,
         });
-        showToast.success(isArabic ? 'تمت مزامنة وصول العميل إلى البوابة.' : 'Customer portal access synced.');
+        showToast.success(isArabic ? 'تمت مزامنة وصول العميل إلى البوابة.' : translateText('Customer portal access synced.'));
       } else {
         await processRequestWorkflow({
           row,
@@ -661,8 +661,8 @@ function RequestsView({ tenantId, ownerId }: { tenantId: string; ownerId: string
       const code = (cause as { code?: string })?.code;
       showToast.error(row.status === 'Approved'
         ? code === 'functions/failed-precondition'
-          ? (isArabic ? 'تعذرت مزامنة الوصول. تحقق من اعتماد الطلب وتوفر المنتج.' : 'Could not sync access. Check the approval and product availability.')
-          : (isArabic ? 'تعذرت مزامنة الوصول إلى البوابة. حاول مرة أخرى.' : 'Could not sync portal access. Try again.')
+          ? (isArabic ? 'تعذرت مزامنة الوصول. تحقق من اعتماد الطلب وتوفر المنتج.' : translateText('Could not sync access. Check the approval and product availability.'))
+          : (isArabic ? 'تعذرت مزامنة الوصول إلى البوابة. حاول مرة أخرى.' : translateText('Could not sync portal access. Try again.'))
         : t(backendError(cause)));
     } finally {
       setRowBusyId('');
@@ -837,8 +837,8 @@ function RequestsView({ tenantId, ownerId }: { tenantId: string; ownerId: string
                           <button type="button" className="cw-button cr-action-btn cr-sync-button" disabled={Boolean(rowBusyId)} aria-busy={rowBusyId === row.id} onClick={() => void quickApprove(row)}>
                             <KeyRound size={14} />
                             <span>{rowBusyId === row.id
-                              ? (isArabic ? 'جارٍ المزامنة…' : 'Syncing…')
-                              : (isArabic ? 'مزامنة الوصول إلى البوابة' : 'Sync portal access')}</span>
+                              ? (isArabic ? 'جارٍ المزامنة…' : translateText('Syncing…'))
+                              : (isArabic ? 'مزامنة الوصول إلى البوابة' : translateText('Sync portal access'))}</span>
                           </button>
                         )}
                         <button

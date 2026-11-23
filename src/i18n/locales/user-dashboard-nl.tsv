@@ -1,0 +1,1333 @@
+Create Website	Website maken
+Add Product	Product toevoegen
+Add Contact	Contact toevoegen
+Book Appointment	Afspraak boeken
+Manage and view all your customer contacts and leads	Beheer en bekijk al je klantcontacten en leads
+Move to	Verplaatsen naar
+Move to another pipeline	Verplaatsen naar een andere pipeline
+Loading CRM…	CRM laden…
+Syncing…	Synchroniseren…
+Pending booking	Openstaande boeking
+Task content / title	Taakinhoud / titel
+This will remove the form asset from your workspace.	Hiermee wordt dit formulier uit je werkruimte verwijderd.
+Published & Live	Gepubliceerd & live
+Warning: This form is currently Live.	Waarschuwing: dit formulier staat momenteel live.
+Deleting it will immediately unpublish the form, deactivate its live URL, and remove it from any linked funnels or websites.	Als je het verwijdert, wordt de publicatie van het formulier direct ongedaan gemaakt, wordt de live-URL gedeactiveerd en verdwijnt het uit gekoppelde funnels of websites.
+This form and all configured fields will be permanently deleted from your workspace. This action cannot be undone.	Dit formulier en alle ingestelde velden worden definitief verwijderd uit je werkruimte. Deze actie kan niet ongedaan worden gemaakt.
+Deleting Form...	Formulier verwijderen...
+Field duplicated	Veld gedupliceerd
+Field removed	Veld verwijderd
+Form created	Formulier aangemaakt
+Please resolve required fields	Vul eerst alle verplichte velden in
+Back to page builder	Terug naar paginabouwer
+All Forms	Alle formulieren
+Form name...	Formuliernaam...
+Click to rename form	Klik om formulier te hernoemen
+Form editing mode	Bewerkingsmodus formulier
+Fast Form	Snel formulier
+Advanced Form	Geavanceerd formulier
+Builder	Bouwer
+Interactive Preview	Interactief voorbeeld
+CRM Routing	CRM-routering
+Share & Embed	Delen & insluiten
+Republish Changes	Wijzigingen opnieuw publiceren
+Input Fields	Invoervelden
+Text & Contact	Tekst & contact
+Single Line Text	Enkele tekstregel
+Names, titles, keywords	Namen, functies, trefwoorden
+Validation enabled	Validatie ingeschakeld
+Mobile / Telephone	Mobiel / telefoon
+Number Input	Getalinvoer
+Budgets, ratings, count	Budgetten, beoordelingen, aantal
+Paragraph / Textarea	Alinea / tekstvak
+Textarea	Tekstvak
+Multi-line inquiries	Berichten met meerdere regels
+Selections & Dropdowns	Selecties & keuzelijsten
+Dropdown Select	Keuzelijst (dropdown)
+Curated choices menu	Menu met vooraf ingestelde opties
+Radio Choice	Keuzerondje
+Single selection group	Groep met één keuzeoptie
+Checkbox Opt-in	Selectievakje voor opt-in
+Agreements & terms	Akkoord & voorwaarden
+Form Display Headline	Weergegeven formulierkop
+Enter form title...	Voer formuliertitel in...
+Fields below represent the user-facing form. Click any element to configure its properties.	De velden hieronder tonen het formulier zoals bezoekers dat zien. Klik op een element om de eigenschappen in te stellen.
+No fields in this form	Geen velden in dit formulier
+Click any input from the left palette to add fields to your form.	Klik in het linkerpaneel op een invoertype om velden aan je formulier toe te voegen.
+Long text message...	Lang tekstbericht...
+choices	keuzes
+Submit Button Text	Tekst op verzendknop
+Post-Submission Message	Bericht na verzending
+Thank you. We will be in touch.	Bedankt. We nemen snel contact met je op.
+Field Settings	Veldinstellingen
+e.g. Work Email Address	bijv. Zakelijk e-mailadres
+CRM / Lead Field Key	CRM- / leadveldsleutel
+e.g. work_email	bijv. work_email
+Mapped directly to CRM lead properties.	Rechtstreeks gekoppeld aan CRM-leadeigenschappen.
+Field Input Type	Invoertype van veld
+Placeholder Text	Plaatshoudertekst
+e.g. Enter your response...	bijv. Voer je antwoord in...
+Helper Text / Guide	Hulptekst / toelichting
+Optional guidance under the field	Optionele toelichting onder het veld
+Choices (	Keuzes (
+Quick Presets (Click to load)	Snelle voorinstellingen (klik om te laden)
+Paste choices here (one choice per line or separated by commas)...	Plak hier je keuzes (één keuze per regel of gescheiden door komma's)...
+Apply Options	Opties toepassen
+Default selection (active)	Standaardselectie (actief)
+Set as default choice	Instellen als standaardkeuze
+Default Selected Choice	Standaard geselecteerde keuze
+None (Prompt with placeholder)	Geen (toon plaatshouder)
+Submission Received!	Inzending ontvangen!
+Test Again (Reset Form)	Opnieuw testen (formulier resetten)
+Please fill out the details below.	Vul hieronder de gegevens in.
+CRM & Lead Stage Routing	CRM- & leadfaseroutering
+Share & Embed Form	Formulier delen & insluiten
+Direct Shareable Link	Direct deelbare link
+Iframe Embed Code	Iframe-insluitcode
+Embed code copied	Insluitcode gekopieerd
+Embed Directly into Existing Funnel or Website Page	Direct insluiten in bestaande funnel- of websitepagina
+Form embedded in page successfully!	Formulier succesvol ingesloten op de pagina!
+Embed in Selected Page	Insluiten op geselecteerde pagina
+Form Background & Theme	Achtergrond & thema van formulier
+Form Card	Formulierkaart
+Current Theme	Huidig thema
+Apply Theme	Thema toepassen
+Build high-converting dynamic forms, configure CRM lead pipelines, and share or embed them anywhere.	Bouw dynamische formulieren met hoge conversie, stel CRM-leadpipelines in en deel of sluit ze overal in.
+Browse Form Templates	Formuliersjablonen bekijken
+Create Blank Form	Leeg formulier maken
+Total Forms Created	Totaal aantal aangemaakte formulieren
+CRM Pipelines Connected	Gekoppelde CRM-pipelines
+No forms match your search	Geen formulieren komen overeen met je zoekopdracht
+No forms created yet	Nog geen formulieren aangemaakt
+Start with a ready-made template or build a custom form from scratch.	Begin met een kant-en-klaar sjabloon of bouw vanaf nul een eigen formulier.
+Browse Templates	Sjablonen bekijken
+CRM Connected	CRM gekoppeld
+Unrouted	Niet gerouteerd
+View live published form	Gepubliceerd liveformulier bekijken
+Follow Up	Opvolging
+Settings & Analysis	Instellingen & analyse
+Run workflow	Workflow uitvoeren
+Follow-up engine	Opvolgingssysteem
+Changes are saved to this workspace.	Wijzigingen worden opgeslagen in deze werkruimte.
+Loading Flow Builder…	Flow Builder laden…
+Retry assistant settings	Assistentinstellingen opnieuw proberen
+Automations, campaigns, follow-ups and templates in one place	Automatiseringen, campagnes, opvolgingen en sjablonen op één plek
+Generating…	Genereren…
+Generate AI draft	AI-concept genereren
+Check consent & queue	Toestemming controleren & in wachtrij plaatsen
+Delivery requires a connected channel and verified consent.	Verzending vereist een gekoppeld kanaal en geverifieerde toestemming.
+Test real-time grounded responses using your connected knowledge base.	Test in realtime onderbouwde antwoorden op basis van je gekoppelde kennisbank.
+Upload verified business documents or paste guidelines for your assistant.	Upload geverifieerde bedrijfsdocumenten of plak richtlijnen voor je assistent.
+Configure persona identity, operational rules, and conversion goals.	Stel persona-identiteit, operationele regels en conversiedoelen in.
+Automate lifecycle transitions and scheduled outreach.	Automatiseer faseovergangen en ingeplande opvolgberichten.
+Build consistent, consent-checked messaging templates.	Maak consistente berichtsjablonen met toestemmingscontrole.
+Manage channel connections and messaging consent policies.	Beheer kanaalkoppelingen en het toestemmingsbeleid voor berichten.
+Messaging actions check channel consent and connection status before they run.	Berichtacties controleren vooraf de kanaaltoestemming en verbindingsstatus.
+Only verified business content should be added. TXT, MD, CSV and PDF files are uploaded securely and indexed in the background.	Voeg alleen geverifieerde bedrijfsinhoud toe. TXT-, MD-, CSV- en PDF-bestanden worden veilig geüpload en op de achtergrond geïndexeerd.
+Web chat is part of this workspace. Turn replies on when you want the assistant to answer on your site.	Webchat maakt deel uit van deze werkruimte. Schakel antwoorden in wanneer je wilt dat de assistent op je website reageert.
+This channel is not linked to a Meta account. Connect it before replies can be sent or received.	Dit kanaal is niet gekoppeld aan een Meta-account. Koppel het voordat antwoorden kunnen worden verzonden of ontvangen.
+Facebook messages use a linked Messenger page.	Facebook-berichten gebruiken een gekoppelde Messenger-pagina.
+Checking the live account…	Actuele account controleren…
+Reply status	Antwoordstatus
+Opening Meta…	Meta openen…
+Choose an Instagram account	Kies een Instagram-account
+No pages were returned. Allow the page in the Meta window, then try again.	Er zijn geen pagina's gevonden. Geef in het Meta-venster toestemming voor de pagina en probeer het opnieuw.
+Require explicit opt-in blocks a send until the contact has consent. Transactional only allows it. Disabled blocks this channel.	Expliciete opt-in vereisen blokkeert verzending totdat het contact toestemming heeft gegeven. Alleen transactioneel staat dit toe. Uitgeschakeld blokkeert dit kanaal.
+Recorded operational events over time	Geregistreerde operationele gebeurtenissen in de tijd
+AI draft generated. Review it before sending or activating.	AI-concept gegenereerd. Controleer het voordat je het verzendt of activeert.
+This channel is turned off by its consent policy.	Dit kanaal is uitgeschakeld vanwege het toestemmingsbeleid.
+This contact has not opted in on this channel.	Dit contact heeft zich niet aangemeld voor dit kanaal.
+No conversation exists for this contact and channel.	Er bestaat geen gesprek voor dit contact en kanaal.
+Message queued for delivery	Bericht in wachtrij geplaatst voor verzending
+Workflow run scheduled	Workflow-uitvoering ingepland
+Add the follow-up message before activating this workflow.	Voeg het opvolgbericht toe voordat je deze workflow activeert.
+Add source content before saving.	Voeg broninhoud toe voordat je opslaat.
+Choose a TXT, MD, CSV or PDF file.	Kies een TXT-, MD-, CSV- of PDF-bestand.
+Automation name	Naam van automatisering
+New automation name	Nieuwe automatiseringsnaam
+Could not load automations:	Kon automatiseringen niet laden:
+No automations yet. Create the first one above.	Nog geen automatiseringen. Maak hierboven je eerste aan.
+Unpublished changes	Niet-gepubliceerde wijzigingen
+The automation is live	De automatisering staat live
+Unsaved	Niet opgeslagen
+Set live	Live zetten
+Step settings	Stapinstellingen
+Buttons (max 3)	Knoppen (max. 3)
+Button title	Knoptitel
+Button type	Knoptype
+Go to step	Ga naar stap
+Save answer to field	Antwoord opslaan in veld
+Message on invalid answer	Bericht bij ongeldig antwoord
+Rules	Regels
+Match	Overeenkomst
+All rules	Alle regels
+Any rule	Elke regel
+Add rule	Regel toevoegen
+Agent endpoint (https)	Agent-endpoint (https)
+Leave empty to use the placeholder agent	Laat leeg om de standaardagent te gebruiken
+Agent id	Agent-ID
+Instructions sent to the agent	Instructies die naar de agent worden gestuurd
+Hand off after this many replies	Overdragen na dit aantal antwoorden
+Start this flow when a message matches.	Start deze flow wanneer een bericht overeenkomt.
+Rule	Regel
+Message contains	Bericht bevat
+Message is exactly	Bericht is exact
+Any message	Elk bericht
+Keywords, comma separated	Trefwoorden, gescheiden door komma's
+Set field	Veld instellen
+Notify admin	Beheerder op de hoogte stellen
+Webhook	Webhook
+Notification text	Meldingstekst
+Operator	Operator
+Has tag	Heeft tag
+Does not have tag	Heeft geen tag
+Field is set	Veld is ingevuld
+Field is empty	Veld is leeg
+Field equals	Veld is gelijk aan
+Field is not	Veld is niet gelijk aan
+Field contains	Veld bevat
+Tag or field	Tag of veld
+When…	Wanneer…
+Add a keyword trigger	Trefwoordtrigger toevoegen
+Then	Dan
+Contacts that reached this step	Contacten die deze stap hebben bereikt
+External agent	Externe agent
+Placeholder agent (no endpoint yet)	Standaardagent (nog geen endpoint)
+The simulator could not reach the API.	De simulator kon de API niet bereiken.
+Test this flow	Deze flow testen
+Restart	Opnieuw starten
+Close test panel	Testpaneel sluiten
+Send a trigger keyword to start the draft.	Stuur een triggertrefwoord om het concept te starten.
+Waiting until	Wachten tot
+Skip wait	Wachttijd overslaan
+Type a message	Typ een bericht
+Flow Builder	Flow Builder
+Booking details	Boekingsgegevens
+Date & time	Datum & tijd
+No location provided	Geen locatie opgegeven
+Question answers	Antwoorden op vragen
+No additional answers provided.	Geen aanvullende antwoorden opgegeven.
+Reference	Referentie
+Template details	Sjabloongegevens
+Use booking changes	Boekingswijzigingen gebruiken
+Choose Website or Funnel Template	Kies website- of funnelsjabloon
+Standard Upklick Calendar	Standaard Upklick-agenda
+Focused 2-panel Koalendar layout	Gerichte Koalendar-indeling met 2 panelen
+My Website	Mijn website
+Choose any Website from Funnel & Website or any template from the Templates Library to frame this booking calendar in a matching landing page UI.	Kies een website uit Funnel & Website of een sjabloon uit de sjablonenbibliotheek om deze boekingsagenda weer te geven in een bijpassende landingspagina.
+Could not save this booking preset. Try again.	Kon deze boekingsvoorinstelling niet opslaan. Probeer het opnieuw.
+Booking Presets	Boekingsvoorinstellingen
+No published booking templates are available.	Er zijn geen gepubliceerde boekingssjablonen beschikbaar.
+Why Choose Us	Waarom voor ons kiezen
+Instant Confirmation	Directe bevestiging
+Trusted scheduling powered by	Betrouwbare planning mogelijk gemaakt door
+Could not import this CSV.	Kon dit CSV-bestand niet importeren.
+Members can create their own booking pages, and be added to multi-host events.	Leden kunnen hun eigen boekingspagina's maken en worden toegevoegd aan afspraken met meerdere organisatoren.
+Admins	Beheerders
+can manage booking pages across the workspace.	kunnen boekingspagina's in de hele werkruimte beheren.
+CRM & Lead Sync	CRM- & leadsynchronisatie
+pending ·	in afwachting ·
+Smart Booking Suite	Slimme boekingssuite
+Automate scheduling, lead screening, and landing page conversion:	Automatiseer planning, leadkwalificatie en conversie op landingspagina's:
+Prevent no-shows with reminders	Voorkom no-shows met herinneringen
+Qualify leads inside Your details	Kwalificeer leads onder Jouw gegevens
+Sync pending bookings to CRM	Openstaande boekingen synchroniseren met CRM
+Embed calendars in Landing Pages	Agenda's insluiten op landingspagina's
+Browse booking templates	Boekingssjablonen bekijken
+NOTIFICATIONS ACTIVE	MELDINGEN ACTIEF
+ID COPIED	ID GEKOPIEERD
+e.g. Alex Morgan	bijv. Alex Morgan
+e.g. Samir Morgan	bijv. Samir Morgan
+e.g. alex@company.com	bijv. alex@company.com
+Appointment saved.	Afspraak opgeslagen.
+Could not save this appointment.	Kon deze afspraak niet opslaan.
+This appointment may have been removed.	Deze afspraak is mogelijk verwijderd.
+Products sub-views	Subweergaven voor producten
+My Purchases	Mijn aankopen
+Active in your account:	Actief in je account:
+No purchased products yet	Nog geen gekochte producten
+Products and courses you purchase or enroll in via checkout will appear here in your personal library.	Producten en cursussen die je koopt of waarvoor je je inschrijft via de checkout verschijnen hier in je persoonlijke bibliotheek.
+No purchased products match your search filter.	Geen gekochte producten komen overeen met je zoekfilter.
+Explore All Products	Alle producten bekijken
+Purchased & active in your account	Gekocht en actief in je account
+Click to view users who purchased this product	Klik om gebruikers te bekijken die dit product hebben gekocht
+Active Access	Actieve toegang
+Start Course	Cursus starten
+Access Files	Bestanden openen
+View Users & Buyers	Gebruikers & kopers bekijken
+Total Transactions	Totaal aantal transacties
+Logged across all products	Geregistreerd voor alle producten
+Settled Volume	Verrekend volume
+Success Rate	Slagingspercentage
+No transactions found	Geen transacties gevonden
+Product & ID	Product & ID
+Transaction details	Transactiegegevens
+Transaction ID copied	Transactie-ID gekopieerd
+Customer Information	Klantinformatie
+Payment & Settlement	Betaling & afwikkeling
+Transaction ID	Transactie-ID
+Amount Settled	Verrekend bedrag
+Upklick PRO	Upklick PRO
+Sort products	Producten sorteren
+Could not save changes.	Kon wijzigingen niet opslaan.
+Total Customers	Totaal aantal klanten
+Active Buyers	Actieve kopers
+Recorded Payments	Geregistreerde betalingen
+Settled	Verrekend
+Configured Checkout Gateways	Ingestelde betaalgateways
+Accepted Types	Geaccepteerde typen
+Settlement	Afwikkeling
+Product & Payment ID	Product- & betalings-ID
+Try adjusting your search query or status filter.	Probeer je zoekopdracht of statusfilter aan te passen.
+Customer profile & history	Klantprofiel & geschiedenis
+Payment & transaction details	Betalings- en transactiegegevens
+Reference ID copied	Referentie-ID gekopieerd
+Order Record	Besteloverzicht
+Order & Payment Breakdown	Specificatie van bestelling & betaling
+Customer Orders & Products	Bestellingen & producten van klant
+Purchased Items	Gekochte items
+No orders recorded yet.	Nog geen bestellingen geregistreerd.
+No recorded transactions for this customer.	Geen geregistreerde transacties voor deze klant.
+Enable a payment method for checkout. Live payments require a connected payment provider.	Schakel een betaalmethode in voor het afrekenen. Livebetalingen vereisen een gekoppelde betalingsprovider.
+Order product	Product bestellen
+Orders are created as drafts. Payment status is updated by the payment provider.	Bestellingen worden als concept aangemaakt. De betalingsstatus wordt bijgewerkt door de betalingsprovider.
+Report exported	Rapport geëxporteerd
+Date range updated	Datumbereik bijgewerkt
+current records	huidige records
+Verified Revenue	Geverifieerde omzet
+Operational Events	Operationele gebeurtenissen
+Only recorded events and verified transactions are included.	Alleen geregistreerde gebeurtenissen en geverifieerde transacties zijn inbegrepen.
+Workspace Records	Werkruimterecords
+Activity Stream	Activiteitenstroom
+Resource	Bron
+No events recorded for this period.	Geen gebeurtenissen geregistreerd voor deze periode.
+This inbox API supports viewing conversations and receiving customer messages. Staff edits require a connected delivery integration.	Deze Inbox-API ondersteunt het bekijken van gesprekken en ontvangen van klantberichten. Bewerkingen door medewerkers vereisen een gekoppelde verzendintegratie.
+Only text replies can be sent to customers for now.	Voorlopig kunnen alleen tekstberichten naar klanten worden gestuurd.
+Demo reply saved locally	Demo-antwoord lokaal opgeslagen
+Demo draft ready for review	Democoncept klaar voor controle
+AI draft ready for review	AI-concept klaar voor controle
+AI is handling this conversation again.	AI behandelt dit gesprek weer.
+No conversations yet	Nog geen gesprekken
+Loading conversations	Gesprekken laden
+No conversations yet. Connected channels will appear here when customer messages arrive.	Nog geen gesprekken. Gekoppelde kanalen verschijnen hier zodra er berichten van klanten binnenkomen.
+Local demo	Lokale demo
+AI replies resumed across all channels.	AI-antwoorden hervat op alle kanalen.
+AI replies paused across all channels.	AI-antwoorden gepauzeerd op alle kanalen.
+AI auto-reply for this conversation	Automatisch AI-antwoord voor dit gesprek
+Toggle AI follow-up	AI-opvolging in- of uitschakelen
+WhatsApp	WhatsApp
+Instagram	Instagram
+Facebook	Facebook
+Messenger	Messenger
+Instagram / Facebook / Messenger	Instagram / Facebook / Messenger
+Live	Live
+Use	Gebruik
+or	of
+The agent answers	De agent antwoordt
+exit	exit
+“done” or “handoff” moves the flow on.	“done” of “handoff” zet de flow voort.
+Text and up to 3 buttons	Tekst en maximaal 3 knoppen
+Ask and save the answer	Stel een vraag en sla het antwoord op
+Tags, fields, notify, webhook	Tags, velden, melding, Webhook
+Split by tag or field	Splitsen op tag of veld
+Smart delay	Slimme vertraging
+Wait before the next step	Wachten vóór de volgende stap
+Hand the chat to the AI agent	Chat overdragen aan de AI Agent
+Note on the canvas	Notitie op het canvas
+Select a step to edit it, or drag from a step’s right dot to link it to the next one.	Selecteer een stap om deze te bewerken of sleep vanaf het rechterpunt van een stap om deze te koppelen aan de volgende.
+Ideas to impact	Van idee naar resultaat
+Collapse sidebar	Zijbalk inklappen
+Expand sidebar	Zijbalk uitklappen
+Wallet Balance (Demo)	Portemonneesaldo (demo)
+Notifications alt+T	Meldingen alt+T
+Close toast	Melding sluiten
+Demo	Demo
+monthly goal	maanddoel
+Payment completed	Betaling voltooid
+Lead captured	Lead vastgelegd
+Message received	Bericht ontvangen
+Search forms by name...	Formulieren zoeken op naam...
+Search forms by name	Formulieren zoeken op naam
+Route all incoming form submissions directly into your CRM pipelines. When leads submit this form, they will automatically appear in your chosen pipeline and stage.	Stuur alle binnenkomende formulierinzendingen rechtstreeks door naar je CRM-pipelines. Wanneer leads dit formulier indienen, verschijnen ze automatisch in de door jou gekozen pipeline en fase.
+Thinking level	Denkniveau
+Thinking	Denkt na
+Choose how deeply Copilot reasons before answering	Kies hoe diepgaand Copilot redeneert voordat er een antwoord volgt
+conversations · Private to your workspace	gesprekken · Privé voor je werkruimte
+Assistant response received	Antwoord van assistent ontvangen
+Enter a name first.	Voer eerst een naam in.
+Copied	Gekopieerd
+Your offer headline	Koptekst van je aanbieding
+Copied to clipboard	Gekopieerd naar klembord
+Domain connected · SSL active	Domein gekoppeld · SSL actief
+Enter a step type.	Voer een staptype in.
+Asset deleted successfully	Item succesvol verwijderd
+Verifying...	Verifiëren...
+DNS and SSL are pending. Status refreshes automatically while this window is open. Propagation may take up to 24 hours.	DNS en SSL zijn in behandeling. De status wordt automatisch vernieuwd zolang dit venster geopend is. Propagatie kan tot 24 uur duren.
+Connecting...	Verbinden...
+Connecting…	Verbinden…
+Add the following DNS records through your domain registrar. Use CNAME for subdomains or A record for apex domains.	Voeg de volgende DNS-records toe bij je domeinregistrar. Gebruik CNAME voor subdomeinen of een A-record voor hoofddomeinen.
+CNAME (Subdomain / www)	CNAME (subdomein / www)
+A Record (Apex / @)	A-record (hoofddomein / @)
+Copy IP	IP kopiëren
+Automatic SSL certificate provisioning and authentication domain allowlisting are triggered once DNS records are verified.	Automatische uitgifte van het SSL-certificaat en vrijgave van het authenticatiedomein starten zodra de DNS-records zijn geverifieerd.
+Verifying DNS records and SSL provisioning for	DNS-records en SSL-uitgifte verifiëren voor
+Propagation can take from a few minutes up to 24 hours.	Propagatie kan enkele minuten tot 24 uur duren.
+DNS records not verified yet	DNS-records nog niet geverifieerd
+CNAMEs detected:	Gedetecteerde CNAME's:
+A Records (IPs) detected:	Gedetecteerde A-records (IP's):
+No DNS records detected for this host yet. Please verify your DNS registrar configuration.	Nog geen DNS-records gedetecteerd voor deze host. Controleer de DNS-instellingen bij je domeinregistrar.
+Back to DNS records	Terug naar DNS-records
+Check DNS & SSL	DNS & SSL controleren
+Choose or enter a custom type	Kies of voer een aangepast type in
+Sort assets	Items sorteren
+Click to deactivate domain	Klik om domein te deactiveren
+Click to activate domain	Klik om domein te activeren
+Updating...	Bijwerken...
+Manage DNS	DNS beheren
+Configure DNS	DNS instellen
+Update connected funnel or website target, active routing status, and default domain settings.	Werk de gekoppelde funnel of website, de actieve routeringsstatus en de standaard domeininstellingen bij.
+Domain host	Domeinhost
+Connected target asset	Gekoppeld doelitem
+None (Unconnected / Standalone)	Geen (niet gekoppeld / losstaand)
+Routing Status	Routeringsstatus
+Connected (Active & Routing Traffic)	Gekoppeld (actief & stuurt verkeer door)
+Disconnected (Paused / Inactive)	Ontkoppeld (gepauzeerd / inactief)
+Set as primary default workspace domain	Instellen als primair standaarddomein van de werkruimte
+This will permanently remove the domain configuration from your workspace, disconnect any connected funnel or website, and revoke Vercel / SSL routing records. This action cannot be undone.	Hiermee wordt de domeinconfiguratie definitief uit je werkruimte verwijderd, worden gekoppelde funnels of websites ontkoppeld en worden de Vercel- / SSL-routeringsrecords ingetrokken. Deze actie kan niet ongedaan worden gemaakt.
+Deleting...	Verwijderen...
+Unconnected domain	Niet-gekoppeld domein
+Save this page to a workspace asset before publishing.	Koppel en bewaar deze pagina eerst in een werkruimte-item voordat je publiceert.
+View Published Site	Gepubliceerde site bekijken
+Publish changes to create a confirmed cloud hosting release.	Publiceer je wijzigingen om een bevestigde cloudhostingversie te maken.
+Draft editing is active. Save Draft to persist your changes.	Je bewerkt momenteel een concept. Klik op Concept opslaan om je wijzigingen te bewaren.
+Choose a preset above or enter any type	Kies hierboven een voorinstelling of voer een eigen type in
+Published form	Gepubliceerd formulier
+Choose a valid published form link.	Kies een geldige link naar een gepubliceerd formulier.
+Thank you. Your response was received.	Bedankt. Je reactie is ontvangen.
+Submitting…	Verzenden…
+Submitting...	Verzenden...
+How can we help you?	Hoe kunnen we je helpen?
+Add a video URL or upload a video in Content settings	Voeg een video-URL toe of upload een video in de inhoudsinstellingen
+Upload a video or enter a video link.	Upload een video of voer een videolink in.
+Opening Form Creation Workspace...	Werkruimte voor formuliercreatie openen...
+Workspace form	Werkruimteformulier
+No form attached yet	Nog geen formulier gekoppeld
+No forms available yet. Create a form to connect it here.	Nog geen formulieren beschikbaar. Maak een formulier aan om het hier te koppelen.
+Create a new form	Nieuw formulier aanmaken
+Create New Form	Nieuw formulier aanmaken
+No calendar connected yet	Nog geen agenda gekoppeld
+Create New Calendar	Nieuwe agenda aanmaken
+Color & surface style	Kleur- en oppervlaktestijl
+Match Landing Page Brand Color	Merkkleur van landingspagina overnemen
+Subtle Refined Accent	Subtiel verfijnd accent
+Use Calendar Original Color	Originele agendakleur gebruiken
+Section heading (optional)	Sectiekop (optioneel)
+e.g. Book Your Strategy Session	bijv. Boek jouw strategiesessie
+Section subtitle (optional)	Sectie-ondertitel (optioneel)
+Optional intro above the booking card	Optionele intro boven de boekingskaart
+Unable to save the discount. Please try again.	Kon de korting niet opslaan. Probeer het opnieuw.
+Discount code copied!	Kortingscode gekopieerd!
+Could not copy code. Please copy it manually.	Kon de code niet kopiëren. Kopieer deze handmatig.
+View users who used this discount	Gebruikers bekijken die deze korting hebben gebruikt
+View discount details & users	Kortingsdetails en gebruikers bekijken
+Discount Details & Redemptions	Kortingsdetails & verzilveringen
+Discount code copied	Kortingscode gekopieerd
+Promotional discount coupon	Promotionele kortingsbon
+Used	Gebruikt
+times	keer
+Discount Configuration	Kortingsconfiguratie
+Coupon Code	Kortingscode
+Users Who Used This Discount	Gebruikers die deze korting hebben gebruikt
+No redemptions recorded yet	Nog geen verzilveringen geregistreerd
+Customers who apply this coupon code during checkout will appear here with their order details.	Klanten die deze kortingscode gebruiken bij het afrekenen verschijnen hier met hun bestelgegevens.
+Total Paid	Totaal betaald
+Completed orders with a discount	Voltooide bestellingen met korting
+Payment methods saved	Betaalmethoden opgeslagen
+Stripe settings saved, but the connection could not be verified. Check your keys and mode.	Stripe-instellingen opgeslagen, maar de verbinding kon niet worden geverifieerd. Controleer je sleutels en modus.
+Accept payments through manual transfers or payment gateways. Methods are synchronized across products and checkout.	Accepteer betalingen via handmatige overboekingen of betaalgateways. Methoden worden gesynchroniseerd over producten en de checkout.
+Syncing configured manual transfer wallets and payment gateways	Geconfigureerde portemonnees voor handmatige overboekingen en betaalgateways synchroniseren
+Cloud Sync	Cloudsynchronisatie
+Active Methods	Actieve methoden
+Payment methods currently available to your customers at checkout.	Betaalmethoden die momenteel beschikbaar zijn voor je klanten bij het afrekenen.
+Connected · verified with provider	Verbonden · geverifieerd bij aanbieder
+Configured · verification pending	Geconfigureerd · verificatie in afwachting
+No payment methods added yet. Connect a gateway or add a transfer method below.	Nog geen betaalmethoden toegevoegd. Koppel hieronder een gateway of voeg een overboekingsmethode toe.
+Webhook endpoint (checkout.session.completed)	Webhook-eindpunt (checkout.session.completed)
+Webhook URL copied	Webhook-URL gekopieerd
+Hide sensitive key	Gevoelige sleutel verbergen
+Show sensitive key	Gevoelige sleutel tonen
+Verify these Stripe keys before enabling checkout.	Verifieer deze Stripe-sleutels voordat je de checkout inschakelt.
+Fawry	Fawry
+Kashier	Kashier
+PayPal	PayPal
+Paymob	Paymob
+Ready to connect	Klaar om te koppelen
+How to connect	Hoe te koppelen
+Disconnecting…	Verbinding verbreken…
+Callback URL	Callback-URL
+Verify token	Verificatietoken
+App Secret	App-geheim
+Your access needs to be renewed. Reconnect to resume syncing.	Je toegang moet worden vernieuwd. Verbind opnieuw om het synchroniseren te hervatten.
+STEP-BY-STEP CONNECTION GUIDE	STAPSGEWIJZE KOPPELINGSGIDS
+How to Connect Your Channels Professionally	Hoe je je kanalen professioneel koppelt
+Cloud Synced	Gesynchroniseerd met de cloud
+Channel connection guides	Gidsen voor kanaalkoppeling
+Before You Begin (Prerequisites)	Voordat je begint (vereisten)
+Permissions & Data Sync	Rechten & gegevenssynchronisatie
+Pro Tip for	Pro-tip voor
+You control what you connect. All integration states are securely synced with your cloud workspace, and disconnecting a tool preserves your historical data.	Jij bepaalt wat je koppelt. Alle integratiestatussen worden veilig gesynchroniseerd met je cloudwerkruimte en bij het ontkoppelen van een tool blijven je historische gegevens behouden.
+You’ll authorize access securely and sync your connection state in the cloud. You can disconnect at any time.	Je autoriseert de toegang veilig en synchroniseert je verbindingsstatus in de cloud. Je kunt op elk moment de verbinding verbreken.
+We’ll verify your authorization with the provider.	We verifiëren je autorisatie bij de aanbieder.
+No Instagram account found. Link a professional Instagram account to your Facebook Page, then allow it in the Meta window.	Geen Instagram-account gevonden. Koppel een professioneel Instagram-account aan je Facebook-pagina en geef er vervolgens toestemming voor in het Meta-venster.
+No pages found. You need to manage the page, and allow it in the Meta window.	Geen pagina's gevonden. Je moet de pagina beheren en deze toestaan in het Meta-venster.
+Refresh list	Lijst vernieuwen
+result	resultaat
+results	resultaten
+Press ⌘K to search	Druk op ⌘K om te zoeken
+Filter status	Status filteren
+Loading knowledge sources	Kennisbronnen laden
+Indexed Chunks	Geïndexeerde fragmenten
+Indexed	Geïndexeerd
+No knowledge sources uploaded yet. Click 'Add knowledge' above to add your first source.	Nog geen kennisbronnen geüpload. Klik hierboven op 'Kennis toevoegen' om je eerste bron toe te voegen.
+e.g., Return & Refund Policy	bijv. Retour- en terugbetalingsbeleid
+Paste verified business information, FAQs, pricing, or guidelines for the AI assistant...	Plak geverifieerde bedrijfsinformatie, veelgestelde vragen, prijzen of richtlijnen voor de AI-assistent...
+This will permanently remove this source and all its indexed chunks from your AI assistant. This action cannot be undone.	Hiermee verwijder je deze bron en alle bijbehorende geïndexeerde fragmenten definitief uit je AI-assistent. Deze actie kan niet ongedaan worden gemaakt.
+Chunks	Fragmenten
+This source was indexed into embeddings and is active in your assistant's knowledge base.	Deze bron is geïndexeerd in embeddings en is actief in de kennisbank van je assistent.
+Use workspace defaults	Standaardwaarden van werkruimte gebruiken
+Please enter your current password.	Voer je huidige wachtwoord in.
+Use at least 8 characters for the new password.	Gebruik minimaal 8 tekens voor het nieuwe wachtwoord.
+Choose a new password different from your current password.	Kies een nieuw wachtwoord dat verschilt van je huidige wachtwoord.
+Update your account password. For your security, you will be automatically signed out after updating.	Werk het wachtwoord van je account bij. Voor je veiligheid word je na het bijwerken automatisch uitgelogd.
+Enter current password	Huidig wachtwoord invoeren
+At least 8 characters	Minimaal 8 tekens
+Re-enter new password	Nieuw wachtwoord opnieuw invoeren
+Use at least 8 characters. Updating your password will sign you out and redirect to login.	Gebruik minimaal 8 tekens. Na het bijwerken van je wachtwoord word je uitgelogd en doorgestuurd naar de inlogpagina.
+Assign support teams	Supportteams toewijzen
+Support owner	Supportverantwoordelijke
+Save assignment	Toewijzing opslaan
+Canvas controls	Canvasbediening
+Matches	Komt overeen met
+Otherwise	Anders
+Handoff	Overdracht
+Save failed	Opslaan mislukt
+Delete Form Permanently?	Formulier definitief verwijderen?
+Contact name	Naam contactpersoon
+No phone added	Geen telefoonnummer toegevoegd
+Google Meet	Google Meet
+Demo playback controls	Afspeelbediening demo
+Replay demo	Demo opnieuw afspelen
+Play demo	Demo afspelen
+Demo cycle steps	Stappen democyclus
+Demo upload	Demo-upload
+Drop your knowledge	Sleep je kennis hierheen
+Choose demo files	Demobestanden kiezen
+Use sample sources	Voorbeeldbronnen gebruiken
+Demo knowledge files	Demokennisbestanden
+Enter a valid HTTP or HTTPS URL.	Voer een geldige HTTP- of HTTPS-URL in.
+Demo website URL	URL van demowebsite
++ website your-website.com	+ website jouw-website.nl
+Demo cycle progress	Voortgang democyclus
+FRONTEND DEMO	FRONTEND-DEMO
+No live data changes	Geen wijzigingen in live gegevens
+Cycle complete	Cyclus voltooid
+Playing	Wordt afgespeeld
+Demo question	Demovraag
+Try question	Vraag uitproberen
+Return to my knowledge	Terug naar mijn kennisbank
+Close demo training options	Opties voor demotraining sluiten
+DEMO TRAINING	DEMOTRAINING
+How should your AI learn?	Hoe moet je AI leren?
+Demo training mode	Modus voor demotraining
+Train on Something New	Trainen op nieuwe gegevens
+Enhance / Append to Existing Data	Bestaande gegevens verrijken / aanvullen
+New demo category	Nieuwe democategorie
+Append to demo category	Aanvullen bij democategorie
+Review sources	Bronnen controleren
+Start demo cycle	Democyclus starten
+Training	Trainen
+YOUR AI	JOUW AI
+Training simulation	Trainingsimulatie
+Building your knowledge	Je kennisbank wordt opgebouwd
+CRAWLING LINKS	LINKS CRAWLEN
+Demo training progress	Voortgang demotraining
+Chat simulation	Chatsimulatie
+Test your assistant	Test je assistent
+WHATSAPP ·	WHATSAPP ·
+RIYADH	RIYAD
+Preparing sample reply	Voorbeeldantwoord voorbereiden
+RETRIEVED:	OPGEHAALD:
+CONSISTENT	CONSISTENT
+Illustrative conversation and pricing · demo only	Illustratief gesprek en prijsvoorbeeld · alleen demo
+Channel network simulation	Simulatie kanaalnetwerk
+IDLE	INACTIEF
+Live conversation monitor	Live gespreksmonitor
+Your demo assistant is live	Je demo-assistent staat live
+TALKING TO	IN GESPREK MET
+CONVERSATIONS TODAY	GESPREKKEN VANDAAG
+NEEDED YOUR TEAM	TEAM HULP NODIG
+Meet customers where they are	Bereik klanten op hun favoriete kanaal
+Web chat turns on here. WhatsApp, Messenger and Instagram open the real account connection.	Webchat schakel je hier in. WhatsApp, Messenger en Instagram openen de echte accountkoppeling.
+Ready on your site	Klaar op je website
+Account linked	Account gekoppeld
+Needs an account	Account vereist
+channels are listening for customers.	kanalen luisteren naar klanten.
+Turn on web chat, or connect a Meta account, before you go live.	Schakel webchat in of koppel een Meta-account voordat je live gaat.
+A teammate should take this one.	Een teamlid kan dit gesprek het beste overnemen.
+Go live, and keep this channel listening, before the assistant can reply.	Ga live en houd dit kanaal actief voordat de assistent kan antwoorden.
+The knowledge base is not ready yet.	De kennisbank is nog niet gereed.
+LIVE MONITOR	LIVE MONITOR
+Your assistant is live	Je assistent staat live
+Ready when you are	Klaar wanneer jij dat bent
+Customers on listening channels get answers from this knowledge.	Klanten op actieve kanalen krijgen antwoorden op basis van deze kennis.
+Go live after a channel is listening and the knowledge is ready.	Ga live zodra een kanaal actief is en de kennisbank gereed is.
+Go live	Live zetten
+sources ready	bronnen gereed
+channels listening	kanalen actief
+No channel is listening yet	Er is nog geen kanaal actief
+Assistant is answering	Assistent beantwoordt vragen
+CHANNELS ENABLED	INGESCHAKELDE KANALEN
+Talk to the assistant as a customer	Praat met de assistent als klant
+Choose a channel first	Kies eerst een kanaal
+Send a question. The reply is saved in your inbox.	Stuur een vraag. Het antwoord wordt opgeslagen in je inbox.
+Assistant is replying	Assistent typt een antwoord
+Ask something a customer would ask…	Stel een vraag die een klant zou stellen…
+Replying…	Antwoorden…
+Your conversation monitor is ready	Je gespreksmonitor is klaar voor gebruik
+Customer conversations will appear here as they reach your workspace.	Klantgesprekken verschijnen hier zodra ze je werkruimte binnenkomen.
+Waiting for messages	Wachten op berichten
+TEAM HANDLING	DOOR TEAM BEHANDELD
+AI ENABLED	AI INGESCHAKELD
+AWAITING TEAM	WACHT OP TEAM
+SOURCES READY	BRONNEN GEREED
+Choose a PDF, DOCX, CSV, MD, TXT or JSON file.	Kies een PDF-, DOCX-, CSV-, MD-, TXT- of JSON-bestand.
+Choose a non-empty file up to 20 MB.	Kies een niet-leeg bestand van maximaal 20 MB.
+Enter a valid public HTTP or HTTPS website URL.	Voer een geldige openbare HTTP- of HTTPS-website-URL in.
+Enter a category name of up to 60 characters without brackets.	Voer een categorienaam in van maximaal 60 tekens zonder haakjes.
+Confirm that the current knowledge will be deleted.	Bevestig dat de huidige kennis wordt verwijderd.
+The current knowledge could not be removed.	De huidige kennis kon niet worden verwijderd.
+The server did not confirm this source. Refresh sources before retrying.	De server heeft deze bron niet bevestigd. Vernieuw de bronnen voordat je het opnieuw probeert.
+sources submitted for indexing.	bronnen ingediend voor indexering.
+Some sources could not be submitted. Review the errors and retry those sources.	Sommige bronnen konden niet worden ingediend. Controleer de foutmeldingen en probeer die bronnen opnieuw.
+Source removed.	Bron verwijderd.
+No websites in this training batch.	Geen websites in deze trainingsbatch.
+No files in this training batch.	Geen bestanden in deze trainingsbatch.
+Reading	Lezen
+Embedding	Inbedden
+Tuning	Afstemmen
+INTELLIGENCE STUDIO	INTELLIGENCE STUDIO
+Your knowledge. Your AI.	Jouw kennis. Jouw AI.
+Turn business knowledge into answers your customers can trust.	Zet bedrijfskennis om in antwoorden waarop je klanten kunnen vertrouwen.
+Exit demo	Demo afsluiten
+Cycle Demo Mode	Democyclusmodus
+Knowledge studio demo	Kennisstudio-demo
+Knowledge training workflow	Workflow voor kennistraining
+Knowledge workflow steps	Stappen kennisworkflow
+Retry connection	Verbinding opnieuw proberen
+Drag files here, or browse your device	Sleep bestanden hierheen of blader op je apparaat
+Upload knowledge files	Kennisbestanden uploaden
+Up to 20 MB per file	Maximaal 20 MB per bestand
+Website crawling and document extraction depend on server support. Unsupported sources show an error and can be retried.	Het crawlen van websites en extraheren van documenten is afhankelijk van serverondersteuning. Niet-ondersteunde bronnen tonen een foutmelding en kunnen opnieuw worden geprobeerd.
+Choose add or replace before training starts.	Kies toevoegen of vervangen voordat de training start.
+Add text or instructions	Tekst of instructies toevoegen
+e.g. Support guidelines	bijv. Supportrichtlijnen
+Knowledge content	Kennisinhoud
+Add text source	Tekstbron toevoegen
+Ready to upload	Klaar om te uploaden
+Submitting sources…	Bronnen indienen…
+Choose training mode	Trainingsmodus kiezen
+Live source status from the indexing service.	Live bronstatus vanuit de indexeringsservice.
+Training in progress	Training bezig
+Training complete	Training voltooid
+Awaiting sources	Wachten op bronnen
+Sources indexed	Bronnen geïndexeerd
+Indexing	Indexeren
+Ready for a test drive	Klaar voor een proefrit
+A smarter assistant starts here	Een slimmere assistent begint hier
+sources indexed. Percentages reflect completed sources.	bronnen geïndexeerd. Percentages geven voltooide bronnen weer.
+sources indexed. Overall embedding progress is reported by the server.	bronnen geïndexeerd. De algehele voortgang van embeddings wordt door de server gerapporteerd.
+Source status and overall training progress refresh automatically.	De bronstatus en de algehele trainingsvoortgang worden automatisch vernieuwd.
+Continue to test	Doorgaan naar testen
+TEST YOUR KNOWLEDGE	TEST JE KENNISBANK
+Put your knowledge to the test	Stel je kennisbank op de proef
+Continue to connect	Doorgaan naar koppelen
+Continue to live	Doorgaan naar live zetten
+Manage the sources behind your assistant’s answers.	Beheer de bronnen achter de antwoorden van je assistent.
+Filter knowledge category	Kenniscategorie filteren
+Refreshing sources…	Bronnen vernieuwen…
+No sources match your search.	Geen bronnen gevonden voor je zoekopdracht.
+Your knowledge starts here. Add your first source above.	Je kennisbank begint hier. Voeg hierboven je eerste bron toe.
+Close training options	Trainingsopties sluiten
+SOURCES SELECTED	BRONNEN GESELECTEERD
+Add these sources to the current knowledge, or replace that knowledge with a new training.	Voeg deze bronnen toe aan de huidige kennis, of vervang die kennis met een nieuwe training.
+Training mode	Trainingsmodus
+New Training	Nieuwe training
+Deletes every current source, then trains only on what you upload now.	Verwijdert alle huidige bronnen en traint daarna uitsluitend op wat je nu uploadt.
+Update Existing Training	Bestaande training bijwerken
+Adds these sources on top of the knowledge you already have.	Voegt deze bronnen toe bovenop de kennis die je al hebt.
+The current knowledge will be deleted.	De huidige kennis wordt verwijderd.
+existing sources will be removed before training starts. This cannot be undone.	bestaande bronnen worden verwijderd voordat de training start. Dit kan niet ongedaan worden gemaakt.
+There is no existing knowledge to remove. Training will use only these sources.	Er is geen bestaande kennis om te verwijderen. De training gebruikt alleen deze bronnen.
+I understand the current knowledge will be deleted.	Ik begrijp dat de huidige kennis wordt verwijderd.
+Category for the new knowledge	Categorie voor de nieuwe kennis
+Add to category	Toevoegen aan categorie
+e.g. Product launch	bijv. Productlancering
+The category is a label on the new sources. It does not keep a separate knowledge base.	De categorie is een label op de nieuwe bronnen en vormt geen afzonderlijke kennisbank.
+Add to existing knowledge	Toevoegen aan bestaande kennis
+Checkout request approved.	Betaalverzoek goedgekeurd.
+Checkout Requests	Betaalverzoeken
+Review customer submissions, transfer receipts and checkout details.	Beoordeel klantinzendingen, betalingsbewijzen en afrekengegevens.
+Request status	Verzoekstatus
+Loading checkout requests…	Betaalverzoeken laden…
+Manual transfer	Handmatige overboeking
+Approve verified transfer	Geverifieerde overboeking goedkeuren
+Reject with reason	Afwijzen met reden
+No checkout requests yet	Nog geen betaalverzoeken
+Change your search or status filter.	Pas je zoekopdracht of statusfilter aan.
+Submissions from published product checkouts appear here.	Inzendingen van gepubliceerde product-checkouts verschijnen hier.
+Please enter a rejection reason before rejecting this request.	Voer een reden voor afwijzing in voordat je dit verzoek afwijst.
+Checkout request approved · Customer portal access & login email sent.	Betaalverzoek goedgekeurd · Toegang tot klantportaal & inlogmail verzonden.
+Checkout request rejected.	Betaalverzoek afgewezen.
+Checkout request	Betaalverzoek
+Reference ID	Referentie-ID
+Copy reference ID	Referentie-ID kopiëren
+Total due	Totaal te betalen
+Transfer account	Rekening voor overboeking
+Customer note	Klantnotitie
+No receipt submitted	Geen betalingsbewijs ingediend
+Loading receipt…	Betalingsbewijs laden…
+Review details	Beoordelingsdetails
+No review note	Geen beoordelingsnotitie
+Review request	Verzoek beoordelen
+Verify the transfer against your payment account before approving.	Controleer de overboeking op je betaalrekening voordat je goedkeurt.
+Approve to confirm this order.	Keur goed om deze bestelling te bevestigen.
+Review note	Beoordelingsnotitie
+Required to reject	Verplicht bij afwijzen
+A reason is required to reject the request	Een reden is verplicht om het verzoek af te wijzen
+Reject request	Verzoek afwijzen
+Approve request	Verzoek goedkeuren
+Template loaded. Save Changes to keep your edits.	Sjabloon geladen. Klik op Wijzigingen opslaan om je aanpassingen te bewaren.
+New version created as a draft.	Nieuwe versie aangemaakt als concept.
+Product duplicated as a draft.	Product gedupliceerd als concept.
+Choose a Product Template	Kies een productsjabloon
+Choose a starting point for this draft. Add your own files and booking links, then use Save Changes to persist it.	Kies een startpunt voor dit concept. Voeg je eigen bestanden en boekingslinks toe en klik op Wijzigingen opslaan om alles vast te leggen.
+Use product changes	Productwijzigingen gebruiken
+Local attachments are available only in this browser session. Upload them to cloud storage or add delivery URLs before publishing.	Lokale bijlagen zijn alleen in deze browsersessie beschikbaar. Upload ze naar cloudopslag of voeg leverings-URL's toe voordat je publiceert.
+Quick-Start Preset Templates	Kant-en-klare snelstartsjablonen
+Pick a ready-made template to pre-configure pricing, delivery structure, and sales settings instantly.	Kies een kant-en-klaar sjabloon om prijzen, leveringsstructuur en verkoopinstellingen direct vooraf in te stellen.
+Automated Sales & Delivery Pipeline	Geautomatiseerde verkoop- en leveringspipeline
+Every product you create connects out of the box with checkout, delivery, and CRM lead capture.	Elk product dat je aanmaakt werkt direct samen met checkout, levering en CRM-leadregistratie.
+Sales funnel linked	Verkoopfunnel gekoppeld
+Receipt Full Preview	Volledig voorbeeld van betalingsbewijs
+Automatic subscription renewal via Wallet enabled.	Automatische abonnementsverlenging via Portemonnee ingeschakeld.
+Automatic subscription renewal disabled.	Automatische abonnementsverlenging uitgeschakeld.
+Wallet Transactions	Portemonneetransacties
+All wallet top-ups, plan payments, auto-renewals, and service usage.	Alle opwaarderingen van de portemonnee, pakketbetalingen, automatische verlengingen en serviceverbruik.
+Shared billing	Gedeelde facturatie
+Top-Up Request Pending Review	Opwaardeerverzoek in afwachting van beoordeling
+Awaiting Approval	Wacht op goedkeuring
+You requested a wallet top-up of	Je hebt een opwaardering van je portemonnee aangevraagd van
+via	via
+Your request is being reviewed by administration. You cannot send another top-up request until this request is approved or rejected.	Je verzoek wordt beoordeeld door het beheer. Je kunt geen nieuw opwaardeerverzoek indienen totdat dit verzoek is goedgekeurd of afgewezen.
+In Review	In beoordeling
+Available to pay instantly for plans, renewals, add-ons, auto-recharge, and messaging channels.	Direct beschikbaar om te betalen voor pakketten, verlengingen, add-ons, automatisch opwaarderen en berichtenkanalen.
+Top-up request awaiting approval	Opwaardeerverzoek wacht op goedkeuring
+Top-Up In Review…	Opwaardering in beoordeling…
+Top Up Wallet	Portemonnee opwaarderen
+Auto-Renew & Recharge	Automatisch verlengen & opwaarderen
+Auto-Renewal via Wallet	Automatisch verlengen via Portemonnee
+Add funds to your wallet for instant plan payments, renewals, and services.	Voeg tegoed toe aan je portemonnee voor directe pakketbetalingen, verlengingen en diensten.
+Or enter a specific amount	Of voer een specifiek bedrag in
+Enter specific amount…	Specifiek bedrag invoeren…
+Enter specific wallet top-up amount	Specifiek opwaardeerbedrag voor portemonnee invoeren
+Enter an amount between 1 and 100,000.	Voer een bedrag in tussen 1 en 100.000.
+Awaiting Admin Approval	Wacht op goedkeuring van beheerder
+Auto-Renewal & Auto-Recharge	Automatisch verlengen & automatisch opwaarderen
+Automatically renew your subscription and recharge low credits from your Wallet.	Verleng je abonnement automatisch en vul lage credits aan vanuit je Portemonnee.
+Auto-Renew Subscription	Abonnement automatisch verlengen
+Deduct renewal from Wallet when sufficient funds exist.	Schrijf de verlenging af van je Portemonnee bij voldoende saldo.
+Enable Auto-Renew Subscription	Automatische abonnementsverlenging inschakelen
+Low-Balance Auto-Recharge	Automatisch opwaarderen bij laag saldo
+Top up AI credits automatically from Wallet when low.	Waardeer AI-credits automatisch op vanuit je Portemonnee wanneer ze bijna op zijn.
+When AI credits drop below	Wanneer AI-credits dalen onder
+Enter credits threshold…	Drempelwaarde voor credits invoeren…
+Auto-add AI credits from Wallet	Automatisch AI-credits toevoegen vanuit Portemonnee
+Enter credits to add…	Toe te voegen credits invoeren…
+Low Wallet Balance Alert (€)	Melding bij laag portemonneesaldo (€)
+Enter alert balance…	Drempelbedrag voor melding invoeren…
+Payment Requests & Receipts	Betaalverzoeken & betalingsbewijzen
+Top-up request processed. Your balance updates automatically.	Opwaardeerverzoek verwerkt. Je saldo wordt automatisch bijgewerkt.
+Enter a full name and email address.	Voer een volledige naam en e-mailadres in.
+Enter a valid email address.	Voer een geldig e-mailadres in.
+Enter a login password of at least 6 characters for this team member.	Voer een inlogwachtwoord van minimaal 6 tekens in voor dit teamlid.
+New password must be at least 6 characters.	Het nieuwe wachtwoord moet minimaal 6 tekens bevatten.
+Team member removed.	Teamlid verwijderd.
+Team member permissions updated.	Rechten van teamlid bijgewerkt.
+Team member added and login credentials provisioned.	Teamlid toegevoegd en inloggegevens aangemaakt.
+Manage your team members and configure granular sidebar module and settings tab permissions.	Beheer je teamleden en stel gedetailleerde rechten in voor zijbalkmodules en instellingentabbladen.
+Assign workspace roles and control which sidebar modules and settings tabs each member can access.	Wijs werkruimterollen toe en bepaal tot welke zijbalkmodules en instellingentabbladen elk lid toegang heeft.
+Filter members by role	Leden filteren op rol
+Allowed Modules & Tabs	Toegestane modules & tabbladen
+Full Access (All tabs)	Volledige toegang (alle tabbladen)
+Workspace owner is always active	Eigenaar van werkruimte is altijd actief
+Active — click to deactivate member login	Actief — klik om inloggen voor lid te deactiveren
+Inactive — click to activate member login	Inactief — klik om inloggen voor lid te activeren
+The workspace owner keeps 100% full access. Assign individual module and settings tab visibility when adding or editing a member.	De eigenaar van de werkruimte behoudt 100% volledige toegang. Stel bij het toevoegen of bewerken van een lid de zichtbaarheid per module en instellingentabblad in.
+e.g. Sarah Ahmed	bijv. Sarah Ahmed
+Account Status	Accountstatus
+Dashboard Login Password (Optional update)	Wachtwoord voor Dashboard-login (optioneel bijwerken)
+Dashboard Login Password *	Wachtwoord voor Dashboard-login *
+Login Enabled	Inloggen ingeschakeld
+Generated password and copied to clipboard.	Wachtwoord gegenereerd en gekopieerd naar klembord.
+Generate password	Wachtwoord genereren
+Enter a new password to change login password (min 6 chars)…	Voer een nieuw wachtwoord in om het inlogwachtwoord te wijzigen (min. 6 tekens)…
+Enter login password for this member (min 6 chars)…	Voer een inlogwachtwoord in voor dit lid (min. 6 tekens)…
+This team member can sign in to the User Dashboard (/auth/login) using their email and password under your workspace.	Dit teamlid kan inloggen op het gebruikersdashboard (/auth/login) met zijn of haar e-mailadres en wachtwoord binnen jouw werkruimte.
+Quick Access Presets	Snelkeuzeprofielen voor toegang
+Choose a preset or customize individual tabs below	Kies een profiel of pas hieronder afzonderlijke tabbladen aan
+Platform Modules (Sidebar Navigation)	Platformmodules (zijbalknavigatie)
+Unchecked modules will be hidden from the member’s sidebar.	Uitgevinkte modules worden verborgen in de zijbalk van het lid.
+Settings Tabs	Instellingentabbladen
+Choose which workspace settings tabs this member can access.	Kies tot welke instellingentabbladen van de werkruimte dit lid toegang heeft.
+and revoke their workspace access?	en de toegang tot de werkruimte intrekken?
+Pixel	Pixel
+Manage platform-wide Meta Pixel and Google Analytics defaults.	Beheer platformbrede standaardinstellingen voor Meta Pixel en Google Analytics.
+Configure workspace pixels and inspect recorded activity and observed tracking events.	Configureer werkruimtepixels en inspecteer geregistreerde activiteit en waargenomen trackingevents.
+Events combine recorded workspace activity, verified transactions and this browser session. Script availability does not confirm delivery to a provider.	Events combineren geregistreerde werkruimteactiviteit, geverifieerde transacties en deze browsersessie. Beschikbaarheid van het script bevestigt geen aflevering bij een aanbieder.
+Tracking settings saved	Trackinginstellingen opgeslagen
+Could not save tracking settings.	Kon trackinginstellingen niet opslaan.
+These defaults apply across the platform.	Deze standaardwaarden gelden voor het hele platform.
+Your workspace pixels run alongside platform defaults.	Je werkruimtepixels draaien naast de standaardwaarden van het platform.
+1. Copy your Pixel ID from Meta Events Manager.	1. Kopieer je Pixel-ID vanuit Meta Events Manager.
+2. Copy your Measurement ID from your GA4 web data stream.	2. Kopieer je metings-ID vanuit je GA4-webgegevensstream.
+3. Save, then use Test Center to inspect local events.	3. Sla op en gebruik daarna het Testcentrum om lokale events te inspecteren.
+Meta Facebook Ads	Meta Facebook Ads
+Meta Pixel integration	Meta Pixel-integratie
+Google Analytics 4	Google Analytics 4
+Web analytics integration	Webanalyse-integratie
+TikTok Ads	TikTok Ads
+TikTok pixel integration	TikTok-pixelintegratie
+Soon	Binnenkort
+LinkedIn Insight Tag	LinkedIn Insight Tag
+LinkedIn pixel integration	LinkedIn-pixelintegratie
+Webhook / CAPI endpoint (configuration only)	Webhook- / CAPI-eindpunt (alleen configuratie)
+Server-side webhook delivery and consent management must be connected separately. No API secrets are stored here.	Server-side webhookaflevering en toestemmingsbeheer moeten afzonderlijk worden gekoppeld. Er worden hier geen API-geheimen opgeslagen.
+Disable tracking in draft	Tracking uitschakelen in conceptmodus
+Call purchase only after the payment backend verifies an order. Avoid personal or sensitive data in event payloads.	Roep het aankoop-event pas aan nadat de betaalbackend een bestelling heeft geverifieerd. Vermijd persoonlijke of gevoelige gegevens in event-payloads.
+Could not save event.	Kon event niet opslaan.
+Workspace records and browser event stream · delivery to Meta or Google is not verified here.	Werkruimteregistraties en browsereventstream · aflevering bij Meta of Google wordt hier niet geverifieerd.
+Aggregate event counts, not unique-user attribution.	Geaggregeerde eventaantallen, geen attributie per unieke gebruiker.
+Recorded workspace events, verified transactions and observed browser events.	Geregistreerde werkruimte-events, geverifieerde transacties en waargenomen browserevents.
+Tests appear in Realtime and Debug Logs without sending production conversions.	Tests verschijnen in Realtime en Debug-logboeken zonder productieconversies te verzenden.
+Test event added to Realtime	Testevent toegevoegd aan Realtime
+Rule-based diagnostics from your current configuration.	Regelgebaseerde diagnostiek op basis van je huidige configuratie.
+Verify delivery with Meta Test Events and Google DebugView. Add a consent manager before collecting marketing events where consent is required.	Verifieer de aflevering met Meta Test Events en Google DebugView. Voeg een consentmanager toe voordat je marketingevents verzamelt waar toestemming vereist is.
+YouTube	YouTube
+LinkedIn	LinkedIn
+Stripe	Stripe
+All owners	Alle eigenaren
+All active contacts	Alle actieve contacten
+Choose a booking page.	Kies een boekingspagina.
+Add at least one guest.	Voeg minstens één gast toe.
+Choose an available time. Availability, notice and buffers apply.	Kies een beschikbare tijd. Beschikbaarheid, vooraankondigingstijd en buffers zijn van toepassing.
+Appointments need a page with availability rules.	Voor afspraken is een pagina met beschikbaarheidsregels nodig.
+Flow builder	Flowbuilder
+Message equals	Bericht is gelijk aan
+Stopped	Gestopt
+Canvas zoom in	Inzoomen op canvas
+Canvas zoom out	Uitzoomen op canvas
+Fit view	Passend in beeld
+Next step	Volgende stap
+Control Panel	Bedieningspaneel
+Press enter or space to select a node. Press delete to remove it and escape to cancel.	Druk op Enter of spatie om een knooppunt te selecteren. Druk op Delete om het te verwijderen en op Escape om te annuleren.
+Press enter or space to select a node. You can then use the arrow keys to move the node around. Press delete to remove it and escape to cancel.	Druk op Enter of spatie om een knooppunt te selecteren. Gebruik daarna de pijltjestoetsen om het knooppunt te verplaatsen. Druk op Delete om het te verwijderen en op Escape om te annuleren.
+Press enter or space to select an edge. You can then press delete to remove it or escape to cancel.	Druk op Enter of spatie om een verbinding te selecteren. Druk daarna op Delete om deze te verwijderen of op Escape om te annuleren.
+Text	Tekst
+Radio	Keuzerondje
+Close details	Details sluiten
+Quick details	Snelle details
+Form layout preview	Voorbeeld formulierindeling
+Could not load your workspace.	Kon je werkruimte niet laden.
+Help Center	Helpcentrum
+Could not create a support conversation.	Kon geen supportgesprek aanmaken.
+Test your knowledge	Test je kennisbank
+MQLs	MQLs
+AI Assistant ·	AI-assistent ·
+AI Assistants	AI-assistenten
+Zoom In	Inzoomen
+Zoom Out	Uitzoomen
+Processing	Verwerken
+Trial	Proefperiode
+No matching booking pages	Geen overeenkomende boekingspagina's
+No phone number	Geen telefoonnummer
+US Dollar	Amerikaanse dollar
+Euro	Euro
+Egyptian Pound	Egyptisch pond
+British Pound	Brits pond
+UAE Dirham	VAE-dirham
+Saudi Riyal	Saoedische riyal
+Kuwaiti Dinar	Koeweitse dinar
+Qatari Riyal	Qatarese riyal
+Bahraini Dinar	Bahreinse dinar
+Omani Rial	Omaanse rial
+Jordanian Dinar	Jordaanse dinar
+Lebanese Pound	Libanees pond
+Moroccan Dirham	Marokkaanse dirham
+Tunisian Dinar	Tunesische dinar
+Algerian Dinar	Algerijnse dinar
+Iraqi Dinar	Iraakse dinar
+Credit / Debit Cards	Creditcards / betaalkaarten
+PayPal Express	PayPal Express
+Apple Pay	Apple Pay
+Google Pay	Google Pay
+Visa, Mastercard, Amex	Visa, Mastercard, Amex
+One-Click Checkout	Afrekenen met één klik
+Apple Wallet (Tokenized)	Apple Wallet (getokeniseerd)
+Google Wallet (Tokenized)	Google Wallet (getokeniseerd)
+Instant (0–2 days)	Direct (0–2 dagen)
+Payment Gateway	Betaalgateway
+Customers	Klanten
+Orders	Bestellingen
+Transactions	Transacties
+Good morning,	Goedemorgen,
+No activity yet. Your recent changes will appear here.	Nog geen activiteit. Je recente wijzigingen verschijnen hier.
+Create your first funnel to see its results here.	Maak je eerste funnel aan om hier de resultaten te bekijken.
+Create a product to start tracking sales.	Maak een product aan om verkopen bij te houden.
+Use my own Meta app instead	Mijn eigen Meta-app gebruiken
+Button URL	Knop-URL
+Choose from saved contacts...	Kies uit opgeslagen contacten...
+qualify	kwalificeren
+Enter at least two distinct choices.	Voer minimaal twee verschillende keuzes in.
+Mark at least one qualifying choice.	Markeer minimaal één kwalificerende keuze.
+Enter a minimum amount of 0 or greater.	Voer een minimumbedrag van 0 of hoger in.
+e.g. What is your monthly marketing budget?	bijv. Wat is je maandelijkse marketingbudget?
+Lead qualification (screening question)	Leadkwalificatie (screeningsvraag)
+Shown inside Your details. If an invitee gives a non-qualifying answer, the appointment is not booked, they receive a polite thank-you message, and the lead is saved to CRM as Pending booking.	Wordt getoond bij Je gegevens. Als een genodigde een niet-kwalificerend antwoord geeft, wordt de afspraak niet geboekt, ontvangt diegene een vriendelijk bedankbericht en wordt de lead in het CRM opgeslagen als Boeking in afwachting.
+Rule type	Regeltype
+Add choices and check the answers that qualify to book.	Voeg keuzes toe en vink de antwoorden aan die kwalificeren om te boeken.
+ZIP, PDF, MP4, images and office files · Max 100 MB each	ZIP, PDF, MP4, afbeeldingen en Office-bestanden · Max. 100 MB per stuk
+Uploading file…	Bestand uploaden…
+Untitled asset	Naamloos bestand
+Browser attachment · Cloud upload required	Browserbijlage · Cloudupload vereist
+Replace digital file	Digitaal bestand vervangen
+Replace with delivery link	Vervangen door leveringslink
+Add External Asset / Delivery Link	Extern bestand / leveringslink toevoegen
+Link Title	Linktitel
+Google Drive Master Folder	Google Drive-hoofdmap
+Resource Type	Brontype
+this asset	dit bestand
+from this product? You can add it again later.	van dit product? Je kunt het later opnieuw toevoegen.
+New time slot	Nieuw tijdslot
+e.g. Mon 10:00	bijv. ma 10:00
+Add slot	Tijdslot toevoegen
+New checkout field label	Label voor nieuw checkoutveld
+Company Name, Tax ID…	Bedrijfsnaam, btw-nummer…
+Thank-you page	Bedankpagina
+Sales page template	Sjabloon voor verkooppagina
+Thank-you page template	Sjabloon voor bedankpagina
+Sales video URL	URL van verkoopvideo
+Welcome video URL	URL van welkomstvideo
+Community link	Communitylink
+Terms policy source	Bron voor algemene voorwaarden
+Privacy policy source	Bron voor privacybeleid
+Terms URL	URL van voorwaarden
+Privacy policy URL	URL van privacybeleid
+Choose a non-empty PDF, video or ZIP file up to 100 MB.	Kies een niet-leeg PDF-, video- of ZIP-bestand van maximaal 100 MB.
+Cloud upload failed. Please try again.	Cloudupload mislukt. Probeer het opnieuw.
+Lesson format	Lesindeling
+Detected automatically when available.	Wordt automatisch gedetecteerd indien beschikbaar.
+Detected on upload	Gedetecteerd bij uploaden
+Video source	Videobron
+Make sure enrolled students have access to this Drive file.	Zorg dat ingeschreven cursisten toegang hebben tot dit Drive-bestand.
+Attach PDF / Video / ZIP	PDF / video / ZIP bijvoegen
+Drop a file here or choose a file · Max 100 MB	Sleep een bestand hierheen of kies een bestand · Max. 100 MB
+Self-paced	In eigen tempo
+CUSTOMER EXPERIENCE	KLANTERVARING
+Loading page…	Pagina laden…
+Enter a complete HTTP or HTTPS URL.	Voer een volledige HTTP- of HTTPS-URL in.
+Your page will appear here as soon as you enter its URL.	Je pagina verschijnt hier zodra je de URL invoert.
+If this website blocks embedded previews, open it in a new tab to view the full page.	Als deze website ingesloten voorbeelden blokkeert, open haar dan in een nieuw tabblad om de volledige pagina te bekijken.
+Your product name	Naam van je product
+Mastercard	Mastercard
+Offer an additional product after purchase.	Bied na aankoop een extra product aan.
+Upsell product	Upsell-product
+This offer is no longer active. Choose an active product.	Dit aanbod is niet meer actief. Kies een actief product.
+Discounted Upsell Price	Upsell-prijs met korting
+Upsell price	Upsell-prijs
+Add as One-Click Post-Purchase Offer	Toevoegen als één-klik-aanbod na aankoop
+Offer preferences are saved with this product. One-click charging requires a payment provider and customer consent.	Aanbodvoorkeuren worden bij dit product opgeslagen. Afrekenen met één klik vereist een betaalaanbieder en toestemming van de klant.
+This action is unavailable.	Deze actie is niet beschikbaar.
+Product access	Producttoegang
+Mark complete	Markeren als voltooid
+No files have been attached to this product.	Er zijn geen bestanden aan dit product gekoppeld.
+Sign in with your customer email	Log in met je klant-e-mailadres
+The action could not be completed.	De actie kon niet worden voltooid.
+Enter valid HTTP or HTTPS URLs.	Voer geldige HTTP- of HTTPS-URL's in.
+Require terms agreement	Akkoord met voorwaarden verplichten
+An order bump is an optional add-on checkbox displayed on the checkout form before payment. Its price is added to the order total when selected.	Een order bump is een optioneel selectievakje voor een extra aanbod op het afrekenformulier vóór betaling. De prijs wordt bij selectie opgeteld bij het totaalbedrag.
+Order bump product	Order-bump-product
+Order bumps use one-time products in the checkout currency.	Order bumps gebruiken eenmalige producten in de valuta van de checkout.
+Community discussion URL	URL voor communitydiscussies
+Enable completion certificates	Certificaten van voltooiing inschakelen
+Certificate issuer	Uitgever van certificaat
+Buffer before (minutes)	Buffer vooraf (minuten)
+Buffer after (minutes)	Buffer achteraf (minuten)
+Cancellation notice (hours)	Annuleringstermijn (uren)
+Cancellation policy	Annuleringsbeleid
+Send file delivery notification	Melding voor bestandslevering verzenden
+Availability and reservations are checked by the connected calendar. Preview slot labels do not reserve appointments.	Beschikbaarheid en reserveringen worden gecontroleerd door de gekoppelde agenda. Voorbeeldlabels van tijdsloten reserveren geen afspraken.
+Sync saved calendar settings	Opgeslagen agenda-instellingen synchroniseren
+Save Changes before generating access links. Access actions use the saved product settings.	Klik op Wijzigingen opslaan voordat je toegangslinks genereert. Toegangsacties gebruiken de opgeslagen productinstellingen.
+Generate access link	Toegangslink genereren
+Generate certificate	Certificaat genereren
+Apply to draft	Toepassen op concept
+Quick View Details	Snel overzicht details
+Could not delete product. Please try again.	Kon product niet verwijderen. Probeer het opnieuw.
+Are you sure you want to delete this product?	Weet je zeker dat je dit product wilt verwijderen?
+will be removed from your catalog. This action cannot be undone.	wordt verwijderd uit je catalogus. Deze actie kan niet ongedaan worden gemaakt.
+Includes labeled sample records for this product.	Bevat gelabelde voorbeeldgegevens voor dit product.
+Orders associated with this product.	Bestellingen gekoppeld aan dit product.
+This product	Dit product
+Not enrolled	Niet ingeschreven
+THANK-YOU PAGE PREVIEW	VOORBEELD BEDANKPAGINA
+Your next chapter starts here.	Je volgende hoofdstuk begint hier.
+Welcome to the community.	Welkom bij de community.
+Thank you for your order.	Bedankt voor je bestelling.
+Your confirmation and access instructions will arrive by email after a verified payment.	Je bevestiging en toegangsinstructies worden per e-mail verzonden na een geverifieerde betaling.
+Check your inbox for your confirmation.	Controleer je inbox voor je bevestiging.
+Access your resources or book your session.	Open je materialen of boek je sessie.
+Follow your personal next steps below.	Volg hieronder je persoonlijke vervolgstappen.
+Your welcome video will appear here when configured.	Je welkomstvideo verschijnt hier zodra deze is ingesteld.
+Join the community	Word lid van de community
+Continue your journey	Vervolg je traject
+Ready to customize	Klaar om aan te passen
+Users & Buyers	Gebruikers & kopers
+Product Specs	Productspecificaties
+Product Users & Buyers	Productgebruikers & kopers
+No users have purchased this product yet	Nog geen gebruikers hebben dit product gekocht
+Try clearing your search filter.	Probeer je zoekfilter te wissen.
+Customers who complete checkout or get approved will appear here automatically.	Klanten die het afrekenen voltooien of worden goedgekeurd, verschijnen hier automatisch.
+No email recorded	Geen e-mailadres geregistreerd
+Email copied	E-mailadres gekopieerd
+No description added.	Geen beschrijving toegevoegd.
+Paid Sales	Betaalde verkopen
+CRM Pipeline	CRM-pipeline
+Default pipeline	Standaardpipeline
+Initial Stage	Startfase
+Choose a star rating and enter your name and review.	Kies een sterrenbeoordeling en voer je naam en review in.
+Save this product before submitting a review.	Sla dit product op voordat je een review plaatst.
+Ratings & reviews	Beoordelingen & reviews
+Showing the latest	Toont de nieuwste
+out of 5 stars	van de 5 sterren
+Be the first to leave a review	Schrijf als eerste een review
+Share your experience to help others choose.	Deel je ervaring om anderen te helpen kiezen.
+Share your experience	Deel je ervaring
+Your rating	Jouw beoordeling
+star	ster
+Your review	Jouw review
+Thank you! Your review has been submitted.	Bedankt! Je review is verzonden.
+Submit review	Review plaatsen
+No reviews yet	Nog geen reviews
+Watch the product story	Bekijk het productverhaal
+Could not create your product. Please try again.	Kon je product niet aanmaken. Probeer het opnieuw.
+THE PRODUCT STUDIO	DE PRODUCTSTUDIO
+Start with something great.	Begin met een sterke basis.
+Expertly structured services, downloads and courses. Ready for your brand.	Doordacht opgebouwde diensten, downloads en cursussen. Klaar voor jouw merk.
+Curated by Upklick	Samengesteld door Upklick
+Sort templates	Sjablonen sorteren
+templates · Ready to customize	sjablonen · Klaar om aan te passen
+Creating…	Aanmaken…
+No templates match your filters	Geen sjablonen komen overeen met je filters
+Try another niche or clear your search.	Probeer een andere niche of wis je zoekopdracht.
+Your learning path	Jouw leerpad
+Explore the demo resources	Bekijk het demomateriaal
+Demo content included. Replace with your own files before publishing.	Bevat demo-inhoud. Vervang deze vóór publicatie door je eigen bestanden.
+YOUR NEXT OFFER	JE VOLGENDE AANBOD
+Payment options	Betaalopties
+Sample availability	Voorbeeldbeschikbaarheid
+Connects to an available 60-minute workspace calendar. If none exists, connect one in the editor.	Koppelt met een beschikbare werkruimte-agenda van 60 minuten. Als die er niet is, kun je er een koppelen in de editor.
+Instructor: Samir Morgan. Includes sample videos and PDFs to replace with your own lessons.	Docent: Samir Morgan. Bevat voorbeeldvideo's en PDF's die je kunt vervangen door je eigen lessen.
+Creating your product…	Je product aanmaken…
+Creates your own editable draft. No payment required.	Maakt je eigen bewerkbare concept aan. Geen betaling vereist.
+Your service name	Naam van je dienst
+Provider unassigned	Aanbieder niet toegewezen
+Your service introduction appears here.	De introductie van je dienst verschijnt hier.
+from the course roster?	uit de deelnemerslijst van de cursus?
+Type a tag and press Enter	Typ een tag en druk op Enter
+Suggested tags	Voorgestelde tags
+Press Enter or comma to add a tag.	Druk op Enter of typ een komma om een tag toe te voegen.
+Instructor not assigned	Docent niet toegewezen
+Back to confirmation	Terug naar bevestiging
+Your product	Jouw product
+Syncing CRM	CRM synchroniseren
+Syncing CRM…	CRM synchroniseren…
+Your workspace will be ready in a moment.	Je werkruimte is zo dadelijk klaar.
+from the workspace? It will be archived and its data retained. Move its contacts first and keep at least one active pipeline.	uit de werkruimte? Deze wordt gearchiveerd met behoud van gegevens. Verplaats eerst de contacten en behoud minimaal één actieve pipeline.
+Pipeline archived.	Pipeline gearchiveerd.
+Archive pipeline	Pipeline archiveren
+Map each column to only one field.	Koppel elke kolom aan slechts één veld.
+Paste CSV	CSV plakken
+Unnamed contact	Naamloos contact
+Independent contact	Zelfstandig contact
+Contact name is required.	Naam van contact is verplicht.
+Contact details updated successfully	Contactgegevens zijn bijgewerkt
+Failed to update contact details	Bijwerken van contactgegevens mislukt
+Update contact details and click Save Changes.	Werk de contactgegevens bij en klik op Wijzigingen opslaan.
+Interest	Interesse
+Main interest or program	Belangrijkste interesse of programma
+Schedule next follow-up	Volgende follow-up inplannen
+Schedule follow-up	Follow-up inplannen
+Opportunity name	Naam van verkoopkans
+Follow-up date and time	Datum en tijd van follow-up
+Use your local time. Clear the date to remove this follow-up.	Gebruik je lokale tijd. Wis de datum om deze follow-up te verwijderen.
+Changes could not be saved. Please try again.	Wijzigingen konden niet worden opgeslagen. Probeer het opnieuw.
+Pipeline routing	Pipelineroutering
+Save pipeline routing	Pipelineroutering opslaan
+No custom fields added.	Geen aangepaste velden toegevoegd.
+No activity yet.	Nog geen activiteit.
+Add a checkout or sales page URL in the product settings to share a link.	Voeg een URL voor de checkout of verkooppagina toe in de productinstellingen om een link te delen.
+Checkout link copied.	Checkoutlink gekopieerd.
+Copy checkout link	Checkoutlink kopiëren
+Share by email	Delen via e-mail
+Share on WhatsApp	Delen via WhatsApp
+Purchases and payments linked by contact, email or phone.	Aankopen en betalingen gekoppeld op basis van contact, e-mailadres of telefoonnummer.
+Attach Product	Product koppelen
+No orders recorded for this contact. Attach a product to track interest or share its checkout link.	Geen bestellingen geregistreerd voor dit contact. Koppel een product om interesse bij te houden of deel de checkoutlink.
+Attached products	Gekoppelde producten
+Attached	Gekoppeld
+Purchase not recorded	Aankoop niet geregistreerd
+Attach product to contact	Product koppelen aan contact
+Product attached to contact.	Product gekoppeld aan contact.
+Associate a product with	Koppel een product aan
+A purchase appears here after an order or payment is recorded.	Een aankoop verschijnt hier zodra een bestelling of betaling is geregistreerd.
+Product to attach	Te koppelen product
+No products available yet.	Nog geen producten beschikbaar.
+This product is already attached to the contact.	Dit product is al aan het contact gekoppeld.
+No conversations linked to this contact.	Geen gesprekken gekoppeld aan dit contact.
+Threads require a matching contact ID, email or phone.	Gesprekken vereisen een overeenkomende contact-ID, e-mailadres of telefoonnummer.
+No appointments recorded for this contact.	Geen afspraken geregistreerd voor dit contact.
+Live AI replies:	Live AI-antwoorden:
+Loading automation status…	Automatiseringsstatus laden…
+No automated sequences linked to this contact.	Geen geautomatiseerde reeksen gekoppeld aan dit contact.
+Sample orders · illustrative data	Voorbeeldbestellingen · illustratieve gegevens
+CRM lead routing	CRM-leadroutering
+Default · Main Pipeline	Standaard · Hoofdpipeline
+Unavailable pipeline · choose another	Niet-beschikbare pipeline · kies een andere
+Privacy policy table of contents	Inhoudsopgave privacybeleid
+Payment provider	Betaalaanbieder
+Could not load automations	Kon automatiseringen niet laden
+Automation & Campaign	Automatisering & campagne
+AI Assistant Setup	AI-assistent instellen
+AI tone / personality	AI-toon / persoonlijkheid
+Copilot can make mistakes. Review drafts before confirming.	Copilot kan fouten maken. Controleer concepten voordat je bevestigt.
+Copilot is working…	Copilot is bezig…
+Ask the AI Copilot	Vraag het aan AI Copilot
+Back to AI Copilot	Terug naar AI Copilot
+Edit AI Assistant	AI-assistent bewerken
+Test AI Assistant	AI-assistent testen
+Reviewed · Used by Copilot, Inbox, and Follow-up	Beoordeeld · Gebruikt door Copilot, Inbox en Opvolging
+Copilot and your customer-facing tools use these reviewed sources.	Copilot en je klantgerichte tools gebruiken deze gecontroleerde bronnen.
+CRM & Leads	CRM & Leads
+CRM & leads	CRM & leads
+Templates belong to your WhatsApp Business number. Connect it to create and manage them here.	Sjablonen horen bij je WhatsApp Business-nummer. Koppel dit nummer om ze hier aan te maken en te beheren.
+Template deleted	Sjabloon verwijderd
+WhatsApp Templates	WhatsApp-sjablonen
+Create templates, send them to Meta for review, and use the approved ones in campaigns.	Maak sjablonen aan, stuur ze ter beoordeling naar Meta en gebruik de goedgekeurde sjablonen in campagnes.
+No templates yet	Nog geen sjablonen
+Create your first template. Meta usually reviews it within minutes, then you can use it in a campaign.	Maak je eerste sjabloon aan. Meta beoordeelt het meestal binnen enkele minuten, waarna je het in een campagne kunt gebruiken.
+Meta:	Meta:
+No templates match.	Geen overeenkomende sjablonen.
+Meta reviews every template.	Meta beoordeelt elk sjabloon.
+Only approved templates can be used in campaigns. Review usually takes a few minutes and can take up to a day; statuses update here on their own.	Alleen goedgekeurde sjablonen kunnen in campagnes worden gebruikt. De beoordeling duurt meestal enkele minuten en maximaal een dag; statussen worden hier automatisch bijgewerkt.
+It will be deleted from Meta in every language. You can’t reuse this name for 30 days, and scheduled campaigns using it will stop.	Het sjabloon wordt in alle talen bij Meta verwijderd. Je kunt deze naam 30 dagen lang niet opnieuw gebruiken en geplande campagnes die dit sjabloon gebruiken worden gestopt.
+Template sent to Meta for review	Sjabloon ter beoordeling naar Meta verzonden
+Submit for review	Indienen ter beoordeling
+Basics	Basisgegevens
+Lowercase letters, numbers and _ only.	Alleen kleine letters, cijfers en _.
+English (en)	Engels (en)
+English US (en_US)	Amerikaans-Engels (en_US)
+Header type	Kopteksttype
+Header text	Koptekst
+Sample media link	Voorbeeldlink media
+Body	Berichttekst
+Sample values	Voorbeeldwaarden
+Meta needs an example for each variable	Meta heeft voor elke variabele een voorbeeld nodig
+Example for variable	Voorbeeld voor variabele
+Buttons	Knoppen
+up to 10	maximaal 10
+Quick reply	Snel antwoord
+Visit website	Website bezoeken
+Call phone number	Telefoonnummer bellen
+Your message appears here.	Je bericht verschijnt hier.
+Before you submit	Voordat je indient
+Domain connected	Domein gekoppeld
+Domain reassigned. Open domain configuration to verify DNS and SSL.	Domein opnieuw toegewezen. Open de domeinconfiguratie om DNS en SSL te verifiëren.
+Active Brand Logo Preview	Voorbeeld van actief merklogo
+System Default	Systeemstandaard
+Reset to default logo	Standaardlogo herstellen
+Uploading brand logo…	Merklogo uploaden…
+Drag & drop your logo here, or click to browse	Sleep je logo hierheen of klik om te bladeren
+Supports PNG, JPEG, WebP & SVG up to 10 MB · Recommended 3:1 horizontal or 1:1 square	Ondersteunt PNG, JPEG, WebP & SVG tot 10 MB · Aanbevolen 3:1 liggend of 1:1 vierkant
+Logo Image URL	URL van logoafbeelding
+Privacy policy link copied to clipboard	Link naar privacybeleid gekopieerd naar klembord
+Could not copy link	Kon link niet kopiëren
+Could not copy email	Kon e-mailadres niet kopiëren
+My Plan	Mijn pakket
+Jump to	Ga naar
+Workspace Owner	Eigenaar van werkruimte
+Agency user	Bureaugebruiker
+Your Role	Jouw rol
+Facebook Messenger	Facebook Messenger
+Reply to messages sent to your Facebook Page.	Beantwoord berichten die naar je Facebook-pagina zijn gestuurd.
+Reply to Instagram DMs. The account must be a professional account linked to a Facebook Page.	Beantwoord Instagram-DM's. Het account moet een professioneel account zijn dat is gekoppeld aan een Facebook-pagina.
+Reply on your WhatsApp Business number.	Beantwoord berichten op je WhatsApp Business-nummer.
+Connect Facebook	Facebook koppelen
+Connect Instagram	Instagram koppelen
+Connect WhatsApp	WhatsApp koppelen
+Enter a valid email address	Voer een geldig e-mailadres in
+Close chat history	Chatgeschiedenis sluiten
+Profile menu	Profielmenu
+Low thinking	Licht denkvermogen
+Medium thinking	Gemiddeld denkvermogen
+High thinking	Diep denkvermogen
+Fast & concise responses	Snelle en bondige antwoorden
+Balanced reasoning & speed	Balans tussen redenering en snelheid
+Deep strategic analysis	Diepgaande strategische analyse
+Quickly reviewing your workspace…	Je werkruimte snel bekijken…
+Reviewing your workspace…	Je werkruimte bekijken…
+Thinking deeply about your workspace…	Je werkruimte grondig analyseren…
+Web search enabled	Zoeken op internet ingeschakeld
+Deep research enabled	Diepgaand onderzoek ingeschakeld
+Microphone access was denied. Allow access in your browser settings to record a voice note.	Toegang tot de microfoon is geweigerd. Sta toegang toe in je browserinstellingen om een spraaknotitie op te nemen.
+Could not start microphone recording.	Kon microfoonopname niet starten.
+Open Customer Portal	Klantenportaal openen
+Tracking Settings	Trackinginstellingen
+Event Logs	Eventlogboeken
+Event Management	Eventbeheer
+Meta ID valid	Meta-ID geldig
+Meta script requested	Meta-script opgevraagd
+Test Meta	Meta testen
+GA4 ID valid	GA4-ID geldig
+GA4 script requested	GA4-script opgevraagd
+Test GA4	GA4 testen
+Tracking enabled	Tracking ingeschakeld
+HTTPS connection	HTTPS-verbinding
+Meta SDK available	Meta SDK beschikbaar
+GA4 SDK available	GA4 SDK beschikbaar
+Events observed this session	Waargenomen events in deze sessie
+Custom events configured	Aangepaste events geconfigureerd
+Webhook URL configured (delivery not connected)	Webhook-URL geconfigureerd (aflevering niet gekoppeld)
+Tracking scope authorized	Trackingbereik geautoriseerd
+Run a local PageView test	Lokale PageView-test uitvoeren
+Run local test events from this page. They appear in the event logs without sending production conversions.	Voer vanaf deze pagina lokale testevents uit. Ze verschijnen in de eventlogboeken zonder productieconversies te verzenden.
+Standard events are ready to use. Add a custom event for a workspace-specific action.	Standaardevents zijn klaar voor gebruik. Voeg een aangepast event toe voor een actie die specifiek is voor je werkruimte.
+Use this SDK to dispatch events from the application code.	Gebruik deze SDK om events vanuit de applicatiecode te verzenden.
+Advanced tools	Geavanceerde tools
+Pixel navigation	Pixelnavigatie
+Realtime events and debug logs	Realtime events en debug-logboeken
+Test event added to Event Logs	Testevent toegevoegd aan Eventlogboeken
+Workspace record	Werkruimteregistratie
+Verified transaction	Geverifieerde transactie
+Dispatched	Verzonden
+Local test	Lokale test
+Local only	Alleen lokaal
+Destinations	Bestemmingen
+Payload	Payload
+Total Events	Totaal aantal events
+Recorded conversions	Geregistreerde conversies
+Coming soon	Binnenkort beschikbaar
+Back to Main Sidebar	Terug naar hoofdzijbalk
+Logged in to workspace of	Ingelogd op de werkruimte van
+Subscription Required	Abonnement vereist
+Your account does not have an active subscription. Please select a plan to unlock all platform tools.	Je account heeft geen actief abonnement. Kies een pakket om alle platformtools te ontgrendelen.
+Return to Admin Dashboard	Terug naar beheerdersdashboard
+Could not return to admin.	Kon niet terugkeren naar beheer.
+File is unavailable.	Bestand is niet beschikbaar.
+In Progress	Bezig
+Upklick Academy	Upklick Academy
+Connect your core communication and scheduling channels with real-time cloud workspace sync.	Koppel je belangrijkste communicatie- en planningskanalen met realtime cloudsynchronisatie voor je werkruimte.
+Facebook Messenger	Facebook Messenger
+Instagram	Instagram
+WhatsApp Business	WhatsApp Business
+Gmail	Gmail
+Google Calendar	Google Calendar
+~1 min setup	~1 min. insteltijd
+~2 min setup	~2 min. insteltijd
+~3 min setup	~3 min. insteltijd
+e.g. Upklick Official Page	bijv. Officiële Upklick-pagina
+Unified Inbox DMs	DM's in gecombineerde inbox
+Comment Replies	Reacties op opmerkingen
+AI Auto-Responder	Automatische AI-beantwoorder
+Connected Instagram Handle	Gekoppelde Instagram-gebruikersnaam
+e.g. @upclick.app	bijv. @upclick.app
+Instagram DMs	Instagram-DM's
+Story & Comment Replies	Reacties op verhalen en opmerkingen
+Read linked Instagram Business accounts	Gekoppelde zakelijke Instagram-accounts uitlezen
+Receive and reply to Instagram direct messages and comments in real time	Ontvang en beantwoord Instagram-privéberichten en -reacties in realtime
+An Instagram Professional (Business or Creator) account linked to your Facebook Page	Een professioneel Instagram-account (Business of Creator) dat is gekoppeld aan je Facebook-pagina
+Message control ("Allow access to messages") enabled in Instagram Advanced Messaging settings	Berichtenbeheer ("Toegang tot berichten toestaan") ingeschakeld bij de geavanceerde berichtinstellingen van Instagram
+Link Instagram to Your Facebook Page	Instagram koppelen aan je Facebook-pagina
+Open your Facebook Page Settings → Linked Accounts → Instagram and ensure your Instagram Business profile is connected.	Open de instellingen van je Facebook-pagina → Gekoppelde accounts → Instagram en controleer of je zakelijke Instagram-profiel is gekoppeld.
+Enable Connected Tools in Instagram	Gekoppelde tools inschakelen in Instagram
+In the Instagram mobile app, go to Settings & Privacy → Messages and story replies → Message controls and turn on "Allow access to messages".	Ga in de mobiele Instagram-app naar Instellingen en privacy → Berichten en verhaalreacties → Berichtenbeheer en schakel "Toegang tot berichten toestaan" in.
+Authorize via Meta Business Login	Autoriseren via Meta Business-login
+Click "Connect" below, sign in with your Facebook Admin account, and select the Instagram account you want to sync.	Klik hieronder op "Koppelen", log in met je Facebook-beheerdersaccount en selecteer het Instagram-account dat je wilt synchroniseren.
+Instagram uses the same Meta login as Facebook Messenger; connecting either one connects both.	Instagram gebruikt dezelfde Meta-login als Facebook Messenger; door een van beide te koppelen worden ze allebei verbonden.
+WhatsApp Business Phone Number / WABA Name	WhatsApp Business-telefoonnummer / WABA-naam
+e.g. +20 100 000 0000 · Upklick Support	bijv. +20 100 000 0000 · Upklick Support
+WhatsApp Cloud API	WhatsApp Cloud API
+Automated Follow-ups	Geautomatiseerde follow-ups
+Approved Templates	Goedgekeurde sjablonen
+Connected Gmail / Google Workspace Address	Gekoppeld Gmail- / Google Workspace-adres
+e.g. support@yourbusiness.com	bijv. support@jouwbedrijf.nl
+Send and receive customer emails directly from your connected Gmail or Google Workspace account.	Verzend en ontvang klantmails rechtstreeks vanuit je gekoppelde Gmail- of Google Workspace-account.
+2-Way Email Sync	Tweerichtingssynchronisatie voor e-mail
+Follow-Up Sequences	Follow-upreeksen
+Custom Sender Identity	Aangepaste afzenderidentiteit
+Read and send business emails on behalf of your connected address	Zakelijke e-mails lezen en verzenden namens je gekoppelde adres
+Identify the connected Google Workspace or Gmail account profile	Het gekoppelde Google Workspace- of Gmail-accountprofiel identificeren
+An active Gmail or Google Workspace business email account	Een actief zakelijk e-mailaccount bij Gmail of Google Workspace
+Pop-ups allowed in your browser for Google OAuth sign-in	Pop-ups toegestaan in je browser voor inloggen via Google OAuth
+Admin approval for third-party OAuth apps if using a restricted Google Workspace organization	Goedkeuring van de beheerder voor OAuth-apps van derden bij gebruik van een afgeschermde Google Workspace-organisatie
+Click Connect on the Gmail Card	Klik op Koppelen op de Gmail-kaart
+Open the Gmail connection modal and review the email read/send permissions required for unified inbox syncing.	Open het koppelingsvenster voor Gmail en controleer de lees- en verzendrechten die nodig zijn voor synchronisatie met de gecombineerde inbox.
+Select Your Google Account	Selecteer je Google-account
+Choose your preferred business Gmail or Google Workspace address in the secure Google sign-in window.	Kies het gewenste zakelijke Gmail- of Google Workspace-adres in het beveiligde inlogvenster van Google.
+Approve Gmail Workspace Scopes	Gmail-toegangsrechten goedkeuren
+Check the permission boxes to allow Upklick to send follow-up emails and sync incoming customer replies.	Vink de toestemmingsvakjes aan zodat Upklick follow-upmails kan verzenden en inkomende klantreacties kan synchroniseren.
+Confirm Sender Address & Sync	Afzenderadres bevestigen & synchroniseren
+Run the connection test to verify SMTP/API readiness and save your preferences to start emailing leads from CRM and Inbox.	Voer de verbindingstest uit om de SMTP-/API-gereedheid te controleren en sla je voorkeuren op om leads te mailen vanuit het CRM en de Inbox.
+Connecting a custom domain Google Workspace address (e.g., hello@yourdomain.com) significantly improves email deliverability and customer trust.	Het koppelen van een Google Workspace-adres met eigen domein (bijv. hallo@jouwdomein.nl) verbetert de afleverbaarheid van e-mails en het klantvertrouwen aanzienlijk.
+Connected Google Calendar Account	Gekoppeld Google Calendar-account
+e.g. bookings@yourbusiness.com (Primary Calendar)	bijv. boekingen@jouwbedrijf.nl (Primaire agenda)
+Sync bookings in real time, check live availability, and prevent double bookings automatically.	Synchroniseer boekingen in realtime, controleer live beschikbaarheid en voorkom automatisch dubbele boekingen.
+Real-Time Availability	Realtime beschikbaarheid
+Two-Way Event Sync	Tweerichtingssynchronisatie voor afspraken
+Conflict Prevention	Conflictpreventie
+Read calendar busy/free availability blocks in real time	Bezet-/vrij-blokken van de agenda in realtime uitlezen
+Create, reschedule, and cancel booking events automatically	Boekingsafspraken automatisch aanmaken, verzetten en annuleren
+A Google account with Google Calendar active	Een Google-account met actieve Google Calendar
+Your primary calendar timezone configured to match your business operating hours	De tijdzone van je primaire agenda ingesteld op je zakelijke openingstijden
+Edit permissions ("Make changes to events") on the target calendar	Bewerkingsrechten ("Wijzigingen aanbrengen in afspraken") op de doelagenda
+Open the Google Calendar Connection Flow	Open het koppelingsproces voor Google Calendar
+Click "Connect" on the Google Calendar card to start linking your scheduling calendar.	Klik op "Koppelen" op de Google Calendar-kaart om je planningsagenda te verbinden.
+Sign In with Your Google Account	Log in met je Google-account
+Select the Google account that hosts the main calendar where you manage your daily appointments.	Selecteer het Google-account met de hoofdagenda waarin je je dagelijkse afspraken beheert.
+Grant Calendar Read & Write Access	Lees- en schrijftoegang voor agenda verlenen
+Approve calendar availability and event creation permissions so Upklick can block busy slots and add new client bookings.	Keur de rechten voor agendabeschikbaarheid en het aanmaken van afspraken goed, zodat Upklick bezette momenten kan blokkeren en nieuwe klantboekingen kan toevoegen.
+Verify Two-Way Sync	Tweerichtingssynchronisatie controleren
+Click "Test Connection" and enable "Automatic sync" so every appointment booked on your Booking Pages appears on your calendar instantly.	Klik op "Verbinding testen" en schakel "Automatische synchronisatie" in, zodat elke afspraak via je boekingspagina's direct in je agenda verschijnt.
+Mark personal appointments as "Busy" in your Google Calendar—Upklick automatically hides those time slots on your public booking pages.	Markeer privéafspraken als "Bezet" in je Google Calendar—Upklick verbergt die tijdsloten automatisch op je openbare boekingspagina's.
+Authorization is not complete. Return to the provider and approve the requested access.	De autorisatie is nog niet voltooid. Keer terug naar de aanbieder en keur de gevraagde toegang goed.
+This channel is not available yet. Please contact your provider.	Dit kanaal is nog niet beschikbaar. Neem contact op met je aanbieder.
+Your browser blocked the Facebook window. Allow popups, then try again.	Je browser heeft het Facebook-venster geblokkeerd. Sta pop-ups toe en probeer het opnieuw.
+Connect manually	Handmatig koppelen
+Connect with Meta	Koppelen met Meta
+Opening Meta…	Meta openen…
+Choose an Instagram account	Kies een Instagram-account
+Choose a page	Kies een pagina
+Connect manually with my own Meta app	Handmatig koppelen met mijn eigen Meta-app
+Connect with your own Meta app	Koppelen met je eigen Meta-app
+First add this webhook to your app in Meta, and subscribe to the messages field.	Voeg eerst deze Webhook toe aan je app in Meta en abonneer je op het veld messages.
+Phone number ID	Telefoonnummer-ID
+Permanent access token	Permanent toegangstoken

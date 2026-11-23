@@ -18,7 +18,7 @@ import {
   useDashboardHealth,
   type DashboardHealthItem,
 } from "../../backend/adminDashboard";
-import { useUILanguage } from "../../i18n/display";
+import { useUILanguage, translateText } from "../../i18n/display";
 import { aggregateOperations, dateValue, resourceOf } from "./operations-model";
 import "./admin-dashboard.css";
 const resources = [
@@ -34,7 +34,7 @@ const healthy = (status: unknown) =>
 export function AdminDashboard() {
   const { formatPrice } = useCurrency();
   const ar = useUILanguage().startsWith("ar");
-  const t = (en: string, arabic: string) => (ar ? arabic : en);
+  const t = (en: string, arabic: string) => (ar ? arabic : translateText(en));
   const [reload, setReload] = useState(0),
     [online, setOnline] = useState(navigator.onLine);
   useEffect(() => {

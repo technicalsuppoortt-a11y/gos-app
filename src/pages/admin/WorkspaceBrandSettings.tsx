@@ -17,7 +17,7 @@ import {
   type WorkspacePreferences,
 } from '../../backend/workspacePreferences';
 import { themePaletteDetails } from '../../branding/workspaceTheme';
-import { useUILanguage } from '../../i18n/display';
+import { translateText, useUILanguage } from '../../i18n/display';
 import { AdminGeneral } from './AdminGeneral';
 import { useSelector } from 'react-redux';
 import type { RootState } from '../../store';
@@ -107,8 +107,8 @@ export function WorkspaceBrandSettings() {
       setEdits({});
       setSaved(true);
       showToast.success(reset
-        ? (ar ? 'تمت استعادة الإعدادات الافتراضية' : 'Workspace defaults restored.')
-        : (ar ? 'تم حفظ التغييرات بنجاح' : 'Settings saved successfully'));
+        ? (ar ? 'تمت استعادة الإعدادات الافتراضية' : translateText('Workspace defaults restored.'))
+        : (ar ? 'تم حفظ التغييرات بنجاح' : translateText('Settings saved successfully')));
     } catch (cause) {
       const message = backendError(cause);
       setError(message);
@@ -123,32 +123,32 @@ export function WorkspaceBrandSettings() {
     <div className="adm-workspace workspace-customization-panel">
       <div className="adm-page-head">
         <div>
-          <h1>{ar ? 'إعدادات مساحة العمل' : 'Workspace Settings'}</h1>
+          <h1>{ar ? 'إعدادات مساحة العمل' : translateText('Workspace Settings')}</h1>
           <p>
             {ar
               ? 'الهوية والتفضيلات المشتركة لجميع أعضاء مساحة العمل.'
-              : 'Branding and preferences shared by every member of this workspace.'}
+              : translateText('Branding and preferences shared by every member of this workspace.')}
           </p>
         </div>
       </div>
 
       <div className="adm-tabs">
         <button className={tab === 'general' ? 'active' : ''} onClick={() => setTab('general')}>
-          {ar ? 'عام' : 'General'}
+          {ar ? 'عام' : translateText('General')}
         </button>
         {!isAdmin ? (
           <Link to="/dashboard/settings/domains" className="adm-tab-link">
             <Globe size={14} style={{ display: 'inline', marginInlineEnd: 6, verticalAlign: '-2px' }} />
-            {ar ? 'النطاقات' : 'Domains'}
+            {ar ? 'النطاقات' : translateText('Domains')}
           </Link>
         ) : (
           <button className={tab === 'domains' ? 'active' : ''} onClick={() => setTab('domains')}>
-            {ar ? 'النطاقات' : 'Domains'}
+            {ar ? 'النطاقات' : translateText('Domains')}
           </button>
         )}
         {isAdmin && (
           <button className={tab === 'email' ? 'active' : ''} onClick={() => setTab('email')}>
-            {ar ? 'إعدادات البريد' : 'Platform email'}
+            {ar ? 'إعدادات البريد' : translateText('Platform email')}
           </button>
         )}
       </div>
@@ -173,11 +173,11 @@ export function WorkspaceBrandSettings() {
               <div className="ws-section-block">
                 <div className="ws-section-head">
                   <div>
-                    <h2>{ar ? 'الهوية والشعار الرسمي' : 'Brand Identity & Logo'}</h2>
+                    <h2>{ar ? 'الهوية والشعار الرسمي' : translateText('Brand Identity & Logo')}</h2>
                     <p>
                       {ar
                         ? 'اسم مشروعك وشعارك يظهران في لوحة التحكم والصفحات العامة.'
-                        : 'Your project name and logo appear across dashboards and customer-facing pages.'}
+                        : translateText('Your project name and logo appear across dashboards and customer-facing pages.')}
                     </p>
                   </div>
                   <button
@@ -185,16 +185,16 @@ export function WorkspaceBrandSettings() {
                     className="ws-reset-defaults-btn"
                     onClick={() => void save(true)}
                     disabled={loading || busy || resetting}
-                    title={ar ? 'استعادة إعدادات الهوية والسمة الافتراضية' : 'Restore system default identity & theme'}
+                    title={ar ? 'استعادة إعدادات الهوية والسمة الافتراضية' : translateText('Restore system default identity & theme')}
                   >
                     {resetting ? <Loader2 size={13.5} className="ws-spinner" /> : <RotateCcw size={13.5} />}
-                    <span>{resetting ? (ar ? 'جارِ الاستعادة…' : 'Resetting…') : ar ? 'استعادة الافتراضي' : 'Reset to Default'}</span>
+                    <span>{resetting ? (ar ? 'جارِ الاستعادة…' : translateText('Resetting…')) : ar ? 'استعادة الافتراضي' : translateText('Reset to Default')}</span>
                   </button>
                 </div>
 
                 <div className="adm-form adm-cms-fields" style={{ marginBottom: 18 }}>
                   <label>
-                    {ar ? 'اسم الشركة / المشروع' : 'Business name'}
+                    {ar ? 'اسم الشركة / المشروع' : translateText('Business name')}
                     <input
                       required
                       value={draft.name}
@@ -203,7 +203,7 @@ export function WorkspaceBrandSettings() {
                     />
                   </label>
                   <label>
-                    {ar ? 'بريد الدعم' : 'Support email'}
+                    {ar ? 'بريد الدعم' : translateText('Support email')}
                     <input
                       type="email"
                       value={draft.supportEmail}
@@ -240,12 +240,12 @@ export function WorkspaceBrandSettings() {
                   <div>
                     <h2>
                       <Palette size={17} style={{ display: 'inline', marginInlineEnd: 8, verticalAlign: '-3px', color: 'var(--adm-accent, #6d28d9)' }} />
-                      {ar ? 'محدد السمات المرئي (Themes Selector)' : 'Themes Selector'}
+                      {ar ? 'محدد السمات المرئي (Themes Selector)' : translateText('Themes Selector')}
                     </h2>
                     <p>
                       {ar
                         ? 'اختر لوحة الألوان المفضلة لمساحة عملك مع معاينة فورية متوازنة في الوضعين الفاتح والداكن.'
-                        : 'Choose a curated color palette with instant dual-mode light & dark live preview.'}
+                        : translateText('Choose a curated color palette with instant dual-mode light & dark live preview.')}
                     </p>
                   </div>
                   <button
@@ -253,17 +253,17 @@ export function WorkspaceBrandSettings() {
                     className="ws-reset-defaults-btn"
                     onClick={() => void save(true)}
                     disabled={loading || busy || resetting}
-                    title={ar ? 'استعادة السمة الافتراضية للمنصة' : 'Reset to default theme'}
+                    title={ar ? 'استعادة السمة الافتراضية للمنصة' : translateText('Reset to default theme')}
                   >
                     {resetting ? <Loader2 size={13.5} className="ws-spinner" /> : <RotateCcw size={13.5} />}
-                    <span>{resetting ? (ar ? 'جارِ الاستعادة…' : 'Resetting…') : ar ? 'السمة الافتراضية' : 'Reset to Default'}</span>
+                    <span>{resetting ? (ar ? 'جارِ الاستعادة…' : translateText('Resetting…')) : ar ? 'السمة الافتراضية' : translateText('Reset to Default')}</span>
                   </button>
                 </div>
 
                 <div
                   className="ws-theme-grid"
                   role="radiogroup"
-                  aria-label={ar ? 'السمة' : 'Themes Selector'}
+                  aria-label={ar ? 'السمة' : translateText('Themes Selector')}
                 >
                   {(Object.entries(workspaceThemes) as [WorkspacePreferences['theme'], string][]).map(
                     ([themeKey, themeLabel]) => {
@@ -302,9 +302,9 @@ export function WorkspaceBrandSettings() {
                               </span>
                             </div>
                             <div className="ws-theme-swatches" aria-hidden="true">
-                              <span style={{ background: palette.primary }} title={ar ? 'اللون الأساسي' : 'Primary'} />
-                              <span style={{ background: palette.accent }} title={ar ? 'اللون الثانوي' : 'Accent'} />
-                              <span style={{ background: palette.darkBg }} title={ar ? 'السطح الداكن' : 'Surface Dark'} />
+                              <span style={{ background: palette.primary }} title={ar ? 'اللون الأساسي' : translateText('Primary')} />
+                              <span style={{ background: palette.accent }} title={ar ? 'اللون الثانوي' : translateText('Accent')} />
+                              <span style={{ background: palette.darkBg }} title={ar ? 'السطح الداكن' : translateText('Surface Dark')} />
                             </div>
                           </div>
 
@@ -314,15 +314,15 @@ export function WorkspaceBrandSettings() {
                               {isSelected ? (
                                 <span className="ws-theme-active-badge" style={{ background: palette.primary, color: '#ffffff' }}>
                                   <Check size={12} />
-                                  {ar ? 'مفعل' : 'Active'}
+                                  {ar ? 'مفعل' : translateText('Active')}
                                 </span>
                               ) : (
                                 <span className="ws-theme-tag">
-                                  {ar ? palette.badge[1] : palette.badge[0]}
+                                  {ar ? palette.badge[1] : translateText(palette.badge[0])}
                                 </span>
                               )}
                             </div>
-                            <small>{ar ? palette.desc[1] : palette.desc[0]}</small>
+                            <small>{ar ? palette.desc[1] : translateText(palette.desc[0])}</small>
                           </div>
                         </button>
                       );
@@ -337,53 +337,55 @@ export function WorkspaceBrandSettings() {
                   <div>
                     <h2>
                       <Sparkles size={16} style={{ display: 'inline', marginInlineEnd: 8, verticalAlign: '-2px', color: 'var(--adm-accent, #6d28d9)' }} />
-                      {ar ? 'اللغة والمنطقة والوضع الافتراضي' : 'Regional & Appearance Defaults'}
+                      {ar ? 'اللغة والمنطقة والوضع الافتراضي' : translateText('Regional & Appearance Defaults')}
                     </h2>
                     <p>
                       {ar
                         ? 'تفضيلات العرض والعملة والمنطقة الزمنية الافتراضية.'
-                        : 'Default display mode, language, currency, and timezone across this workspace.'}
+                        : translateText('Default display mode, language, currency, and timezone across this workspace.')}
                     </p>
                   </div>
                 </div>
 
                 <div className="adm-form adm-cms-fields">
                   <label>
-                    {ar ? 'اختر اللغة' : 'Choose Language'}
+                    {ar ? 'اختر اللغة' : translateText('Choose Language')}
                     <Select
-                      label={ar ? 'اختر اللغة' : 'Choose Language'}
+                      label={ar ? 'اختر اللغة' : translateText('Choose Language')}
                       value={resetting ? preferenceDefaults.language : edits.language ?? effective.language}
                       onChange={value => update('language', value as WorkspacePreferences['language'])}
                       options={[
-                        { value: 'en', label: 'English' },
-                        { value: 'ar', label: 'العربية' },
+                        { value: 'ar', label: 'AR · العربية' },
+                        { value: 'en', label: 'EN · English' },
+                        { value: 'nl', label: 'NL · Nederlands' },
+                        { value: 'de', label: 'DE · Deutsch' },
                       ]}
                     />
                   </label>
                   <label>
-                    {ar ? 'الوضع الافتراضي' : 'Default Mode'}
+                    {ar ? 'الوضع الافتراضي' : translateText('Default Mode')}
                     <Select
-                      label={ar ? 'الوضع الافتراضي' : 'Default Mode'}
+                      label={ar ? 'الوضع الافتراضي' : translateText('Default Mode')}
                       value={resetting ? preferenceDefaults.mode : edits.mode ?? effective.mode}
                       onChange={value => update('mode', value as WorkspacePreferences['mode'])}
                       options={[
-                        { value: 'light', label: ar ? 'فاتح' : 'Light' },
-                        { value: 'dark', label: ar ? 'داكن' : 'Dark' },
-                        { value: 'system', label: ar ? 'النظام' : 'System' },
+                        { value: 'light', label: ar ? 'فاتح' : translateText('Light') },
+                        { value: 'dark', label: ar ? 'داكن' : translateText('Dark') },
+                        { value: 'system', label: ar ? 'النظام' : translateText('System') },
                       ]}
                     />
                   </label>
                   <label>
-                    {ar ? 'العملة' : 'Currency'}
+                    {ar ? 'العملة' : translateText('Currency')}
                     <Select
-                      label={ar ? 'العملة' : 'Currency'}
+                      label={ar ? 'العملة' : translateText('Currency')}
                       value={draft.currency}
                       onChange={value => update('currency', value)}
                       options={currencyOptions(ar ? 'ar' : 'en')}
                     />
                   </label>
                   <label>
-                    {ar ? 'المنطقة الزمنية' : 'Timezone'}
+                    {ar ? 'المنطقة الزمنية' : translateText('Timezone')}
                     <TimezoneSelect
                       value={draft.timezone}
                       onChange={value => update('timezone', value)}
@@ -399,7 +401,7 @@ export function WorkspaceBrandSettings() {
                   <span>
                     {ar
                       ? 'تُطبّق التفضيلات على مستوى مساحة العمل بالكامل. تغيير العملة يؤثر على تنسيق العرض فقط.'
-                      : 'Preferences apply globally across this workspace. Currency changes affect display format only.'}
+                      : translateText('Preferences apply globally across this workspace. Currency changes affect display format only.')}
                   </span>
                 </div>
                 <div className="ws-brand-save-actions">
@@ -410,7 +412,7 @@ export function WorkspaceBrandSettings() {
                   )}
                   {saved && (
                     <p className="st-success" role="status" style={{ margin: 0 }}>
-                      {ar ? 'تم الحفظ بنجاح' : 'Settings saved'}
+                      {ar ? 'تم الحفظ بنجاح' : translateText('Settings saved')}
                     </p>
                   )}
                   <button
@@ -418,10 +420,10 @@ export function WorkspaceBrandSettings() {
                     className="ws-reset-defaults-btn"
                     onClick={() => void save(true)}
                     disabled={loading || busy || resetting}
-                    title={ar ? 'استعادة جميع الإعدادات الافتراضية' : 'Restore system defaults'}
+                    title={ar ? 'استعادة جميع الإعدادات الافتراضية' : translateText('Restore system defaults')}
                   >
                     {resetting ? <Loader2 size={13.5} className="ws-spinner" /> : <RotateCcw size={13.5} />}
-                    <span>{resetting ? (ar ? 'جارِ الاستعادة…' : 'Resetting…') : ar ? 'استعادة الافتراضي' : 'Reset to Default'}</span>
+                    <span>{resetting ? (ar ? 'جارِ الاستعادة…' : translateText('Resetting…')) : ar ? 'استعادة الافتراضي' : translateText('Reset to Default')}</span>
                   </button>
                   <button
                     type="button"
@@ -432,10 +434,10 @@ export function WorkspaceBrandSettings() {
                     {busy ? (
                       <>
                         <Loader2 size={14} className="ws-spinner" />
-                        <span>{ar ? 'جارِ الحفظ…' : 'Saving…'}</span>
+                        <span>{ar ? 'جارِ الحفظ…' : translateText('Saving…')}</span>
                       </>
                     ) : (
-                      <span>{ar ? 'حفظ التغييرات' : 'Save changes'}</span>
+                      <span>{ar ? 'حفظ التغييرات' : translateText('Save changes')}</span>
                     )}
                   </button>
                 </div>

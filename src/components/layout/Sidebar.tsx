@@ -237,8 +237,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ items, basePath, navigationLab
           {impersonation && <button
             type="button"
             className="layout-nav-item is-active"
-            title={isRtl ? 'العودة إلى لوحة المسؤول' : 'Return to Admin Dashboard'}
-            aria-label={isRtl ? 'العودة إلى لوحة المسؤول' : 'Return to Admin Dashboard'}
+            title={isRtl ? 'العودة إلى لوحة المسؤول' : translateText('Return to Admin Dashboard')}
+            aria-label={isRtl ? 'العودة إلى لوحة المسؤول' : translateText('Return to Admin Dashboard')}
             disabled={returning}
             onClick={async () => {
               setReturning(true);
@@ -246,7 +246,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ items, basePath, navigationLab
               catch (error) { showToast.error(error instanceof Error ? error.message : 'Could not return to admin.'); }
               finally { setReturning(false); }
             }}
-          ><ArrowRight size={17} strokeWidth={1.8} className="layout-nav-icon flex-none" /><span className="layout-nav-text">{isRtl ? 'العودة إلى لوحة المسؤول' : 'Return to Admin Dashboard'}</span></button>}
+          ><ArrowRight size={17} strokeWidth={1.8} className="layout-nav-icon flex-none" /><span className="layout-nav-text">{isRtl ? 'العودة إلى لوحة المسؤول' : translateText('Return to Admin Dashboard')}</span></button>}
           {localizeNode(topItems.map(item => (
             <React.Fragment key={item.name}>
               {localizeNode(item.dividerBefore && <div className="layout-nav-divider"/>)}

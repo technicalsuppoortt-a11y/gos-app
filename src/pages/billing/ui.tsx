@@ -3,7 +3,7 @@ import { toWesternDigits } from '../../utils/currency';
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import { Check, Lock, Loader2, X } from 'lucide-react';
-import { useUILanguage } from '../../i18n/display';
+import { localizePair, translateText, useUILanguage } from '../../i18n/display';
 import { showToast } from '../../utils/toast';
 import { initialTools } from '../admin/tools-data';
 import { TOOL_IDS, effectiveStatus, type BillingPlan, type BillingSubscription } from '../../backend/billing';
@@ -11,18 +11,18 @@ import './billing.css';
 
 export type Copy = ReturnType<typeof useCopy>;
 
-/** Bilingual copy + Western-numeral formatting. */
+/** Multilingual copy + Western-numeral formatting. */
 export function useCopy() {
   const lang = useUILanguage();
   const { formatPrice, formatCheckoutPrice } = useCurrency();
   const ar = lang.startsWith('ar');
-  const dateLocale = ar ? 'ar-EG-u-nu-latn' : 'en-US';
+  const dateLocale = ar ? 'ar-EG-u-nu-latn' : lang.startsWith('nl') ? 'nl-NL' : lang.startsWith('de') ? 'de-DE' : 'en-US';
   return {
     ar,
     dir: (ar ? 'rtl' : 'ltr') as 'rtl' | 'ltr',
-    t: (en: string, arabic: string) => toWesternDigits(ar ? arabic : en),
+    t: (en: string, arabic: string) => toWesternDigits(ar ? arabic : translateText(en)),
     pick: (value?: { en: string; ar: string } | null) =>
-      value ? toWesternDigits(ar ? value.ar || value.en : value.en || value.ar) : '',
+      value ? toWesternDigits(ar ? value.ar || value.en : translateText(value.en || value.ar)) : '',
     num: (value: number) => new Intl.NumberFormat('en-US').format(value ?? 0),
     money: formatPrice,
     checkoutMoney: formatCheckoutPrice,
@@ -34,8 +34,10 @@ export function useCopy() {
 }
 
 export const toolName = (id: string, ar: boolean) => {
-  if (id === 'inbox' || id === 'unified-inbox') return ar ? 'صندوق الوارد (الموحد)' : 'Inbox (Unified Multi-Channel)';
-  return initialTools.find(tool => tool.id === id)?.name[ar ? 1 : 0] ?? id;
+  if (id === 'inbox' || id === 'unified-inbox') return ar ? 'صندوق الوارد (الموحد)' : translateText('Inbox (Unified Multi-Channel)');
+  const found = initialTools.find(tool => tool.id === id);
+  if (!found) return id;
+  return ar ? found.name[1] : localizePair(found.name);
 };
 export const TOOLS = TOOL_IDS.map(id => ({ id }));
 

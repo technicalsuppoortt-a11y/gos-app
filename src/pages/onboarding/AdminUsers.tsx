@@ -1,3 +1,4 @@
+import { translateText, useUILanguage } from '../../i18n/display';
 import { BookingSelect as DashboardSelect } from "../booking/BookingSelect";
 import React from "react";
 import { createPortal } from "react-dom";
@@ -100,7 +101,7 @@ function UserActions({
   const anchor = React.useRef<HTMLButtonElement>(null);
   const menu = React.useRef<HTMLDivElement>(null);
   const id = React.useId();
-  const t = (en: string, arabic: string) => (ar ? arabic : en);
+  const t = (en: string, arabic: string) => (ar ? arabic : translateText(en));
 
   React.useEffect(() => {
     if (!open) return;
@@ -323,11 +324,20 @@ function SubAccountDetailsModal({
   freePlanName: string;
   busyUserId: string | null;
 }) {
-  const t = (en: string, arabic: string) => (ar ? arabic : en);
+  const t = (en: string, arabic: string) => (ar ? arabic : translateText(en));
   const dir = ar ? "rtl" : "ltr";
   const agency = user?.accountType === "agency";
   const sub = useSubscription(agency ? null : (user?.id ?? null));
   const wallet = useWallet(agency ? null : (user?.id ?? null));
+
+  React.useEffect(() => {
+    if (!user) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [user, onClose]);
 
   if (!user) return null;
 
@@ -357,8 +367,8 @@ function SubAccountDetailsModal({
     ? typeof sub.data.plan.name === "object"
       ? ar
         ? sub.data.plan.name.ar
-        : sub.data.plan.name.en
-      : sub.data.plan.name
+        : translateText(sub.data.plan.name.en)
+      : translateText(sub.data.plan.name)
     : "";
 
   const isMemberFreePlanEnabled =
@@ -371,14 +381,6 @@ function SubAccountDetailsModal({
         ? `${freePlanName || t("Free Plan", "الخطة المجانية")} (${t("Auto-assigned", "تلقائي")})`
         : t("Mandatory Plan Selection", "اختيار خطة إلزامي")
       : t("No Active Plan", "لا توجد خطة نشطة"));
-
-  React.useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
-    };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [onClose]);
 
   return createPortal(
     <div
@@ -918,8 +920,8 @@ export function AdminUsers() {
   const [busyUserId, setBusyUserId] = React.useState<string | null>(null);
   const [selectedUserDetails, setSelectedUserDetails] =
     React.useState<Invite | null>(null);
-  const ar = useSelector((s: RootState) => s.ui.language === "ar");
-  const t = (en: string, arabic: string) => (ar ? arabic : en);
+  const ar = useUILanguage().startsWith("ar");
+  const t = (en: string, arabic: string) => (ar ? arabic : translateText(en));
   const dir = ar ? "rtl" : "ltr";
 
   // Workspace plans to evaluate onboarding scenario (Free Plan vs Mandatory Checkout)

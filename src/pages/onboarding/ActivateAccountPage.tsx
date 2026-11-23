@@ -6,7 +6,7 @@ import { auth, backendError } from '../../backend/firebase';
 import { activateInvitedUser, ActivationError } from '../../backend/adminUsers';
 import { store } from '../../store';
 import { loginSuccess } from '../../store/slices/authSlice';
-import { useUILanguage } from '../../i18n/display';
+import { useUILanguage, translateText } from '../../i18n/display';
 import './activate-account.css';
 
 export default function ActivateAccountPage() {
@@ -18,7 +18,7 @@ function ActivateAccountForm() {
   const language = useUILanguage();
   const [params] = useSearchParams();
   const ar = (params.get('lang') || language).split('-')[0] === 'ar';
-  const t = (en: string, arabic: string) => ar ? arabic : en;
+  const t = (en: string, arabic: string) => ar ? arabic : translateText(en);
   const navigate = useNavigate();
   const code = params.get('oobCode') || '';
   const mode = params.get('mode');

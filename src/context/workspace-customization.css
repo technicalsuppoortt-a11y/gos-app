@@ -611,6 +611,7 @@ html[data-workspace-theme] .login-page .login-forgot-btn:hover {
 html[data-workspace-theme] :is(
   .layout-menu-button,
   .global-currency-symbol,
+  .global-language-badge,
   .adm-group-nav a.active
 ) {
   background-color: var(--ws-soft) !important;
@@ -665,8 +666,7 @@ html[data-workspace-theme] :is(
   .upclick-help-header small,
   .upclick-help h3 svg,
   .upclick-help details[open] summary,
-  .upclick-help article a,
-  .layout-landing-link:hover
+  .upclick-help article a
 ) {
   color: var(--ws-accent) !important;
 }

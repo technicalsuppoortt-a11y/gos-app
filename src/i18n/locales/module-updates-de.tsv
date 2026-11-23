@@ -1,0 +1,480 @@
+Create with AI	Mit KI erstellen
+Build a personalized layout from your business brief.	Erstelle ein personalisiertes Layout auf Basis deiner Unternehmensbeschreibung.
+AI Funnel Generator	KI-Funnel-Generator
+Business Type	Unternehmenstyp
+Target Audience	Zielgruppe
+e.g. Small business owners	z. B. Kleinunternehmer
+Your brief	Dein Briefing
+Enter your business name, business type and target audience.	Gib deinen Unternehmensnamen, deinen Unternehmenstyp und deine Zielgruppe ein.
+Your editable layout will reflect your audience, conversion goal and brand colors. Review each page before publishing.	Dein bearbeitbares Layout spiegelt deine Zielgruppe, dein Conversion-Ziel und deine Markenfarben wider. Überprüfe jede Seite vor der Veröffentlichung.
+Grounded in approved workspace records	Basierend auf freigegebenen Arbeitsbereichsdaten
+Messages are shown from workspace conversations linked to CRM leads.	Angezeigt werden Nachrichten aus Unterhaltungen im Arbeitsbereich, die mit CRM-Leads verknüpft sind.
+Only verified business content should be added. Source details are saved to your workspace; file uploads to an AI provider are not enabled yet.	Es sollten nur verifizierte Unternehmensinhalte hinzugefügt werden. Quelldetails werden in deinem Arbeitsbereich gespeichert; Datei-Uploads an einen KI-Anbieter sind noch nicht aktiviert.
+Approved knowledge is synced to your workspace and used by AI assistants.	Freigegebenes Wissen wird mit deinem Arbeitsbereich synchronisiert und von KI-Assistenten genutzt.
+Verified completed revenue	Verifizierter abgeschlossener Umsatz
+Verified payments from your connected payment provider will appear here.	Verifizierte Zahlungen deines verbundenen Zahlungsanbieters erscheinen hier.
+Transactions are recorded only after the payment provider verifies the payment.	Transaktionen werden erst erfasst, nachdem der Zahlungsanbieter die Zahlung bestätigt hat.
+vs. previous period	ggü. vorherigem Zeitraum
+Daily views and conversions chart	Diagramm der täglichen Aufrufe und Conversions
+No traffic sources recorded for this period.	Für diesen Zeitraum wurden keine Traffic-Quellen erfasst.
+No device data recorded.	Keine Gerätedaten erfasst.
+No visits recorded	Keine Besuche erfasst
+No data	Keine Daten
+CRM contacts captured by	CRM-Kontakte erfasst durch
+No leads captured yet	Noch keine Leads erfasst
+Leads appear here once visitors submit a form on this funnel.	Leads erscheinen hier, sobald Besucher ein Formular in diesem Funnel absenden.
+Leads exported	Leads exportiert
+Workspace activity	Aktivität im Arbeitsbereich
+Quick Connection Steps	Schnelle Verbindungsschritte
+Manage Facebook Page messages in your unified inbox and automations.	Verwalte Nachrichten deiner Facebook-Seite in deinem zentralen Posteingang und deinen Automatisierungen.
+Make Sure You Are a Page Admin	Stelle sicher, dass du Seiten-Admin bist
+Open your Facebook Page → Settings → Page access and confirm your account has full control of the Page.	Öffne deine Facebook-Seite → Einstellungen → Seitenzugriff und stelle sicher, dass dein Konto die volle Kontrolle über die Seite hat.
+Turn On Page Messaging	Seitennachrichten aktivieren
+In your Page settings, make sure people can message your Page so new conversations can reach your Inbox.	Stelle in deinen Seiteneinstellungen sicher, dass Personen deiner Seite Nachrichten senden können, damit neue Unterhaltungen deinen Posteingang erreichen.
+Authorize via Meta Business Login	Über Meta Business Login autorisieren
+Click "Connect" below, sign in with your Facebook Admin account, and select the Page you want to sync.	Klicke unten auf „Verbinden“, melde dich mit deinem Facebook-Admin-Konto an und wähle die Seite aus, die du synchronisieren möchtest.
+Test & Enable Automatic Sync	Testen & automatische Synchronisierung aktivieren
+Run the built-in Connection Test to verify webhook delivery and keep "Automatic sync" turned on so new messages appear in your Inbox immediately.	Führe den integrierten Verbindungstest aus, um die Webhook-Zustellung zu prüfen, und lasse „Automatische Synchronisierung“ aktiviert, damit neue Nachrichten sofort in deinem Posteingang erscheinen.
+Connected Facebook Page	Verbundene Facebook-Seite
+Read the Facebook Pages you manage	Die von dir verwalteten Facebook-Seiten lesen
+Receive and reply to Page messages and comments in real time	Seitennachrichten und Kommentare in Echtzeit empfangen und beantworten
+Grant all requested permissions for the Page during the Meta popup—deselecting any of them can stop new messages from reaching your Inbox.	Erteile im Meta-Popup alle angeforderten Berechtigungen für die Seite—das Abwählen einzelner Berechtigungen kann verhindern, dass neue Nachrichten deinen Posteingang erreichen.
+Comment Replies	Kommentarantworten
+Admin access to a Facebook Business Page	Admin-Zugriff auf eine Facebook-Unternehmensseite
+Messaging turned on for the Page	Nachrichtenfunktion für die Seite aktiviert
+Connect with Meta	Mit Meta verbinden
+Connect manually	Manuell verbinden
+Connect manually with my own Meta app	Manuell mit meiner eigenen Meta-App verbinden
+Connect WhatsApp Cloud API for customer messaging, broadcasts, and automated AI follow-ups.	Verbinde die WhatsApp Cloud API für Kundennachrichten, Broadcasts und automatisierte KI-Follow-ups.
+A Meta Business Portfolio (Business Manager) account	Ein Meta Business Portfolio-Konto (Business Manager)
+A phone number that can receive an SMS or call code and is not active on the regular WhatsApp app	Eine Telefonnummer, die einen SMS- oder Anrufcode empfangen kann und nicht in der regulären WhatsApp-App aktiv ist
+For manual setup: your own Meta app with the WhatsApp product added	Für die manuelle Einrichtung: deine eigene Meta-App mit hinzugefügtem WhatsApp-Produkt
+Prepare Your Phone Number	Telefonnummer vorbereiten
+Use a number that is not registered on the regular WhatsApp or WhatsApp Business app, or delete that account from the app first.	Verwende eine Nummer, die nicht in der regulären WhatsApp- oder WhatsApp Business-App registriert ist, oder lösche das Konto dort zuerst.
+Option 1: Connect with Meta	Option 1: Mit Meta verbinden
+Click "Connect with Meta", log in to your Meta Business Portfolio, then create or pick your WhatsApp Business profile and verify the number with the 6-digit code.	Klicke auf „Mit Meta verbinden“, melde dich in deinem Meta Business Portfolio an, erstelle oder wähle dann dein WhatsApp Business-Profil und bestätige die Nummer mit dem 6-stelligen Code.
+Option 2: Connect Manually	Option 2: Manuell verbinden
+Click "Connect manually", add the Callback URL and Verify token shown to your Meta app webhook and subscribe to "messages", then paste your Phone number ID, permanent access token and App Secret.	Klicke auf „Manuell verbinden“, füge die angezeigte Callback-URL und das Verify-Token zum Webhook deiner Meta-App hinzu, abonniere „messages“ und füge anschließend deine Telefonnummern-ID, dein permanentes Zugriffstoken und dein App Secret ein.
+Send a Test Message	Testnachricht senden
+Message your WhatsApp number from another phone and check that the conversation appears in your Inbox.	Sende von einem anderen Telefon aus eine Nachricht an deine WhatsApp-Nummer und prüfe, ob die Unterhaltung in deinem Posteingang erscheint.
+Use Connect with Meta if you are not sure. Choose manual setup only if you already run your own Meta app and have a permanent System User token.	Verwende „Mit Meta verbinden“, wenn du dir unsicher bist. Wähle die manuelle Einrichtung nur, wenn du bereits eine eigene Meta-App betreibst und ein permanentes Systemnutzer-Token hast.
+Access your verified WhatsApp Business Account (WABA) and phone number	Zugriff auf dein verifiziertes WhatsApp Business-Konto (WABA) und deine Telefonnummer
+Send approved template messages and receive customer replies in real time	Genehmigte Vorlagennachrichten senden und Kundenantworten in Echtzeit empfangen
+Connect with your own Meta app	Mit eigener Meta-App verbinden
+First add this webhook to your app in Meta, and subscribe to the messages field.	Füge zuerst diesen Webhook zu deiner App in Meta hinzu und abonniere das Feld „messages“.
+Phone number ID	Telefonnummern-ID
+Permanent access token	Permanentes Zugriffstoken
+Disconnect Facebook Messenger	Facebook Messenger trennen
+Disconnect WhatsApp Business	WhatsApp Business trennen
+Connect Facebook Messenger	Facebook Messenger verbinden
+Customer Details	Kundendetails
+View buyer profile, payment method, and transaction reference	Käuferprofil, Zahlungsmethode und Transaktionsreferenz ansehen
+Buyer Profile	Käuferprofil
+Verified Buyer	Verifizierter Käufer
+No email recorded	Keine E-Mail-Adresse erfasst
+Not provided	Nicht angegeben
+Copy email	E-Mail-Adresse kopieren
+Copy phone	Telefonnummer kopieren
+CRM Stage	CRM-Phase
+Payment & Transaction Details	Zahlungs- & Transaktionsdetails
+Transaction Reference	Transaktionsreferenz
+Transaction reference	Transaktionsreferenz
+Copy transaction reference	Transaktionsreferenz kopieren
+Payment Method	Zahlungsmethode
+Purchase Date	Kaufdatum
+Approval Date	Genehmigungsdatum
+Amount Paid	Gezahlter Betrag
+Discount Code	Rabattcode
+Purchased Customers	Käufer
+Select buyer	Käufer auswählen
+Fulfillment & Portal Access	Bereitstellung & Portalzugriff
+Service Status	Servicestatus
+Digital Delivery	Digitale Bereitstellung
+downloads	Downloads
+Customer Portal	Kundenportal
+Customer Portal Login Link	Anmeldelink zum Kundenportal
+Copy login link	Anmeldelink kopieren
+Login link	Anmeldelink
+Set Customer Password	Kundenpasswort festlegen
+Send Reset Email	E-Mail zum Zurücksetzen senden
+Save Password	Passwort speichern
+Minimum 8 characters	Mindestens 8 Zeichen
+Assign a password so this customer can sign in immediately at /auth/login:	Vergib ein Passwort, damit sich dieser Kunde sofort unter /auth/login anmelden kann:
+Customer email is required to set portal credentials.	Die Kunden-E-Mail-Adresse ist erforderlich, um Zugangsdaten für das Portal festzulegen.
+Customer portal password updated and access synced.	Passwort für das Kundenportal aktualisiert und Zugriff synchronisiert.
+Could not update customer password. Try sending a reset email instead.	Kundenpasswort konnte nicht aktualisiert werden. Sende stattdessen eine E-Mail zum Zurücksetzen.
+Password reset email sent to customer.	E-Mail zum Zurücksetzen des Passworts an den Kunden gesendet.
+Could not send reset email. Set a password directly instead.	E-Mail zum Zurücksetzen konnte nicht gesendet werden. Lege stattdessen direkt ein Passwort fest.
+Could not send reset email.	E-Mail zum Zurücksetzen konnte nicht gesendet werden.
+Could not copy to clipboard.	Kopieren in die Zwischenablage fehlgeschlagen.
+Direct Checkout	Direkter Checkout
+Free Enrollment	Kostenlose Anmeldung
+Course Enrollment	Kursanmeldung
+CRM Enrollment	CRM-Anmeldung
+Active Access	Aktiver Zugriff
+See Customer Page	Kundenseite ansehen
+Open Customer Portal	Kundenportal öffnen
+Active in your account:	Aktiv in deinem Konto:
+My Purchases	Meine Käufe
+My Purchases view selected.	Ansicht „Meine Käufe“ ausgewählt.
+All Products view selected.	Ansicht „Alle Produkte“ ausgewählt.
+Products sub-views	Produkt-Unteransichten
+Purchased & active in your account	Gekauft & aktiv in deinem Konto
+No purchased products yet	Noch keine gekauften Produkte
+Products and courses you purchase or enroll in via checkout will appear here in your personal library.	Produkte und Kurse, die du über den Checkout kaufst oder buchst, erscheinen hier in deiner persönlichen Bibliothek.
+No purchased products match your search filter.	Keine gekauften Produkte entsprechen deinem Suchfilter.
+Explore All Products	Alle Produkte entdecken
+Price: Low to High	Preis: aufsteigend
+Continue Course	Kurs fortsetzen
+Start Course	Kurs starten
+Access Service	Auf Dienstleistung zugreifen
+Access Files	Dateien öffnen
+Continue Learning	Weiterlernen
+Manage & Schedule	Verwalten & planen
+Access Downloads	Downloads öffnen
+CUSTOMER ACCESS PORTAL	KUNDENPORTAL
+Access your purchases	Auf deine Käufe zugreifen
+Sign in with your email and password to open your purchased courses, files, and services.	Melde dich mit deiner E-Mail-Adresse und deinem Passwort an, um deine gekauften Kurse, Dateien und Dienstleistungen zu öffnen.
+Sign in to Customer Portal	Im Kundenportal anmelden
+Encrypted access to your purchased library	Verschlüsselter Zugriff auf deine gekaufte Bibliothek
+© 2026 Upklick Inc.	© 2026 Upklick Inc.
+Choose a new password to access your purchases.	Wähle ein neues Passwort, um auf deine Käufe zuzugreifen.
+Confirm new password	Neues Passwort bestätigen
+Use at least 12 characters, including a letter and a number or symbol.	Verwende mindestens 12 Zeichen, darunter einen Buchstaben sowie eine Zahl oder ein Sonderzeichen.
+The passwords do not match.	Die Passwörter stimmen nicht überein.
+Sign in again	Erneut anmelden
+Purchased Library & Learning Hub	Kaufbibliothek & Lernbereich
+All My Purchases	Alle meine Käufe
+Back to Dashboard	Zurück zum Dashboard
+Signed out successfully.	Erfolgreich abgemeldet.
+Verify your email to access purchases.	Bestätige deine E-Mail-Adresse, um auf deine Käufe zuzugreifen.
+Send verification email	Bestätigungs-E-Mail senden
+Check your email for a verification link.	Prüfe dein Postfach auf einen Bestätigungslink.
+Loading your library…	Deine Bibliothek wird geladen…
+Syncing your purchased courses, downloads, and service bookings.	Deine gekauften Kurse, Downloads und gebuchten Dienstleistungen werden synchronisiert.
+Customer page preview	Vorschau der Kundenseite
+This purchase is unavailable.	Dieser Kauf ist nicht verfügbar.
+Verified Customer Access	Verifizierter Kundenzugriff
+Welcome back,	Willkommen zurück,
+Access all your enrolled courses, instant digital downloads, and scheduled services in one unified space.	Greife an einem zentralen Ort auf alle deine gebuchten Kurse, digitalen Sofort-Downloads und geplanten Dienstleistungen zu.
+Active Items	Aktive Inhalte
+Downloads & Services	Downloads & Dienstleistungen
+Product categories	Produktkategorien
+All Purchases	Alle Käufe
+No items match your filter	Keine Einträge entsprechen deinem Filter
+Once you complete a purchase or your payment receipt is approved, your courses, digital downloads, and services appear here automatically.	Sobald du einen Kauf abschließt oder dein Zahlungsbeleg bestätigt wurde, erscheinen deine Kurse, digitalen Downloads und Dienstleistungen hier automatisch.
+Try clearing your search query or switching category tabs.	Versuche, deine Suchanfrage zu löschen oder den Kategorietab zu wechseln.
+Structured self-paced video curriculum and downloadable resources.	Strukturierter Videokurs im eigenen Tempo mit herunterladbaren Materialien.
+Dedicated session delivery, scheduling link, and status tracking.	Individuelle Sitzungsdurchführung, Buchungslink und Statusverfolgung.
+Instant digital files, templates, and lifetime access updates.	Digitale Sofortdateien, Vorlagen und lebenslanger Zugriff auf Updates.
+Self-paced modules	Module im eigenen Tempo
+Self-paced	Im eigenen Tempo
+deliverable files	enthaltene Dateien
+Instant access	Sofortiger Zugriff
+Digital File	Digitale Datei
+Enrolled Course	Gebuchter Kurs
+Join Student Community	Teilnehmer-Community beitreten
+Open the attached lesson material below to study and complete this unit.	Öffne das beigefügte Unterrichtsmaterial unten, um diese Einheit durchzuarbeiten und abzuschließen.
+Review the key concepts for this lesson below, then mark it complete to track your course progress.	Sieh dir unten die wichtigsten Konzepte dieser Lektion an und markiere sie anschließend als abgeschlossen, um deinen Kursfortschritt zu verfolgen.
+Open Lesson Resource	Lektionsmaterial öffnen
+Lesson marked as incomplete.	Lektion als unvollständig markiert.
+Lesson completed! Progress saved.	Lektion abgeschlossen! Fortschritt gespeichert.
+Mark Complete	Als abgeschlossen markieren
+Mark complete	Als abgeschlossen markieren
+Certificate of Completion Unlocked!	Abschlusszertifikat freigeschaltet!
+Issued by	Ausgestellt von
+Print Certificate	Zertifikat drucken
+Course Progress	Kursfortschritt
+lessons completed	Lektionen abgeschlossen
+INSTRUCTOR	DOZENT
+Download recorded.	Download erfasst.
+Could not open file. Contact support if the issue persists.	Datei konnte nicht geöffnet werden. Wende dich an den Support, falls das Problem weiterhin besteht.
+Your Downloadable Files & Assets	Deine herunterladbaren Dateien & Inhalte
+Instant verified access · Downloads synced to your account	Sofortiger verifizierter Zugriff · Downloads mit deinem Konto synchronisiert
+Downloaded	Heruntergeladen
+Open Resource	Ressource öffnen
+Complete Package	Komplettpaket
+Ready in your verified customer account	Bereit in deinem verifizierten Kundenkonto
+Unlocked	Freigeschaltet
+License & Fulfillment Details	Lizenz- & Bereitstellungsdetails
+Access Tier	Zugriffsstufe
+Total Downloads	Downloads insgesamt
+Order Reference	Bestellreferenz
+DELIVERY NOTES	LIEFERHINWEISE
+Booked Service	Gebuchte Dienstleistung
+Schedule Your Session	Sitzung planen
+Service Fulfillment Tracker	Status der Dienstleistung
+Live status synced with your provider	Live-Status mit deinem Anbieter synchronisiert
+Order Confirmed	Bestellung bestätigt
+Session Scheduled	Sitzung geplant
+Payment verified & service unlocked	Zahlung bestätigt & Dienstleistung freigeschaltet
+Choose your preferred date & time	Wähle dein bevorzugtes Datum & deine Uhrzeit
+Session delivered & notes shared	Sitzung durchgeführt & Notizen geteilt
+Open Booking Calendar	Buchungskalender öffnen
+Confirm Session Requested	Angefragte Sitzung bestätigen
+Session status updated to Scheduled.	Sitzungsstatus auf „Geplant“ aktualisiert.
+Session Specifications	Sitzungsdetails
+Delivery Mode	Durchführungsart
+Online	Online
+Specialist	Spezialist
+PREPARATION & INSTRUCTIONS	VORBEREITUNG & ANWEISUNGEN
+Your sign-in password was updated.	Dein Anmeldepasswort wurde aktualisiert.
+Customers can leave a rating and review after signing in.	Kunden können nach der Anmeldung eine Bewertung und Rezension abgeben.
+Open / Download	Öffnen / Herunterladen
+Open full receipt	Vollständigen Beleg öffnen
+Could not load product access.	Produktzugriff konnte nicht geladen werden.
+This action is unavailable.	Diese Aktion ist nicht verfügbar.
+Updated.	Aktualisiert.
+your purchased products	deine gekauften Produkte
+your purchased courses, files, or services	deine gekauften Kurse, Dateien oder Dienstleistungen
+Search...	Suchen...
+Search…	Suchen…
+Search your purchased products...	In deinen gekauften Produkten suchen...
+Search your purchased courses, files, or services…	In deinen gekauften Kursen, Dateien oder Dienstleistungen suchen…
+Search products...	Produkte suchen...
+Search by product, customer, email, method, or transaction ID...	Suchen nach Produkt, Kunde, E-Mail, Methode oder Transaktions-ID...
+Search by customer, product, method or reference…	Suchen nach Kunde, Produkt, Methode oder Referenz…
+Search by user name, email, method or coupon…	Suchen nach Benutzername, E-Mail, Methode oder Gutschein…
+Search product users	Produktnutzer suchen
+Search product templates	Produktvorlagen suchen
+Search customers by name, email, or phone...	Kunden nach Name, E-Mail oder Telefon suchen...
+Search templates, niches or tags…	Vorlagen, Nischen oder Tags suchen…
+Search templates by name, style, or topic...	Vorlagen nach Name, Stil oder Thema suchen...
+Search assets, workspace, or owner…	Inhalte, Arbeitsbereich oder Eigentümer suchen…
+Search available contacts…	Verfügbare Kontakte suchen…
+Search by invoice #, plan, payment method, reference…	Suchen nach Rechnungs-#, Tarif, Zahlungsmethode, Referenz…
+Search by name or email…	Suchen nach Name oder E-Mail…
+Search by name, email or ID…	Suchen nach Name, E-Mail oder ID…
+Search by name, email or plan…	Suchen nach Name, E-Mail oder Tarif…
+Search by template name or use case…	Suchen nach Vorlagenname oder Anwendungsfall…
+Search city or timezone…	Stadt oder Zeitzone suchen…
+Search clauses in Terms of Service...	Klauseln in den Nutzungsbedingungen suchen...
+Search countries…	Länder suchen…
+Search currencies…	Währungen suchen…
+Search events, workspaces or triggers…	Ereignisse, Arbeitsbereiche oder Trigger suchen…
+Search ledger entries…	Buchungseinträge suchen…
+Search name, owner or workspace…	Name, Eigentümer oder Arbeitsbereich suchen…
+Search policy clauses...	Richtlinienklauseln suchen...
+Search Privacy Policy clauses	Klauseln der Datenschutzerklärung suchen
+Search subscribers	Abonnenten suchen
+Search subscribers…	Abonnenten suchen…
+Search timezones…	Zeitzonen suchen…
+Search tools (e.g., AI, Funnel, CRM)...	Tools suchen (z. B. KI, Funnel, CRM)...
+Search workspace name, ID, or model…	Name des Arbeitsbereichs, ID oder Modell suchen…
+Search workspace or owner ID…	Arbeitsbereichs- oder Eigentümer-ID suchen…
+Search workspaces	Arbeitsbereiche suchen
+Search workspaces…	Arbeitsbereiche suchen…
+Search sub-accounts	Unterkonten suchen
+Search sub-accounts...	Unterkonten durchsuchen...
+Search admins or sections…	Admins oder Bereiche suchen…
+Search admins or sections	Admins oder Bereiche suchen
+Search sections…	Bereiche suchen…
+Search sections	Bereiche suchen
+Search world city or country…	Stadt oder Land weltweit suchen…
+Search requests	Anfragen suchen
+Full Access	Vollzugriff
+Commerce & Funnels Only	Nur E-Commerce & Funnels
+Support Only	Nur Support
+All platform modules and all workspace settings tabs	Alle Plattformmodule und alle Tabs der Arbeitsbereich-Einstellungen
+Products & Payments, Funnels, Booking, Contacts, Analytics & Commerce settings	Produkte & Zahlungen, Funnels, Buchung, Kontakte, Analysen & E-Commerce-Einstellungen
+Inbox, CRM & Leads, Contacts, AI Follow-up & Booking	Posteingang, CRM & Leads, Kontakte, KI-Follow-up & Buchung
+Manually select allowed modules and settings tabs below	Wähle unten manuell die erlaubten Module und Einstellungs-Tabs aus
+Sales Team	Vertriebsteam
+Support Team	Support-Team
+Support Routing & Shift Schedule	Support-Routing & Schichtplan
+Unified assignment share and shift availability across Inbox, AI Follow-up & CRM	Einheitliche Zuweisungsverteilung und Schichtverfügbarkeit über Posteingang, KI-Follow-up & CRM hinweg
+Lead Allocation Percentage	Prozentuale Lead-Zuweisung
+Agents with higher allocation percentages receive proportionally more leads when on shift.	Mitarbeiter mit einem höheren Zuweisungsprozentsatz erhalten während ihrer Schicht anteilig mehr Leads.
+Active support pool	Aktiver Support-Pool
+Shift Schedule	Schichtplan
+Schedule enforced	Schichtplan aktiv
+Always available	Immer verfügbar
+Enable shift schedule	Schichtplan aktivieren
+Working Days	Arbeitstage
+All week	Ganze Woche
+Sun–Thu	So–Do
+Mon–Fri	Mo–Fr
+Sun	So
+Mon	Mo
+Tue	Di
+Wed	Mi
+Thu	Do
+Fri	Fr
+Sat	Sa
+Shift Start Time	Schichtbeginn
+Shift End Time	Schichtende
+Workspace Timezone	Zeitzone des Arbeitsbereichs
+On Shift	Im Dienst
+Off Shift	Außer Dienst
+On Shift Now	Jetzt im Dienst
+Off Shift Now	Jetzt außer Dienst
+Select at least one working day for the Sales shift schedule.	Wähle mindestens einen Arbeitstag für den Vertriebs-Schichtplan aus.
+Select at least one working day for the shift schedule.	Wähle mindestens einen Arbeitstag für den Schichtplan aus.
+Sales routing & shift schedule updated.	Vertriebs-Routing und Schichtplan aktualisiert.
+Sales Team & Routing	Vertriebsteam & Routing
+Live shift availability, weighted lead routing across Inbox, AI Follow-up & CRM, and per-agent revenue attribution.	Live-Schichtverfügbarkeit, gewichtetes Lead-Routing über Posteingang, KI-Follow-up & CRM sowie Umsatzzuordnung pro Mitarbeiter.
+Team & Roles	Team & Rollen
+Add Sales Agent	Vertriebsmitarbeiter hinzufügen
+Add First Sales Agent	Ersten Vertriebsmitarbeiter hinzufügen
+Weighted Sales Routing Active	Gewichtetes Vertriebs-Routing aktiv
+Owner Fallback Routing Active	Fallback-Routing an Eigentümer aktiv
+No Sales Agent On Shift	Kein Vertriebsmitarbeiter im Dienst
+New leads and "Take Over Conversation" handoffs are automatically routed to on-shift Sales agents by allocation percentage.	Neue Leads und Übergaben über „Gespräch übernehmen“ werden automatisch nach Zuweisungsprozentsatz an Vertriebsmitarbeiter im Dienst weitergeleitet.
+All Sales agents are currently off-shift or inactive. Incoming leads and human handoffs automatically route to Workspace Owner:	Alle Vertriebsmitarbeiter sind derzeit außer Dienst oder inaktiv. Eingehende Leads und persönliche Übergaben werden automatisch an den Eigentümer des Arbeitsbereichs weitergeleitet:
+Workspace Live Time	Aktuelle Uhrzeit im Arbeitsbereich
+On-Shift Agents	Mitarbeiter im Dienst
+Ready for live handoffs	Bereit für Live-Übergaben
+Fallback: Workspace Owner	Fallback: Eigentümer des Arbeitsbereichs
+Assigned Leads	Zugewiesene Leads
+Synced across CRM, Inbox & AI	Synchronisiert über CRM, Posteingang & KI
+Active / Resolved Chats	Aktive / gelöste Chats
+Active / Resolved	Aktiv / gelöst
+Active vs. resolved threads	Aktive ggü. gelösten Unterhaltungen
+Attributed Revenue	Zugeordneter Umsatz
+Attributed Sales	Zugeordnete Verkäufe
+attributed sales	zugeordnete Verkäufe
+Sales Agents & Attribution Breakdown	Vertriebsmitarbeiter & Zuordnungsübersicht
+Click any agent to inspect their assigned leads, active/resolved conversations, and attributed sales.	Klicke auf einen Mitarbeiter, um dessen zugewiesene Leads, aktive/gelöste Unterhaltungen und zugeordnete Verkäufe einzusehen.
+Search agent by name or email…	Mitarbeiter nach Name oder E-Mail suchen…
+All Agents	Alle Mitarbeiter
+No dedicated Sales agents configured yet	Noch keine eigenen Vertriebsmitarbeiter konfiguriert
+Use Add Sales Agent to enable shift-based weighted routing. Until then, all leads and handoffs route safely to the Workspace Owner.	Nutze „Vertriebsmitarbeiter hinzufügen“, um schichtbasiertes gewichtetes Routing zu aktivieren. Bis dahin werden alle Leads und Übergaben sicher an den Eigentümer des Arbeitsbereichs geleitet.
+Owner Fallback	Eigentümer-Fallback
+Fallback Active	Fallback aktiv
+Standby Fallback	Standby-Fallback
+Fallback Routing Share (When 0 Sales On Shift)	Fallback-Routing-Anteil (wenn 0 Vertriebsmitarbeiter im Dienst sind)
+Configured Lead Allocation	Konfigurierte Lead-Zuweisung
+Live	Live
+24/7 Automatic Fallback	Automatischer 24/7-Fallback
+24/7 (Schedule disabled)	24/7 (Schichtplan deaktiviert)
+View Attribution & Leads	Zuordnung & Leads ansehen
+Edit Shift & %	Schicht & % bearbeiten
+Configure Shift & Allocation	Schicht & Zuweisung konfigurieren
+No leads are currently assigned to this agent.	Diesem Mitarbeiter sind derzeit keine Leads zugewiesen.
+No conversations are currently assigned to this agent.	Diesem Mitarbeiter sind derzeit keine Unterhaltungen zugewiesen.
+No paid orders or converted sales attributed yet.	Noch keine bezahlten Bestellungen oder konvertierten Verkäufe zugeordnet.
+Live sales conversation	Aktives Verkaufsgespräch
+Human Handoff	Übergabe an Mitarbeiter
+Open Chat	Chat öffnen
+Open in CRM	Im CRM öffnen
+Open in Inbox	Im Posteingang öffnen
+Converted CRM Deal	Konvertierter CRM-Deal
+Product Purchase	Produktkauf
+Assigned Contact	Zugewiesener Kontakt
+Handled by	Bearbeitet von
+Routed to	Weitergeleitet an
+Assigned to	Zugewiesen an
+Conversation handed off to human Sales	Unterhaltung an Vertriebsmitarbeiter übergeben
+Take over conversation	Gespräch übernehmen
+Hand back to AI	Zurück an KI übergeben
+AI is handling this conversation again.	Die KI übernimmt diese Unterhaltung wieder.
+Unassigned (Auto-Route)	Nicht zugewiesen (Auto-Routing)
+Sales	Verkäufe
+Mark all read	Alle als gelesen markieren
+No notifications right now	Derzeit keine Benachrichtigungen
+New lead assignments, human handoffs, and shift updates appear here in real time.	Neue Lead-Zuweisungen, persönliche Übergaben und Schicht-Updates erscheinen hier in Echtzeit.
+Loading conversations...	Unterhaltungen werden geladen...
+Unable to load conversations	Unterhaltungen konnten nicht geladen werden
+Response actions	Antwortaktionen
+Dislike	Gefällt mir nicht
+Regenerating...	Wird neu generiert...
+Listen	Anhören
+Stop listening	Wiedergabe stoppen
+Response exported	Antwort exportiert
+Assistant response regenerated	Antwort des Assistenten neu generiert
+Audio playback is not Salesed in this browser.	Die Audiowiedergabe wird in diesem Browser nicht unterstützt.
+Build an Audience	Zielgruppe aufbauen
+Collect email addresses and build your email list	Sammle E-Mail-Adressen und baue deine E-Mail-Liste auf
+Sell	Verkaufen
+Sell a product or service	Verkaufe ein Produkt oder eine Dienstleistung
+Custom	Benutzerdefiniert
+Build a custom funnel from scratch	Erstelle einen individuellen Funnel von Grund auf
+Create With AI	Mit KI erstellen
+Generate a personalized funnel layout from your business brief	Erstelle ein personalisiertes Funnel-Layout auf Basis deiner Unternehmensbeschreibung
+Enter a funnel name to continue.	Gib einen Funnel-Namen ein, um fortzufahren.
+Could not create funnel.	Funnel konnte nicht erstellt werden.
+Create Funnel	Funnel erstellen
+Funnel name	Funnel-Name
+Enter funnel name	Funnel-Namen eingeben
+Funnel domain	Funnel-Domain
+Choose funnel goal	Funnel-Ziel auswählen
+Currency	Währung
+Funnel currency	Funnel-Währung
+Funnel Settings	Funnel-Einstellungen
+Back to Steps	Zurück zu den Schritten
+Add at least one step to your funnel before publishing.	Füge mindestens einen Schritt zu deinem Funnel hinzu, bevor du ihn veröffentlichst.
+Per-Element CRM Lead Routing	CRM-Lead-Routing pro Element
+Each Form and Booking Calendar routes leads independently to its own pipeline and initial stage.	Jedes Formular und jeder Buchungskalender leitet Leads unabhängig in eine eigene Pipeline und Startphase weiter.
+No Form or Booking Calendar elements found yet. Add a Form or Calendar in the Page Builder to configure its CRM routing.	Noch keine Formular- oder Buchungskalender-Elemente gefunden. Füge im Page Builder ein Formular oder einen Kalender hinzu, um das CRM-Routing zu konfigurieren.
+Form CRM Lead Routing	CRM-Lead-Routing für Formular
+Booking Calendar CRM Lead Routing	CRM-Lead-Routing für Buchungskalender
+Button action type	Aktionstyp des Buttons
+Action destination	Aktionsziel
+Go to Next Funnel Step	Zum nächsten Funnel-Schritt
+Go to Specific Page / Step	Zu bestimmter Seite / bestimmtem Schritt
+External URL	Externe URL
+Submit Form / Trigger Order	Formular absenden / Bestellung auslösen
+Scroll to Section	Zu Abschnitt scrollen
+Open Popup / Modal	Popup / Modal öffnen
+Open Booking Modal	Buchungsfenster öffnen
+Download File	Datei herunterladen
+Phone Call (tel:)	Telefonanruf (tel:)
+Send Email (mailto:)	E-Mail senden (mailto:)
+Next step override (optional)	Nächsten Schritt überschreiben (optional)
+Automatic (Next step in funnel flow)	Automatisch (nächster Schritt im Funnel-Ablauf)
+Target page / step	Zielseite / Zielschritt
+Choose a page or step...	Seite oder Schritt auswählen...
+Destination URL	Ziel-URL
+Open in new tab	In neuem Tab öffnen
+Target Form / Order	Zielformular / Zielbestellung
+Auto (First Form / Order on page)	Automatisch (erstes Formular / erste Bestellung auf der Seite)
+Choose section on page	Abschnitt auf der Seite auswählen
+Select a section...	Abschnitt auswählen...
+Target section ID	Ziel-Abschnitts-ID
+#pricing or section ID	#pricing oder Abschnitts-ID
+Popup source	Popup-Quelle
+Built-in Lead Capture Popup	Integriertes Lead-Erfassungs-Popup
+Built-in Special Offer Modal	Integriertes Sonderangebots-Modal
+Page Popup	Seiten-Popup
+Popup headline	Popup-Überschrift
+Enter popup headline	Popup-Überschrift eingeben
+Popup description	Popup-Beschreibung
+Supporting popup message	Ergänzende Popup-Nachricht
+Popup CTA label	Popup-CTA-Beschriftung
+Submit & Continue	Absenden & weiter
+Get Instant Access	Sofortigen Zugriff erhalten
+Enter your details below to unlock immediate access.	Gib unten deine Daten ein, um sofortigen Zugriff freizuschalten.
+File URL	Datei-URL
+File name (optional)	Dateiname (optional)
+Phone number	Telefonnummer
+Phone number (optional)	Telefonnummer (optional)
+Email subject (optional)	E-Mail-Betreff (optional)
+Inquiry from website	Anfrage über die Website
+This is the final step in the funnel flow.	Dies ist der letzte Schritt im Funnel-Ablauf.
+Choose a target page or step in button settings.	Wähle in den Button-Einstellungen eine Zielseite oder einen Zielschritt aus.
+Add a destination URL in button settings.	Füge in den Button-Einstellungen eine Ziel-URL hinzu.
+Invalid destination URL.	Ungültige Ziel-URL.
+Add a Form or Order element on this page to submit.	Füge auf dieser Seite ein Formular- oder Bestellelement zum Absenden hinzu.
+Add a file URL to download in button settings.	Füge in den Button-Einstellungen eine Datei-URL zum Herunterladen hinzu.
+Unable to start download.	Download konnte nicht gestartet werden.
+Add a phone number in button settings.	Füge in den Button-Einstellungen eine Telefonnummer hinzu.
+Add an email address in button settings.	Füge in den Button-Einstellungen eine E-Mail-Adresse hinzu.
+Configure an action for this button in the Page Builder.	Konfiguriere im Page Builder eine Aktion für diesen Button.
+Submitted successfully!	Erfolgreich abgesendet!
+Your submission has been received.	Deine Eingabe wurde empfangen.
+SPECIAL OFFER	SONDERANGEBOT
+INSTANT ACCESS	SOFORTIGER ZUGRIFF
+100% secure & private	100 % sicher & vertraulich
+Configuration	Konfiguration
+Automation Rules	Automatisierungsregeln
+A/B Test	A/B-Test
+Stats	Statistiken
+Deadline Settings	Fristeinstellungen
+Inactive Page	Inaktive Seite
+Fallback	Fallback
+Displayed when the funnel is disabled	Wird angezeigt, wenn der Funnel deaktiviert ist
+Order Form	Bestellformular
+Thank You Page	Dankeseite
+Opt-in / Squeeze Page	Opt-in- / Squeeze-Seite
+Funnel Step Templates	Vorlagen für Funnel-Schritte
+Global Funnel Step Templates Library	Globale Vorlagenbibliothek für Funnel-Schritte

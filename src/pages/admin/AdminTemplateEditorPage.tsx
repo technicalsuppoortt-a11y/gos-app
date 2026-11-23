@@ -4,7 +4,7 @@ import { useSelector } from 'react-redux';
 import { saveManagedTemplate } from '../../backend/adminManagement';
 import { backendError } from '../../backend/firebase';
 import { saveAdminTemplate, useManagedTemplatePreview, useTemplateLibrary, type OwnedTemplate } from '../../backend/templateOwnership';
-import { useUILanguage } from '../../i18n/display';
+import { useUILanguage, translateText } from '../../i18n/display';
 import { isPlatformTeamRole } from '../../router/platformAccess';
 import type { RootState } from '../../store';
 import { adminTemplateCategories } from '../system-template-data';
@@ -16,7 +16,7 @@ import './admin-live.css';
 
 export default function AdminTemplateEditorPage({ scope }: { scope: 'system' | 'mine' }) {
   const ar = useUILanguage().startsWith('ar');
-  const t = (en: string, arabic: string) => ar ? arabic : en;
+  const t = (en: string, arabic: string) => ar ? arabic : translateText(en);
   const { templateId } = useParams();
   const [params] = useSearchParams();
   const navigate = useNavigate();

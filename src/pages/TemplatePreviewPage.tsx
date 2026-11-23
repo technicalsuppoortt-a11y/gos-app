@@ -6,7 +6,8 @@ import type { RootState } from '../store';
 import { pageCatalogTemplates } from '../backend/pageTemplateCatalog';
 import { useTemplateCatalogState } from '../backend/templateCatalog';
 import { useGlobalFunnelTemplates } from '../backend/globalFunnelTemplates';
-import { translateTextForLanguage, useUILanguage } from '../i18n/display';
+import { isSupportedLocale } from '../i18n/initialLocale';
+import { translateTextForLanguage, useUILanguage, translateText } from '../i18n/display';
 import { AssetSelect } from './AssetControls';
 import type { Asset } from './asset-model';
 import { TemplateDesign, templateDesignAsset, templateDesktopWidth } from './TemplateDesign';
@@ -103,7 +104,7 @@ export function useTemplatePreviewLanguage(requested: string | null) {
   const [change, setChange] = useState<{ key: string; language: string }>();
   useEffect(() => {
     const sync = (event: StorageEvent) => {
-      if (event.key === 'i18nextLng' && (event.newValue === 'ar' || event.newValue === 'en')) {
+      if (event.key === 'i18nextLng' && isSupportedLocale(event.newValue)) {
         setChange({ key: locationKey, language: event.newValue });
       }
     };
@@ -111,7 +112,7 @@ export function useTemplatePreviewLanguage(requested: string | null) {
     return () => window.removeEventListener('storage', sync);
   }, [locationKey]);
   if (change?.key === locationKey) return change.language;
-  return requested === 'ar' || requested === 'en' ? requested : uiLanguage;
+  return isSupportedLocale(requested) ? requested : uiLanguage;
 }
 
 export function StandaloneTemplatePreview({ title, asset, children, language, template = true, showLanguageToggle = template }: { title: string; asset?: Asset; children?: ReactNode; language?: string; template?: boolean; showLanguageToggle?: boolean }) {
@@ -146,7 +147,7 @@ export function StandaloneTemplatePreview({ title, asset, children, language, te
   return <main className="template-preview-page" lang={locale} dir={locale.startsWith('ar') ? 'rtl' : 'ltr'}>
     <header className="template-preview-header">
       <div className="template-preview-heading"><h1>{title}</h1>
-        {showLanguageToggle && <div className="template-preview-devices" role="group" aria-label={locale === 'ar' ? 'لغة القالب' : 'Template language'}>
+        {showLanguageToggle && <div className="template-preview-devices" role="group" aria-label={locale === 'ar' ? 'لغة القالب' : translateText('Template language')}>
           {(['en', 'ar'] as const).map(option => <button type="button" key={option} lang={option} aria-pressed={locale.startsWith(option)} onClick={() => setParams(current => {
             const next = new URLSearchParams(current);
             next.set('lang', option);
@@ -162,7 +163,7 @@ export function StandaloneTemplatePreview({ title, asset, children, language, te
         </div>
         <output className="template-preview-width" aria-label={t('Preview width')}>{width > 0 ? renderWidth + 'px' : ''}</output>
       </div>}
-      {hasCanvas && <p className="template-preview-note"><ShieldCheck size={14}/>{locale.startsWith('ar') ? 'للمعاينة فقط. إرسال النماذج والدفع والحجز معطّلة.' : 'Preview only. Forms, payments and bookings are disabled.'}</p>}
+      {hasCanvas && <p className="template-preview-note"><ShieldCheck size={14}/>{locale.startsWith('ar') ? 'للمعاينة فقط. إرسال النماذج والدفع والحجز معطّلة.' : t('Preview only. Forms, payments and bookings are disabled.')}</p>}
     </header>
     {asset && page ? <div className="template-preview-canvas" ref={canvas} data-device={deviceKey}
       style={{ '--preview-device-width': device.width ? device.width + 'px' : 'none' } as CSSProperties}>

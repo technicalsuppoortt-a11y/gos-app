@@ -1,3 +1,4 @@
+import { translateText } from '../../i18n/display';
 import { useState } from 'react';
 import {
   Banknote,
@@ -113,14 +114,14 @@ function formatPctDelta(
     suffixType === 'month'
       ? ar
         ? 'مقارنة بالشهر السابق'
-        : 'vs previous month'
+        : translateText('vs previous month')
       : suffixType === 'improvement'
         ? ar
           ? 'تحسن'
-          : 'improvement'
+          : translateText('improvement')
         : ar
           ? 'عن الفترة السابقة'
-          : 'vs previous period';
+          : translateText('vs previous period');
 
   if (previous <= 0 && current <= 0) {
     return {
@@ -147,7 +148,7 @@ function formatPctDelta(
     suffixType === 'improvement' && rounded < 0
       ? ar
         ? 'عن الفترة السابقة'
-        : 'vs previous period'
+        : translateText('vs previous period')
       : suffix;
   return {
     text: `${sign}${rounded}% ${effectiveSuffix}`,
@@ -165,7 +166,7 @@ function formatCountDelta(
   const diff = current - previous;
   if (diff === 0) {
     return {
-      text: ar ? 'مستقر عن الفترة السابقة' : 'Unchanged vs previous period',
+      text: ar ? 'مستقر عن الفترة السابقة' : translateText('Unchanged vs previous period'),
       tone: 'neutral',
     };
   }
@@ -284,7 +285,7 @@ function OverviewTab({
       ? format.ar
         ? 'مستقر عن الفترة السابقة'
         : '0% vs previous period'
-      : `${convDiffPts > 0 ? '+' : ''}${convDiffPts}% ${format.ar ? 'تحسن' : 'improvement'}`;
+      : `${convDiffPts > 0 ? '+' : ''}${convDiffPts}% ${format.ar ? 'تحسن' : translateText('improvement')}`;
 
   const kpis: KpiCardItem[] = [
     {
@@ -817,14 +818,14 @@ function ConversationsAITab({
   const speedDelta = (() => {
     if (curr.avgFirstResponseSeconds === null || prev.avgFirstResponseSeconds === null) {
       return {
-        text: format.ar ? 'مستقر عن الفترة السابقة' : 'Stable vs previous period',
+        text: format.ar ? 'مستقر عن الفترة السابقة' : translateText('Stable vs previous period'),
         tone: 'neutral' as const,
       };
     }
     const diff = prev.avgFirstResponseSeconds - curr.avgFirstResponseSeconds;
     if (Math.abs(diff) < 1) {
       return {
-        text: format.ar ? 'مستقر عن الفترة السابقة' : 'Stable vs previous period',
+        text: format.ar ? 'مستقر عن الفترة السابقة' : translateText('Stable vs previous period'),
         tone: 'neutral' as const,
       };
     }

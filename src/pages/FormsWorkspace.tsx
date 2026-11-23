@@ -842,10 +842,10 @@ export function FormsWorkspace({ workspace, save, go, initialSelected, onComplet
           </div>
         ) : activeTab === 'builder' ? (
           <>
-          <div className="form-mobile-pane-tabs" role="tablist" aria-label={ar ? 'أقسام محرر النموذج' : 'Form studio panels'}>
-            <button type="button" role="tab" aria-selected={mobileStudioPane === 'canvas'} className={mobileStudioPane === 'canvas' ? 'active' : ''} onClick={() => setMobileStudioPane('canvas')}><Eye size={14} /><span>{ar ? 'النموذج' : 'Canvas'}</span></button>
-            <button type="button" role="tab" aria-selected={mobileStudioPane === 'fields'} className={mobileStudioPane === 'fields' ? 'active' : ''} onClick={() => setMobileStudioPane('fields')}><Plus size={14} /><span>{ar ? 'إضافة حقول' : 'Add Fields'}</span></button>
-            <button type="button" role="tab" aria-selected={mobileStudioPane === 'settings'} className={mobileStudioPane === 'settings' ? 'active' : ''} onClick={() => setMobileStudioPane('settings')}><Settings2 size={14} /><span>{ar ? 'خصائص الحقل' : 'Field Settings'}</span></button>
+          <div className="form-mobile-pane-tabs" role="tablist" aria-label={ar ? 'أقسام محرر النموذج' : translateText('Form studio panels')}>
+            <button type="button" role="tab" aria-selected={mobileStudioPane === 'canvas'} className={mobileStudioPane === 'canvas' ? 'active' : ''} onClick={() => setMobileStudioPane('canvas')}><Eye size={14} /><span>{ar ? 'النموذج' : translateText('Canvas')}</span></button>
+            <button type="button" role="tab" aria-selected={mobileStudioPane === 'fields'} className={mobileStudioPane === 'fields' ? 'active' : ''} onClick={() => setMobileStudioPane('fields')}><Plus size={14} /><span>{ar ? 'إضافة حقول' : translateText('Add Fields')}</span></button>
+            <button type="button" role="tab" aria-selected={mobileStudioPane === 'settings'} className={mobileStudioPane === 'settings' ? 'active' : ''} onClick={() => setMobileStudioPane('settings')}><Settings2 size={14} /><span>{ar ? 'خصائص الحقل' : translateText('Field Settings')}</span></button>
           </div>
           <div data-mobile-pane={mobileStudioPane} className="form-studio-layout">
             {/* COLUMN 1: FIELD PALETTE */}
@@ -1060,7 +1060,7 @@ export function FormsWorkspace({ workspace, save, go, initialSelected, onComplet
                           <div className="form-field-card-actions" onClick={e => e.stopPropagation()}>
                             <button
                               className="form-icon-btn form-mobile-edit-btn"
-                              title={ar ? 'خصائص الحقل' : 'Field Settings'}
+                              title={ar ? 'خصائص الحقل' : translateText('Field Settings')}
                               onClick={() => { setSelectedFieldId(field.id); setMobileStudioPane('settings'); }}
                             >
                               <Settings2 size={14} />

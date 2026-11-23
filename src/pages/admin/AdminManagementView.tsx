@@ -8,7 +8,7 @@ import { useTemplateLibrary, saveAdminTemplate, deleteAdminTemplate, setGeneralT
 import { useAdminManagement, saveManagedTemplate, deleteManagedTemplate, syncOfficialFunnelTemplatesToFirestore } from '../../backend/adminManagement';
 import { OFFICIAL_NINE_FUNNEL_IDS } from '../../backend/officialTemplateDesigns';
 import { backendError } from '../../backend/firebase';
-import { useUILanguage, translateText } from '../../i18n/display';
+import { localizePair, useUILanguage, translateText } from '../../i18n/display';
 import { adminTemplateCategories as categories } from '../system-template-data';
 import { managementRow, type ManagementResource, type LiveRecord } from './live-model';
 import { localizeManagedTemplate, templateCategoryLabel, templateIsActive, type ManagedTemplate } from './managed-template';
@@ -36,7 +36,7 @@ const GHL_VISUAL_CATEGORIES = new Set(['Websites', 'Funnels', 'Forms']);
 
 export function AdminManagementView({ moduleId }: { moduleId: string }) {
   const { formatPrice } = useCurrency();
-  const ar = useUILanguage().startsWith('ar'), t = (en: string, arabic: string) => ar ? arabic : en;
+  const uiLang = useUILanguage(), ar = uiLang.startsWith('ar'), t = (en: string, arabic: string) => ar ? arabic : translateText(en);
   const [params, setParams] = useSearchParams();
   const location = useLocation(), navigate = useNavigate();
   const view = views[moduleId], isTemplates = moduleId === 'templates';
@@ -99,7 +99,7 @@ export function AdminManagementView({ moduleId }: { moduleId: string }) {
         return ai - bi;
       }
     }
-    return String(a[sort.key]).localeCompare(String(b[sort.key]), ar ? 'ar' : 'en', { numeric: true, sensitivity: 'base' }) * sort.direction;
+    return String(a[sort.key]).localeCompare(String(b[sort.key]), ar ? 'ar' : uiLang, { numeric: true, sensitivity: 'base' }) * sort.direction;
   });
   const pages = Math.max(1, Math.ceil(sorted.length / pageSize)), current = Math.min(page, pages), start = (current - 1) * pageSize;
   const visibleRows = sorted.slice(start, start + pageSize);
@@ -131,12 +131,12 @@ export function AdminManagementView({ moduleId }: { moduleId: string }) {
     navigate(base + '/' + editorPath + '?' + query);
   }
   function previewHref(id: string) {
-    return '/admin-preview?' + new URLSearchParams(isTemplates ? { template: id, source: library === 'mine' || library === 'client' ? 'admin' : 'catalog', lang: ar ? 'ar' : 'en' } : { record: id });
+    return '/admin-preview?' + new URLSearchParams(isTemplates ? { template: id, source: library === 'mine' || library === 'client' ? 'admin' : 'catalog', lang: uiLang } : { record: id });
   }
   function openPreview(row: Row) {
     window.open(previewHref(row.id), '_blank', 'noopener');
   }
-  const select = (label: string, value: string, values: string[], change: (value: string) => void, human = false) => <AdminSelect label={label} value={value} onChange={v => { change(v); setPage(1); }} options={[{ value: '', label }, ...[...new Set(values.filter(Boolean))].sort().map(v => ({ value: v, label: human ? humanLabel(v) : v }))]} />;
+  const select = (label: string, value: string, values: string[], change: (value: string) => void, human = false) => <AdminSelect label={label} value={value} onChange={v => { change(v); setPage(1); }} options={[{ value: '', label }, ...[...new Set(values.filter(Boolean))].sort().map(v => ({ value: v, label: human ? translateText(humanLabel(v)) : translateText(v) }))]} />;
   function cell(row: Row, key: Column) {
     if (key === 'name') {
       const tpl = isTemplates ? localizedTemplates.get(row.id) : undefined;
@@ -145,9 +145,9 @@ export function AdminManagementView({ moduleId }: { moduleId: string }) {
     if (key === 'status') return <StatusPill value={row.status}/>;
     if (key === 'tenant') return <span className="alm-attribution"><strong>{row.tenant}</strong><small dir="ltr" title={row.workspaceId}>{row.workspaceId}</small></span>;
     if (key === 'owner') return <span className="alm-owner"><span className="alm-owner-avatar">{row.owner.slice(0, 1).toUpperCase()}</span><span className="alm-attribution"><strong>{row.owner}</strong><small dir="ltr" title={row.ownerId}>{row.ownerId || t('Owner not assigned', 'لم يحدد المالك')}</small></span></span>;
-    if (key === 'type') return <span className="alm-type">{localizedTemplates.get(row.id)?.categoryLabel || row.type}</span>;
+    if (key === 'type') return <span className="alm-type">{localizedTemplates.get(row.id)?.categoryLabel || translateText(row.type)}</span>;
     if (key === 'amount') return <strong className="alm-money" dir="auto">{displayMoney(row.amount, row.currency, formatPrice)}</strong>;
-    if (key === 'date') return <span className="alm-date">{displayDate(row.date, ar)}</span>;
+    if (key === 'date') return <span className="alm-date">{displayDate(row.date, ar, uiLang)}</span>;
     if (key === 'source') return <span className="alm-source"><i/>{row.source || '—'}</span>;
     return row[key] || '—';
   }
@@ -155,23 +155,23 @@ export function AdminManagementView({ moduleId }: { moduleId: string }) {
   if (search) chips.push([t('Search', 'بحث'), search, () => setSearch('')]);
   if (workspace) chips.push([t('Workspace', 'مساحة العمل'), live.tenants[workspace]?.name || workspace, () => { setWorkspace(''); setPipeline(''); setCalendar(''); }]);
   if (category) chips.push([t('Type', 'النوع'), templateCategoryLabel(category, ar), () => setCategory('')]);
-  if (industryFilter) chips.push([t('Industry', 'المجال'), ar ? translateText(industryFilter) : industryFilter, () => setIndustryFilter('')]);
+  if (industryFilter) chips.push([t('Industry', 'المجال'), translateText(industryFilter), () => setIndustryFilter('')]);
   if (pipeline) chips.push([t('Pipeline', 'مسار المبيعات'), relationOptions(pipelines, 'pipelineKey', 'pipeline').find(o => o.value === pipeline)?.label || pipeline, () => setPipeline('')]);
   if (calendar) chips.push([t('Calendar', 'التقويم'), relationOptions(calendars, 'calendarKey', 'calendar').find(o => o.value === calendar)?.label || calendar, () => setCalendar('')]);
   if (source) chips.push([t('Source', 'المصدر'), source, () => setSource('')]);
-  if (status) chips.push([t('Status', 'الحالة'), humanLabel(status), () => setStatus('')]);
+  if (status) chips.push([t('Status', 'الحالة'), translateText(humanLabel(status)), () => setStatus('')]);
 
   return <div className="adm-workspace adm-live" data-module={moduleId}>
-    <div className="alm-page-head"><div><span className="alm-kicker">{t('PLATFORM MANAGEMENT', 'إدارة المنصة')}</span><h1>{isTemplates && superAdmin ? t('Templates', 'القوالب') : view.title[ar ? 1 : 0]}</h1><p>{view.description[ar ? 1 : 0]}</p></div><div className="alm-inline-actions"><button className="alm-button" disabled={live.loading || !!live.error || !filtered.length} onClick={() => downloadCSV(filtered, `${moduleId}.csv`)}><Download size={16}/>{t('Export', 'تصدير')}</button>{isTemplates && superAdmin && editable && <button className="alm-button" disabled={live.loading || !!live.error || busy} onClick={() => void action(async () => { await syncOfficialFunnelTemplatesToFirestore(live.templates); }, t('Synced 9 official funnel templates to Firebase.', 'تمت مزامنة قوالب المسارات الـ 9 الرسمية مع Firebase.'))}><CloudUpload size={16}/>{t('Sync 9 Funnel Templates', 'مزامنة قوالب المسارات')}</button>}{isTemplates && editable && <button className="alm-button primary" disabled={live.loading || !!live.error || busy} onClick={() => openTemplateEditor()}><Plus size={17}/>{t('Create template', 'إنشاء قالب')}</button>}</div></div>
+    <div className="alm-page-head"><div><span className="alm-kicker">{t('PLATFORM MANAGEMENT', 'إدارة المنصة')}</span><h1>{isTemplates && superAdmin ? t('Templates', 'القوالب') : localizePair(view.title)}</h1><p>{localizePair(view.description)}</p></div><div className="alm-inline-actions"><button className="alm-button" disabled={live.loading || !!live.error || !filtered.length} onClick={() => downloadCSV(filtered, `${moduleId}.csv`)}><Download size={16}/>{t('Export', 'تصدير')}</button>{isTemplates && superAdmin && editable && <button className="alm-button" disabled={live.loading || !!live.error || busy} onClick={() => void action(async () => { await syncOfficialFunnelTemplatesToFirestore(live.templates); }, t('Synced 9 official funnel templates to Firebase.', 'تمت مزامنة قوالب المسارات الـ 9 الرسمية مع Firebase.'))}><CloudUpload size={16}/>{t('Sync 9 Funnel Templates', 'مزامنة قوالب المسارات')}</button>}{isTemplates && editable && <button className="alm-button primary" disabled={live.loading || !!live.error || busy} onClick={() => openTemplateEditor()}><Plus size={17}/>{t('Create template', 'إنشاء قالب')}</button>}</div></div>
     <div className="alm-summary"><div><span className="alm-summary-icon"><Layers3 size={18}/></span><div><small>{t('Total records', 'إجمالي السجلات')}</small><strong>{live.loading ? '—' : rows.length.toLocaleString('en-US')}</strong></div></div><div><span className="alm-summary-icon secondary"><Check size={18}/></span><div><small>{t('Active / published', 'نشط / منشور')}</small><strong>{live.loading ? '—' : rows.filter(r => /^(published|active|confirmed|completed|paid|qualified|won|succeeded)$/i.test(r.status)).length.toLocaleString('en-US')}</strong></div></div><div><span className="alm-summary-icon"><Building2 size={18}/></span><div><small>{isTemplates ? t('Template categories', 'فئات القوالب') : t('Workspaces', 'مساحات العمل')}</small><strong>{isTemplates ? categories.length : Object.keys(live.tenants).length}</strong></div></div><div className="alm-live-state" role="status" data-error={!!live.error} title={live.loading ? t('Using cached offline data — cloud sync in progress', 'يتم استخدام البيانات المخزنة مؤقتاً — جاري المزامنة السحابية') : undefined}><span className={live.loading ? 'loading' : ''}/><div><strong>{live.error ? t('Connection needs attention', 'الاتصال يحتاج إلى متابعة') : live.loading ? t('Syncing with cloud…', 'جاري المزامنة…') : t('Live Cloud Sync', 'مزامنة سحابية مباشرة')}</strong><small>{isTemplates ? t('Master system library', 'مكتبة قوالب النظام') : t('Read-only · All workspaces', 'للقراءة فقط · كل مساحات العمل')}</small></div></div></div>
     {live.error && <div className="alm-error-inline" role="alert"><Activity size={17}/><div><strong>{t('Some records could not be loaded.', 'تعذر تحميل بعض السجلات.')}</strong><p>{live.error}</p></div></div>}
     {!live.error && unavailable && <div className="alm-error-inline" role="status"><Activity size={17}/><div><strong>{t('Some sources are unavailable. Showing accessible records.', 'بعض المصادر غير متاحة. تظهر السجلات المسموح بها.')}</strong><details><summary>{t('Unavailable sources', 'المصادر غير المتاحة')}</summary>{Object.entries(live.sourceErrors).map(([source, message]) => <p key={source}>{source}: {message}</p>)}</details></div></div>}
     {notice && <div className={`alm-notice ${notice.error ? 'error' : ''}`} role="status"><span>{notice.error ? <Activity size={17}/> : <Check size={17}/>}</span>{notice.message}<button className="alm-icon-button" aria-label={t('Dismiss', 'إغلاق')} onClick={() => setNotice(null)}><X size={15}/></button></div>}
     {isTemplates && <div className="alm-resource-tabs alm-library-tabs" role="tablist" onKeyDown={navigateAdminTabs} aria-label={t('Template libraries', 'مكتبات القوالب')}>{libraries.map(([id, label]) => <button key={id} role="tab" aria-selected={params.get('library') !== 'funnel_global' && library === id} tabIndex={params.get('library') !== 'funnel_global' && library === id ? 0 : -1} onClick={() => { setParams({ library: id }); setSelectedId(''); setCategory(''); setStatus(''); setPage(1); }}>{label}</button>)}{superAdmin && <button key="funnel_global" role="tab" aria-selected={params.get('library') === 'funnel_global'} tabIndex={params.get('library') === 'funnel_global' ? 0 : -1} onClick={() => { setParams({ library: 'funnel_global' }); setSelectedId(''); }}>{t('Funnel Step Templates', 'قوالب خطوات المسارات')}</button>}</div>}
     {isTemplates && superAdmin && params.get('library') === 'funnel_global' ? <SuperAdminFunnelTemplates /> : <>
-    {isTemplates ? <div className="alm-category-tabs" role="tablist" onKeyDown={navigateAdminTabs} aria-label={t('Template categories', 'فئات القوالب')}>{['', ...categories].map(item => <button key={item} role="tab" aria-selected={category === item} tabIndex={category === item ? 0 : -1} onClick={() => { setCategory(item); if (item !== 'Funnels') setFunnelSubView('full'); setOpenMenuId(''); setPage(1); }}>{item ? templateCategoryLabel(item, ar) : t('All templates', 'كل القوالب')}<span aria-hidden="true">{rows.filter(row => !item || row.type === item).length}</span></button>)}</div> : <div className="alm-resource-tabs" role="tablist" onKeyDown={navigateAdminTabs}>{view.tabs.map((item, index) => <button key={item[2]} role="tab" aria-selected={tab === index} tabIndex={tab === index ? 0 : -1} onClick={() => changeTab(index)}>{item[ar ? 1 : 0]}</button>)}</div>}
-    <section className="alm-table-panel" aria-label={view.title[ar ? 1 : 0]}>
-      <div className="alm-table-heading"><div><h2>{isTemplates ? categories.find(item => item === category) ? templateCategoryLabel(categories.find(item => item === category)!, ar) : t('Master library', 'المكتبة الرئيسية') : view.tabs[tab]?.[ar ? 1 : 0]}<span>{filtered.length}</span></h2><p>{isTemplates ? (library === 'general' ? t('Templates from the platform library. You can preview, copy, and show or hide them for your users.', 'قوالب مكتبة المنصة. يمكنك معاينتها ونسخها وإظهارها أو إخفاؤها لمستخدميك.') : library === 'mine' ? t('Templates you create are visible only to your users.', 'القوالب التي تنشئها تظهر لمستخدميك فقط.') : library === 'client' ? t('Templates created by admins for their own users · view only.', 'قوالب أنشأها الأدمن لمستخدميهم · للعرض فقط.') : t('Published templates are available to every admin as General templates.', 'القوالب المنشورة متاحة لكل أدمن كقوالب عامة.')) : t('Inspect records while preserving workspace ownership.', 'استعرض السجلات مع الحفاظ على ملكية مساحة العمل.')}</p></div><span className="alm-monitor-label"><ShieldCheck size={14}/>{isTemplates ? t('System managed', 'بإدارة النظام') : t('Monitoring view', 'عرض المراقبة')}</span></div>
+    {isTemplates ? <div className="alm-category-tabs" role="tablist" onKeyDown={navigateAdminTabs} aria-label={t('Template categories', 'فئات القوالب')}>{['', ...categories].map(item => <button key={item} role="tab" aria-selected={category === item} tabIndex={category === item ? 0 : -1} onClick={() => { setCategory(item); if (item !== 'Funnels') setFunnelSubView('full'); setOpenMenuId(''); setPage(1); }}>{item ? templateCategoryLabel(item, ar) : t('All templates', 'كل القوالب')}<span aria-hidden="true">{rows.filter(row => !item || row.type === item).length}</span></button>)}</div> : <div className="alm-resource-tabs" role="tablist" onKeyDown={navigateAdminTabs}>{view.tabs.map((item, index) => <button key={item[2]} role="tab" aria-selected={tab === index} tabIndex={tab === index ? 0 : -1} onClick={() => changeTab(index)}>{localizePair(item)}</button>)}</div>}
+    <section className="alm-table-panel" aria-label={localizePair(view.title)}>
+      <div className="alm-table-heading"><div><h2>{isTemplates ? categories.find(item => item === category) ? templateCategoryLabel(categories.find(item => item === category)!, ar) : t('Master library', 'المكتبة الرئيسية') : localizePair(view.tabs[tab])}<span>{filtered.length}</span></h2><p>{isTemplates ? (library === 'general' ? t('Templates from the platform library. You can preview, copy, and show or hide them for your users.', 'قوالب مكتبة المنصة. يمكنك معاينتها ونسخها وإظهارها أو إخفاؤها لمستخدميك.') : library === 'mine' ? t('Templates you create are visible only to your users.', 'القوالب التي تنشئها تظهر لمستخدميك فقط.') : library === 'client' ? t('Templates created by admins for their own users · view only.', 'قوالب أنشأها الأدمن لمستخدميهم · للعرض فقط.') : t('Published templates are available to every admin as General templates.', 'القوالب المنشورة متاحة لكل أدمن كقوالب عامة.')) : t('Inspect records while preserving workspace ownership.', 'استعرض السجلات مع الحفاظ على ملكية مساحة العمل.')}</p></div><span className="alm-monitor-label"><ShieldCheck size={14}/>{isTemplates ? t('System managed', 'بإدارة النظام') : t('Monitoring view', 'عرض المراقبة')}</span></div>
       {isTemplates && superAdmin && category === 'Funnels' && (
         <div className="alm-funnel-subview-bar" role="group" aria-label={t('Funnel template scope', 'نطاق قوالب المسارات')}>
           <button
@@ -209,7 +209,7 @@ export function AdminManagementView({ moduleId }: { moduleId: string }) {
         {resource === 'bookings' && <AdminSelect label={t('Calendar', 'التقويم')} value={calendar} onChange={value => { setCalendar(value); setPage(1); }} options={[{ value: '', label: t('All calendars', 'كل التقويم') }, ...relationOptions(calendars, 'calendarKey', 'calendar')]}/>}
         {resource === 'leads' && select(t('All sources', 'كل المصادر'), source, workspaceRows.map(r => r.source), setSource)}
         {resource === 'products' && select(t('Product type', 'نوع المنتج'), category, ['Service', 'Digital Product', 'Course', ...workspaceRows.map(r => r.type)], setCategory)}
-        {isTemplates && <AdminSelect label={t('All industries', 'كل المجالات')} value={industryFilter} onChange={v => { setIndustryFilter(v); setPage(1); }} options={[{ value: '', label: t('All industries', 'كل المجالات') }, ...[...new Set(workspaceRows.filter(r => !category || r.type === category).map(r => localizedTemplates.get(r.id)?.industry).filter((v): v is string => Boolean(v)))].sort().map(v => ({ value: v, label: ar ? translateText(v) : v }))]}/>}
+        {isTemplates && <AdminSelect label={t('All industries', 'كل المجالات')} value={industryFilter} onChange={v => { setIndustryFilter(v); setPage(1); }} options={[{ value: '', label: t('All industries', 'كل المجالات') }, ...[...new Set(workspaceRows.filter(r => !category || r.type === category).map(r => localizedTemplates.get(r.id)?.industry).filter((v): v is string => Boolean(v)))].sort().map(v => ({ value: v, label: translateText(v) }))]}/>}
         {select(t('All statuses', 'كل الحالات'), status, workspaceRows.map(r => r.status), setStatus, true)}
         {isTemplates && <div className="alm-view-switch" role="group" aria-label={t('Template layout view', 'طريقة عرض القوالب')}>
           <button type="button" aria-label={t('Grid view', 'عرض البطاقات')} aria-pressed={showTemplateGrid} onClick={() => setViewOverride('grid')} title={t('Grid view', 'عرض البطاقات')}><LayoutGrid size={15}/></button>
@@ -346,7 +346,7 @@ export function AdminManagementView({ moduleId }: { moduleId: string }) {
                           {(tpl?.popularity ?? 0).toLocaleString('en-US')}
                         </span>
                         {isNew && <span className="alm-ghl-new-badge">{t('New', 'جديد')}</span>}
-                        {localized?.industry && <span className="alm-ghl-scope-tag">{ar ? translateText(localized.industry) : localized.industry}</span>}
+                        {localized?.industry && <span className="alm-ghl-scope-tag">{translateText(localized.industry)}</span>}
                         {scopeTag && <span className="alm-ghl-scope-tag">{scopeTag}</span>}
                         {!category && <span className="alm-ghl-scope-tag">{localizedTemplates.get(row.id)?.categoryLabel || row.type}</span>}
                       </div>

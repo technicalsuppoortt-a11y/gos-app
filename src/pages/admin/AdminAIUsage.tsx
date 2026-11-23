@@ -19,7 +19,7 @@ import {
   Zap,
 } from 'lucide-react';
 import { primaryDb, backendError } from '../../backend/firebase';
-import { useUILanguage } from '../../i18n/display';
+import { useUILanguage, translateText } from '../../i18n/display';
 import { downloadCSV } from './repository';
 import type { RecordRow } from './catalog';
 import { numberValue, resourceOf, tokenCount } from './operations-model';
@@ -67,12 +67,12 @@ function WorkspaceCreditsCell({ ownerId, ar }: { ownerId: string; ar: boolean })
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
       {creditsBalance !== null ? (
-        <span className="aiu-credits-badge" title={ar ? 'رصيد نقاط الخطة' : 'Plan Credits'}>
+        <span className="aiu-credits-badge" title={ar ? 'رصيد نقاط الخطة' : translateText('Plan Credits')}>
           <Coins size={12} />
-          <span>{creditsBalance.toLocaleString('en-US')} {ar ? 'نقطة' : 'Credits'}</span>
+          <span>{creditsBalance.toLocaleString('en-US')} {ar ? 'نقطة' : translateText('Credits')}</span>
         </span>
       ) : (
-        <span style={{ fontSize: 11.5, color: '#94a3b8' }}>{ar ? 'بدون نقاط' : 'No credits'}</span>
+        <span style={{ fontSize: 11.5, color: '#94a3b8' }}>{ar ? 'بدون نقاط' : translateText('No credits')}</span>
       )}
     </div>
   );
@@ -87,7 +87,7 @@ export function AdminAIUsage({
   onReload,
 }: AdminAIUsageProps) {
   const ar = useUILanguage().startsWith('ar');
-  const t = (en: string, arabic: string) => (ar ? arabic : en);
+  const t = (en: string, arabic: string) => (ar ? arabic : translateText(en));
 
   const [policy, setPolicy] = useState<{
     model: string;

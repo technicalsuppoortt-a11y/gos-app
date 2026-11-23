@@ -316,7 +316,7 @@ export function PrivacyPolicyPanel({ mode = 'panel' }: PrivacyPolicyPanelProps) 
     const url = window.location.origin + '/privacy';
     navigator.clipboard.writeText(url).then(() => {
       setCopiedLink(true);
-      showToast.success(isRtl ? 'تم نسخ رابط سياسة الخصوصية إلى الحافظة' : 'Privacy policy link copied to clipboard');
+      showToast.success(isRtl ? 'تم نسخ رابط سياسة الخصوصية إلى الحافظة' : translateText('Privacy policy link copied to clipboard'));
       setTimeout(() => setCopiedLink(false), 2000);
     }).catch(() => {
       showToast.error('Could not copy link');

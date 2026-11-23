@@ -1,3 +1,4 @@
+import { translateText } from '../i18n/display';
 import type { BuilderPage, BuilderSection } from './BuilderWorkspace';
 import type { Asset } from './asset-model';
 import { defaultCMS } from './landing/cms';
@@ -11,7 +12,7 @@ export const AGENCY_LANDING_PREFIX = 'agency-landing-';
 export function buildAgencyLandingAsset(language: 'en' | 'ar' = 'en'): Asset {
   const cms = defaultCMS();
   const copy = cms[language];
-  const name = language === 'ar' ? 'صفحة الهبوط الرئيسية' : 'Landing Page';
+  const name = language === 'ar' ? 'صفحة الهبوط الرئيسية' : translateText('Landing Page');
   const image = '/dashboard/hero-landscape.png';
   const title = [copy.hero.titleA, copy.hero.titleB].filter(Boolean).join(' ');
   let sequence = 0;
@@ -33,7 +34,7 @@ export function buildAgencyLandingAsset(language: 'en' | 'ar' = 'en'): Asset {
   const contact = block('Contact Form', copy.cta.title, copy.cta.text, {
     fields: JSON.stringify(['Name', 'Email', 'Message']),
     button: copy.cta.primary,
-    successMessage: language === 'ar' ? 'شكراً لك! تم استلام طلبك وسيتواصل معك فريقنا قريباً.' : 'Thank you! Your request has been received. Our team will be in touch shortly.',
+    successMessage: language === 'ar' ? 'شكراً لك! تم استلام طلبك وسيتواصل معك فريقنا قريباً.' : translateText('Thank you! Your request has been received. Our team will be in touch shortly.'),
   });
 
   const sections = [
@@ -64,7 +65,7 @@ export function buildAgencyLandingAsset(language: 'en' | 'ar' = 'en'): Asset {
     paragraph(copy.footer.rights),
   ];
   const page: BuilderPage = {
-    id: 'home', name: language === 'ar' ? 'الرئيسية' : 'Home', path: '/', status: 'Draft',
+    id: 'home', name: language === 'ar' ? 'الرئيسية' : translateText('Home'), path: '/', status: 'Draft',
     headline: title, subheadline: copy.hero.lead, cta: copy.hero.primary,
     seoTitle: copy.meta.title, seoDescription: copy.meta.description, featuredImage: image,
     showHeader: true, header: 'Header 1', showFooter: true, footer: 'Footer 1', sections,

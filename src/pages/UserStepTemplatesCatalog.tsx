@@ -19,7 +19,7 @@ import type { BuilderDocument, BuilderPage, BuilderSection } from './BuilderWork
 import type { PageTemplate } from './page-templates';
 import { AssetAsyncButton } from './AssetAsyncButton';
 import { StepTemplateThumbnail } from './StepTemplateThumbnail';
-import { useUILanguage } from '../i18n/display';
+import { useUILanguage, translateText } from '../i18n/display';
 import './pagefly-editor.css';
 import './funnel-systeme.css';
 
@@ -111,7 +111,7 @@ export function buildPageTemplateFromStepTemplate(
     title: localized.title,
     body: localized.description,
     description: localized.description,
-    cta: ar ? 'استخدم قالب الخطوة' : 'Use Step Template',
+    cta: ar ? 'استخدم قالب الخطوة' : translateText('Use Step Template'),
     benefits: [],
     builderDocument,
   };
@@ -125,7 +125,7 @@ export function UserStepTemplatesCatalog({
   const lang = useUILanguage();
   const ar = lang.startsWith('ar');
   const locale = ar ? 'ar' : 'en';
-  const t = (en: string, arabic: string) => (ar ? arabic : en);
+  const t = (en: string, arabic: string) => (ar ? arabic : translateText(en));
 
   const { templates, loading, error } = useGlobalFunnelTemplates({ includeDrafts: false });
   const [stepCat, setStepCat] = useState<'All' | FunnelTemplateCategory>('All');

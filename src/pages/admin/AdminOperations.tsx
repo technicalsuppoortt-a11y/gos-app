@@ -24,7 +24,7 @@ import {
 import { useAdminManagement } from '../../backend/adminManagement';
 import { isPendingGatewayRequest } from '../../backend/billing';
 import { primaryAuth, primaryDb } from '../../backend/firebase';
-import { useUILanguage } from '../../i18n/display';
+import { translateText, useUILanguage } from '../../i18n/display';
 import type { RootState } from '../../store';
 import { downloadCSV } from './repository';
 import type { RecordRow } from './catalog';
@@ -86,7 +86,7 @@ function statusLabel(status: string, ar: boolean): string {
     'not configured': ['Not configured', 'غير مضبوط'],
   };
   const found = map[clean.toLowerCase()];
-  if (found) return ar ? found[1] : found[0];
+  if (found) return ar ? found[1] : translateText(found[0]);
   return clean ? clean.charAt(0).toUpperCase() + clean.slice(1) : '—';
 }
 
@@ -107,7 +107,7 @@ function channelLabel(channel: string, ar: boolean): string {
     support: ['Support', 'الدعم الفني'],
   };
   const found = map[clean.toLowerCase()];
-  if (found) return ar ? found[1] : found[0];
+  if (found) return ar ? found[1] : translateText(found[0]);
   return clean ? clean.charAt(0).toUpperCase() + clean.slice(1) : '—';
 }
 
@@ -119,7 +119,7 @@ function requestTypeLabel(type: string, ar: boolean): string {
     renewal: ['Plan Renewal', 'تجديد باقة'],
   };
   const found = map[type.toLowerCase()];
-  return found ? (ar ? found[1] : found[0]) : type;
+  return found ? (ar ? found[1] : translateText(found[0])) : translateText(type);
 }
 
 function initialsOf(name: string): string {
@@ -129,11 +129,11 @@ function initialsOf(name: string): string {
   return clean.slice(0, 2).toUpperCase();
 }
 
-function formatPrettyDate(iso: string, ar: boolean): { day: string; time: string } | null {
+function formatPrettyDate(iso: string, ar: boolean, lang = 'en'): { day: string; time: string } | null {
   if (!iso || iso === '—') return null;
   const parsed = new Date(iso);
   if (!Number.isFinite(parsed.getTime())) return null;
-  const locale = ar ? 'ar-EG-u-nu-latn' : 'en-US';
+  const locale = ar ? 'ar-EG-u-nu-latn' : lang.startsWith('nl') ? 'nl-NL' : lang.startsWith('de') ? 'de-DE' : 'en-US';
   return {
     day: parsed.toLocaleDateString(locale, { year: 'numeric', month: 'short', day: 'numeric' }),
     time: parsed.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' }),
@@ -149,8 +149,9 @@ export function AdminOperations({ moduleId }: { moduleId: AdminOperationsModuleI
   const [trackingSettings, setTrackingSettings] = useState<Record<string, any> | null>(null);
   const incomplete = !!error || Object.keys(sourceErrors).length > 0;
   const availability = (...dependencies: string[]) => sourceAvailability(dependencies, Object.keys(tenants), sourceErrors, pendingSources, error);
-  const ar = useUILanguage().startsWith('ar');
-  const t = (en: string, arabic: string) => ar ? arabic : en;
+  const uiLang = useUILanguage();
+  const ar = uiLang.startsWith('ar');
+  const t = (en: string, arabic: string) => ar ? arabic : translateText(en);
 
   useEffect(() => {
     if (moduleId !== 'transactions') {
@@ -240,7 +241,7 @@ export function AdminOperations({ moduleId }: { moduleId: AdminOperationsModuleI
   if (moduleId === 'conversations') {
     rows = scoped(['conversations', 'messages', 'handoffLogs', 'integrations'][tab]).map(r => {
       const base = row(r);
-      const pretty = formatPrettyDate(base.values[5], ar);
+      const pretty = formatPrettyDate(base.values[5], ar, uiLang);
       return {
         ...base,
         cells: [
@@ -261,7 +262,7 @@ export function AdminOperations({ moduleId }: { moduleId: AdminOperationsModuleI
         const chText = channelLabel(String(r.data.channel ?? r.id), ar);
         const wsName = workspace(r);
         const dtText = dateValue(r.data.updatedAt ?? r.data.lastSyncAt) || '—';
-        const pretty = formatPrettyDate(dtText, ar);
+        const pretty = formatPrettyDate(dtText, ar, uiLang);
         const failedCount = String(messages.filter(m => /failed|undelivered/i.test(String(m.data.status))).length);
         return {
           id: r.path,
@@ -281,7 +282,7 @@ export function AdminOperations({ moduleId }: { moduleId: AdminOperationsModuleI
   } else if (moduleId === 'integrations') {
     const integrationRecords = scoped('integrations');
     const renderIntegrationCells = (titleText: string, wsName: string, categoryText: string, st: string, endpointText: string, dt: string): ReactNode[] => {
-      const pretty = formatPrettyDate(dt, ar);
+      const pretty = formatPrettyDate(dt, ar, uiLang);
       return [
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, fontWeight: 600 }}>
           <span style={{ width: 28, height: 28, borderRadius: 8, background: 'var(--adm-accent-soft)', color: 'var(--adm-accent)', display: 'grid', placeItems: 'center', flex: 'none' }}>
@@ -380,7 +381,7 @@ export function AdminOperations({ moduleId }: { moduleId: AdminOperationsModuleI
   } else if (moduleId === 'transactions') {
     columns = [t('Reference', 'المرجع'), t('Workspace / Account', 'مساحة العمل / الحساب'), t('Amount', 'المبلغ'), t('Method / Type', 'طريقة الدفع / النوع'), t('Status', 'الحالة'), t('Date', 'التاريخ')];
     const renderTxnCells = (refText: string, subId: string, accountText: string, curr: string, amt: number, methodText: string, typeText: string, st: string, dt: string): ReactNode[] => {
-      const pretty = formatPrettyDate(dt, ar);
+      const pretty = formatPrettyDate(dt, ar, uiLang);
       return [
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <span style={{ width: 30, height: 30, borderRadius: 8, background: 'var(--adm-accent-soft)', color: 'var(--adm-accent)', display: 'grid', placeItems: 'center', flex: 'none' }}>

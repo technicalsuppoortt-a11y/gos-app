@@ -1,6 +1,6 @@
 import { useSelector } from 'react-redux';
 import type { RootState } from '../../store';
-import { useUILanguage } from '../../i18n/display';
+import { useUILanguage, translateText } from '../../i18n/display';
 import { BusinessAssets } from './BusinessAssets';
 import './admin-workspace.css';
 import '../settings/settings-controls.css';
@@ -19,7 +19,7 @@ export function BusinessAssetsPage() {
         <BusinessAssets key={effectiveTenantId} tenantId={effectiveTenantId} />
       ) : (
         <p role="status">
-          {ar ? 'اختر مساحة عمل لإدارة الملفات.' : 'Select a workspace to manage its assets.'}
+          {ar ? 'اختر مساحة عمل لإدارة الملفات.' : translateText('Select a workspace to manage its assets.')}
         </p>
       )}
     </div>

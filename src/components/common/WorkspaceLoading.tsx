@@ -1,3 +1,4 @@
+import { translateText } from '../../i18n/display';
 import { useSelector } from 'react-redux';
 import { useLocation } from 'react-router-dom';
 import type { RootState } from '../../store';
@@ -12,18 +13,18 @@ export function WorkspaceSkeleton({ variant = 'dashboard', fullScreen = false }:
   const { theme, language } = useSelector((state: RootState) => state.ui);
   const ar = language === 'ar';
   const label = variant === 'inbox'
-    ? (ar ? 'جارٍ تحميل صندوق الوارد' : 'Loading inbox')
+    ? (ar ? 'جارٍ تحميل صندوق الوارد' : translateText('Loading inbox'))
     : variant === 'spinner'
-    ? (ar ? 'جاري تجهيز مساحة عملك' : 'Preparing your workspace...')
-    : (ar ? 'جارٍ تحميل المحتوى' : 'Loading content');
+    ? (ar ? 'جاري تجهيز مساحة عملك' : translateText('Preparing your workspace...'))
+    : (ar ? 'جارٍ تحميل المحتوى' : translateText('Loading content'));
   return <div className={`workspace-loading workspace-loading--${variant}${theme === 'dark' ? ' is-dark' : ''}${fullScreen ? ' workspace-loading--fullscreen' : ''}`}
     role="status" aria-live="polite" aria-busy="true" aria-label={label} dir={ar ? 'rtl' : 'ltr'} lang={ar ? 'ar' : 'en'}>
     <span className="ws-sr-only">{label}</span>
     {variant === 'spinner' ? <div className="ws-splash" aria-hidden="true">
       <div className="ws-brand-loader"><span className="ws-brand-glow"/><span className="ws-brand-ring"/><span className="ws-brand-mark"><img src="/upclick-mark.svg" width="56" height="60" alt=""/></span></div>
-      <div className="ws-splash-brand"><b>Upklick</b><span>{ar ? 'من الأفكار إلى الأثر' : 'Ideas to impact'}</span></div>
+      <div className="ws-splash-brand"><b>Upklick</b><span>{ar ? 'من الأفكار إلى الأثر' : translateText('Ideas to impact')}</span></div>
       <div className="ws-splash-progress"><span/></div>
-      <p className="ws-splash-caption">{ar ? 'جاري تجهيز مساحة عملك' : 'Preparing your workspace...'}</p>
+      <p className="ws-splash-caption">{ar ? 'جاري تجهيز مساحة عملك' : translateText('Preparing your workspace...')}</p>
     </div> :
       <div className="ws-skeleton-content" aria-hidden="true">
         <div className="ws-toolbar ws-panel"><div className="ws-toolbar-tabs">{[0, 1, 2, 3].map(i => <span className={`ws-skeleton ws-tab${i === 0 ? ' ws-accent' : ''}`} key={i}/>)}</div><span className="ws-skeleton ws-toolbar-action"/></div>

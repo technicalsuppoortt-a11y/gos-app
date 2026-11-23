@@ -159,14 +159,14 @@ export function CreateFunnelModal({
         ? 'جمع عناوين البريد الإلكتروني وبناء قائمة البريد الإلكتروني الخاصة بك'
         : translateText('Collect email addresses and build your email list'),
       icon: Users,
-      stepsHint: ar ? 'صفحة الاشتراك + صفحة الشكر' : 'Opt-in Page + Thank You Page',
+      stepsHint: ar ? 'صفحة الاشتراك + صفحة الشكر' : translateText('Opt-in Page + Thank You Page'),
     },
     {
       id: 'sell',
       title: ar ? 'بيع' : translateText('Sell'),
       desc: ar ? 'بيع منتج أو خدمة' : translateText('Sell a product or service'),
       icon: ShoppingCart,
-      stepsHint: ar ? 'نموذج الطلب + صفحة الشكر' : 'Order Form + Thank You Page',
+      stepsHint: ar ? 'نموذج الطلب + صفحة الشكر' : translateText('Order Form + Thank You Page'),
     },
     {
       id: 'custom',
@@ -175,7 +175,7 @@ export function CreateFunnelModal({
         ? 'قم ببناء مسار مخصص من الصفر'
         : translateText('Build a custom funnel from scratch'),
       icon: Wand2,
-      stepsHint: ar ? 'مساحة عمل فارغة لإضافة الخطوات يدوياً' : 'Empty workspace · add steps manually',
+      stepsHint: ar ? 'مساحة عمل فارغة لإضافة الخطوات يدوياً' : translateText('Empty workspace · add steps manually'),
     },
     {
       id: 'ai',
@@ -184,7 +184,7 @@ export function CreateFunnelModal({
         ? 'إنشاء مسار تحويل متكامل ومخصص بالذكاء الاصطناعي لمشروعك'
         : translateText('Generate a personalized funnel layout from your business brief'),
       icon: Sparkles,
-      stepsHint: ar ? 'توليد ذكي للخطوات والمحتوى' : 'AI-generated steps & copy',
+      stepsHint: ar ? 'توليد ذكي للخطوات والمحتوى' : translateText('AI-generated steps & copy'),
     },
   ];
 

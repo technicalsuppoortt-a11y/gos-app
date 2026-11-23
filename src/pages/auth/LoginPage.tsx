@@ -1,4 +1,6 @@
-import { useUILanguage, translateText, localizeNode } from '../../i18n/display';
+import { useUILanguage, translateText, localizeNode, formatDisplayMessage } from '../../i18n/display';
+import { localeDirection, readPersistedLocale } from '../../i18n/initialLocale';
+import { LanguageSwitcher } from '../../components/ui/LanguageSwitcher';
 import React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
@@ -40,11 +42,12 @@ export const LoginPage: React.FC = () => {
     if (prefilledEmail && !email) setEmail(prefilledEmail);
   }, [prefilledEmail]);
 
-  // Set English (EN) as default initial language if not explicitly chosen by user
+  // Set English (EN) as default initial language if not explicitly chosen or persisted by user
   React.useEffect(() => {
     if (auth.isAuthenticated) return;
     const userSelected = localStorage.getItem('user_selected_lang');
-    if (!userSelected && (i18n.language !== 'en' || currentLang !== 'en')) {
+    const persisted = readPersistedLocale();
+    if (!userSelected && !persisted && (i18n.language !== 'en' || currentLang !== 'en')) {
       void i18n.changeLanguage('en');
       dispatch(setLanguage('en'));
       document.documentElement.dir = 'ltr';
@@ -57,34 +60,34 @@ export const LoginPage: React.FC = () => {
     if (!errorCode) return '';
     switch (errorCode) {
       case 'empty-email':
-        return currentLang === 'ar' ? 'يرجى إدخال البريد الإلكتروني للعمل.' : 'Please enter your work email.';
+        return currentLang === 'ar' ? 'يرجى إدخال البريد الإلكتروني للعمل.' : translateText('Please enter your work email.');
       case 'empty-password':
-        return currentLang === 'ar' ? 'يرجى إدخال كلمة المرور.' : 'Please enter your password.';
+        return currentLang === 'ar' ? 'يرجى إدخال كلمة المرور.' : translateText('Please enter your password.');
       case 'short-password':
-        return currentLang === 'ar' ? 'يجب أن تتكون كلمة المرور من 6 أحرف على الأقل.' : 'Password must be at least 6 characters long.';
+        return currentLang === 'ar' ? 'يجب أن تتكون كلمة المرور من 6 أحرف على الأقل.' : translateText('Password must be at least 6 characters long.');
       case 'invalid-credentials':
-        return currentLang === 'ar' ? 'البريد الإلكتروني أو كلمة المرور غير صحيحة.' : 'The email or password is incorrect.';
+        return currentLang === 'ar' ? 'البريد الإلكتروني أو كلمة المرور غير صحيحة.' : translateText('The email or password is incorrect.');
       case 'too-many-requests':
-        return currentLang === 'ar' ? 'محاولات كثيرة خاطئة. يرجى المحاولة مرة أخرى لاحقًا.' : 'Too many attempts. Please try again later.';
+        return currentLang === 'ar' ? 'محاولات كثيرة خاطئة. يرجى المحاولة مرة أخرى لاحقًا.' : translateText('Too many attempts. Please try again later.');
       case 'network-failed':
-        return currentLang === 'ar' ? 'انقطع الاتصال. تحقق من اتصالك بالإنترنت وحاول مرة أخرى.' : 'Connection lost. Check your network and try again.';
+        return currentLang === 'ar' ? 'انقطع الاتصال. تحقق من اتصالك بالإنترنت وحاول مرة أخرى.' : translateText('Connection lost. Check your network and try again.');
       default:
         if (errorCode.startsWith('session:')) return sessionErrorMessage(errorCode.slice(8) as SessionErrorCode);
-        return currentLang === 'ar' ? translateText(errorCode) : errorCode;
+        return translateText(errorCode);
     }
   }, [errorCode, currentLang]);
 
   const handleLanguageChange = (newLang: Language) => {
     try {
-      localStorage.setItem('user_selected_lang', 'true');
+      localStorage.setItem('user_selected_lang', newLang);
       localStorage.setItem('i18nextLng', newLang);
     } catch { /* Keep selection in Redux */ }
     void i18n.changeLanguage(newLang);
     dispatch(setLanguage(newLang));
-    const isAr = newLang === 'ar';
-    document.documentElement.dir = isAr ? 'rtl' : 'ltr';
-    document.documentElement.lang = isAr ? 'ar' : 'en';
-    if (document.body) document.body.dir = isAr ? 'rtl' : 'ltr';
+    const dir = localeDirection(newLang);
+    document.documentElement.dir = dir;
+    document.documentElement.lang = newLang;
+    if (document.body) document.body.dir = dir;
   };
 
   const handleThemeToggle = () => {
@@ -93,9 +96,9 @@ export const LoginPage: React.FC = () => {
 
   const handleEmailInvalid = (e: React.InvalidEvent<HTMLInputElement>) => {
     if (e.currentTarget.validity.valueMissing) {
-      e.currentTarget.setCustomValidity(currentLang === 'ar' ? 'يرجى ملء هذا الحقل بالبريد الإلكتروني.' : 'Please enter your work email.');
+      e.currentTarget.setCustomValidity(currentLang === 'ar' ? 'يرجى ملء هذا الحقل بالبريد الإلكتروني.' : translateText('Please enter your work email.'));
     } else if (e.currentTarget.validity.typeMismatch) {
-      e.currentTarget.setCustomValidity(currentLang === 'ar' ? 'يرجى إدخال عنوان بريد إلكتروني صالح.' : 'Please enter a valid email address.');
+      e.currentTarget.setCustomValidity(currentLang === 'ar' ? 'يرجى إدخال عنوان بريد إلكتروني صالح.' : translateText('Please enter a valid email address.'));
     } else {
       e.currentTarget.setCustomValidity('');
     }
@@ -103,9 +106,9 @@ export const LoginPage: React.FC = () => {
 
   const handlePasswordInvalid = (e: React.InvalidEvent<HTMLInputElement>) => {
     if (e.currentTarget.validity.valueMissing) {
-      e.currentTarget.setCustomValidity(currentLang === 'ar' ? 'يرجى إدخال كلمة المرور.' : 'Please enter your password.');
+      e.currentTarget.setCustomValidity(currentLang === 'ar' ? 'يرجى إدخال كلمة المرور.' : translateText('Please enter your password.'));
     } else if (e.currentTarget.validity.tooShort) {
-      e.currentTarget.setCustomValidity(currentLang === 'ar' ? 'يجب أن تتكون كلمة المرور من 6 أحرف على الأقل.' : 'Password must be at least 6 characters long.');
+      e.currentTarget.setCustomValidity(currentLang === 'ar' ? 'يجب أن تتكون كلمة المرور من 6 أحرف على الأقل.' : translateText('Password must be at least 6 characters long.'));
     } else {
       e.currentTarget.setCustomValidity('');
     }
@@ -177,17 +180,17 @@ export const LoginPage: React.FC = () => {
     const trimmedEmail = email.trim();
     if (!trimmedEmail) {
       setErrorCode('empty-email');
-      showToast.error(currentLang === 'ar' ? 'يرجى إدخال البريد الإلكتروني للعمل.' : 'Please enter your work email.');
+      showToast.error(currentLang === 'ar' ? 'يرجى إدخال البريد الإلكتروني للعمل.' : translateText('Please enter your work email.'));
       return;
     }
     if (!password) {
       setErrorCode('empty-password');
-      showToast.error(currentLang === 'ar' ? 'يرجى إدخال كلمة المرور.' : 'Please enter your password.');
+      showToast.error(currentLang === 'ar' ? 'يرجى إدخال كلمة المرور.' : translateText('Please enter your password.'));
       return;
     }
     if (password.length < 6) {
       setErrorCode('short-password');
-      showToast.error(currentLang === 'ar' ? 'يجب أن تتكون كلمة المرور من 6 أحرف على الأقل.' : 'Password must be at least 6 characters long.');
+      showToast.error(currentLang === 'ar' ? 'يجب أن تتكون كلمة المرور من 6 أحرف على الأقل.' : translateText('Password must be at least 6 characters long.'));
       return;
     }
 
@@ -212,18 +215,18 @@ export const LoginPage: React.FC = () => {
         }
         setErrorCode(codeKey);
         const msg = codeKey === 'invalid-credentials'
-          ? (currentLang === 'ar' ? 'البريد الإلكتروني أو كلمة المرور غير صحيحة.' : 'The email or password is incorrect.')
-          : (currentLang === 'ar' ? translateText(codeKey) : codeKey);
+          ? (currentLang === 'ar' ? 'البريد الإلكتروني أو كلمة المرور غير صحيحة.' : translateText('The email or password is incorrect.'))
+          : translateText(codeKey);
         showToast.error(msg);
         return;
       }
       if (!session) {
         setBusy(false);
         setErrorCode('invalid-credentials');
-        showToast.error(currentLang === 'ar' ? 'البريد الإلكتروني أو كلمة المرور غير صحيحة.' : 'The email or password is incorrect.');
+        showToast.error(currentLang === 'ar' ? 'البريد الإلكتروني أو كلمة المرور غير صحيحة.' : translateText('The email or password is incorrect.'));
         return;
       }
-      showToast.success(currentLang === 'ar' ? `مرحبًا بعودتك، ${session.user.name}!` : `Welcome back, ${session.user.name}!`);
+      showToast.success(formatDisplayMessage('Welcome back, {{0}}!', session.user.name));
       dispatch(loginSuccess(session));
       const requestedPath =
         (requestedReturnTo.startsWith('/portal') ? requestedReturnTo : undefined) ||
@@ -259,45 +262,19 @@ export const LoginPage: React.FC = () => {
           <span className="login-brand-word text-[22px] font-extrabold tracking-[-1.5px] text-slate-900 dark:text-white">{translateText("Upklick")}<span style={{ color: 'var(--ws-accent, #7C3AED)' }}>.</span></span>
         </a>
 
-        {/* Top Controls: Language Switcher (EN/AR) & Dark/Light Mode Switcher */}
+        {/* Top Controls: Language Dropdown (AR/EN/NL/DE) & Dark/Light Mode Switcher */}
         <div className="login-controls flex items-center gap-2">
           {/* Landing page shortcut */}
           <Link to="/" className="login-theme-btn login-landing-btn grid h-8 w-8 place-items-center rounded-xl border border-slate-200 bg-slate-50/90 text-slate-600 hover:bg-slate-100 dark:border-slate-700/80 dark:bg-[#191a27] dark:text-slate-300 dark:hover:bg-slate-800 shadow-sm transition-all active:scale-95" aria-label={translateText("View Landing Page")} title={translateText("View Landing Page")}>
             <Globe size={16} aria-hidden="true" />
           </Link>
-          {/* Language Switcher */}
-          <div className="login-lang-switch flex items-center p-1 rounded-xl border border-slate-200 bg-slate-50/90 dark:border-slate-700/80 dark:bg-[#191a27] shadow-sm" role="group" aria-label="Language selection">
-            <button
-              type="button"
-              onClick={() => handleLanguageChange('en')}
-              className={`login-lang-btn px-2.5 py-1 text-xs font-semibold rounded-lg transition-all ${
-                currentLang === 'en'
-                  ? 'is-active shadow-sm'
-                  : 'text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white'
-              }`}
-              aria-pressed={currentLang === 'en'}
-            >
-              EN
-            </button>
-            <button
-              type="button"
-              onClick={() => handleLanguageChange('ar')}
-              className={`login-lang-btn px-2.5 py-1 text-xs font-semibold rounded-lg transition-all ${
-                currentLang === 'ar'
-                  ? 'is-active shadow-sm'
-                  : 'text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white'
-              }`}
-              aria-pressed={currentLang === 'ar'}
-            >
-              عربي
-            </button>
-          </div>
+          <LanguageSwitcher onLanguageChange={handleLanguageChange} />
 
           {/* Theme Switcher */}
           <button
             type="button"
             onClick={handleThemeToggle}
-            aria-label={currentTheme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+            aria-label={translateText(currentTheme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode')}
             className="login-theme-btn grid h-8 w-8 place-items-center rounded-xl border border-slate-200 bg-slate-50/90 text-slate-600 hover:bg-slate-100 dark:border-slate-700/80 dark:bg-[#191a27] dark:text-amber-400 dark:hover:bg-slate-800 shadow-sm transition-all active:scale-95 cursor-pointer"
           >
             {currentTheme === 'dark' ? (
@@ -322,7 +299,7 @@ export const LoginPage: React.FC = () => {
           <p role="status" className="mb-4 rounded-xl border border-[var(--gp-border)] bg-[var(--gp-soft)] px-3.5 py-3 text-xs text-[var(--gp-text)]">
             {currentLang === 'ar'
               ? 'تم تحديث كلمة المرور. يرجى تسجيل الدخول بكلمة المرور الجديدة.'
-              : 'Password updated. Sign in with your new password.'}
+              : translateText('Password updated. Sign in with your new password.')}
           </p>
         )}
 

@@ -26,14 +26,14 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import type { RootState } from "../store";
-import { useUILanguage, uiDirection, translateText } from "../i18n/display";
+import { localizeObject, useUILanguage, uiDirection, translateText } from "../i18n/display";
 import { ThemeToggle } from "../components/ui/ThemeToggle";
 import { LanguageSwitcher } from "../components/ui/LanguageSwitcher";
 import { showToast } from "../utils/toast";
 import "./legal-pages.css";
 
 export function TermsOfServicePage() {
-  useUILanguage();
+  const uiLang = useUILanguage();
   const isRtl = uiDirection() === "rtl";
   const navigate = useNavigate();
   const auth = useSelector((s: RootState) => s.auth);
@@ -193,7 +193,7 @@ export function TermsOfServicePage() {
         ],
       };
     }
-    return {
+    return localizeObject({
       title: `Terms of Service & User Agreement - ${appName}`,
       subtitle:
         "A legally binding agreement outlining the terms, rights, and responsibilities governing your use of the Upklick Platform.",
@@ -327,8 +327,8 @@ export function TermsOfServicePage() {
           ],
         },
       ],
-    };
-  }, [isRtl, appName]);
+    }, uiLang);
+  }, [isRtl, uiLang, appName]);
 
   const filteredSections = useMemo(() => {
     if (!searchQuery.trim()) return content.sections;

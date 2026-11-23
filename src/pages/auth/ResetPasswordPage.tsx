@@ -2,7 +2,9 @@ import { confirmPasswordReset, verifyPasswordResetCode } from 'firebase/auth';
 import { auth, backendError } from '../../backend/firebase';
 import { activateInvitedUser, ActivationError } from '../../backend/adminUsers';
 import { routeForRole } from '../../router/ProtectedRoute';
-import { useUILanguage, translateText, localizeNode } from '../../i18n/display';
+import { useUILanguage, translateText, localizeNode, uiDirection } from '../../i18n/display';
+import { LanguageSwitcher } from '../../components/ui/LanguageSwitcher';
+import { ThemeToggle } from '../../components/ui/ThemeToggle';
 import React from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { ArrowLeft, ArrowRight, BadgeCheck, Check, CheckCircle2, Eye, EyeOff, KeyRound, LoaderCircle, LockKeyhole, Shield, ShieldCheck, Sparkles, X } from 'lucide-react';
@@ -40,7 +42,7 @@ export const ResetPasswordPage: React.FC = () => {
         setCodeValid(true);
         return;
       }
-      showToast.error('Open the reset link from your email.');
+      showToast.error(translateText('Open the reset link from your email.'));
       return;
     }
     verifyPasswordResetCode(auth, code)
@@ -150,22 +152,26 @@ export const ResetPasswordPage: React.FC = () => {
   };
 
   return (
-    <main className="login-page grid min-h-[100dvh] bg-[#f7f8fc] text-slate-900 dark:bg-[#10111b] dark:text-white lg:grid-cols-2">
+    <main lang={uiLang} dir={uiDirection()} className="login-page grid min-h-[100dvh] bg-[#f7f8fc] text-slate-900 dark:bg-[#10111b] dark:text-white lg:grid-cols-2">
       {/* Form Side */}
       <section className="login-form-side flex min-h-[100dvh] flex-col justify-between bg-white px-5 py-6 dark:bg-[#141520] sm:px-9 lg:px-12 xl:px-16">
-        <header className="flex items-center justify-between">
+        <header className="flex items-center justify-between gap-2">
           <a href="/auth/login" aria-label={translateText("Upklick home")} className="login-brand flex w-fit items-center gap-2">
             <span className="login-brand-mark grid h-9 w-9 place-items-center rounded-xl bg-indigo-600 font-bold text-white shadow-lg shadow-indigo-600/20"><img src="/upclick-mark.svg" width="36" height="36" alt=""/></span>
             <span className="login-brand-word text-[22px] font-extrabold tracking-[-1.5px] text-slate-900 dark:text-white">{translateText("Upklick")}<span className="text-indigo-600">.</span></span>
           </a>
-          <button
-            type="button"
-            onClick={() => navigate('/login')}
-            className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-semibold text-slate-600 hover:text-indigo-600 dark:text-slate-300 dark:hover:text-white transition-colors"
-          >
-            <ArrowLeft size={14} />
-            {translateText("Back to Sign In")}
-          </button>
+          <div className="flex items-center gap-2">
+            <LanguageSwitcher />
+            <ThemeToggle />
+            <button
+              type="button"
+              onClick={() => navigate('/login')}
+              className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-semibold text-slate-600 hover:text-indigo-600 dark:text-slate-300 dark:hover:text-white transition-colors"
+            >
+              <ArrowLeft size={14} className="rtl:rotate-180" />
+              {translateText("Back to Sign In")}
+            </button>
+          </div>
         </header>
 
         <motion.div
@@ -183,12 +189,12 @@ export const ResetPasswordPage: React.FC = () => {
                 </div>
                 <h1 className="text-3xl font-bold tracking-[-1.2px] text-slate-900 dark:text-white">
                   {finishStage
-                    ? (ar ? 'أكمل تفعيل حسابك' : 'Finish activating your account')
+                    ? (ar ? 'أكمل تفعيل حسابك' : translateText('Finish activating your account'))
                     : mode === 'activation' ? translateText("Activate your account") : translateText("Create new password")}
                 </h1>
                 <p className="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300">
                   {finishStage ? (
-                    ar ? 'أدخل كلمة المرور التي عيّنتها للتو من رسالة البريد الإلكتروني.' : 'Enter the password you just set from the email link.'
+                    ar ? 'أدخل كلمة المرور التي عيّنتها للتو من رسالة البريد الإلكتروني.' : translateText('Enter the password you just set from the email link.')
                   ) : emailParam ? (
                     <span>
                       {translateText("Resetting password for ")}

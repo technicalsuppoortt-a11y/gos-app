@@ -172,7 +172,7 @@ function GatewaySetupGuide({ provider }: { provider: string }) {
       <div className="st-guide-head" onClick={() => setExpanded(v => !v)}>
         <div className="st-guide-title">
           <BookOpen size={15} className="st-guide-icon" />
-          <span>{ar ? `دليل إعداد ربط ${guide.title.split(' ')[0]}` : guide.title}</span>
+          <span>{ar ? `دليل إعداد ربط ${guide.title.split(' ')[0]}` : t(guide.title)}</span>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <a
@@ -182,7 +182,7 @@ function GatewaySetupGuide({ provider }: { provider: string }) {
             className="st-guide-link"
             onClick={e => e.stopPropagation()}
           >
-            <span>{ar ? 'فتح لوحة التحكم ↗' : guide.urlText}</span>
+            <span>{ar ? 'فتح لوحة التحكم ↗' : t(guide.urlText)}</span>
           </a>
           <button type="button" className="st-icon-button" style={{ width: 22, height: 22 }} aria-label={t("Toggle Guide")}>
             {expanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
@@ -195,7 +195,7 @@ function GatewaySetupGuide({ provider }: { provider: string }) {
           {guide.steps.map((step, idx) => (
             <li key={idx} className="st-guide-step">
               <span className="st-guide-number">{idx + 1}</span>
-              <p>{ar ? step.ar : step.en}</p>
+              <p>{ar ? step.ar : t(step.en)}</p>
             </li>
           ))}
         </ol>

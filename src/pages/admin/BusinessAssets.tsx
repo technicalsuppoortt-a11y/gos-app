@@ -46,7 +46,7 @@ import { AGENCY_LANDING_PREFIX } from '../agency-landing-asset';
 import { assetSubtype } from './live-model';
 import { AdminSitePreview, type SitePreview } from './AdminSitePreview';
 import { LiveDialog, StatusPill } from './AdminLiveUI';
-import { useUILanguage } from '../../i18n/display';
+import { useUILanguage, translateText } from '../../i18n/display';
 import { showToast } from '../../utils/toast';
 import type { RootState } from '../../store';
 import type { Invite } from '../onboarding/onboarding-store';
@@ -148,7 +148,7 @@ function getInitials(label: string): string {
 export function BusinessAssets({ tenantId }: { tenantId: string }) {
   const navigate = useNavigate();
   const ar = useUILanguage().startsWith('ar');
-  const t = (en: string, arabic: string) => (ar ? arabic : en);
+  const t = (en: string, arabic: string) => (ar ? arabic : translateText(en));
 
   const authState = useSelector((s: RootState) => s.auth);
   const isAdminView =

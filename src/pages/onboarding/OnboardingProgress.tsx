@@ -14,12 +14,14 @@ import type { RootState } from "../../store";
 import { useOnboarding } from "./onboarding-store";
 import "./onboarding.css";
 import { countryOptions } from "./localization-data";
+import { translateText, useUILanguage } from "../../i18n/display";
 
 export function OnboardingProgress() {
   const email = useSelector((s: RootState) => s.auth.user?.email || "");
   const { setups } = useOnboarding();
   const setup = setups[email];
-  const ar = useSelector((s: RootState) => s.ui.language === "ar");
+  const uiLang = useUILanguage();
+  const ar = uiLang.startsWith("ar");
   const [expanded, setExpanded] = React.useState(false);
   const [preview, setPreview] = React.useState(false);
   const dialog = React.useRef<HTMLDialogElement>(null);
@@ -31,9 +33,9 @@ export function OnboardingProgress() {
 
   if (!setup?.onboarding_completed) return null;
 
-  const t = (en: string, arabic: string) => (ar ? arabic : en);
+  const t = (en: string, arabic: string) => (ar ? arabic : translateText(en));
   const countryLabel =
-    countryOptions(ar ? "ar" : "en").find(
+    countryOptions(uiLang).find(
       (country) => country.value === setup.country,
     )?.label || setup.country;
 

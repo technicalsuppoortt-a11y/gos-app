@@ -29,7 +29,9 @@ export function demoAccountPlugin(): Plugin {
         if (!found) return null;
         path = found;
       }
-      for (const [module, adapter] of Object.entries(replacements)) if (new RegExp('/src/' + module + '\\.[jt]sx?$').test(path.replaceAll('\\', '/'))) return resolve(adapters, adapter) + marker;
+      const normalized = path.replaceAll('\\', '/');
+      for (const [module, adapter] of Object.entries(replacements)) if (new RegExp('/src/' + module + '\\.[jt]sx?$').test(normalized)) return resolve(adapters, adapter) + marker;
+      if (/\/src\/(?:i18n\/|pages\/pagefly\/templates\/|pages\/landing\/landing-content\.ts$|pages\/landing\/white-label\/white-label-content\.ts$)/.test(normalized)) return path;
       return /\.[jt]sx?$/.test(path) ? path + marker : path;
     },
     load(id) {

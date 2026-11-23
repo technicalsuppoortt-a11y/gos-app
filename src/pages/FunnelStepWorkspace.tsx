@@ -95,7 +95,7 @@ function stepTypeLabel(stepType: string | undefined, ar: boolean): string {
   const found = STEP_TYPE_OPTIONS.find(
     o => o.value.toLowerCase() === (stepType || '').trim().toLowerCase()
   );
-  if (found) return ar ? found.ar : found.en;
+  if (found) return ar ? found.ar : translateText(found.en);
   const cat = normalizeStepCategory(stepType);
   if (ar) {
     return cat === 'Order Form'
@@ -106,7 +106,7 @@ function stepTypeLabel(stepType: string | undefined, ar: boolean): string {
           ? 'صفحة المبيعات'
           : 'صفحة الاشتراك';
   }
-  return stepType || cat;
+  return translateText(stepType || cat);
 }
 
 export function FunnelStepWorkspace({
@@ -1756,7 +1756,7 @@ export function FunnelStepWorkspace({
                 value={newStepType}
                 options={STEP_TYPE_OPTIONS.map(o => ({
                   value: o.value,
-                  label: ar ? o.ar : o.en,
+                  label: ar ? o.ar : translateText(o.en),
                   preserveLabel: true,
                 }))}
                 onChange={setNewStepType}

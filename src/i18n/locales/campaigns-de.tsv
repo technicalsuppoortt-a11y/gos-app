@@ -1,0 +1,113 @@
+WhatsApp campaigns	WhatsApp-Kampagnen
+Send approved Meta templates to your customers, now or at a time you choose.	Sende freigegebene Meta-Vorlagen an deine Kunden – sofort oder zu einem Zeitpunkt deiner Wahl.
+New campaign	Neue Kampagne
+Messages sent	Gesendete Nachrichten
+Delivery rate	Zustellrate
+Read rate	Leserate
+Customer replies	Kundenantworten
+Filter by status	Nach Status filtern
+Search by campaign name	Nach Kampagnenname suchen
+Recipients	Empfänger
+Delivered / read	Zugestellt / gelesen
+Now	Jetzt
+Ahmed	Ahmed
+Send a test message to this WhatsApp number (with country code):	Testnachricht an diese WhatsApp-Nummer senden (mit Ländervorwahl):
+Test message sent	Testnachricht gesendet
+Connect a WhatsApp Business number in Settings › Integrations before sending campaigns.	Verbinde unter Einstellungen › Integrationen eine WhatsApp Business-Nummer, bevor du Kampagnen sendest.
+e.g. White Friday offer	z. B. White-Friday-Angebot
+Sending number	Absendernummer
+No WhatsApp number connected	Keine WhatsApp-Nummer verbunden
+Choose an approved template	Freigegebene Vorlage auswählen
+Refresh from Meta	Von Meta aktualisieren
+Loading templates…	Vorlagen werden geladen…
+No approved templates yet. Create one and wait for Meta to approve it.	Noch keine freigegebenen Vorlagen vorhanden. Erstelle eine Vorlage und warte auf die Freigabe durch Meta.
+Only approved templates are listed. Templates in review or rejected cannot be used in campaigns.	Es werden nur freigegebene Vorlagen angezeigt. Vorlagen in Prüfung oder abgelehnte Vorlagen können nicht in Kampagnen verwendet werden.
+Template variables	Vorlagenvariablen
+Link each variable to customer data or type a fixed text. The fallback is used when the data is missing.	Verknüpfe jede Variable mit Kundendaten oder gib einen festen Text ein. Der Fallback-Wert wird verwendet, wenn Daten fehlen.
+Variable	Variable
+Fallback / text	Fallback / Text
+Fixed text	Fester Text
+When to send	Versandzeitpunkt
+Review campaign	Kampagne überprüfen
+Variables	Variablen
+Send now	Jetzt senden
+Meta charges template messages per conversation, and WhatsApp may limit how many you can send a day based on your number’s quality rating.	Meta berechnet Vorlagennachrichten pro Konversation, und WhatsApp kann das tägliche Versandlimit je nach Qualitätsbewertung deiner Nummer begrenzen.
+Total recipients	Empfänger insgesamt
+CSV file	CSV-Datei
+Manual selection	Manuelle Auswahl
+Duplicates removed	Duplikate entfernt
+Invalid numbers skipped	Ungültige Nummern übersprungen
+Pick at least one source to see who will receive this campaign.	Wähle mindestens eine Quelle aus, um zu sehen, wer diese Kampagne erhält.
+Message preview	Nachrichtenvorschau
+Preview uses the first recipient’s data.	Die Vorschau verwendet die Daten des ersten Empfängers.
+The file is empty.	Die Datei ist leer.
+Combine recipients from one or more sources. Duplicate numbers are removed automatically.	Kombiniere Empfänger aus einer oder mehreren Quellen. Doppelte Nummern werden automatisch entfernt.
+No pipeline stages yet	Noch keine Pipeline-Phasen
+Add a tag	Tag hinzufügen
+No stage and no tag selected means all leads with a phone number.	Wenn weder Phase noch Tag ausgewählt ist, werden alle Leads mit Telefonnummer einbezogen.
+Exclude contacts who opted out of marketing messages	Kontakte ausschließen, die Marketingnachrichten abbestellt haben
+invalid numbers will be skipped	ungültige Nummern werden übersprungen
+First row must be the column names	Die erste Zeile muss die Spaltennamen enthalten
+Phone column	Telefonspalte
+Name column	Namensspalte
+Default country code	Standard-Ländervorwahl
+Download a sample file	Beispieldatei herunterladen
+Search by name or number	Nach Name oder Nummer suchen
+No contacts with a phone number found	Keine Kontakte mit Telefonnummer gefunden
+Choose a template to see the message.	Wähle eine Vorlage aus, um die Nachricht anzuzeigen.
+Scheduled for	Geplant für
+Started	Gestartet
+Stop this campaign? Messages already sent stay sent.	Diese Kampagne stoppen? Bereits gesendete Nachrichten bleiben zugestellt.
+Cancel campaign	Kampagne abbrechen
+Resend to failed	Erneut an fehlgeschlagene senden
+Duplicate campaign	Kampagne duplizieren
+Replied	Beantwortet
+Message funnel	Nachrichten-Funnel
+Filter recipients	Empfänger filtern
+No recipients here	Hier sind keine Empfänger
+Last update	Letzte Aktualisierung
+Open conversation	Konversation öffnen
+No campaigns match this filter	Keine Kampagnen entsprechen diesem Filter
+No campaigns yet	Noch keine Kampagnen
+e.g. Dear customer	z. B. Hallo Kunde
+Schedule for later	Für später planen
+Sending starts right after you confirm	Der Versand startet direkt nach deiner Bestätigung
+Pick a date and time	Datum und Uhrzeit wählen
+Sending…	Wird gesendet…
+Send me a test	Test an mich senden
+Next: audience	Weiter: Zielgruppe
+Next: schedule	Weiter: Zeitplan
+Send campaign	Kampagne senden
+Schedule campaign	Kampagne planen
+Replace file	Datei ersetzen
+Choose file	Datei auswählen
+Choose a CSV file	CSV-Datei auswählen
+Contact name	Kontaktname
+Egypt +20	Ägypten +20
+Saudi Arabia +966	Saudi-Arabien +966
+UAE +971	VAE +971
+Kuwait +965	Kuwait +965
+Qatar +974	Katar +974
+Jordan +962	Jordanien +962
+Sending	Wird gesendet
+Schedule & review	Planen & überprüfen
+Loading campaigns…	Kampagnen werden geladen…
+Marketing	Marketing
+Utility	Transaktional
+Authentication	Authentifizierung
+Queued	In Warteschlange
+Campaign is sending	Kampagne wird gesendet
+Campaign scheduled	Kampagne geplant
+Draft saved	Entwurf gespeichert
+Campaign cancelled	Kampagne abgebrochen
+Export ready	Export bereit
+Resending to failed recipients	Erneuter Versand an fehlgeschlagene Empfänger
+Leads by stage or tag	Leads nach Phase oder Tag
+Upload a CSV file	CSV-Datei hochladen
+fallback	Fallback
+recipients	Empfänger
+variables	Variablen
+rows	Zeilen
+Time zone	Zeitzone
+Uploading…	Wird hochgeladen…
+Uploaded file	Hochgeladene Datei

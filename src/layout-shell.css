@@ -879,17 +879,17 @@ body.layout-locked #root {
 .layout-search {
   box-sizing: border-box;
   display: flex;
-  width: clamp(130px, 12vw, 185px);
+  width: clamp(210px, 22vw, 340px);
   height: 35px;
   align-items: center;
-  gap: 7px;
+  gap: 8px;
   border: 1px solid #e2e8f0;
   border-radius: 9px;
   background: #f8fafc;
-  padding: 0 10px;
+  padding: 0 11px;
   color: #71768b;
   box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: width 0.22s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
   flex-shrink: 1;
 }
 

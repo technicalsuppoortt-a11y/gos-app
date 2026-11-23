@@ -18,7 +18,7 @@ import {
   ChevronDown,
   SlidersHorizontal,
 } from 'lucide-react';
-import { useUILanguage } from '../../i18n/display';
+import { localizePair, translateText, useUILanguage } from '../../i18n/display';
 import { showToast } from '../../utils/toast';
 import {
   type ToolItem,
@@ -42,7 +42,7 @@ const CATEGORY_OPTIONS = [
 export function AdminTools() {
   const language = useUILanguage();
   const ar = language.startsWith('ar');
-  const t = (en: string, arabic: string) => (ar ? arabic : en);
+  const t = (en: string, arabic: string) => (ar ? arabic : translateText(en));
 
   const [tools, setTools] = useState<ToolItem[]>(() => defaultPlatformTools);
   const [search, setSearch] = useState('');
@@ -105,14 +105,14 @@ export function AdminTools() {
     const updated = tools.map(item => item.id === tool.id ? { ...item, enabled: !item.enabled, status: (!item.enabled ? 'Active' : 'Disabled') as ToolStatus } : item);
     if (!await commit(updated)) return;
     const wasEnabled = tool.enabled;
-    const toolTitle = tool.name[ar ? 1 : 0];
+    const toolTitle = localizePair(tool.name);
     if (wasEnabled) {
       showToast.info(
-        ar ? `تم تعطيل ${toolTitle} عالمياً.` : `${toolTitle} disabled globally across all tenants.`
+        ar ? `تم تعطيل ${toolTitle} عالمياً.` : translateText(`${toolTitle} disabled globally across all tenants.`)
       );
     } else {
       showToast.success(
-        ar ? `تم تفعيل ${toolTitle} عالمياً.` : `${toolTitle} activated globally across all tenants.`
+        ar ? `تم تفعيل ${toolTitle} عالمياً.` : translateText(`${toolTitle} activated globally across all tenants.`)
       );
     }
   };
@@ -126,7 +126,7 @@ export function AdminTools() {
     }));
     if (!await commit(next)) return;
     showToast.success(
-      ar ? 'تم تفعيل جميع الأدوات عالمياً.' : 'All platform tools enabled globally.'
+      ar ? 'تم تفعيل جميع الأدوات عالمياً.' : translateText('All platform tools enabled globally.')
     );
   };
 
@@ -136,12 +136,12 @@ export function AdminTools() {
       window.confirm(
         ar
           ? 'هل أنت متأكد من استعادة الإعدادات الافتراضية لجميع الأدوات؟'
-          : 'Are you sure you want to reset all platform tools to default settings?'
+          : translateText('Are you sure you want to reset all platform tools to default settings?')
       )
     ) {
       if (!await commit(defaultPlatformTools)) return;
       showToast.info(
-        ar ? 'تمت استعادة الإعدادات الافتراضية بنجاح.' : 'Tools reset to factory defaults.'
+        ar ? 'تمت استعادة الإعدادات الافتراضية بنجاح.' : translateText('Tools reset to factory defaults.')
       );
     }
   };
@@ -157,7 +157,7 @@ export function AdminTools() {
     downloadAnchor.click();
     downloadAnchor.remove();
     showToast.success(
-      ar ? 'تم تصدير ملف إعدادات الأدوات بنجاح.' : 'Tools configuration exported to JSON.'
+      ar ? 'تم تصدير ملف إعدادات الأدوات بنجاح.' : translateText('Tools configuration exported to JSON.')
     );
   };
 
@@ -168,7 +168,7 @@ export function AdminTools() {
     showToast.success(
       ar
         ? `تم حفظ إعدادات ${updatedTool.name[1]} بنجاح.`
-        : `Configuration for ${updatedTool.name[0]} saved successfully.`
+        : translateText(`Configuration for ${updatedTool.name[0]} saved successfully.`)
     );
   };
 
@@ -289,7 +289,7 @@ export function AdminTools() {
                   <Select.Value>
                     {categoryFilter === 'All'
                       ? t('All Categories', 'جميع الفئات')
-                      : (CATEGORY_OPTIONS.find((c) => c.id === categoryFilter)?.[ar ? 'labelAr' : 'labelEn'] ?? categoryFilter)}
+                      : (() => { const found = CATEGORY_OPTIONS.find((c) => c.id === categoryFilter); return found ? (ar ? found.labelAr : translateText(found.labelEn)) : categoryFilter; })()}
                   </Select.Value>
                 </div>
                 <Select.Icon className="adm-tools-cat-chevron">
@@ -309,7 +309,7 @@ export function AdminTools() {
                   <Select.Viewport className="adm-tools-cat-viewport">
                     {CATEGORY_OPTIONS.map((cat) => {
                       const count = categoryCounts[cat.id] ?? 0;
-                      const label = ar ? cat.labelAr : cat.labelEn;
+                      const label = ar ? cat.labelAr : translateText(cat.labelEn);
                       return (
                         <Select.Item
                           key={cat.id}
@@ -391,10 +391,10 @@ export function AdminTools() {
                     <Icon size={17} />
                   </div>
                   <div className="adm-tool-text">
-                    <h2 className="adm-tool-name" title={tool.name[ar ? 1 : 0]}>
-                      {tool.name[ar ? 1 : 0]}
+                    <h2 className="adm-tool-name" title={localizePair(tool.name)}>
+                      {localizePair(tool.name)}
                     </h2>
-                    <span className="adm-tool-cat-badge">{tool.categoryLabel[ar ? 1 : 0]}</span>
+                    <span className="adm-tool-cat-badge">{localizePair(tool.categoryLabel)}</span>
                   </div>
                 </div>
 
@@ -410,8 +410,8 @@ export function AdminTools() {
 
               {/* Card Middle: Description & Micro-Telemetry */}
               <div className="adm-tool-card-body">
-                <p className="adm-tool-desc" title={tool.description[ar ? 1 : 0]}>
-                  {tool.description[ar ? 1 : 0]}
+                <p className="adm-tool-desc" title={localizePair(tool.description)}>
+                  {localizePair(tool.description)}
                 </p>
 
                 <div className="adm-tool-telemetry">
@@ -442,7 +442,7 @@ export function AdminTools() {
                     type="button"
                     role="switch"
                     aria-checked={tool.enabled}
-                    aria-label={`${t('Toggle', 'تبديل')} ${tool.name[ar ? 1 : 0]}`}
+                    aria-label={`${t('Toggle', 'تبديل')} ${localizePair(tool.name)}`}
                     className={`adm-tool-switch ${tool.enabled ? 'on' : ''}`}
                   >
                     <span className="adm-tool-switch-knob" />
@@ -456,7 +456,7 @@ export function AdminTools() {
                   type="button"
                   className="adm-tool-config-btn"
                   onClick={() => setConfiguringTool(tool)}
-                  aria-label={`${t('Configure', 'تهيئة')} ${tool.name[ar ? 1 : 0]}`}
+                  aria-label={`${t('Configure', 'تهيئة')} ${localizePair(tool.name)}`}
                 >
                   <Settings size={13} />
                   <span>{t('Configure', 'تهيئة')}</span>
@@ -581,7 +581,7 @@ function ToolConfigDrawer({ tool, revision, ar, t, onClose, onSave }: ToolConfig
             </div>
             <div>
               <span className="adm-eyebrow">{t('TOOL CONFIGURATION', 'إعدادات الأداة')}</span>
-              <h2 id="tool-drawer-title">{draft.name[ar ? 1 : 0]}</h2>
+              <h2 id="tool-drawer-title">{localizePair(draft.name)}</h2>
             </div>
           </div>
           <button
@@ -691,7 +691,7 @@ function ToolConfigDrawer({ tool, revision, ar, t, onClose, onSave }: ToolConfig
               if (field.type === 'boolean') {
                 return (
                   <label key={field.key} className="adm-drawer-field-bool">
-                    <span>{field.label[ar ? 1 : 0]}</span>
+                    <span>{localizePair(field.label)}</span>
                     <input
                       type="checkbox"
                       checked={Boolean(currentValue)}
@@ -704,7 +704,7 @@ function ToolConfigDrawer({ tool, revision, ar, t, onClose, onSave }: ToolConfig
               if (field.type === 'select') {
                 return (
                   <div key={field.key} className="adm-drawer-field">
-                    <label>{field.label[ar ? 1 : 0]}</label>
+                    <label>{localizePair(field.label)}</label>
                     <DashboardSelect
                       value={String(currentValue)}
                       onChange={(e) => updateSettingValue(field.key, e.target.value)}
@@ -721,7 +721,7 @@ function ToolConfigDrawer({ tool, revision, ar, t, onClose, onSave }: ToolConfig
 
               return (
                 <div key={field.key} className="adm-drawer-field">
-                  <label>{field.label[ar ? 1 : 0]}</label>
+                  <label>{localizePair(field.label)}</label>
                   <input
                     type={field.type === 'number' ? 'number' : 'text'}
                     value={String(currentValue)}

@@ -1,6 +1,6 @@
 import { useCurrency } from '../../context/CurrencyContext';
 import { Eye, Globe2, Layers3, ShieldCheck } from 'lucide-react';
-import { useUILanguage } from '../../i18n/display';
+import { useUILanguage, translateText } from '../../i18n/display';
 import { type Directory, type LiveRecord, managementRow } from './live-model';
 import { type ManagedTemplate, templateCategoryLabel, templateIsActive } from './managed-template';
 import { DetailCard, DetailField, displayDate, displayMoney, LiveDialog, StatusPill } from './AdminLiveUI';
@@ -9,7 +9,7 @@ import { BookingLivePreview } from '../booking/BookingLivePreview';
 
 export function TemplateContent({ template }: { template: ManagedTemplate }) {
   const { formatPrice } = useCurrency();
-  const ar = useUILanguage().startsWith('ar'), t = (en: string, arabic: string) => ar ? arabic : en;
+  const ar = useUILanguage().startsWith('ar'), t = (en: string, arabic: string) => ar ? arabic : translateText(en);
   if (template.bookingPage) return <div className="alm-native-preview" inert><BookingLivePreview page={template.bookingPage}/></div>;
   if (template.productTemplate) {
     const p = template.productTemplate.product, c = p.config!;
@@ -27,7 +27,7 @@ export function AdminRecordDetails({ value, tenants, users, related, close, prev
   templatePreviewHref?: string; close: () => void; preview: (value: SitePreview) => void;
 }) {
   const { formatPrice } = useCurrency();
-  const ar = useUILanguage().startsWith('ar'), t = (en: string, arabic: string) => ar ? arabic : en;
+  const ar = useUILanguage().startsWith('ar'), t = (en: string, arabic: string) => ar ? arabic : translateText(en);
   const record = 'data' in value ? value as LiveRecord : null;
   const template = !record ? value as ManagedTemplate : null;
   const d = record?.data || {};

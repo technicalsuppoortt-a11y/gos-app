@@ -6,7 +6,7 @@ import { ref, uploadBytes } from 'firebase/storage';
 import { ArrowLeft, CheckCheck, MessageCircle, Mic, Square, Paperclip, Reply, Send, X, Plus, MoreHorizontal, Copy, Forward, Pencil, Trash2, Smile, Pin, PinOff } from 'lucide-react';
 import type { RootState } from '../../store';
 import { db, storage, callBackend, backendError } from '../../backend/firebase';
-import { useUILanguage } from '../../i18n/display';
+import { useUILanguage, translateText } from '../../i18n/display';
 import { SupportDialog } from './SupportDialog';
 import { SupportMedia } from './SupportMedia';
 import { formatDuration, inspectAudio, roleLabel, roomKey, tokenizeSupportLinks, type Contact, type Attachment, type Message, type Room } from './support-model';
@@ -43,7 +43,7 @@ const emojis = ['👍', '❤️', '😂', '🎉', '🙏', '👀'];
 export function SupportChat() {
   const { user, role } = useSelector((s: RootState) => s.auth);
   const ar = useUILanguage().startsWith('ar');
-  const t = (en: string, arabic: string) => ar ? arabic : en;
+  const t = (en: string, arabic: string) => ar ? arabic : translateText(en);
   const [contacts, setContacts] = useState<Contact[]>([]), [selected, setSelected] = useState<Contact | null>(null);
   const [roomId, setRoomId] = useState(''), [messages, setMessages] = useState<Message[]>([]), [rooms, setRooms] = useState<Room[]>([]);
   const [pinnedMessages, setPinnedMessages] = useState<Message[]>([]);

@@ -1,6 +1,6 @@
 import { useLocation, useNavigate } from 'react-router-dom';
 import { MessageCircle } from 'lucide-react';
-import { useUILanguage } from '../../i18n/display';
+import { useUILanguage, translateText } from '../../i18n/display';
 import './support-launcher.css';
 
 export function SupportQuickChat() {
@@ -14,7 +14,7 @@ export function SupportQuickChat() {
       type="button"
       className="support-launcher support-floating-trigger"
       onClick={() => navigate(fullSupportPath)}
-      aria-label={ar ? 'فتح محادثة الدعم السريعة' : 'Open quick support chat'}
+      aria-label={ar ? 'فتح محادثة الدعم السريعة' : translateText('Open quick support chat')}
     >
       <MessageCircle size={22} strokeWidth={2.2} aria-hidden="true" focusable="false"/>
     </button>

@@ -1,6 +1,8 @@
 import { sendPasswordResetEmail } from 'firebase/auth';
 import { auth, backendError } from '../../backend/firebase';
-import { useUILanguage, translateText, localizeNode } from '../../i18n/display';
+import { useUILanguage, translateText, localizeNode, uiDirection } from '../../i18n/display';
+import { LanguageSwitcher } from '../../components/ui/LanguageSwitcher';
+import { ThemeToggle } from '../../components/ui/ThemeToggle';
 import React from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { ArrowLeft, ArrowRight, BadgeCheck, CheckCircle2, Clock, KeyRound, LoaderCircle, Mail, RotateCw, Send, Shield, Sparkles } from 'lucide-react';
@@ -10,7 +12,7 @@ import './login-page.css';
 import './auth-recovery.css';
 
 export const ForgotPasswordPage: React.FC = () => {
-  useUILanguage();
+  const uiLang = useUILanguage();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const initialEmail = searchParams.get('email') || '';
@@ -44,32 +46,36 @@ export const ForgotPasswordPage: React.FC = () => {
     if (busy || !email) return;
 
     setBusy(true);
-    try { await sendPasswordResetEmail(auth, email.trim(), { url: returnTo(email.trim()) }); setSubmitted(true); setResendCooldown(30); showToast.success('If this account exists, a reset link has been sent.'); } catch (error) { showToast.error(backendError(error)); } finally { setBusy(false); }
+    try { await sendPasswordResetEmail(auth, email.trim(), { url: returnTo(email.trim()) }); setSubmitted(true); setResendCooldown(30); showToast.success(translateText('If this account exists, a reset link has been sent.')); } catch (error) { showToast.error(backendError(error)); } finally { setBusy(false); }
   };
 
   const handleResend = async () => {
     if (resendCooldown > 0 || busy) return;
     setBusy(true);
-    try { await sendPasswordResetEmail(auth, email.trim(), { url: returnTo(email.trim()) }); setResendCooldown(30); showToast.success('If this account exists, a reset link has been sent.'); } catch (error) { showToast.error(backendError(error)); } finally { setBusy(false); }
+    try { await sendPasswordResetEmail(auth, email.trim(), { url: returnTo(email.trim()) }); setResendCooldown(30); showToast.success(translateText('If this account exists, a reset link has been sent.')); } catch (error) { showToast.error(backendError(error)); } finally { setBusy(false); }
   };
 
   return (
-    <main className="login-page grid min-h-[100dvh] bg-[#f7f8fc] text-slate-900 dark:bg-[#10111b] dark:text-white lg:grid-cols-2">
+    <main lang={uiLang} dir={uiDirection()} className="login-page grid min-h-[100dvh] bg-[#f7f8fc] text-slate-900 dark:bg-[#10111b] dark:text-white lg:grid-cols-2">
       {/* Form Side */}
       <section className="login-form-side flex min-h-[100dvh] flex-col justify-between bg-white px-5 py-6 dark:bg-[#141520] sm:px-9 lg:px-12 xl:px-16">
-        <header className="flex items-center justify-between">
+        <header className="flex items-center justify-between gap-2">
           <a href="/auth/login" aria-label={translateText("Upklick home")} className="login-brand flex w-fit items-center gap-2">
             <span className="login-brand-mark grid h-9 w-9 place-items-center rounded-xl bg-indigo-600 font-bold text-white shadow-lg shadow-indigo-600/20"><img src="/upclick-mark.svg" width="36" height="36" alt=""/></span>
             <span className="login-brand-word text-[22px] font-extrabold tracking-[-1.5px] text-slate-900 dark:text-white">{translateText("Upklick")}<span className="text-indigo-600">.</span></span>
           </a>
-          <button
-            type="button"
-            onClick={() => navigate('/login')}
-            className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-semibold text-slate-600 hover:text-indigo-600 dark:text-slate-300 dark:hover:text-white transition-colors"
-          >
-            <ArrowLeft size={14} />
-            {translateText("Back to Sign In")}
-          </button>
+          <div className="flex items-center gap-2">
+            <LanguageSwitcher />
+            <ThemeToggle />
+            <button
+              type="button"
+              onClick={() => navigate('/login')}
+              className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-semibold text-slate-600 hover:text-indigo-600 dark:text-slate-300 dark:hover:text-white transition-colors"
+            >
+              <ArrowLeft size={14} className="rtl:rotate-180" />
+              {translateText("Back to Sign In")}
+            </button>
+          </div>
         </header>
 
         <motion.div

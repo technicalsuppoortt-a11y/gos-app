@@ -18,7 +18,7 @@ import { usePhoenixBrand } from '../backend/phoenixBrand';
 import { setCurrency, setLanguage, setTheme } from '../store/slices/uiSlice';
 import type { RootState } from '../store';
 import { storageGet } from '../utils/browserStorage';
-import { readPersistedLocale } from '../i18n/initialLocale';
+import { isSupportedLocale, normalizeLocale, readPersistedLocale, type SupportedLocale } from '../i18n/initialLocale';
 import { useSessionReady } from '../backend/sessionState';
 import i18n from '../i18n/i18n';
 import { showToast } from '../utils/toast';
@@ -44,7 +44,7 @@ export function WorkspaceCustomization({ children, publicPage }: { children: Rea
   const role = useSelector((s: RootState) => s.auth.role);
   const currentUiLang = useSelector((s: RootState) => s.ui.language);
   const currentUiTheme = useSelector((s: RootState) => s.ui.theme);
-  const [initialPersistedLang] = useState<'ar' | 'en' | null>(() => readPersistedLocale());
+  const [initialPersistedLang] = useState<SupportedLocale | null>(() => readPersistedLocale());
   const [initialPersistedTheme] = useState<'light' | 'dark' | null>(() => {
     const raw = storageGet('theme');
     return raw === 'light' || raw === 'dark' ? raw : null;
@@ -98,21 +98,22 @@ export function WorkspaceCustomization({ children, publicPage }: { children: Rea
     logoUrl: isDefaultBrandLogo(values.logoUrl) && phoenixFill.logo ? phoenixFill.logo : values.logoUrl,
   } : values ?? preferenceDefaults;
   const activePersonal = localPersonal.scope === scope ? { ...personal, ...localPersonal.patch } : personal;
-  const storedCustomerLang = role === 'CUSTOMER' ? storageGet('i18nextLng') : null;
+  const storedCustomerLang = role === 'CUSTOMER' ? normalizeLocale(storageGet('i18nextLng')) : null;
   const storedCustomerMode = role === 'CUSTOMER' ? storageGet('theme') : null;
   const legacyCurrency = isCurrencyCode(activePersonal.currency) ? activePersonal.currency : undefined;
   const displayCurrency = currencyPreference.value === undefined ? legacyCurrency : currencyPreference.value;
   const isResolvingRemotePreferences = !launchBrandPreview && (!sessionReady || state.loading);
   const hasExplicitRemoteSource = Boolean(values || usePhoenixDefaults || hadRemoteValues);
+  const hasUserPersistedLang = Boolean(initialPersistedLang || readPersistedLocale());
   const resolvedLanguage = launchBrandPreview
     ? (previewPersonal.language ?? workspace.language)
     : isResolvingRemotePreferences
     ? currentUiLang
     : uid
-    ? (activePersonal.language ?? (storedCustomerLang === 'ar' || storedCustomerLang === 'en' ? storedCustomerLang : (hasExplicitRemoteSource ? workspace.language : currentUiLang)))
+    ? (activePersonal.language ?? (storedCustomerLang ? storedCustomerLang : (hasExplicitRemoteSource ? workspace.language : currentUiLang)))
     : !hasExplicitRemoteSource
     ? currentUiLang
-    : initialPersistedLang
+    : hasUserPersistedLang
     ? currentUiLang
     : workspace.language;
   const effective = {
@@ -220,14 +221,14 @@ export function WorkspaceCustomization({ children, publicPage }: { children: Rea
     setLastTopbarChange({ scope, patch });
     setLocalPersonal(prev => ({ scope, patch: { ...(prev.scope === scope ? prev.patch : {}), ...patch } }));
     if (patch.mode === 'light' || patch.mode === 'dark') dispatch(setTheme(patch.mode));
-    if (patch.language === 'ar' || patch.language === 'en') {
+    if (isSupportedLocale(patch.language)) {
       void i18n.changeLanguage(patch.language);
       dispatch(setLanguage(patch.language));
     }
     if (launchBrandPreview) {
       setPreviewPersonal(current => ({ ...current, ...patch }));
       if (patch.mode === 'light' || patch.mode === 'dark') dispatch(setTheme(patch.mode));
-      if (patch.language === 'ar' || patch.language === 'en') dispatch(setLanguage(patch.language));
+      if (isSupportedLocale(patch.language)) dispatch(setLanguage(patch.language));
       if (!uid) return;
     }
     const { currency, ...appearance } = patch;

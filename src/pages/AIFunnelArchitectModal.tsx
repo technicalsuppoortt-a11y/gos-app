@@ -22,7 +22,7 @@ import {
 } from '../backend/aiFunnelArchitect';
 import { backendError } from '../backend/firebase';
 import { toWesternDigits, type CurrencyCode } from '../utils/currency';
-import { useUILanguage } from '../i18n/display';
+import { useUILanguage, translateText } from '../i18n/display';
 import type { Asset } from './asset-model';
 import './funnel-systeme.css';
 
@@ -60,7 +60,7 @@ export function AIFunnelArchitectModal({
 }) {
   const uiLang = useUILanguage();
   const ar = uiLang.startsWith('ar');
-  const t = (en: string, arabic: string) => (ar ? arabic : en);
+  const t = (en: string, arabic: string) => (ar ? arabic : translateText(en));
 
   const [businessName, setBusinessName] = useState(initialName);
   const [niche, setNiche] = useState('');
@@ -312,7 +312,7 @@ export function AIFunnelArchitectModal({
           </div>
           <div className="sys-ai-quick-chips">
             {QUICK_NICHES.map(item => {
-              const label = ar ? item.ar : item.en;
+              const label = ar ? item.ar : translateText(item.en);
               return (
                 <button
                   key={item.en}
@@ -496,12 +496,12 @@ export function AIFunnelArchitectModal({
                   <button
                     key={sw.id}
                     type="button"
-                    aria-label={ar ? sw.labelAr : sw.labelEn}
+                    aria-label={ar ? sw.labelAr : translateText(sw.labelEn)}
                     aria-pressed={accentColor === sw.color}
                     className={`sys-ai-swatch ${accentColor === sw.color ? 'active' : ''}`}
                     style={{ backgroundColor: sw.color }}
                     onClick={() => setAccentColor(sw.color)}
-                    title={ar ? sw.labelAr : sw.labelEn}
+                    title={ar ? sw.labelAr : translateText(sw.labelEn)}
                   >
                     {accentColor === sw.color && <Check size={13} color="#fff" />}
                   </button>

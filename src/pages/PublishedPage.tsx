@@ -1,3 +1,4 @@
+import { translateTextForLanguage } from '../i18n/display';
 import { BuilderFormCaptureContext, sendBuilderLead, type PublicCaptureConfig } from './builder-form-capture';
 import { executeButtonAction, BuilderActionPopupModal } from './button-actions';
 import './published-page.css';
@@ -26,7 +27,7 @@ export function PublishedPage({ asset, pageId, onNavigate, capture, analytics = 
     window.addEventListener('resize', resize);
     return () => window.removeEventListener('resize', resize);
   }, [viewportWidth]);
-  const t = (en: string, ar: string) => language?.startsWith('ar') ? ar : en;
+  const t = (en: string, ar: string) => language?.startsWith('ar') ? ar : translateTextForLanguage(en, language || 'en');
   const visibleWidth = viewportWidth ?? width;
   const device = viewportDevice ?? (visibleWidth < 640 ? 'mobile' : visibleWidth < 1024 ? 'tablet' : 'desktop');
   const [mobileNavOpen, setMobileNavOpen] = useState(false);

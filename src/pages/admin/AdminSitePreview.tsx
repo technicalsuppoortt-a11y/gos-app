@@ -3,7 +3,7 @@ import { Monitor, Smartphone, Tablet, ShieldCheck } from 'lucide-react';
 import type { BuilderDocument } from '../BuilderWorkspace';
 import type { Asset } from '../asset-model';
 import { PagePreview } from '../AssetViews';
-import { useUILanguage } from '../../i18n/display';
+import { useUILanguage, translateText } from '../../i18n/display';
 import { AdminSelect } from './AdminSelect';
 import { LiveDialog } from './AdminLiveUI';
 import { TemplateDesign, templateDesktopWidth } from '../TemplateDesign';
@@ -22,7 +22,7 @@ export type SitePreview = {
 };
 
 export function AdminSitePreview({ value, close }: { value: SitePreview; close: () => void }) {
-  const ar = useUILanguage().startsWith('ar'), t = (en: string, arabic: string) => ar ? arabic : en;
+  const ar = useUILanguage().startsWith('ar'), t = (en: string, arabic: string) => ar ? arabic : translateText(en);
   return (
     <LiveDialog
       wide
@@ -37,7 +37,7 @@ export function AdminSitePreview({ value, close }: { value: SitePreview; close: 
 }
 
 export function AdminSitePreviewNote() {
-  const ar = useUILanguage().startsWith('ar'), t = (en: string, arabic: string) => ar ? arabic : en;
+  const ar = useUILanguage().startsWith('ar'), t = (en: string, arabic: string) => ar ? arabic : translateText(en);
   return (
     <span className="alm-preview-note">
       <ShieldCheck size={14} />
@@ -51,7 +51,7 @@ export function AdminSitePreviewNote() {
 
 /** Page selector, EN/AR language switch, device switch and scaled canvas, shared by the dialog and the full-page preview. */
 export function AdminSitePreviewCanvas({ value }: { value: SitePreview }) {
-  const ar = useUILanguage().startsWith('ar'), t = (en: string, arabic: string) => ar ? arabic : en;
+  const ar = useUILanguage().startsWith('ar'), t = (en: string, arabic: string) => ar ? arabic : translateText(en);
   const [previewLang, setPreviewLang] = useState<'en' | 'ar'>(ar ? 'ar' : 'en');
   const localizedRecord = useMemo(
     () => (value.templateRecord ? localizeManagedTemplate(value.templateRecord, previewLang === 'ar') : undefined),

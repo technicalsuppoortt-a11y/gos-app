@@ -1,6 +1,6 @@
 import { isValidElement, useEffect, useId, useRef, type KeyboardEvent, type ReactNode } from 'react';
 import { Check, Clock3, X } from 'lucide-react';
-import { useUILanguage } from '../../i18n/display';
+import { translateText, useUILanguage } from '../../i18n/display';
 
 export function LiveDialog({ title, subtitle, close, children, wide = false, footer, alert }: {
   title: string; subtitle?: string; close: () => void; children: ReactNode; wide?: boolean; footer?: ReactNode; alert?: string;
@@ -16,7 +16,7 @@ export function LiveDialog({ title, subtitle, close, children, wide = false, foo
     aria-labelledby={titleId} aria-describedby={subtitle ? descriptionId : undefined}
     onCancel={event => { event.preventDefault(); close(); }}
     onClick={event => { if (event.target !== event.currentTarget) return; const rect = event.currentTarget.getBoundingClientRect(); if (event.clientX < rect.left || event.clientX > rect.right || event.clientY < rect.top || event.clientY > rect.bottom) close(); }}>
-    <header className="alm-dialog-head"><div><span className="alm-kicker">{ar ? 'إدارة المنصة' : 'PLATFORM MANAGEMENT'}</span><h2 id={titleId}>{title}</h2>{subtitle && <p id={descriptionId}>{subtitle}</p>}</div><button type="button" className="alm-icon-button" onClick={close} aria-label={ar ? 'إغلاق' : 'Close'}><X size={18}/></button></header>
+    <header className="alm-dialog-head"><div><span className="alm-kicker">{ar ? 'إدارة المنصة' : translateText('PLATFORM MANAGEMENT')}</span><h2 id={titleId}>{title}</h2>{subtitle && <p id={descriptionId}>{subtitle}</p>}</div><button type="button" className="alm-icon-button" onClick={close} aria-label={ar ? 'إغلاق' : translateText('Close')}><X size={18}/></button></header>
     <div className="alm-dialog-body">{alert && <div className="alm-error-inline" role="alert">{alert}</div>}{children}</div>
     {footer && <footer className="alm-dialog-foot">{footer}</footer>}
   </dialog>;
@@ -26,7 +26,7 @@ export function StatusPill({ value }: { value: string }) {
   const positive = /^(active|published|confirmed|completed|paid|won|qualified|succeeded|payment_completed)$/i.test(value);
   const negative = /^(failed|canceled|cancelled|lost|closed_lost|refunded|blocked|expired)$/i.test(value);
   const tone = positive ? 'positive' : negative ? 'negative' : 'neutral';
-  return <span className={`alm-status ${tone}`}><span aria-hidden="true">{positive ? <Check size={11}/> : <Clock3 size={11}/>}</span>{humanLabel(value)}</span>;
+  return <span className={`alm-status ${tone}`}><span aria-hidden="true">{positive ? <Check size={11}/> : <Clock3 size={11}/>}</span>{translateText(humanLabel(value))}</span>;
 }
 
 export function humanLabel(value: string) {
@@ -42,10 +42,11 @@ export function navigateAdminTabs(event: KeyboardEvent<HTMLDivElement>) {
   const next = event.key === 'Home' ? 0 : event.key === 'End' ? tabs.length - 1 : (index + ((event.key === 'ArrowRight') !== rtl ? 1 : -1) + tabs.length) % tabs.length;
   tabs[next].click(); tabs[next].focus(); tabs[next].scrollIntoView({ block: 'nearest', inline: 'nearest' });
 }
-export function displayDate(value: string, ar = false) {
+export function displayDate(value: string, ar = false, language?: string) {
   if (!value) return '—';
   const date = new Date(value);
-  return Number.isFinite(date.getTime()) ? new Intl.DateTimeFormat(ar ? 'ar-EG-u-nu-latn' : 'en-GB', { dateStyle: 'medium', timeStyle: 'short' }).format(date) : value;
+  const locale = ar ? 'ar-EG-u-nu-latn' : language?.startsWith('nl') ? 'nl-NL' : language?.startsWith('de') ? 'de-DE' : 'en-GB';
+  return Number.isFinite(date.getTime()) ? new Intl.DateTimeFormat(locale, { dateStyle: 'medium', timeStyle: 'short' }).format(date) : value;
 }
 export function displayMoney(amount: string, currency: string, formatPrice: (amount: number, currency: string) => string) {
   if (amount === '') return '—';

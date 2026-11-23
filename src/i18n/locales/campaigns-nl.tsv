@@ -1,0 +1,113 @@
+WhatsApp campaigns	WhatsApp-campagnes
+Send approved Meta templates to your customers, now or at a time you choose.	Stuur goedgekeurde Meta-sjablonen naar je klanten, direct of op een zelfgekozen tijdstip.
+New campaign	Nieuwe campagne
+Messages sent	Berichten verzonden
+Delivery rate	Afleverpercentage
+Read rate	Leespercentage
+Customer replies	Reacties van klanten
+Filter by status	Filteren op status
+Search by campaign name	Zoeken op campagnenaam
+Recipients	Ontvangers
+Delivered / read	Afgeleverd / gelezen
+Now	Nu
+Ahmed	Ahmed
+Send a test message to this WhatsApp number (with country code):	Stuur een testbericht naar dit WhatsApp-nummer (met landcode):
+Test message sent	Testbericht verzonden
+Connect a WhatsApp Business number in Settings › Integrations before sending campaigns.	Koppel een WhatsApp Business-nummer via Instellingen › Integraties voordat je campagnes verstuurt.
+e.g. White Friday offer	bijv. White Friday-aanbieding
+Sending number	Afzendernummer
+No WhatsApp number connected	Geen WhatsApp-nummer gekoppeld
+Choose an approved template	Kies een goedgekeurd sjabloon
+Refresh from Meta	Vernieuwen vanuit Meta
+Loading templates…	Sjablonen laden…
+No approved templates yet. Create one and wait for Meta to approve it.	Nog geen goedgekeurde sjablonen. Maak er een aan en wacht op goedkeuring van Meta.
+Only approved templates are listed. Templates in review or rejected cannot be used in campaigns.	Alleen goedgekeurde sjablonen worden getoond. Sjablonen die in beoordeling zijn of zijn afgewezen, kunnen niet in campagnes worden gebruikt.
+Template variables	Sjabloonvariabelen
+Link each variable to customer data or type a fixed text. The fallback is used when the data is missing.	Koppel elke variabele aan klantgegevens of voer een vaste tekst in. De terugvalwaarde wordt gebruikt wanneer gegevens ontbreken.
+Variable	Variabele
+Fallback / text	Terugvalwaarde / tekst
+Fixed text	Vaste tekst
+When to send	Verzendmoment
+Review campaign	Campagne controleren
+Variables	Variabelen
+Send now	Nu versturen
+Meta charges template messages per conversation, and WhatsApp may limit how many you can send a day based on your number’s quality rating.	Meta brengt sjabloonberichten per gesprek in rekening en WhatsApp kan op basis van de kwaliteitsscore van je nummer beperken hoeveel je er per dag kunt versturen.
+Total recipients	Totaal aantal ontvangers
+CSV file	CSV-bestand
+Manual selection	Handmatige selectie
+Duplicates removed	Dubbele nummers verwijderd
+Invalid numbers skipped	Ongeldige nummers overgeslagen
+Pick at least one source to see who will receive this campaign.	Kies minstens één bron om te zien wie deze campagne ontvangt.
+Message preview	Berichtvoorbeeld
+Preview uses the first recipient’s data.	Het voorbeeld gebruikt de gegevens van de eerste ontvanger.
+The file is empty.	Het bestand is leeg.
+Combine recipients from one or more sources. Duplicate numbers are removed automatically.	Combineer ontvangers uit een of meer bronnen. Dubbele nummers worden automatisch verwijderd.
+No pipeline stages yet	Nog geen pipelinefases
+Add a tag	Tag toevoegen
+No stage and no tag selected means all leads with a phone number.	Als er geen fase of tag is geselecteerd, worden alle leads met een telefoonnummer meegenomen.
+Exclude contacts who opted out of marketing messages	Contacten uitsluiten die zich hebben afgemeld voor marketingberichten
+invalid numbers will be skipped	ongeldige nummers worden overgeslagen
+First row must be the column names	De eerste rij moet de kolomnamen bevatten
+Phone column	Telefoonkolom
+Name column	Naamkolom
+Default country code	Standaard landcode
+Download a sample file	Voorbeeldbestand downloaden
+Search by name or number	Zoeken op naam of nummer
+No contacts with a phone number found	Geen contacten met een telefoonnummer gevonden
+Choose a template to see the message.	Kies een sjabloon om het bericht te bekijken.
+Scheduled for	Ingepland voor
+Started	Gestart
+Stop this campaign? Messages already sent stay sent.	Deze campagne stoppen? Al verzonden berichten blijven verzonden.
+Cancel campaign	Campagne annuleren
+Resend to failed	Opnieuw sturen naar mislukte
+Duplicate campaign	Campagne dupliceren
+Replied	Beantwoord
+Message funnel	Berichtenfunnel
+Filter recipients	Ontvangers filteren
+No recipients here	Geen ontvangers hier
+Last update	Laatste update
+Open conversation	Gesprek openen
+No campaigns match this filter	Geen campagnes gevonden voor dit filter
+No campaigns yet	Nog geen campagnes
+e.g. Dear customer	bijv. Beste klant
+Schedule for later	Inplannen voor later
+Sending starts right after you confirm	Het verzenden start direct na je bevestiging
+Pick a date and time	Kies een datum en tijd
+Sending…	Verzenden…
+Send me a test	Stuur mij een test
+Next: audience	Volgende: doelgroep
+Next: schedule	Volgende: planning
+Send campaign	Campagne versturen
+Schedule campaign	Campagne inplannen
+Replace file	Bestand vervangen
+Choose file	Bestand kiezen
+Choose a CSV file	Kies een CSV-bestand
+Contact name	Naam contactpersoon
+Egypt +20	Egypte +20
+Saudi Arabia +966	Saoedi-Arabië +966
+UAE +971	VAE +971
+Kuwait +965	Koeweit +965
+Qatar +974	Qatar +974
+Jordan +962	Jordanië +962
+Sending	Bezig met verzenden
+Schedule & review	Inplannen & controleren
+Loading campaigns…	Campagnes laden…
+Marketing	Marketing
+Utility	Service
+Authentication	Authenticatie
+Queued	In wachtrij
+Campaign is sending	Campagne wordt verzonden
+Campaign scheduled	Campagne ingepland
+Draft saved	Concept opgeslagen
+Campaign cancelled	Campagne geannuleerd
+Export ready	Export gereed
+Resending to failed recipients	Opnieuw verzenden naar mislukte ontvangers
+Leads by stage or tag	Leads op fase of tag
+Upload a CSV file	CSV-bestand uploaden
+fallback	terugvalwaarde
+recipients	ontvangers
+variables	variabelen
+rows	rijen
+Time zone	Tijdzone
+Uploading…	Uploaden…
+Uploaded file	Geüpload bestand

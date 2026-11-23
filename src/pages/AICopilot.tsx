@@ -988,7 +988,7 @@ export const AICopilot: React.FC = () => {
   function validateFormClientSide(form: CopilotForm, ar: boolean): Record<string, string> {
     const errs: Record<string, string> = {};
     const v = form.values;
-    const t = (arMsg: string, enMsg: string) => (ar ? arMsg : enMsg);
+    const t = (arMsg: string, enMsg: string) => (ar ? arMsg : translateText(enMsg));
 
     if (form.kind === 'create_lead') {
       if (!v.name?.trim()) errs.name = t('يرجى إدخال اسم العميل.', 'Please enter the lead full name.');
@@ -1379,7 +1379,7 @@ export const AICopilot: React.FC = () => {
                                     : translateText('Listening to voice note…')
                                   : isUiArabic
                                     ? 'يكتب الآن…'
-                                    : 'Thinking…'}
+                                    : translateText('Thinking…')}
                             </span>
                           </div>
                         )}
@@ -2231,7 +2231,7 @@ function CopilotActionForm({
   onSubmit: () => void;
   onOpenHref: (href: string) => void;
 }) {
-  const t = (arText: string, enText: string) => (arabic ? arText : enText);
+  const t = (arText: string, enText: string) => (arabic ? arText : translateText(enText));
   const v = form.values;
   const locked = form.status === 'submitting' || form.status === 'completed';
 
@@ -3037,7 +3037,7 @@ function FormField({
     <label className={`ai-iform-field ${error ? 'has-error' : ''}`}>
       <span className="ai-iform-label">
         <span>{label}</span>
-        {required && <em className="ai-iform-req">{arabic ? 'مطلوب' : 'Required'}</em>}
+        {required && <em className="ai-iform-req">{arabic ? 'مطلوب' : translateText('Required')}</em>}
       </span>
       {children}
       {error && (

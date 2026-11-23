@@ -2,6 +2,7 @@ import { currencyOptions } from '../../utils/currency';
 import { logoutFirebase } from '../../backend/session';
 import { showToast as authToast, showToast } from '../../utils/toast';
 import { useUILanguage, translateText, localizeNode } from '../../i18n/display';
+import { normalizeLocale } from '../../i18n/initialLocale';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useBlocker, useNavigate } from 'react-router-dom';
@@ -37,10 +38,17 @@ export function ProfilePanel({ data, save }: {
   const isDirty = !!photo || Object.keys(edits).length > 0 || Object.keys(preferences).length > 0;
   const display = <K extends keyof PersonalPreferences>(key: K) =>
     preferences[key] === null ? (values ?? preferenceDefaults)[key] : preferences[key] ?? effective[key];
+  const resolvedLangCode = normalizeLocale(display('language')) ?? 'en';
+  const languageDisplayMap: Record<string, string> = {
+    ar: 'Arabic',
+    en: 'English',
+    nl: 'Dutch',
+    de: 'German',
+  };
   const draft: Profile = {
     ...data.profile,
     ...edits,
-    language: display('language') === 'ar' ? 'Arabic' : 'English',
+    language: languageDisplayMap[resolvedLangCode] ?? 'English',
     currency: display('currency'),
     timezone: display('timezone'),
     mode: display('mode'),
@@ -126,7 +134,18 @@ export function ProfilePanel({ data, save }: {
             <Field label={translateText("Full Name")}><input required maxLength={100} autoComplete="name" value={draft.name} onChange={e => update('name', e.target.value)}/></Field>
             <Field label={translateText("Email Address")}><input type="email" required autoComplete="email" value={draft.email} onChange={e => update('email', e.target.value)}/></Field>
             <Field label={translateText("Phone Number")}><span className="st-phone-field"><span aria-label={translateText("Egypt")}>🇪🇬</span><input type="tel" autoComplete="tel" value={draft.phone} onChange={e => update('phone', e.target.value)}/></span></Field>
-            <Field label={translateText("Language")}><Select value={draft.language} onChange={value => updateRegional('language', value === 'Arabic' ? 'ar' : 'en')} options={[{ value: 'English', label: 'EN · English' }, { value: 'Arabic', label: 'AR · العربية' }]} /></Field>
+            <Field label={translateText("Language")}>
+              <Select
+                value={draft.language}
+                onChange={value => updateRegional('language', normalizeLocale(value) ?? 'en')}
+                options={[
+                  { value: 'Arabic', label: 'AR · العربية' },
+                  { value: 'English', label: 'EN · English' },
+                  { value: 'Dutch', label: 'NL · Nederlands' },
+                  { value: 'German', label: 'DE · Deutsch' },
+                ]}
+              />
+            </Field>
             <Field label={translateText("Currency")}><Select value={draft.currency || 'USD'} onChange={value => updateRegional('currency', value)} options={currencyOptions(language)} /></Field>
             <Field label={translateText("Timezone")}><TimezoneSelect value={draft.timezone} onChange={value => updatePreference('timezone', value)}/></Field>
             <Field label={translateText("Date Format")}><Select value={draft.dateFormat || 'DD / MM / YYYY'} onChange={value => updatePreference('dateFormat', value)} options={['DD / MM / YYYY', 'MM / DD / YYYY', 'YYYY / MM / DD']} /></Field>

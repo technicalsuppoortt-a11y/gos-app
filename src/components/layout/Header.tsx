@@ -1,8 +1,8 @@
 import { logoutFirebase } from '../../backend/session';
-import { useUILanguage, translateText, localizeNode } from '../../i18n/display';
-import React, { useState, useRef, useEffect } from 'react';
+import { useUILanguage, translateText, translateTextForLanguage, localizeNode } from '../../i18n/display';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { ArrowLeft, ChevronDown, ChevronRight, Menu, Search, Sparkles, User, Settings, LogOut, PanelsTopLeft } from 'lucide-react';
+import { ArrowLeft, ChevronDown, ChevronRight, Menu, Search, Sparkles, User, Settings, LogOut, X } from 'lucide-react';
 import { matchesLocalizedSearch } from '../../utils/arabicSearch';
 import { useDispatch, useSelector } from 'react-redux';
 import type { RootState } from '../../store';
@@ -21,6 +21,7 @@ import { WalletBadge } from './WalletBadge';
 import { DemoAccountControl } from './DemoAccountControl';
 import { isLive, useSubscription } from '../../backend/billing';
 import { canReturnToLaunchBrandWorkspace, returnToLaunchBrandWorkspace } from '../../branding/launchBrandPreview';
+import { useModuleAccess, moduleForPath } from '../../pages/settings/useModuleAccess';
 
 const pageCopy: Record<string, { title: string; description: string }> = {
   '/dashboard/marketing-tracking': { title: 'Marketing Tracking', description: 'Pixels, events and conversion insights.' },
@@ -50,6 +51,55 @@ const pageCopy: Record<string, { title: string; description: string }> = {
   '/dashboard/settings/privacy': { title: 'Privacy Policy', description: 'Review how we protect your personal and business data.' },
 };
 
+const ADMIN_SEARCH_ITEMS = [
+  { title: 'Dashboard', path: '/admin', category: 'Admin' },
+  { title: 'Sub Accounts', path: '/admin/users', category: 'Admin' },
+  { title: 'Plans & Billing', path: '/admin/plans', category: 'Billing' },
+  { title: 'Funnels & Websites', path: '/admin/funnels', category: 'Management' },
+  { title: 'CRM & Leads Management', path: '/admin/crm', category: 'Management' },
+  { title: 'Booking & Calendar', path: '/admin/booking', category: 'Management' },
+  { title: 'Products & Payments', path: '/admin/products', category: 'Management' },
+  { title: 'Templates', path: '/admin/templates', category: 'Management' },
+  { title: 'All Tools Management', path: '/admin/tools', category: 'Admin' },
+  { title: 'Domains', path: '/admin/domains', category: 'Admin' },
+  { title: 'Marketing Tracking', path: '/admin/marketing-tracking', category: 'Admin' },
+  { title: 'Business Assets', path: '/admin/business-assets', category: 'Admin' },
+  { title: 'Settings', path: '/admin/settings', category: 'Settings' },
+  { title: 'Integrations & Webhooks', path: '/admin/integrations', category: 'Settings' },
+  { title: 'AI Models & Usage', path: '/admin/ai-usage', category: 'Settings' },
+  { title: 'Transactions', path: '/admin/transactions', category: 'Settings' },
+  { title: 'Support', path: '/admin/support', category: 'Support' },
+];
+
+const USER_SEARCH_ITEMS = [
+  { title: 'Dashboard', path: '/dashboard', category: 'Navigation' },
+  { title: 'AI Copilot', path: '/dashboard/copilot', category: 'Navigation' },
+  { title: 'Funnel & Website', path: '/dashboard/funnels', category: 'Navigation' },
+  { title: 'Inbox', path: '/dashboard/inbox', category: 'Navigation' },
+  { title: 'CRM & Leads', path: '/dashboard/crm', category: 'Navigation' },
+  { title: 'Contacts', path: '/dashboard/contacts', category: 'Navigation' },
+  { title: 'Automation & Campaign', path: '/dashboard/automation', category: 'Navigation' },
+  { title: 'AI Follow-Up', path: '/dashboard/follow-up', category: 'Navigation' },
+  { title: 'Booking & Calendar', path: '/dashboard/booking', category: 'Navigation' },
+  { title: 'Products & Payments', path: '/dashboard/products-payments', category: 'Navigation' },
+  { title: 'My Purchases', path: '/dashboard/products?tab=products&sub=purchases', category: 'Products' },
+  { title: 'Customer Portal', path: '/portal', category: 'Products' },
+  { title: 'Checkout Requests', path: '/dashboard/products?tab=requests', category: 'Products' },
+  { title: 'Orders', path: '/dashboard/products?tab=orders', category: 'Products' },
+  { title: 'Transactions', path: '/dashboard/products?tab=transactions', category: 'Products' },
+  { title: 'Customers', path: '/dashboard/products?tab=customers', category: 'Products' },
+  { title: 'Discounts', path: '/dashboard/products?tab=discounts', category: 'Products' },
+  { title: 'Analytics', path: '/dashboard/analytics', category: 'Navigation' },
+  { title: 'Plans & Billing', path: '/dashboard/settings/billing', category: 'Settings' },
+  { title: 'Profile Settings', path: '/dashboard/settings/profile', category: 'Settings' },
+  { title: 'Business Settings', path: '/dashboard/settings/business', category: 'Settings' },
+  { title: 'Team & roles', path: '/dashboard/settings/team', category: 'Settings' },
+  { title: 'Domains', path: '/dashboard/settings/domains', category: 'Settings' },
+  { title: 'Settings', path: '/dashboard/settings', category: 'Navigation' },
+  { title: 'Support', path: '/dashboard/support', category: 'Navigation' },
+  { title: 'Integrations', path: '/dashboard/integrations', category: 'Settings' },
+];
+
 interface HeaderProps {
   title?: string;
   description?: string;
@@ -58,11 +108,13 @@ interface HeaderProps {
 }
 
 export const Header: React.FC<HeaderProps> = ({ title, onMenu }) => {
-  const ar = useUILanguage().startsWith('ar');
-  const workspaceBackLabel = ar ? 'الرجوع إلى مساحة العمل' : 'Back to Workspace';
+  const uiLang = useUILanguage();
+  const ar = uiLang.startsWith('ar');
+  const workspaceBackLabel = ar ? 'الرجوع إلى مساحة العمل' : translateText('Back to Workspace');
   const dispatch = useDispatch();
   const currentUser = useSelector((state: RootState) => state.auth.user);
   const role = useSelector((state: RootState) => state.auth.role);
+  const canAccess = useModuleAccess();
 
   const agency = currentUser?.accountType === 'agency';
   const subOwnerId = currentUser?.ownerId || currentUser?.id || null;
@@ -70,7 +122,7 @@ export const Header: React.FC<HeaderProps> = ({ title, onMenu }) => {
   const planLabel = agency
     ? ar
       ? 'الفوترة المشتركة'
-      : 'Shared billing'
+      : translateText('Shared billing')
     : translateText(isLive(subscription) || currentUser?.isTeamMember ? 'My Plan' : 'Upgrade Plan');
   const initials = (currentUser?.name || 'MJ').slice(0, 2).toUpperCase();
   const isTeamMember = Boolean(currentUser?.isTeamMember);
@@ -81,7 +133,8 @@ export const Header: React.FC<HeaderProps> = ({ title, onMenu }) => {
   const location = useLocation();
   const [profileOpen, setProfileOpen] = useState(false);
   const profileRef = useRef<HTMLDivElement>(null);
-  
+
+  const isAdminSurface = location.pathname.startsWith('/admin');
   const dashboardSection = location.pathname.match(/^\/dashboard\/[^/]+/)?.[0];
   const copy = pageCopy[location.pathname] ?? (dashboardSection ? pageCopy[dashboardSection] : undefined) ?? { title: 'Workspace settings', description: 'Manage your workspace and business preferences.' };
   const pageTitle = title ?? copy.title;
@@ -98,68 +151,70 @@ export const Header: React.FC<HeaderProps> = ({ title, onMenu }) => {
   const product = isProductWorkspace ? products.find(p => p.id === productId) : null;
   const productName = product ? product.name : (productId === 'new' ? translateText('Create Product') : '');
 
-
   const [searchQuery, setSearchQuery] = useState('');
   const [searchOpen, setSearchOpen] = useState(false);
+  const [activeSearchIdx, setActiveSearchIdx] = useState(0);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const searchContainerRef = useRef<HTMLDivElement>(null);
 
-  const searchableNav = [
-    { title: 'Dashboard', path: '/dashboard', category: 'Navigation' },
-    { title: 'AI Copilot', path: '/dashboard/copilot', category: 'Navigation' },
-    { title: 'Funnel & Website', path: '/dashboard/funnels', category: 'Navigation' },
-    { title: 'Inbox', path: '/dashboard/inbox', category: 'Navigation' },
-    { title: 'CRM & Leads', path: '/dashboard/crm', category: 'Navigation' },
-    { title: 'Contacts', path: '/dashboard/contacts', category: 'Navigation' },
-    { title: 'Automation & Campaign', path: '/dashboard/automation', category: 'Navigation' },
-    { title: 'AI Follow-Up', path: '/dashboard/follow-up', category: 'Navigation' },
-    { title: 'Booking & Calendar', path: '/dashboard/booking', category: 'Navigation' },
-    { title: 'Products & Payments', path: '/dashboard/products-payments', category: 'Navigation' },
-    { title: 'My Purchases', path: '/dashboard/products?tab=products&sub=purchases', category: 'Products' },
-    { title: 'Customer Portal', path: '/portal', category: 'Products' },
-    { title: 'Checkout Requests', path: '/dashboard/products?tab=requests', category: 'Products' },
-    { title: 'Orders', path: '/dashboard/products?tab=orders', category: 'Products' },
-    { title: 'Transactions', path: '/dashboard/products?tab=transactions', category: 'Products' },
-    { title: 'Customers', path: '/dashboard/products?tab=customers', category: 'Products' },
-    { title: 'Discounts', path: '/dashboard/products?tab=discounts', category: 'Products' },
-    { title: 'Analytics', path: '/dashboard/analytics', category: 'Navigation' },
-    { title: 'Plans & Billing', path: '/dashboard/settings/billing', category: 'Settings' },
-    { title: 'Settings', path: '/dashboard/settings', category: 'Navigation' },
-    { title: 'Support', path: '/dashboard/support', category: 'Navigation' },
-    { title: 'Integrations', path: '/dashboard/integrations', category: 'Settings' },
-    ...products.slice(0, 20).map(p => ({
-      title: p.name,
-      path: `/dashboard/products-payments/products/${p.id}/edit`,
-      category: p.type,
-    })),
-  ];
+  const searchableNav = useMemo(() => {
+    if (isAdminSurface) return ADMIN_SEARCH_ITEMS;
+    const baseUserItems = USER_SEARCH_ITEMS.filter(item => {
+      if (item.path === '/portal' || item.path === '/dashboard/support') return true;
+      const cleanPath = item.path.split('?')[0];
+      if (cleanPath === '/dashboard/settings') return canAccess('settings');
+      if (cleanPath.startsWith('/dashboard/settings/')) {
+        const slug = cleanPath.replace('/dashboard/settings/', '');
+        return canAccess(`settings:${slug}`);
+      }
+      return canAccess(moduleForPath(cleanPath));
+    });
+    const productItems = canAccess('products')
+      ? products.slice(0, 20).map(p => ({
+          title: p.name,
+          path: `/dashboard/products-payments/products/${p.id}/edit`,
+          category: p.type,
+        }))
+      : [];
+    return [...baseUserItems, ...productItems];
+  }, [isAdminSurface, canAccess, products]);
 
-  const searchResults = searchQuery.trim()
-    ? searchableNav.filter(item =>
-        matchesLocalizedSearch(searchQuery, [
-          item.title,
-          translateText(item.title),
-          item.category,
-          translateText(item.category),
-        ])
-      )
-    : [];
+  const searchResults = useMemo(() => {
+    if (!searchQuery.trim()) return [];
+    return searchableNav.filter(item =>
+      matchesLocalizedSearch(searchQuery, [
+        item.title,
+        translateText(item.title),
+        translateTextForLanguage(item.title, 'ar'),
+        translateTextForLanguage(item.title, 'nl'),
+        translateTextForLanguage(item.title, 'de'),
+        item.category,
+        translateText(item.category),
+      ]),
+    );
+  }, [searchQuery, searchableNav, uiLang]);
+
+  useEffect(() => {
+    setActiveSearchIdx(0);
+  }, [searchQuery]);
 
   const handleSearchSubmit = (targetPath?: string) => {
-    const destination = targetPath || searchResults[0]?.path;
-    if (destination) {
-      navigate(destination);
+    const chosen = targetPath || searchResults[activeSearchIdx]?.path || searchResults[0]?.path;
+    if (chosen) {
+      navigate(chosen);
       setSearchQuery('');
       setSearchOpen(false);
+      setActiveSearchIdx(0);
       searchInputRef.current?.blur();
     }
   };
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k') {
+      if ((event.metaKey || event.ctrlKey) && (event.key.toLowerCase() === 'k' || event.code === 'KeyK')) {
         event.preventDefault();
         searchInputRef.current?.focus();
+        searchInputRef.current?.select();
         setSearchOpen(true);
       } else if (event.key === 'Escape' && searchOpen) {
         setSearchOpen(false);
@@ -182,6 +237,8 @@ export const Header: React.FC<HeaderProps> = ({ title, onMenu }) => {
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+
+  const hasSearchQuery = searchQuery.trim().length > 0;
 
   return <header className={`layout-header${isDiscountEditor ? ' discount-flow-header' : ''}${isProductWorkspace ? ' product-workspace-header' : ''}`}>
     <div className="layout-header-title">
@@ -224,62 +281,114 @@ export const Header: React.FC<HeaderProps> = ({ title, onMenu }) => {
       )}
       {localizeNode(isDiscountEditor ? <div className="discount-header-buttons"><button type="button" className="discount-header-cancel" onClick={backToDiscounts}>{translateText("Cancel")}</button><button type="submit" form="discount-editor-form" className="discount-header-save"><Sparkles size={16}/>{localizeNode(isDiscountEdit ? 'Save Changes' : 'Create Discount')}</button></div> : (
         <div className="relative layout-search-wrap" ref={searchContainerRef}>
-          <label className="layout-search">
-            <Search size={15}/>
+          <label
+            className="layout-search"
+            onClick={() => {
+              searchInputRef.current?.focus();
+            }}
+          >
+            <Search size={15} className="shrink-0" />
             <input 
               ref={searchInputRef}
+              type="text"
+              role="combobox"
+              aria-expanded={searchOpen && hasSearchQuery}
+              aria-controls="header-search-listbox"
+              aria-autocomplete="list"
               aria-label={translateText("Search")} 
               placeholder={translateText("Search...")}
               value={searchQuery}
               onChange={e => { setSearchQuery(e.target.value); setSearchOpen(true); }}
-              onFocus={() => { if (searchQuery.trim()) setSearchOpen(true); }}
+              onFocus={() => { setSearchOpen(true); }}
               onKeyDown={e => {
-                if (e.key === 'Enter') {
+                if (e.key === 'ArrowDown') {
+                  if (searchResults.length > 0) {
+                    e.preventDefault();
+                    setSearchOpen(true);
+                    setActiveSearchIdx(prev => (prev + 1) % searchResults.length);
+                  }
+                } else if (e.key === 'ArrowUp') {
+                  if (searchResults.length > 0) {
+                    e.preventDefault();
+                    setSearchOpen(true);
+                    setActiveSearchIdx(prev => (prev - 1 + searchResults.length) % searchResults.length);
+                  }
+                } else if (e.key === 'Enter') {
                   e.preventDefault();
                   handleSearchSubmit();
+                } else if (e.key === 'Escape') {
+                  e.preventDefault();
+                  setSearchOpen(false);
+                  searchInputRef.current?.blur();
                 }
               }}
             />
-            <kbd>{translateText("⌘ K")}</kbd>
+            {hasSearchQuery ? (
+              <button
+                type="button"
+                className="layout-search-clear"
+                aria-label={translateText("Clear search")}
+                onClick={e => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setSearchQuery('');
+                  setActiveSearchIdx(0);
+                  searchInputRef.current?.focus();
+                }}
+              >
+                <X size={13} />
+              </button>
+            ) : (
+              <kbd dir="ltr">⌘K</kbd>
+            )}
           </label>
           <AnimatePresence>
-            {localizeNode(searchOpen && searchResults.length > 0 && (
+            {localizeNode(searchOpen && hasSearchQuery && (
               <motion.div
+                id="header-search-listbox"
+                role="listbox"
+                aria-label={translateText("Search results")}
                 initial={{ opacity: 0, y: 4, scale: 0.98 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, y: 4, scale: 0.98 }}
                 transition={{ duration: 0.15 }}
-                className="layout-search-results absolute start-0 top-[calc(100%+6px)] w-72 rounded-xl bg-white dark:bg-gray-900 border border-slate-200 dark:border-slate-800 shadow-xl overflow-hidden z-50 p-1.5"
+                className="layout-search-results absolute start-0 top-[calc(100%+6px)] min-w-full w-80 max-w-[calc(100vw-24px)] max-h-80 overflow-y-auto rounded-xl bg-white dark:bg-gray-900 border border-slate-200 dark:border-slate-800 shadow-xl z-50 p-1.5"
               >
                 <div className="text-[10px] font-semibold text-slate-400 dark:text-slate-500 px-2 py-1 uppercase tracking-wider">
                   {translateText("Pages & Navigation")}
                 </div>
-                {searchResults.map(result => (
-                  <button
-                    key={result.path}
-                    type="button"
-                    onClick={() => handleSearchSubmit(result.path)}
-                    className="w-full flex items-center justify-between px-2.5 py-2 text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-purple-50 dark:hover:bg-purple-950/40 hover:text-purple-600 dark:hover:text-purple-400 rounded-lg transition-colors text-start"
-                  >
-                    <span>{translateText(result.title)}</span>
-                    <span className="text-[10px] text-slate-400 dark:text-slate-500 font-normal">{translateText("Jump to")} ↵</span>
-                  </button>
-                ))}
+                {searchResults.length > 0 ? (
+                  searchResults.map((result, idx) => {
+                    const isHighlighted = idx === activeSearchIdx;
+                    return (
+                      <button
+                        key={result.path}
+                        type="button"
+                        role="option"
+                        aria-selected={isHighlighted}
+                        onMouseEnter={() => setActiveSearchIdx(idx)}
+                        onClick={() => handleSearchSubmit(result.path)}
+                        className={`w-full flex items-center justify-between gap-3 px-2.5 py-2 text-xs font-medium rounded-lg transition-colors text-start ${
+                          isHighlighted
+                            ? 'bg-purple-50 dark:bg-purple-950/50 text-purple-700 dark:text-purple-300'
+                            : 'text-slate-700 dark:text-slate-200 hover:bg-purple-50 dark:hover:bg-purple-950/40 hover:text-purple-600 dark:hover:text-purple-400'
+                        }`}
+                      >
+                        <span className="min-w-0 truncate">{translateText(result.title)}</span>
+                        <span className="shrink-0 text-[10px] text-slate-400 dark:text-slate-500 font-normal">{translateText("Jump to")} ↵</span>
+                      </button>
+                    );
+                  })
+                ) : (
+                  <div className="px-2.5 py-3 text-xs text-slate-500 dark:text-slate-400 text-center">
+                    {translateText("No matching results")}
+                  </div>
+                )}
               </motion.div>
             ))}
           </AnimatePresence>
         </div>
       ))}
-      {/* Public landing page shortcut - shown in every dashboard topbar (user, admin/agency). */}
-        <button 
-          type="button" 
-          onClick={() => navigate('/')} 
-          className="layout-landing-link inline-flex items-center justify-center w-[34px] h-[34px] shrink-0 rounded-lg border border-slate-200 dark:border-slate-700/80 bg-white dark:bg-slate-800/80 text-slate-600 dark:text-slate-300 hover:text-[#7C3AED] dark:hover:text-[#A78BFA] hover:border-[#7C3AED]/50 hover:bg-purple-50/50 dark:hover:bg-purple-950/30 transition-all shadow-sm"
-          title={translateText("View Landing Page")}
-          aria-label={translateText("View Landing Page")}
-        >
-          <PanelsTopLeft size={16} />
-        </button>
 
       <GetAppButton/>
       <div className="layout-preference-controls"><CurrencySelector/><LanguageSwitcher/><ThemeToggle/></div>
@@ -350,7 +459,7 @@ export const Header: React.FC<HeaderProps> = ({ title, onMenu }) => {
                 : agency
                 ? ar
                   ? 'مستخدم وكالة'
-                  : 'Agency user'
+                  : translateText('Agency user')
                 : translateText("Business Owner")}
             </small>
           </span>
@@ -442,7 +551,7 @@ export const Header: React.FC<HeaderProps> = ({ title, onMenu }) => {
                   <Settings size={15} className="text-gray-400" />{translateText(" Account Settings")}</button>
               </div>
               <div className="p-1.5 border-t border-gray-100 dark:border-gray-800">
-                <button onClick={() => { showToast.success('You have been logged out successfully.'); void logoutFirebase().catch(error => showToast.error(error.message)); navigate('/auth/login', { replace: true }); }} className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-red-600 hover:bg-red-50 hover:text-red-700 rounded-lg transition-colors dark:text-red-400 dark:hover:bg-red-500/10">
+                <button onClick={() => { showToast.success(translateText('You have been logged out successfully.')); void logoutFirebase().catch(error => showToast.error(error.message)); navigate('/auth/login', { replace: true }); }} className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-red-600 hover:bg-red-50 hover:text-red-700 rounded-lg transition-colors dark:text-red-400 dark:hover:bg-red-500/10">
                   <LogOut size={15} />{translateText(" Log Out")}</button>
               </div>
             </motion.div>

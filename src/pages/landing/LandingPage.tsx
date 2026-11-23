@@ -1,13 +1,12 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { ArrowRight, ArrowUp, BarChart3, BriefcaseBusiness, Building2, CalendarCheck, CalendarDays, Check, CreditCard, Globe, GraduationCap, House, Layers, LayoutGrid, Lightbulb, ListChecks, Menu, MessageCircle, MessageCircleOff, Pause, Play, Presentation, Quote, RotateCcw, Search, Settings, ShoppingCart, Shuffle, SlidersHorizontal, Sparkles, Star, Stethoscope, Store, Tag, Timer, TrendingUp, TriangleAlert, UserPlus, Users, Workflow, X, Zap, Bot, Send, ShieldCheck, MessageSquare, UserRound, Filter, Bell, Download, Contact, Crown } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import type { RootState } from '../../store';
-import { setLanguage, type Language } from '../../store/slices/uiSlice';
-import i18n from '../../i18n/i18n';
+import type { Language } from '../../store/slices/uiSlice';
 import { translateTextForLanguage } from '../../i18n/display';
-import { type LandingCopy } from './landing-content';
+import { landingContent, type LandingCopy } from './landing-content';
 import { whiteLabelContent } from './white-label/white-label-content';
 import { WhiteLabelJourney } from './white-label/WhiteLabelJourney';
 import { cmsEvent, readCMS } from './cms';
@@ -15,6 +14,7 @@ import { isDefaultBrandLogo, useWorkspacePreferences } from '../../backend/works
 import { usePhoenixBrand, type PhoenixConfiguration } from '../../backend/phoenixBrand';
 import { isLaunchBrandPreview } from '../../branding/launchBrandPreview';
 import { ThemeToggle } from '../../components/ui/ThemeToggle';
+import { LanguageSwitcher } from '../../components/ui/LanguageSwitcher';
 import './landing.css';
 import './launch-brand-preview.css';
 import './landing-sections-polish.css';
@@ -109,7 +109,7 @@ function useInView<T extends Element>(threshold = 0.35) {
 
 /* ---------- Header ---------- */
 
-function Header({ copy, language, onLanguage, activeId, brand }: { copy: LandingCopy; language: Language; onLanguage: () => void; activeId: string; brand: PreviewBrand | null }) {
+function Header({ copy, activeId, brand }: { copy: LandingCopy; activeId: string; brand: PreviewBrand | null }) {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
 
@@ -137,10 +137,7 @@ function Header({ copy, language, onLanguage, activeId, brand }: { copy: Landing
         </nav>
         <div className="lp-header__actions">
           <ThemeToggle />
-          <button id="lp-lang-toggle" type="button" className="lp-lang" onClick={onLanguage} lang={language === 'ar' ? 'en' : 'ar'} aria-label={copy.nav.langLabel}>
-            <Globe size={14} aria-hidden="true" />
-            <span>{copy.nav.langLabel}</span>
-          </button>
+          <LanguageSwitcher triggerId="lp-lang-toggle" className="lp-lang-dropdown" />
           <Link id="lp-login" to={readCMS(new URLSearchParams(window.location.search).get('cms-preview') === '1').loginUrl} className="lp-header__login">{copy.nav.login}</Link>
           <BookButton id="lp-header-book" label={copy.nav.book} size="sm" className="lp-header__book" />
           <button id="lp-menu-toggle" type="button" className="lp-header__menu" aria-expanded={open} aria-label={copy.nav.menu} onClick={() => setOpen(value => !value)}>
@@ -152,6 +149,7 @@ function Header({ copy, language, onLanguage, activeId, brand }: { copy: Landing
         {copy.nav.links.map(link => <a key={link.id} href={`#${link.id}`} onClick={event => go(event, link.id)}>{link.label}</a>)}
         <div className="lp-mobile-nav__actions">
           <ThemeToggle />
+          <LanguageSwitcher />
           <Link to={readCMS(new URLSearchParams(window.location.search).get('cms-preview') === '1').loginUrl} className="lp-btn lp-btn--ghost lp-btn--md">{copy.nav.login}</Link>
           <BookButton id="lp-mobile-book" label={copy.nav.book} />
         </div>
@@ -179,13 +177,13 @@ const heroNavItems: { name: string; Icon: LucideIcon; dividerBefore?: boolean }[
 ];
 const HERO_DEFAULT_TAB = 1; // Dashboard
 
-function HeroMock({ copy, brand }: { copy: LandingCopy; brand: PreviewBrand | null }) {
+function HeroMock({ copy, brand, language }: { copy: LandingCopy; brand: PreviewBrand | null; language: Language }) {
   const [ref] = useInView<HTMLDivElement>(0.2);
   // Local, self-contained tab state: switching tabs swaps the inner view, never the route.
   const [activeTab, setActiveTab] = useState(HERO_DEFAULT_TAB);
   const tabRefs = useRef<(HTMLButtonElement | null)[]>([]);
-  const ar = /[\u0600-\u06ff]/.test(copy.mock.title);
-  const lang = ar ? 'ar' : 'en';
+  const ar = language === 'ar' || /[\u0600-\u06ff]/.test(copy.mock.title);
+  const lang = ar ? 'ar' : language;
   const navItems = heroNavItems.map(item => ({ ...item, label: translateTextForLanguage(item.name, lang) }));
   const supportLabel = translateTextForLanguage('Support', lang);
   const tabCount = navItems.length;
@@ -253,7 +251,7 @@ function HeroMock({ copy, brand }: { copy: LandingCopy; brand: PreviewBrand | nu
             <span className="lp-replica-topbar__search" aria-hidden="true"><Search size={8}/>{translateTextForLanguage('Search...', lang)}<kbd>⌘ K</kbd></span>
             <span className="lp-replica-topbar__tools" aria-hidden="true"><Globe size={10}/><Download size={10}/><Bell size={10}/><em>MJ</em></span>
           </div>
-          <NativeDashboardPreview tab={activeTab} ar={ar} title={navItems[activeTab].label}/>
+          <NativeDashboardPreview tab={activeTab} ar={ar} language={lang} title={navItems[activeTab].label}/>
         </div>
       </div>
 
@@ -304,7 +302,7 @@ function BusinessStrip({ copy }: { copy: LandingCopy }) {
   );
 }
 
-function Hero({ copy, brand }: { copy: LandingCopy; brand: PreviewBrand | null }) {
+function Hero({ copy, brand, language }: { copy: LandingCopy; brand: PreviewBrand | null; language: Language }) {
   return (
     <section className="lp-hero" id="top" aria-labelledby="lp-hero-title">
       <div className="lp-container lp-hero__grid">
@@ -322,7 +320,7 @@ function Hero({ copy, brand }: { copy: LandingCopy; brand: PreviewBrand | null }
           </div>
           <p className="lp-hero__note"><ShieldCheck size={13} aria-hidden="true" />{copy.hero.note}</p>
         </div>
-        <HeroMock copy={copy} brand={brand} />
+        <HeroMock copy={copy} brand={brand} language={language} />
       </div>
 
       <BusinessStrip copy={copy} />
@@ -778,10 +776,20 @@ const footerCopy = {
     explore: 'استكشف', account: 'ابدأ الآن', legal: 'قانوني',
     terms: 'شروط الخدمة', privacy: 'سياسة الخصوصية', deletion: 'حذف البيانات', legalLabel: 'روابط قانونية',
   },
+  nl: {
+    tagline: 'Het AI-groeisysteem dat snel reageert, automatisch opvolgt en afspraken inplant — zodat geen enkele lead verloren gaat.',
+    explore: 'Ontdekken', account: 'Aan de slag', legal: 'Juridisch',
+    terms: 'Servicevoorwaarden', privacy: 'Privacybeleid', deletion: 'Gegevensverwijdering', legalLabel: 'Juridische links',
+  },
+  de: {
+    tagline: 'Das KI-Wachstumssystem, das schnell antwortet, automatisch nachfasst und Termine bucht — damit kein Lead verloren geht.',
+    explore: 'Entdecken', account: 'Loslegen', legal: 'Rechtliches',
+    terms: 'Nutzungsbedingungen', privacy: 'Datenschutzerklärung', deletion: 'Datenlöschung', legalLabel: 'Rechtliche Links',
+  },
 } as const;
 
 function LandingFooter({ copy, language, brand, links }: { copy: LandingCopy; language: Language; brand: PreviewBrand | null; links: { id: string; label: string }[] }) {
-  const text = footerCopy[language === 'ar' ? 'ar' : 'en'];
+  const text = footerCopy[language] ?? footerCopy.en;
   const brandTagline = brand?.brand.tagline?.trim() || brand?.brand.description?.trim();
   const loginUrl = readCMS(new URLSearchParams(window.location.search).get('cms-preview') === '1').loginUrl;
   const go = (event: React.MouseEvent<HTMLAnchorElement>, id: string) => {
@@ -836,8 +844,6 @@ function LandingFooter({ copy, language, brand, links }: { copy: LandingCopy; la
 /* ---------- Page ---------- */
 
 export const LandingPage: React.FC = () => {
-  const dispatch = useDispatch();
-  const { setPreference } = useWorkspacePreferences();
   const phoenix = usePhoenixBrand();
   const brand = isLaunchBrandPreview() ? phoenix : null;
   const brandName = brand?.brand.name;
@@ -846,7 +852,7 @@ export const LandingPage: React.FC = () => {
   const [cms, setCMS] = useState(() => readCMS(preview));
   useEffect(() => { const refresh = () => setCMS(readCMS(preview)); window.addEventListener(cmsEvent, refresh); window.addEventListener('storage', refresh); return () => { window.removeEventListener(cmsEvent, refresh); window.removeEventListener('storage', refresh); }; }, [preview]);
   const copy = useMemo(() => {
-    const original = cms[language] ?? cms.en;
+    const original = language === 'en' || language === 'ar' ? cms[language] : (landingContent[language] ?? cms.en);
     const content: LandingCopy = brandName ? JSON.parse(JSON.stringify(original), (key, value) =>
       typeof value === 'string' && key !== 'id' && !/^(?:https?:|\/)/i.test(value)
         ? value.replace(/\bUpklick\b/gi, () => brandName)
@@ -861,7 +867,7 @@ export const LandingPage: React.FC = () => {
     return { ...brandedContent, nav: { ...brandedContent.nav, links: brandedContent.nav.links.filter(link => link.id !== 'pricing') } };
   }, [cms, language, brandName, brand?.brand.description]);
   // The reseller (white-label) chapter is Upklick's own pitch — never shown on a tenant's branded preview.
-  const whiteLabel = brand ? null : whiteLabelContent[language === 'ar' ? 'ar' : 'en'];
+  const whiteLabel = brand ? null : (whiteLabelContent[language] ?? whiteLabelContent.en);
   const visibleLinks = copy.nav.links.filter(link => !['features', 'faq', 'get-started'].includes(link.id));
   const navLinks = useMemo(() => whiteLabel ? [...visibleLinks, { id: 'white-label', label: whiteLabel.nav }] : visibleLinks, [copy, whiteLabel]);
   const headerCopy = useMemo(() => ({ ...copy, nav: { ...copy.nav, links: navLinks } }), [copy, navLinks]);
@@ -870,14 +876,6 @@ export const LandingPage: React.FC = () => {
   const [videoOpen, setVideoOpen] = useState(false);
   const [activeId, setActiveId] = useState('');
   const sectionIds = useMemo(() => navLinks.map(link => link.id), [navLinks]);
-
-  const toggleLanguage = useCallback(() => {
-    const next: Language = language === 'ar' ? 'en' : 'ar';
-    if (setPreference) { setPreference({ language: next }); return; }
-    void i18n.changeLanguage(next);
-    dispatch(setLanguage(next));
-    try { localStorage.setItem('i18nextLng', next); } catch { /* Redux keeps the choice for this session. */ }
-  }, [dispatch, language, setPreference]);
 
   useEffect(() => {
     document.title = copy.meta.title;
@@ -949,10 +947,10 @@ export const LandingPage: React.FC = () => {
 
   return (
     <div ref={rootRef} className="lp" dir={dir} lang={language} data-launch-brand={brand?.brand.theme ? '' : undefined}>
-      <Header copy={headerCopy} language={language} onLanguage={toggleLanguage} activeId={activeId} brand={brand} />
+      <Header copy={headerCopy} activeId={activeId} brand={brand} />
       <main>
-        {preview && <div className="lp-cms-preview">{language === 'ar' ? 'معاينة المسودة — لم ينشر هذا المحتوى بعد' : 'Draft preview — this content has not been published'}</div>}
-        <Hero copy={copy} brand={brand} />
+        {preview && <div className="lp-cms-preview">{language === 'ar' ? 'معاينة المسودة — لم ينشر هذا المحتوى بعد' : translateTextForLanguage('Draft preview — this content has not been published', language)}</div>}
+        <Hero copy={copy} brand={brand} language={language} />
         <Problem copy={copy} />
         <Solution copy={copy} />
         <Demo copy={copy} />

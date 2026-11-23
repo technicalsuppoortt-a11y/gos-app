@@ -3,7 +3,7 @@ import { primaryDb } from '../../backend/firebase';
 import { logoutFirebase } from '../../backend/session';
 import { syncPlatformDataMirror } from '../../backend/superAdmin';
 import { showToast as authToast } from '../../utils/toast';
-import { useUILanguage, translateText, localizeNode } from '../../i18n/display';
+import { useUILanguage, translateText, translateTextForLanguage, localizeNode } from '../../i18n/display';
 import React, { useEffect, useRef, useState } from 'react';
 import { Navigate, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { Activity, BarChart3, Bell, CreditCard, Globe, PanelsTopLeft, Landmark, Layers, LayoutDashboard, LogOut, Puzzle, Search, Settings, Users, ShieldCheck, Menu, X, Grid2X2, MessageCircle } from 'lucide-react';
@@ -91,23 +91,54 @@ export const SuperAdminLayout: React.FC = () => {
       previous?.focus();
     };
   }, [mobileOpen]);
-  const signOut = () => { showToast.success('You have been logged out successfully.'); void logoutFirebase().catch(error => authToast.error(error.message)); navigate('/auth/login', { replace: true }); };
+  const signOut = () => { showToast.success(translateText('You have been logged out successfully.')); void logoutFirebase().catch(error => authToast.error(error.message)); navigate('/auth/login', { replace: true }); };
 
   const [saSearch, setSaSearch] = useState('');
   const [saSearchOpen, setSaSearchOpen] = useState(false);
+  const [saActiveIdx, setSaActiveIdx] = useState(0);
   const saSearchRef = useRef<HTMLDivElement>(null);
+  const saSearchInputRef = useRef<HTMLInputElement>(null);
   const saFilteredNav = saSearch.trim()
     ? [...visibleNav, ...(canOpen('/super-admin/support') ? [{ label: 'Support', ar: 'الدعم', to: '/super-admin/support' }] : [])].filter(n =>
-        matchesLocalizedSearch(saSearch, [n.label, n.ar || '', translateText(n.label)])
+        matchesLocalizedSearch(saSearch, [
+          n.label,
+          n.ar || '',
+          translateText(n.label),
+          translateTextForLanguage(n.label, 'ar'),
+          translateTextForLanguage(n.label, 'nl'),
+          translateTextForLanguage(n.label, 'de'),
+        ])
       )
     : [];
 
+  useEffect(() => {
+    setSaActiveIdx(0);
+  }, [saSearch]);
+
   const handleSaSearchSubmit = (to?: string) => {
-    const target = to || saFilteredNav[0]?.to || (canOpen('/super-admin/clients') ? `/super-admin/clients?search=${encodeURIComponent(saSearch.trim())}` : home);
+    const target = to || saFilteredNav[saActiveIdx]?.to || saFilteredNav[0]?.to || (canOpen('/super-admin/clients') ? `/super-admin/clients?search=${encodeURIComponent(saSearch.trim())}` : home);
     navigate(target);
     setSaSearch('');
     setSaSearchOpen(false);
+    setSaActiveIdx(0);
+    saSearchInputRef.current?.blur();
   };
+
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if ((event.metaKey || event.ctrlKey) && (event.key.toLowerCase() === 'k' || event.code === 'KeyK')) {
+        event.preventDefault();
+        saSearchInputRef.current?.focus();
+        saSearchInputRef.current?.select();
+        setSaSearchOpen(true);
+      } else if (event.key === 'Escape' && saSearchOpen) {
+        setSaSearchOpen(false);
+        saSearchInputRef.current?.blur();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [saSearchOpen]);
 
   useEffect(() => {
     const handleOutsideClick = (e: MouseEvent) => {
@@ -153,31 +184,49 @@ export const SuperAdminLayout: React.FC = () => {
           <label className="sa-search">
             <Search size={14}/>
             <input
+              ref={saSearchInputRef}
               placeholder={translateText(canOpen('/super-admin/clients') ? 'Search admins or sections…' : 'Search sections…')}
               aria-label={translateText(canOpen('/super-admin/clients') ? 'Search admins or sections' : 'Search sections')}
               value={saSearch}
               onChange={e => { setSaSearch(e.target.value); setSaSearchOpen(true); }}
               onFocus={() => { if (saSearch.trim()) setSaSearchOpen(true); }}
               onKeyDown={event => {
-                if (event.key === "Enter") {
+                if (event.key === 'ArrowDown' && saFilteredNav.length > 0) {
+                  event.preventDefault();
+                  setSaSearchOpen(true);
+                  setSaActiveIdx(prev => (prev + 1) % saFilteredNav.length);
+                } else if (event.key === 'ArrowUp' && saFilteredNav.length > 0) {
+                  event.preventDefault();
+                  setSaSearchOpen(true);
+                  setSaActiveIdx(prev => (prev - 1 + saFilteredNav.length) % saFilteredNav.length);
+                } else if (event.key === "Enter") {
                   event.preventDefault();
                   handleSaSearchSubmit();
+                } else if (event.key === 'Escape') {
+                  event.preventDefault();
+                  setSaSearchOpen(false);
+                  saSearchInputRef.current?.blur();
                 }
               }}
             />
-            <kbd>Enter</kbd>
+            <kbd dir="ltr">⌘K</kbd>
           </label>
           {saSearchOpen && saFilteredNav.length > 0 && (
-            <div className="absolute start-0 top-[calc(100%+6px)] w-64 rounded-xl bg-[#161b26] border border-[#252c3b] shadow-2xl overflow-hidden z-50 p-1.5">
+            <div className="absolute start-0 top-[calc(100%+6px)] w-64 rounded-xl bg-white dark:bg-[#161b26] border border-slate-200 dark:border-[#252c3b] shadow-2xl overflow-hidden z-50 p-1.5">
               <div className="text-[10px] font-semibold text-slate-400 px-2 py-1 uppercase tracking-wider">
                 {translateText("Navigation")}
               </div>
-              {saFilteredNav.map(item => (
+              {saFilteredNav.map((item, idx) => (
                 <button
                   key={item.to}
                   type="button"
+                  onMouseEnter={() => setSaActiveIdx(idx)}
                   onClick={() => handleSaSearchSubmit(item.to)}
-                  className="w-full flex items-center justify-between px-2.5 py-1.5 text-xs text-slate-200 hover:bg-[#202737] rounded-lg transition-colors text-start"
+                  className={`w-full flex items-center justify-between px-2.5 py-1.5 text-xs rounded-lg transition-colors text-start ${
+                    idx === saActiveIdx
+                      ? 'bg-purple-50 text-purple-700 dark:bg-[#202737] dark:text-purple-300'
+                      : 'text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-[#202737]'
+                  }`}
                 >
                   <span>{item.ar && language.startsWith('ar') ? item.ar : translateText(item.label)}</span>
                   <span className="text-[10px] text-slate-400 font-normal">↵</span>

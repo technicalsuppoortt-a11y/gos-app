@@ -1,0 +1,55 @@
+Pre-booking screening	Screening vóór boeking
+Visitors must pass every screening question before choosing a time. Remove all screening questions to allow anyone to continue.	Bezoekers moeten slagen voor elke screeningsvraag voordat ze een tijd kunnen kiezen. Verwijder alle screeningsvragen zodat iedereen kan doorgaan.
+Minimum amount	Minimumbedrag
+Qualifying choices	Kwalificerende keuzes
+Add screening question	Screeningsvraag toevoegen
+Edit screening question	Screeningsvraag bewerken
+Remove screening question	Screeningsvraag verwijderen
+Screening question	Screeningsvraag
+Qualification rule	Kwalificatieregel
+Minimum accepted amount	Minimaal geaccepteerd bedrag
+What is your project budget in USD?	Wat is je projectbudget in USD?
+Mark each choice that should let a visitor continue.	Markeer elke keuze waarmee een bezoeker mag doorgaan.
+Qualifies	Kwalificeert
+Enter distinct choices and mark at least one as qualifying.	Voer verschillende keuzes in en markeer er minimaal één als kwalificerend.
+Enter a valid minimum amount.	Voer een geldig minimumbedrag in.
+Enter a question.	Voer een vraag in.
+Save question	Vraag opslaan
+Review the screening questions before saving.	Controleer de screeningsvragen voordat je opslaat.
+Screening	Screening
+Screening answers	Screeningsantwoorden
+Before you book	Voordat je boekt
+Answer these required questions to see if this appointment is a fit.	Beantwoord deze verplichte vragen om te kijken of deze afspraak goed aansluit.
+Checking answers…	Antwoorden controleren…
+Continue to availability	Doorgaan naar beschikbaarheid
+Thank you for your interest	Bedankt voor je interesse
+We’re unable to offer an appointment based on your answers. Thank you for taking the time to tell us about your needs.	Op basis van je antwoorden kunnen we momenteel geen afspraak aanbieden. Bedankt dat je de tijd hebt genomen om je wensen met ons te delen.
+Preview screening again	Voorbeeld van screening opnieuw bekijken
+Please check your answers and complete every screening question.	Controleer je antwoorden en vul elke screeningsvraag in.
+Could not check your answers. Please try again.	Kon je antwoorden niet controleren. Probeer het opnieuw.
+Voice note extraction	Spraaknotitie-extractie
+Transcribing and organizing your voice note…	Je spraaknotitie wordt getranscribeerd en geordend…
+Optional: What should Copilot look for in this recording?	Optioneel: Waar moet Copilot op letten in deze opname?
+Audio for transcription	Audio voor transcriptie
+Extract voice note	Spraaknotitie extraheren
+Copy JSON	JSON kopiëren
+Transcript	Transcript
+Intent	Intentie
+Parameters	Parameters
+Voice note	Spraaknotitie
+Could not copy	Kon niet kopiëren
+Action items	Actiepunten
+The transcript is ready. Structured extraction is temporarily unavailable.	Het transcript is klaar. Gestructureerde extractie is tijdelijk niet beschikbaar.
+Voice recording is unavailable in this browser. Attach an audio file instead.	Spraakopname is niet beschikbaar in deze browser. Voeg in plaats daarvan een audiobestand bij.
+Recording stopped because the browser reported an audio error.	De opname is gestopt omdat de browser een audiofout meldde.
+No audio was recorded. Try recording again.	Er is geen audio opgenomen. Probeer het opnieuw.
+Choose a supported audio file up to 15 MB.	Kies een ondersteund audiobestand tot maximaal 15 MB.
+Keep your voice extraction request under 2,000 characters.	Houd je instructie voor spraakextractie onder de 2.000 tekens.
+No speech was detected. Try a clearer recording.	Er is geen spraak gedetecteerd. Probeer een duidelijkere opname.
+This recording is too long. Split it into shorter clips.	Deze opname is te lang. Splits haar op in kortere fragmenten.
+The recording could not be decoded. Try a different audio file.	De opname kon niet worden gedecodeerd. Probeer een ander audiobestand.
+Transcription took too long. Try again or send a shorter recording.	Het transcriberen duurde te lang. Probeer het opnieuw of stuur een kortere opname.
+Transcription is temporarily unavailable. Please try again.	Transcriberen is tijdelijk niet beschikbaar. Probeer het opnieuw.
+Voice transcription is available in a connected workspace.	Spraaktranscriptie is beschikbaar in een verbonden werkruimte.
+Transcribe	Transcriberen
+Transcribing…	Transcriberen…

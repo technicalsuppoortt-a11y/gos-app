@@ -23,7 +23,7 @@ import {
   Zap,
 } from 'lucide-react';
 import type { RootState } from '../../store';
-import { useUILanguage } from '../../i18n/display';
+import { translateText, useUILanguage } from '../../i18n/display';
 import { showToast } from '../../utils/toast';
 import { DomainsClient } from '../../lib/domains/client';
 import {
@@ -75,7 +75,7 @@ export const DomainsView: React.FC<DomainsViewProps> = ({
   const user = useSelector((s: RootState) => s.auth.user);
   const [searchParams, setSearchParams] = useSearchParams();
 
-  const t = useCallback((en: string, ar: string) => (isRTL ? ar : en), [isRTL]);
+  const t = useCallback((en: string, ar: string) => (isRTL ? ar : translateText(en)), [isRTL, lang]);
 
   const initialTab = useMemo(() => {
     const tabParam = searchParams.get('dtab');
@@ -1091,7 +1091,7 @@ export const DomainsView: React.FC<DomainsViewProps> = ({
             {CONTACT_FIELDS.map(f => (
               <div key={f.key}>
                 <label className="dp-label">
-                  {isRTL ? f.labelAr : f.labelEn}{' '}
+                  {isRTL ? f.labelAr : translateText(f.labelEn)}{' '}
                   {f.required && <span style={{ color: 'var(--dp-red)' }}>*</span>}
                 </label>
                 <input
@@ -1145,7 +1145,7 @@ export const DomainsView: React.FC<DomainsViewProps> = ({
                   {CONTACT_FIELDS.map(f => (
                     <div key={f.key}>
                       <label className="dp-label">
-                        {isRTL ? f.labelAr : f.labelEn}{' '}
+                        {isRTL ? f.labelAr : translateText(f.labelEn)}{' '}
                         {f.required && <span style={{ color: 'var(--dp-red)' }}>*</span>}
                       </label>
                       <input

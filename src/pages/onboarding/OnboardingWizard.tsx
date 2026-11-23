@@ -1,3 +1,4 @@
+import { translateTextForLanguage } from "../../i18n/display";
 import React from "react";
 import { useAnimate, useReducedMotion } from "framer-motion";
 import { Link, Navigate, useNavigate, useSearchParams } from "react-router-dom";
@@ -26,7 +27,7 @@ import {
 } from "lucide-react";
 import type { RootState } from "../../store";
 import { loginSuccess } from "../../store/slices/authSlice";
-import { useOnboarding, saveSetup, emptySetup } from "./onboarding-store";
+import { useOnboarding, saveSetup, emptySetup, type Setup } from "./onboarding-store";
 import { showToast } from "../../utils/toast";
 import "./onboarding.css";
 import { setLanguage } from "../../store/slices/uiSlice";
@@ -172,7 +173,7 @@ export function OnboardingWizard() {
       ? items
       : [{ value: setup.timezone, label: setup.timezone }, ...items];
   }, [setup.timezone]);
-  const t = (en: string, arabic: string) => (ar ? arabic : en);
+  const t = (en: string, arabic: string) => (ar ? arabic : translateTextForLanguage(en, setup.language));
   const patch = (value: Parameters<typeof saveSetup>[1]) =>
     saveSetup(email, value);
   const assetType =
@@ -623,15 +624,18 @@ export function OnboardingWizard() {
                 </label>
                 <div className="ob-language">
                   {[
-                    ["en", "English", "Left to right"],
-                    ["ar", "العربية", "من اليمين إلى اليسار"],
+                    ["ar", "العربية", t("Right to left", "من اليمين إلى اليسار")],
+                    ["en", "English", t("Left to right", "من اليسار إلى اليمين")],
+                    ["nl", "Nederlands", t("Left to right", "من اليسار إلى اليمين")],
+                    ["de", "Deutsch", t("Left to right", "من اليسار إلى اليمين")],
                   ].map(([code, name, hint]) => (
                     <button
                       key={code}
+                      type="button"
                       className={setup.language === code ? "selected" : ""}
                       onClick={() => {
-                        patch({ language: code as "ar" | "en" });
-                        dispatch(setLanguage(code as "ar" | "en"));
+                        patch({ language: code as Setup["language"] });
+                        dispatch(setLanguage(code as Setup["language"]));
                       }}
                     >
                       <Globe2 size={22} />

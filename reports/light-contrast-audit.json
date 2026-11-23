@@ -1,10 +1,10 @@
 {
   "scannedStylesheets": 114,
-  "correctedDeclarations": 873,
+  "correctedDeclarations": 870,
   "correctedVariables": 12,
   "referenceSurface": "#ffffff",
   "minimumRatio": 4.5,
-  "utilityOccurrences": 270,
+  "utilityOccurrences": 269,
   "utilities": [
     {
       "file": "src/components/common/PagePlaceholder.tsx",
@@ -23,27 +23,32 @@
     },
     {
       "file": "src/components/layout/Header.tsx",
-      "line": 254,
+      "line": 357,
       "utility": "text-slate-400"
     },
     {
       "file": "src/components/layout/Header.tsx",
-      "line": 265,
+      "line": 378,
       "utility": "text-slate-400"
     },
     {
       "file": "src/components/layout/Header.tsx",
-      "line": 379,
+      "line": 383,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/components/layout/Header.tsx",
+      "line": 488,
       "utility": "text-gray-500"
     },
     {
       "file": "src/components/layout/Header.tsx",
-      "line": 440,
+      "line": 549,
       "utility": "text-gray-400"
     },
     {
       "file": "src/components/layout/Header.tsx",
-      "line": 442,
+      "line": 551,
       "utility": "text-gray-400"
     },
     {
@@ -93,17 +98,12 @@
     },
     {
       "file": "src/components/layout/SuperAdminLayout.tsx",
-      "line": 172,
+      "line": 216,
       "utility": "text-slate-400"
     },
     {
       "file": "src/components/layout/SuperAdminLayout.tsx",
-      "line": 180,
-      "utility": "text-slate-200"
-    },
-    {
-      "file": "src/components/layout/SuperAdminLayout.tsx",
-      "line": 183,
+      "line": 232,
       "utility": "text-slate-400"
     },
     {
@@ -177,6 +177,11 @@
       "utility": "text-slate-400"
     },
     {
+      "file": "src/components/ui/LanguageSwitcher.tsx",
+      "line": 100,
+      "utility": "text-slate-400"
+    },
+    {
       "file": "src/components/ui/Select.tsx",
       "line": 76,
       "utility": "text-slate-500"
@@ -218,107 +223,97 @@
     },
     {
       "file": "src/pages/auth/ForgotPasswordPage.tsx",
-      "line": 100,
+      "line": 106,
       "utility": "text-slate-400"
     },
     {
       "file": "src/pages/auth/ForgotPasswordPage.tsx",
-      "line": 143,
+      "line": 149,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/auth/ForgotPasswordPage.tsx",
-      "line": 205,
+      "line": 211,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/auth/ForgotPasswordPage.tsx",
-      "line": 214,
+      "line": 220,
       "utility": "text-slate-400"
     },
     {
       "file": "src/pages/auth/LoginPage.tsx",
-      "line": 276,
+      "line": 295,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/auth/LoginPage.tsx",
-      "line": 288,
+      "line": 320,
+      "utility": "text-slate-400"
+    },
+    {
+      "file": "src/pages/auth/LoginPage.tsx",
+      "line": 324,
+      "utility": "text-slate-400"
+    },
+    {
+      "file": "src/pages/auth/LoginPage.tsx",
+      "line": 324,
+      "utility": "text-slate-400"
+    },
+    {
+      "file": "src/pages/auth/LoginPage.tsx",
+      "line": 348,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/auth/LoginPage.tsx",
-      "line": 318,
-      "utility": "text-slate-500"
-    },
-    {
-      "file": "src/pages/auth/LoginPage.tsx",
-      "line": 343,
+      "line": 351,
       "utility": "text-slate-400"
     },
     {
       "file": "src/pages/auth/LoginPage.tsx",
-      "line": 347,
-      "utility": "text-slate-400"
-    },
-    {
-      "file": "src/pages/auth/LoginPage.tsx",
-      "line": 347,
-      "utility": "text-slate-400"
-    },
-    {
-      "file": "src/pages/auth/LoginPage.tsx",
-      "line": 371,
-      "utility": "text-slate-500"
-    },
-    {
-      "file": "src/pages/auth/LoginPage.tsx",
-      "line": 374,
-      "utility": "text-slate-400"
-    },
-    {
-      "file": "src/pages/auth/LoginPage.tsx",
-      "line": 383,
+      "line": 360,
       "utility": "text-slate-100"
     },
     {
       "file": "src/pages/auth/ResetPasswordPage.tsx",
-      "line": 90,
+      "line": 92,
       "utility": "text-slate-400"
     },
     {
       "file": "src/pages/auth/ResetPasswordPage.tsx",
-      "line": 208,
+      "line": 214,
       "utility": "text-slate-400"
     },
     {
       "file": "src/pages/auth/ResetPasswordPage.tsx",
-      "line": 222,
+      "line": 228,
       "utility": "text-slate-400"
     },
     {
       "file": "src/pages/auth/ResetPasswordPage.tsx",
-      "line": 233,
+      "line": 239,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/auth/ResetPasswordPage.tsx",
-      "line": 258,
+      "line": 264,
       "utility": "text-slate-400"
     },
     {
       "file": "src/pages/auth/ResetPasswordPage.tsx",
-      "line": 272,
+      "line": 278,
       "utility": "text-slate-400"
     },
     {
       "file": "src/pages/auth/ResetPasswordPage.tsx",
-      "line": 336,
+      "line": 342,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/auth/ResetPasswordPage.tsx",
-      "line": 384,
+      "line": 390,
       "utility": "text-slate-400"
     },
     {
@@ -1098,72 +1093,72 @@
     },
     {
       "file": "src/pages/Inbox.tsx",
-      "line": 1113,
+      "line": 1122,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/Inbox.tsx",
-      "line": 1258,
+      "line": 1267,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/Inbox.tsx",
-      "line": 1322,
+      "line": 1331,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/Inbox.tsx",
-      "line": 1463,
+      "line": 1472,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/Inbox.tsx",
-      "line": 1540,
+      "line": 1549,
       "utility": "text-slate-400"
     },
     {
       "file": "src/pages/Inbox.tsx",
-      "line": 1558,
+      "line": 1567,
       "utility": "text-slate-400"
     },
     {
       "file": "src/pages/Inbox.tsx",
-      "line": 1715,
+      "line": 1724,
       "utility": "text-slate-400"
     },
     {
       "file": "src/pages/Inbox.tsx",
-      "line": 1746,
+      "line": 1755,
       "utility": "text-slate-400"
     },
     {
       "file": "src/pages/Inbox.tsx",
-      "line": 1778,
+      "line": 1787,
       "utility": "text-slate-400"
     },
     {
       "file": "src/pages/Inbox.tsx",
-      "line": 1857,
+      "line": 1866,
       "utility": "text-slate-400"
     },
     {
       "file": "src/pages/Inbox.tsx",
-      "line": 2009,
+      "line": 2018,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/Inbox.tsx",
-      "line": 2038,
+      "line": 2047,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/Inbox.tsx",
-      "line": 2086,
+      "line": 2095,
       "utility": "text-slate-300"
     },
     {
       "file": "src/pages/Inbox.tsx",
-      "line": 2098,
+      "line": 2107,
       "utility": "text-slate-400"
     },
     {
@@ -1526,7 +1521,7 @@
     },
     {
       "file": "src/components/layout/product-header.css",
-      "line": 220,
+      "line": 266,
       "selector": ".layout-header .layout-header-user small",
       "before": "#94a3b8",
       "after": "#475569",
@@ -1718,40 +1713,16 @@
     },
     {
       "file": "src/global-controls.css",
-      "line": 2,
-      "selector": ".global-language-control",
-      "before": "#84899a",
+      "line": 9,
+      "selector": ".global-language-chevron",
+      "before": "#94a3b8",
       "after": "#334155",
-      "contrastOnWhite": 3.48
+      "contrastOnWhite": 2.56
     },
     {
       "file": "src/global-controls.css",
-      "line": 3,
-      "selector": ".global-language-control>svg",
-      "before": "#85899a",
-      "after": "#334155",
-      "contrastOnWhite": 3.48
-    },
-    {
-      "file": "src/global-controls.css",
-      "line": 4,
-      "selector": ".global-language-control button",
-      "before": "#818697",
-      "after": "#334155",
-      "contrastOnWhite": 3.63
-    },
-    {
-      "file": "src/global-controls.css",
-      "line": 7,
-      "selector": ".sa-preferences .global-language-control button",
-      "before": "#a5adbf",
-      "after": "#334155",
-      "contrastOnWhite": 2.25
-    },
-    {
-      "file": "src/global-controls.css",
-      "line": 7,
-      "selector": ".sa-preferences .global-language-control>svg",
+      "line": 17,
+      "selector": ".sa-preferences .global-language-globe",
       "before": "#929bb0",
       "after": "#334155",
       "contrastOnWhite": 2.79

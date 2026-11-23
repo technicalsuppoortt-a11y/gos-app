@@ -29,7 +29,7 @@ import {
   Zap,
 } from 'lucide-react';
 import type { RootState } from '../../store';
-import { useUILanguage } from '../../i18n/display';
+import { translateText, useUILanguage } from '../../i18n/display';
 import { showToast } from '../../utils/toast';
 import { DomainsClient } from '../../lib/domains/client';
 import {
@@ -66,7 +66,7 @@ export const DomainsPage: React.FC<DomainsPageProps> = ({ scope: propScope, isRT
     propScope ?? (role === 'SUPER_ADMIN' ? 'super_admin' : 'admin');
   const isSuper = effectiveScope === 'super_admin';
 
-  const t = useCallback((en: string, ar: string) => (isRTL ? ar : en), [isRTL]);
+  const t = useCallback((en: string, ar: string) => (isRTL ? ar : translateText(en)), [isRTL, uiLang]);
 
   const [tab, setTab] = useState<string>(isSuper ? 'pricing' : 'domains');
   const [q, setQ] = useState('');

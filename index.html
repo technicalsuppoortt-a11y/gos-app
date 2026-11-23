@@ -30,8 +30,12 @@
         }
       } catch(e) {}
       try {
-        var rawLang = localStorage.getItem('i18nextLng') || localStorage.getItem('user_selected_lang') || '';
-        var activeLang = rawLang.indexOf('ar') === 0 ? 'ar' : (rawLang.indexOf('en') === 0 ? 'en' : (document.documentElement.lang && document.documentElement.lang.indexOf('ar') === 0 ? 'ar' : 'en'));
+        var rawLang = (localStorage.getItem('i18nextLng') || localStorage.getItem('user_selected_lang') || '').toLowerCase();
+        var activeLang = rawLang.indexOf('ar') === 0 ? 'ar'
+          : rawLang.indexOf('nl') === 0 ? 'nl'
+          : rawLang.indexOf('de') === 0 ? 'de'
+          : rawLang.indexOf('en') === 0 ? 'en'
+          : (document.documentElement.lang && document.documentElement.lang.indexOf('ar') === 0 ? 'ar' : 'en');
         document.documentElement.lang = activeLang;
         document.documentElement.dir = activeLang === 'ar' ? 'rtl' : 'ltr';
       } catch(e) {}
@@ -141,10 +145,17 @@
       html.dark .pre-caption {
         color: #A78BFA;
       }
-      html[lang="ar"] .pre-lang-en,
-      html:not([lang="ar"]) .pre-lang-ar {
+      .pre-lang-ar,
+      .pre-lang-nl,
+      .pre-lang-de {
         display: none;
       }
+      html[lang="ar"] .pre-lang-en { display: none; }
+      html[lang="ar"] .pre-lang-ar { display: block; }
+      html[lang="nl"] .pre-lang-en { display: none; }
+      html[lang="nl"] .pre-lang-nl { display: block; }
+      html[lang="de"] .pre-lang-en { display: none; }
+      html[lang="de"] .pre-lang-de { display: block; }
       .pre-progress {
         position: relative;
         width: 140px;
@@ -197,18 +208,25 @@
         <h1 class="pre-title">Upklick</h1>
         <span class="pre-sub pre-lang-en">Ideas to impact</span>
         <span class="pre-sub pre-lang-ar">من الأفكار إلى الأثر</span>
+        <span class="pre-sub pre-lang-nl">Van idee tot impact</span>
+        <span class="pre-sub pre-lang-de">Von Ideen zu Wirkung</span>
         <div class="pre-progress">
           <div class="pre-bar"></div>
         </div>
         <p class="pre-caption pre-lang-en">Preparing your workspace...</p>
         <p class="pre-caption pre-lang-ar">جاري تجهيز مساحة عملك</p>
+        <p class="pre-caption pre-lang-nl">Je werkruimte wordt voorbereid...</p>
+        <p class="pre-caption pre-lang-de">Dein Arbeitsbereich wird vorbereitet...</p>
       </div>
     </div>
     <script>
       try {
-        if (document.documentElement.lang === 'ar') {
-          var pl = document.getElementById('app-preloader');
-          if (pl) pl.setAttribute('aria-label', 'جاري تجهيز مساحة عملك');
+        var pl = document.getElementById('app-preloader');
+        if (pl) {
+          var l = document.documentElement.lang;
+          if (l === 'ar') pl.setAttribute('aria-label', 'جاري تجهيز مساحة عملك');
+          else if (l === 'nl') pl.setAttribute('aria-label', 'Je werkruimte wordt voorbereid...');
+          else if (l === 'de') pl.setAttribute('aria-label', 'Dein Arbeitsbereich wird vorbereitet...');
         }
       } catch(e) {}
     </script>

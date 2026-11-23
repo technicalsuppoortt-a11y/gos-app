@@ -1,0 +1,1930 @@
+Dashboard	Dashboard
+Create form with AI	Formular mit KI erstellen
+Describe the appointment, who it is for, and how long it should take.	Beschreibe den Termin, für wen er gedacht ist und wie lange er dauern soll.
+Describe the form’s purpose and the information you need to collect.	Beschreibe den Zweck des Formulars und welche Informationen du erfassen möchtest.
+Describe what you want to build	Beschreibe, was du erstellen möchtest
+Draft booking page with AI	Buchungsseite mit KI entwerfen
+Form draft created	Formularentwurf erstellt
+Generate draft	Entwurf generieren
+Generate editable page copy and a starter layout from your business brief.	Generiere bearbeitbare Seitentexte und ein Start-Layout aus deinem Unternehmens-Briefing.
+Not enough AI credits. Ask your billing administrator to top up or upgrade.	Nicht genügend KI-Guthaben. Bitte deinen Abrechnungs-Admin, Guthaben aufzuladen oder ein Upgrade durchzuführen.
+Not enough AI credits. Upgrade your plan or request a credit add-on to continue.	Nicht genügend KI-Guthaben. Führe ein Tarif-Upgrade durch oder buche zusätzliches Guthaben, um fortzufahren.
+Not enough email credits. Ask your billing administrator to top up or upgrade.	Nicht genügend E-Mail-Guthaben. Bitte deinen Abrechnungs-Admin, Guthaben aufzuladen oder ein Upgrade durchzuführen.
+Not enough email credits. Upgrade your plan or request a credit add-on to continue.	Nicht genügend E-Mail-Guthaben. Führe ein Tarif-Upgrade durch oder buche zusätzliches Guthaben, um fortzufahren.
+Plans & add-ons	Tarife & Add-ons
+Workspace	Arbeitsbereich
+Workspace settings	Arbeitsbereich-Einstellungen
+Settings	Einstellungen
+Home	Startseite
+Overview	Übersicht
+Navigation	Navigation
+Open navigation	Navigation öffnen
+Close navigation	Navigation schließen
+Close navigation menu	Navigationsmenü schließen
+Toggle navigation	Navigation ein-/ausblenden
+Search	Suchen
+Search anything...	Alles durchsuchen...
+Notifications	Benachrichtigungen
+View Landing Page	Landingpage ansehen
+View Profile	Profil ansehen
+Profile	Profil
+Business Owner	Unternehmensinhaber
+Logout	Abmelden
+Log out	Abmelden
+Sign out	Abmelden
+Sign in	Anmelden
+Login	Anmelden
+Email	E-Mail
+Email address	E-Mail-Adresse
+Password	Passwort
+Remember me	Angemeldet bleiben
+Forgot password?	Passwort vergessen?
+Create account	Konto erstellen
+English	Englisch
+Arabic	Arabisch
+Language	Sprache
+Theme	Design
+Light	Hell
+Dark	Dunkel
+Light Mode	Heller Modus
+Dark Mode	Dunkler Modus
+System	System
+General	Allgemein
+Save	Speichern
+Save Changes	Änderungen speichern
+Save changes	Änderungen speichern
+Saving...	Wird gespeichert...
+Saved	Gespeichert
+Saved successfully	Erfolgreich gespeichert
+Cancel	Abbrechen
+Create	Erstellen
+Edit	Bearbeiten
+Delete	Löschen
+Remove	Entfernen
+Add	Hinzufügen
+Update	Aktualisieren
+Done	Fertig
+Confirm	Bestätigen
+Apply	Anwenden
+Apply changes	Änderungen anwenden
+Reset	Zurücksetzen
+Clear	Leeren
+Clear all	Alles löschen
+Clear filters	Filter zurücksetzen
+Clear search	Suche löschen
+Close	Schließen
+Open	Öffnen
+Back	Zurück
+Next	Weiter
+Previous	Zurück
+Continue	Weiter
+Continue →	Weiter →
+Finish	Abschließen
+Submit	Absenden
+Send	Senden
+Retry	Erneut versuchen
+Try again	Erneut versuchen
+Refresh	Aktualisieren
+Reload	Neu laden
+Duplicate	Duplizieren
+Clone	Klonen
+Copy	Kopieren
+Copy Link	Link kopieren
+Copy link	Link kopieren
+Copy Embed Code	Einbettungscode kopieren
+Download	Herunterladen
+Upload	Hochladen
+Import	Importieren
+Export	Exportieren
+View	Ansehen
+Preview	Vorschau
+Live Preview	Live-Vorschau
+Publish	Veröffentlichen
+Unpublish	Veröffentlichung aufheben
+Published	Veröffentlicht
+Unpublished	Unveröffentlicht
+Draft	Entwurf
+Drafts	Entwürfe
+Active	Aktiv
+Inactive	Inaktiv
+Enabled	Aktiviert
+Disabled	Deaktiviert
+Enable	Aktivieren
+Disable	Deaktivieren
+Activate	Aktivieren
+Deactivate	Deaktivieren
+Paused	Pausiert
+Pause	Pausieren
+Resume	Fortsetzen
+Pending	Ausstehend
+Completed	Abgeschlossen
+Complete	Abschließen
+Canceled	Storniert
+Cancelled	Storniert
+Confirmed	Bestätigt
+Failed	Fehlgeschlagen
+Success	Erfolgreich
+Error	Fehler
+Warning	Warnung
+Information	Information
+Required	Erforderlich
+Optional	Optional
+Loading...	Wird geladen...
+Loading…	Wird geladen…
+All	Alle
+None	Keine
+Yes	Ja
+No	Nein
+On	Ein
+Off	Aus
+New	Neu
+Default	Standard
+Custom	Benutzerdefiniert
+More	Mehr
+More options	Weitere Optionen
+Actions	Aktionen
+Action	Aktion
+Action type	Aktionstyp
+Action destination	Aktionsziel
+Details	Details
+Name	Name
+Title	Titel
+Description	Beschreibung
+Type	Typ
+Status	Status
+Category	Kategorie
+Categories	Kategorien
+Date	Datum
+Time	Uhrzeit
+Start date	Startdatum
+End date	Enddatum
+Start time	Startzeit
+End time	Endzeit
+Created	Erstellt
+Updated	Aktualisiert
+Created at	Erstellt am
+Updated at	Aktualisiert am
+Created by	Erstellt von
+Sort	Sortieren
+Sort by	Sortieren nach
+Filter	Filtern
+Filters	Filter
+Search filters	Suchfilter
+Newest	Neueste
+Oldest	Älteste
+Newest first	Neueste zuerst
+Oldest first	Älteste zuerst
+Alphabetical	Alphabetisch
+A to Z	A bis Z
+Z to A	Z bis A
+Select	Auswählen
+Select all	Alle auswählen
+Select an option	Option auswählen
+Choose an option	Option wählen
+Select date	Datum auswählen
+Select a date	Datum auswählen
+Select time	Uhrzeit auswählen
+Select a time	Uhrzeit auswählen
+Today	Heute
+Yesterday	Gestern
+Tomorrow	Morgen
+This week	Diese Woche
+Last week	Letzte Woche
+This month	Dieser Monat
+Last month	Letzter Monat
+This year	Dieses Jahr
+Last year	Letztes Jahr
+Last 7 days	Letzte 7 Tage
+Last 30 days	Letzte 30 Tage
+Last 90 days	Letzte 90 Tage
+All time	Gesamter Zeitraum
+Custom range	Benutzerdefinierter Zeitraum
+Date range	Datumsbereich
+Day	Tag
+Days	Tage
+Week	Woche
+Weeks	Wochen
+Month	Monat
+Months	Monate
+Year	Jahr
+Years	Jahre
+Hour	Stunde
+Hours	Stunden
+Minute	Minute
+Minutes	Minuten
+Second	Sekunde
+Seconds	Sekunden
+Monday	Montag
+Tuesday	Dienstag
+Wednesday	Mittwoch
+Thursday	Donnerstag
+Friday	Freitag
+Saturday	Samstag
+Sunday	Sonntag
+Mon	Mo
+Tue	Di
+Wed	Mi
+Thu	Do
+Fri	Fr
+Sat	Sa
+Sun	So
+January	Januar
+February	Februar
+March	März
+April	April
+May	Mai
+June	Juni
+July	Juli
+August	August
+September	September
+October	Oktober
+November	November
+December	Dezember
+Jan	Jan
+Feb	Feb
+Mar	Mär
+Apr	Apr
+Jun	Jun
+Jul	Jul
+Aug	Aug
+Sep	Sep
+Oct	Okt
+Nov	Nov
+Dec	Dez
+AM	vorm.
+PM	nachm.
+Timezone	Zeitzone
+Time zone	Zeitzone
+Local timezone	Lokale Zeitzone
+Funnels	Funnels
+Funnel	Funnel
+Funnel & Website	Funnel & Website
+Funnels & Websites	Funnels & Websites
+Websites	Websites
+Website	Website
+Pages	Seiten
+Page	Seite
+Page content	Seiteninhalt
+Page Content	Seiteninhalt
+Page settings	Seiteneinstellungen
+Page name	Seitenname
+Page title	Seitentitel
+Page type	Seitentyp
+Page URL	Seiten-URL
+Page slug	Seiten-Slug
+Page status	Seitenstatus
+Page options	Seitenoptionen
+Landing Page	Landingpage
+Landing page	Landingpage
+Sales Page	Verkaufsseite
+Sales page	Verkaufsseite
+Thank You	Vielen Dank
+Thank you	Vielen Dank
+Thank You Page	Dankeseite
+Thank you page	Dankeseite
+Checkout Page	Checkout-Seite
+Opt-in Page	Opt-in-Seite
+Lead capture	Lead-Erfassung
+Lead generation	Lead-Generierung
+Funnel overview	Funnel-Übersicht
+Funnel settings	Funnel-Einstellungen
+Funnel name	Funnel-Name
+Funnel steps	Funnel-Schritte
+Step	Schritt
+Steps	Schritte
+Step name	Schrittname
+Step type	Schritttyp
+Domains	Domains
+Domain	Domain
+Domain name	Domainname
+Domain status	Domainstatus
+Connect Domain	Domain verbinden
+Connect domain	Domain verbinden
+Connect a domain	Domain verbinden
+Add New Domain	Neue Domain hinzufügen
+Custom domain	Eigene Domain
+Connected domain	Verbundene Domain
+Available domains	Verfügbare Domains
+DNS records	DNS-Einträge
+Verify	Verifizieren
+Verify domain	Domain verifizieren
+SSL status	SSL-Status
+Connected	Verbunden
+Not connected	Nicht verbunden
+Disconnected	Getrennt
+Connect	Verbinden
+Disconnect	Trennen
+Connection status	Verbindungsstatus
+Connection type	Verbindungstyp
+Templates	Vorlagen
+Template	Vorlage
+Use Template	Vorlage verwenden
+Use template	Vorlage verwenden
+View All Templates	Alle Vorlagen anzeigen
+All templates	Alle Vorlagen
+Template name	Vorlagenname
+Template preview	Vorlagenvorschau
+Template library	Vorlagenbibliothek
+Blank	Leer
+Blank page	Leere Seite
+Blank section	Leerer Abschnitt
+Blank block	Leerer Block
+Start from scratch	Komplett neu beginnen
+Build with AI	Mit KI erstellen
+Build With AI	Mit KI erstellen
+AI Website Generator	KI-Website-Generator
+Generate	Generieren
+Generating...	Wird generiert...
+Generate website	Website generieren
+Content	Inhalt
+Style	Stil
+Styling	Styling
+Layout	Layout
+Design	Design
+Elements	Elemente
+Element	Element
+Element Tree	Elementbaum
+Element settings	Elementeinstellungen
+Add Elements	Elemente hinzufügen
+Add element	Element hinzufügen
+Add section	Abschnitt hinzufügen
+Add a section	Abschnitt hinzufügen
+Sections	Abschnitte
+Section	Abschnitt
+Section name	Abschnittsname
+Section settings	Abschnittseinstellungen
+Row	Zeile
+Rows	Zeilen
+Column	Spalte
+Columns	Spalten
+Column layout	Spaltenlayout
+Column visibility	Spaltensichtbarkeit
+Container	Container
+Containers	Container
+Blocks	Blöcke
+Block	Block
+Block label	Blockbezeichnung
+Heading	Überschrift
+Heading text	Überschriftentext
+Heading tag	Überschriften-Tag
+Subheading	Unterüberschrift
+Paragraph	Absatz
+Text	Text
+Body text	Fließtext
+Text color	Textfarbe
+Text alignment	Textausrichtung
+Text style	Textstil
+Button	Button
+Button text	Buttontext
+Button label	Button-Beschriftung
+Button trigger	Button-Auslöser
+Button with count	Button mit Zähler
+Link	Link
+Link URL	Link-URL
+Link text	Linktext
+Link target	Linkziel
+Open in new tab	In neuem Tab öffnen
+Image	Bild
+Images	Bilder
+Image URL	Bild-URL
+Image alt text	Alternativtext des Bildes
+Alt text	Alternativtext
+Image size	Bildgröße
+Image position	Bildposition
+Image fit	Bildanpassung
+Gallery	Galerie
+Video	Video
+Video URL	Video-URL
+Audio	Audio
+Icon	Icon
+Icons	Icons
+Icon color	Iconfarbe
+Icon size	Icongröße
+Divider	Trennlinie
+Spacer	Abstandshalter
+Form	Formular
+Forms	Formulare
+Form fields	Formularfelder
+Form settings	Formulareinstellungen
+Input	Eingabefeld
+Input label	Eingabebeschriftung
+Label	Beschriftung
+Placeholder	Platzhalter
+Helper text	Hilfetext
+Field	Feld
+Fields	Felder
+Field type	Feldtyp
+Field label	Feldbeschriftung
+Field name	Feldname
+Required field	Pflichtfeld
+Checkbox	Kontrollkästchen
+Radio	Optionsfeld
+Dropdown	Dropdown
+Text area	Textbereich
+Number	Zahl
+Phone	Telefon
+Phone number	Telefonnummer
+Full name	Vollständiger Name
+First name	Vorname
+Last name	Nachname
+Company	Unternehmen
+Company name	Firmenname
+Address	Adresse
+City	Stadt
+Country	Land
+Postal code	Postleitzahl
+Website URL	Website-URL
+Background	Hintergrund
+Background color	Hintergrundfarbe
+Background color picker	Hintergrundfarbwähler
+Background gradient	Hintergrundverlauf
+Background image	Hintergrundbild
+Background image URL	Hintergrundbild-URL
+Background overlay	Hintergrund-Overlay
+Background size	Hintergrundgröße
+Background video URL (.mp4)	Hintergrundvideo-URL (.mp4)
+Color	Farbe
+Colors	Farben
+Border	Rahmen
+Borders	Rahmen
+Border color	Rahmenfarbe
+Border radius	Eckenradius
+Border style	Rahmenstil
+Border width	Rahmenbreite
+Shadow	Schatten
+Box shadow	Box-Schatten
+Opacity	Deckkraft
+Spacing	Abstände
+Margin	Außenabstand
+Padding	Innenabstand
+Width	Breite
+Height	Höhe
+Min width	Mindestbreite
+Max width	Maximalbreite
+Min height	Mindesthöhe
+Max height	Maximalhöhe
+Size	Größe
+Position	Position
+Top	Oben
+Bottom	Unten
+Left	Links
+Right	Rechts
+Center	Zentriert
+Align	Ausrichten
+Alignment	Ausrichtung
+Horizontal	Horizontal
+Vertical	Vertikal
+Direction	Richtung
+Gap	Abstand
+Font	Schriftart
+Font family	Schriftfamilie
+Font size	Schriftgröße
+Font weight	Schriftstärke
+Typography	Typografie
+Line height	Zeilenhöhe
+Letter spacing	Zeichenabstand
+Text decoration	Textdekoration
+Bold	Fett
+Italic	Kursiv
+Underline	Unterstrichen
+Uppercase	Großbuchstaben
+Lowercase	Kleinbuchstaben
+Normal	Normal
+Regular	Regulär
+Small	Klein
+Medium	Mittel
+Large	Groß
+Desktop	Desktop
+Tablet	Tablet
+Mobile	Mobil
+Responsive	Responsiv
+Device	Gerät
+Devices	Geräte
+Undo	Rückgängig
+Redo	Wiederholen
+Move up	Nach oben verschieben
+Move down	Nach unten verschieben
+Move left	Nach links verschieben
+Move right	Nach rechts verschieben
+Drag to reorder	Zum Sortieren ziehen
+Collapse	Einklappen
+Expand	Ausklappen
+Hidden	Ausgeblendet
+Visible	Sichtbar
+Visibility	Sichtbarkeit
+Advanced	Erweitert
+Advanced Settings	Erweiterte Einstellungen
+Advanced Configuration	Erweiterte Konfiguration
+Custom CSS	Benutzerdefiniertes CSS
+Custom HTML	Benutzerdefiniertes HTML
+CSS code	CSS-Code
+HTML code	HTML-Code
+Code	Code
+Code color	Codefarbe
+Attributes	Attribute
+Animation	Animation
+Transition	Übergang
+Autoplay	Autoplay
+Loop	Schleife
+Controls	Steuerelemente
+Accordion	Akkordeon
+Accordion item	Akkordeon-Element
+Tabs	Tabs
+Tab	Tab
+Popup	Pop-up
+Popups	Pop-ups
+Open popup	Pop-up öffnen
+Close popup	Pop-up schließen
+Countdown	Countdown
+List	Liste
+Bullet list	Aufzählungsliste
+Bulleted list	Aufzählungsliste
+Bullet	Aufzählungspunkt
+Badge	Badge
+Cards	Karten
+Card	Karte
+Grid	Raster
+Aspect ratio	Seitenverhältnis
+Contain	Einpassen
+Cover	Abdecken
+Fill	Ausfüllen
+Auto	Automatisch
+None selected	Nichts ausgewählt
+Page saved	Seite gespeichert
+All changes saved	Alle Änderungen gespeichert
+All changes saved in this browser	Alle Änderungen in diesem Browser gespeichert
+Changes saved	Änderungen gespeichert
+Changes saved in this browser	Änderungen in diesem Browser gespeichert
+Booking	Buchung
+Booking & Calendar	Buchung & Kalender
+Booking & calendar	Buchung & Kalender
+Booking Calendar	Buchungskalender
+Booking calendar	Buchungskalender
+Booking Pages	Buchungsseiten
+Booking pages	Buchungsseiten
+Booking page	Buchungsseite
+Booking page title	Titel der Buchungsseite
+Booking page template	Buchungsseiten-Vorlage
+Booking page filter	Buchungsseiten-Filter
+Booking page media	Medien der Buchungsseite
+Booking page not found	Buchungsseite nicht gefunden
+Booking page is active	Buchungsseite ist aktiv
+Booking page cloned.	Buchungsseite dupliziert.
+Booking page created.	Buchungsseite erstellt.
+Booking page updated.	Buchungsseite aktualisiert.
+Booking page deleted. Existing appointment records are retained.	Buchungsseite gelöscht. Bestehende Termineinträge bleiben erhalten.
+Booking Configuration	Buchungskonfiguration
+Booking ID	Buchungs-ID
+Booking URL	Buchungs-URL
+Booking / calendar URL	Buchungs- / Kalender-URL
+Booking link	Buchungslink
+Booking form	Buchungsformular
+Booking form & questions	Buchungsformular & Fragen
+Booking availability	Buchungsverfügbarkeit
+Booking limits	Buchungslimits
+Booking navigation	Buchungsnavigation
+Booking status	Buchungsstatus
+Booking statuses	Buchungsstatus
+Booking steps	Buchungsschritte
+Booking templates	Buchungsvorlagen
+Booking template ID	Buchungsvorlagen-ID
+Booking offered	Buchung angeboten
+Booking Offered	Buchung angeboten
+Booking offered / booked	Buchung angeboten / gebucht
+Booking confirmed	Buchung bestätigt
+Booking canceled	Buchung storniert
+Booking recorded	Buchung erfasst
+Booking request received	Buchungsanfrage erhalten
+Booking request submitted successfully	Buchungsanfrage erfolgreich gesendet
+Bookings	Buchungen
+Bookings & availability	Buchungen & Verfügbarkeit
+Bookings by Service	Buchungen nach Dienstleistung
+Appointment	Termin
+Appointments	Termine
+Appointment Booking	Terminbuchung
+Appointment Reminder	Terminerinnerung
+Appointment Reminder Flow	Terminerinnerungs-Flow
+Appointment details	Termindetails
+Appointment details / reschedule	Termindetails / verschieben
+Appointment not found	Termin nicht gefunden
+Appointment picker	Terminauswahl
+Appointment type	Termintyp
+Appointment types	Termintypen
+Appointment confirmed	Termin bestätigt
+Appointment canceled.	Termin abgesagt.
+Appointment saved.	Termin gespeichert.
+Appointments Booked	Gebuchte Termine
+Book Appointment	Termin buchen
+Book an Appointment	Termin buchen
+Book an appointment	Termin buchen
+Book appointments	Termine buchen
+Book another appointment	Weiteren Termin buchen
+Book another time	Andere Uhrzeit buchen
+Book Now	Jetzt buchen
+Book a Call	Gespräch buchen
+Book a call	Gespräch buchen
+Book a consultation	Beratungsgespräch buchen
+Book a demo	Demo buchen
+Book a session	Sitzung buchen
+Book session	Sitzung buchen
+Book a visit	Besuch buchen
+Book a strategy session	Strategiesitzung buchen
+Book a Free Consultation	Kostenlose Beratung buchen
+Book a free consultation	Kostenlose Beratung buchen
+Book free consultation	Kostenlose Beratung buchen
+Book Free Session	Kostenlose Sitzung buchen
+Book a Free Session	Kostenlose Sitzung buchen
+Book your appointment	Buche deinen Termin
+Book your session	Buche deine Sitzung
+Book your visit	Buche deinen Besuch
+Book your first session	Buche deine erste Sitzung
+Book your free consultation	Buche deine kostenlose Beratung
+Booked	Gebucht
+Reschedule	Verschieben
+Reschedule appointment	Termin verschieben
+Cancel appointment	Termin absagen
+Cancel booking	Buchung stornieren
+Confirm booking	Buchung bestätigen
+Confirm new time	Neue Uhrzeit bestätigen
+Confirmation	Bestätigung
+Confirmation & rescheduling	Bestätigung & Umbuchung
+Confirmation email	Bestätigungs-E-Mail
+Confirmation message	Bestätigungsnachricht
+Confirmation template ID	Bestätigungsvorlagen-ID
+Availability	Verfügbarkeit
+Availability diagnostics	Verfügbarkeitsdiagnose
+Availability sync is on	Verfügbarkeitssynchronisierung ist aktiv
+Available time	Verfügbare Zeit
+Available times	Verfügbare Zeiten
+Available times (comma separated)	Verfügbare Zeiten (kommagetrennt)
+Available times ·	Verfügbare Zeiten ·
+Weekly availability	Wöchentliche Verfügbarkeit
+Working hours	Arbeitszeiten
+Business hours	Geschäftszeiten
+Opening hours	Öffnungszeiten
+Specific dates	Bestimmte Tage
+Date overrides	Datumsausnahmen
+Unavailable	Nicht verfügbar
+Available	Verfügbar
+Busy	Beschäftigt
+Free	Frei
+Buffer	Puffer
+Buffer time	Pufferzeit
+Before	Vorher
+After	Nachher
+Before booking	Vor der Buchung
+After booking	Nach der Buchung
+Break	Pause
+Break Intervals	Pausenintervalle
+Break date (optional)	Pausendatum (optional)
+Break start	Pausenbeginn
+Break end	Pausenende
+Duration	Dauer
+Duration options	Daueroptionen
+Meeting duration	Besprechungsdauer
+Meeting location	Besprechungsort
+Location	Standort
+Locations	Standorte
+Meeting link	Meeting-Link
+Meeting URL	Meeting-URL
+Online meeting	Online-Meeting
+In person	Persönlich vor Ort
+At Location	Vor Ort
+Host	Gastgeber
+Hosts	Gastgeber
+Invitee	Eingeladene Person
+Invitees	Eingeladene Personen
+Guest	Gast
+Guests	Gäste
+Invite guests	Gäste einladen
+Guest email	E-Mail des Gastes
+Guest name	Name des Gastes
+Invitee questions	Fragen an Teilnehmende
+Reminder	Erinnerung
+Reminders	Erinnerungen
+Notifications & reminders	Benachrichtigungen & Erinnerungen
+Email notifications	E-Mail-Benachrichtigungen
+SMS notifications	SMS-Benachrichtigungen
+Calendar	Kalender
+Calendars	Kalender
+Calendar view	Kalenderansicht
+Calendar ID (API/Webhooks)	Kalender-ID (API/Webhooks)
+Calendar connected	Kalender verbunden
+Calendar linked	Kalender verknüpft
+Calendar slots offered	Angebotene Kalender-Zeitfenster
+Calendar invitation added in this demo	Kalendereinladung in dieser Demo hinzugefügt
+Connect your calendar	Verbinde deinen Kalender
+Connected calendar	Verbundener Kalender
+Google Calendar	Google Calendar
+Apple Calendar	Apple Kalender
+Outlook Calendar	Outlook-Kalender
+Apple iCal	Apple iCal
+System calendar	Systemkalender
+Team calendar	Teamkalender
+Calendar settings	Kalendereinstellungen
+Month view	Monatsansicht
+Week view	Wochenansicht
+Day view	Tagesansicht
+Agenda	Terminübersicht
+Schedule	Zeitplan
+Scheduling	Terminplanung
+Event	Ereignis
+Events	Ereignisse
+Event name	Ereignisname
+Event type	Ereignistyp
+Event details	Ereignisdetails
+All Events	Alle Ereignisse
+All calendars	Alle Kalender
+All booking pages	Alle Buchungsseiten
+All dates	Alle Daten
+All devices	Alle Geräte
+All categories	Alle Kategorien
+All statuses	Alle Status
+All Status	Alle Status
+All Types	Alle Typen
+All roles	Alle Rollen
+All tags	Alle Tags
+All conversations	Alle Unterhaltungen
+CRM & Leads	CRM & Leads
+CRM & leads	CRM & Leads
+CRM Pipelines	CRM-Pipelines
+CRM navigation	CRM-Navigation
+CRM pipeline board	CRM-Pipeline-Board
+CRM update	CRM-Aktualisierung
+CRM updated	CRM aktualisiert
+Leads	Leads
+Lead	Lead
+New leads	Neue Leads
+Total leads	Leads gesamt
+Qualified leads	Qualifizierte Leads
+Lead details	Lead-Details
+Lead source	Lead-Quelle
+Lead score	Lead-Score
+Lead status	Lead-Status
+Contacts	Kontakte
+Contact	Kontakt
+Contact information	Kontaktinformationen
+Contact Info	Kontaktinfo
+Contact Form	Kontaktformular
+Contact created	Kontakt erstellt
+Contact not found	Kontakt nicht gefunden
+Contact options	Kontaktoptionen
+Contact saved.	Kontakt gespeichert.
+Contact updated.	Kontakt aktualisiert.
+Contact muted.	Kontakt stummgeschaltet.
+Contact source	Kontaktquelle
+Contact pipeline	Kontakt-Pipeline
+Contact pipeline stage	Pipeline-Phase des Kontakts
+Contact record tabs	Kontakt-Datensatz-Tabs
+Contacts archived.	Kontakte archiviert.
+Contacts deleted.	Kontakte gelöscht.
+Contacts restored.	Kontakte wiederhergestellt.
+Contacts pagination	Kontakte-Seitennavigation
+Contacts rows per page	Kontaktzeilen pro Seite
+Clients	Mandanten
+Client	Mandant
+Customers	Kunden
+Customer	Kunde
+Customer details	Kundendaten
+Customer name	Kundenname
+Customer email	Kunden-E-Mail
+Customer journey	Customer Journey
+Customer journeys	Customer Journeys
+Customer support	Kundensupport
+Pipeline	Pipeline
+Pipelines	Pipelines
+Pipeline name	Pipeline-Name
+Pipeline stage	Pipeline-Phase
+Stage	Phase
+Stages	Phasen
+Stage name	Phasenname
+Stage color	Phasenfarbe
+Add stage	Phase hinzufügen
+Add lead to stage	Lead zu Phase hinzufügen
+New Lead	Neuer Lead
+Cold Lead	Kalter Lead
+Cold	Kalt
+Warm	Warm
+Hot	Heiß
+Qualified	Qualifiziert
+Unqualified	Unqualifiziert
+Contacted	Kontaktiert
+Negotiation	Verhandlung
+Proposal	Angebot
+Won	Gewonnen
+Lost	Verloren
+Closed	Abgeschlossen
+Closed / lost	Abgeschlossen / verloren
+Converted	Konvertiert
+Conversing	Im Gespräch
+Interested	Interessiert
+Needs attention	Erfordert Aufmerksamkeit
+Human attention	Menschliche Prüfung
+Owner	Verantwortlicher
+Assigned To	Zugewiesen an
+Assigned owner	Zugewiesener Verantwortlicher
+Assigned to me	Mir zugewiesen
+Assigned when saved	Wird beim Speichern zugewiesen
+Assign owner	Verantwortlichen zuweisen
+Assign to me	Mir zuweisen
+Tags	Tags
+Tag	Tag
+Notes	Notizen
+Note	Notiz
+Internal note	Interne Notiz
+Internal Note	Interne Notiz
+Tasks	Aufgaben
+Task	Aufgabe
+Task title	Aufgabentitel
+Due date	Fälligkeitsdatum
+Due today	Heute fällig
+Overdue	Überfällig
+Priority	Priorität
+High	Hoch
+Low	Niedrig
+Urgent	Dringend
+Activity	Aktivität
+Activities	Aktivitäten
+Activity Log	Aktivitätsprotokoll
+Activity Timeline	Aktivitätsverlauf
+Activity timeline	Aktivitätsverlauf
+Activity feed	Aktivitäts-Feed
+Activity events	Aktivitätsereignisse
+Activity filters	Aktivitätsfilter
+Actor	Akteur
+Timeline	Zeitachse
+History	Verlauf
+Audit logs	Audit-Protokolle
+Archive	Archivieren
+Archived	Archiviert
+Archive contact	Kontakt archivieren
+Archive conversation	Unterhaltung archivieren
+Restore	Wiederherstellen
+Inbox	Posteingang
+Conversation	Unterhaltung
+Conversations	Unterhaltungen
+Conversation History	Gesprächsverlauf
+Conversation history	Gesprächsverlauf
+Conversation Outcomes	Gesprächsergebnisse
+Conversation Quality	Gesprächsqualität
+Conversation filters	Unterhaltungsfilter
+Conversation created	Unterhaltung erstellt
+Conversation started	Unterhaltung gestartet
+Conversation handed back to AI	Unterhaltung zurück an KI übergeben
+Conversations Handled	Bearbeitete Unterhaltungen
+Chat History	Chatverlauf
+Messages	Nachrichten
+Message	Nachricht
+Message text	Nachrichtentext
+Type a message...	Nachricht eingeben...
+Type your message...	Gib deine Nachricht ein...
+Send message	Nachricht senden
+Reply	Antworten
+Reply to customer	Dem Kunden antworten
+Unread	Ungelesen
+Read	Gelesen
+Mark as read	Als gelesen markieren
+Mark as unread	Als ungelesen markieren
+Unassigned	Nicht zugewiesen
+Assigned	Zugewiesen
+Resolved	Gelöst
+Resolve	Lösen
+Reopen	Wieder öffnen
+Channel	Kanal
+Channels	Kanäle
+Channel status	Kanalstatus
+Channel Distribution	Kanalverteilung
+Channel attribution	Kanalzuordnung
+Channel preferences saved.	Kanaleinstellungen gespeichert.
+Attach a file	Datei anhängen
+Attach files	Dateien anhängen
+Attachment	Anhang
+Attachments	Anhänge
+Take over	Übernehmen
+Human takeover	Übernahme durch Mitarbeiter
+Hand back to AI	Zurück an KI übergeben
+AI Copilot	AI Copilot
+AI Business Copilot	AI Business Copilot
+Flow Builder	Flow Builder
+Loading Flow Builder…	Flow Builder wird geladen…
+AI Follow-Up	KI-Follow-up
+AI Follow-up	KI-Follow-up
+AI Follow-Up sections	KI-Follow-up-Bereiche
+AI Follow-Up sequence	KI-Follow-up-Sequenz
+AI Agent	AI Agent
+AI Assist	KI-Unterstützung
+AI Assistant Setup	KI-Assistent einrichten
+AI Assistant ·	KI-Assistent ·
+AI Assistants	KI-Assistenten
+AI Auto-reply Rate	KI-Auto-Antwortrate
+AI Automation	KI-Automatisierung
+AI Automation Status	Status der KI-Automatisierung
+AI Performance	KI-Leistung
+AI Provider	KI-Anbieter
+AI Sales	KI-Vertrieb
+AI Templates	KI-Vorlagen
+AI Tools & Setup	KI-Tools & Einrichtung
+AI Image Generation	KI-Bildgenerierung
+AI Knowledge Packs	KI-Wissenspakete
+AI Active	KI aktiv
+AI handled	Von KI bearbeitet
+AI paused	KI pausiert
+AI sent message	KI hat Nachricht gesendet
+AI suggestion ready to review	KI-Vorschlag bereit zur Prüfung
+AI tone / personality	KI-Tonfall / Persönlichkeit
+AI response boundaries	Antwortgrenzen der KI
+AI vs human	KI vs. Mensch
+AI weekly reports	Wöchentliche KI-Berichte
+AI conversations	KI-Unterhaltungen
+AI documents	KI-Dokumente
+AI auto-reply off	Automatische KI-Antwort aus
+AI auto-reply enabled	Automatische KI-Antwort aktiviert
+AI auto-reply disabled	Automatische KI-Antwort deaktiviert
+AI auto-reply for this conversation	Automatische KI-Antwort für diese Unterhaltung
+AI will reply automatically	KI antwortet automatisch
+AI follow-up activated	KI-Follow-up aktiviert
+AI follow-up paused	KI-Follow-up pausiert
+AI can make mistakes. Review before taking action.	KI kann Fehler machen. Bitte vor dem Ausführen prüfen.
+Copilot can make mistakes. Review drafts before confirming.	Copilot kann Fehler machen. Überprüfe Entwürfe vor dem Bestätigen.
+Copilot is working…	Copilot arbeitet…
+Ask the AI Copilot	Frage den AI Copilot
+Ask me anything about your business...	Frag mich alles über dein Unternehmen...
+Ask a test question	Testfrage stellen
+Assistant name	Assistentenname
+Assistant settings	Assistenteneinstellungen
+Assistant templates	Assistentenvorlagen
+Ready-made templates	Fertige Vorlagen
+Assistant is paused	Assistent ist pausiert
+Knowledge Center	Wissenszentrum
+Knowledge Base	Wissensdatenbank
+Knowledge base	Wissensdatenbank
+Knowledge	Wissen
+Knowledge sources	Wissensquellen
+Knowledge source	Wissensquelle
+Source	Quelle
+Sources	Quellen
+Source name	Quellenname
+Source type	Quellentyp
+Source URL	Quell-URL
+Approved content	Freigegebene Inhalte
+Approved answers	Freigegebene Antworten
+Answer	Antwort
+Answer type	Antworttyp
+Answer FAQ	FAQ beantworten
+FAQ	FAQ
+FAQs	FAQs
+Question	Frage
+Questions	Fragen
+Brand voice guidelines	Richtlinien zur Markenstimme
+Brand voice & writing guidelines	Markenstimme- & Schreibrichtlinien
+Brand tone	Markentonfall
+Business knowledge	Unternehmenswissen
+Business description	Unternehmensbeschreibung
+Business brief	Unternehmensprofil
+Business context connected	Unternehmenskontext verbunden
+Automation	Automatisierung
+Automations	Automatisierungen
+Automation Flow	Automatisierungs-Flow
+Automation Workflows	Automatisierungs-Workflows
+Automation templates	Automatisierungsvorlagen
+Automated	Automatisiert
+Automatic	Automatisch
+Automatically detect	Automatisch erkennen
+Automated replies	Automatische Antworten
+Automated reports	Automatische Berichte
+Automatic escalation	Automatische Eskalation
+Automatic sync	Automatische Synchronisierung
+Workflow	Workflow
+Workflows	Workflows
+Workflow name	Workflow-Name
+Trigger	Auslöser
+Triggers	Auslöser
+Trigger type	Auslösertyp
+Conditions	Bedingungen
+Condition	Bedingung
+Delay	Verzögerung
+Sequence	Sequenz
+Sequences	Sequenzen
+Follow-up	Follow-up
+Follow-Up	Follow-up
+Follow-up sequence	Follow-up-Sequenz
+Message variables	Nachrichtenvariablen
+Subject	Betreff
+Subject line	Betreffzeile
+Campaign	Kampagne
+Campaigns	Kampagnen
+Campaign name	Kampagnenname
+Campaign draft	Kampagnenentwurf
+Audience	Zielgruppe
+Audience Breakdown	Zielgruppenaufschlüsselung
+Audience ID	Zielgruppen-ID
+Audience / list name	Zielgruppen- / Listenname
+Consent	Einwilligung
+Consent policy	Einwilligungsrichtlinie
+Consent recorded	Einwilligung erfasst
+Consent guard enabled.	Einwilligungsschutz aktiviert.
+Consent-first messaging	Einwilligungsbasierter Versand
+Unsubscribe	Abmelden
+Subscribed	Abonniert
+Unsubscribed	Abgemeldet
+Products & Payments	Produkte & Zahlungen
+Products	Produkte
+Product	Produkt
+Product name	Produktname
+Product type	Produkttyp
+Product status	Produktstatus
+Product description	Produktbeschreibung
+Product details	Produktdetails
+Product information	Produktinformationen
+Product image	Produktbild
+Product images	Produktbilder
+Product thumbnail	Produkt-Vorschaubild
+Product URL	Produkt-URL
+Product link	Produktlink
+Product options	Produktoptionen
+Create Product	Produkt erstellen
+All Products	Alle Produkte
+All products	Alle Produkte
+All your products	Alle deine Produkte
+Catalog product	Katalogprodukt
+Digital Product	Digitales Produkt
+Digital product	Digitales Produkt
+Digital Products	Digitale Produkte
+Digital products	Digitale Produkte
+Digital assets	Digitale Inhalte
+Digital file	Digitale Datei
+Digital files	Digitale Dateien
+Physical Product	Physisches Produkt
+Physical product	Physisches Produkt
+Service	Dienstleistung
+Services	Dienstleistungen
+Service name	Name der Dienstleistung
+Service details	Details zur Dienstleistung
+Service duration	Dauer der Dienstleistung
+Service type	Art der Dienstleistung
+Active service	Aktive Dienstleistung
+Course	Kurs
+Courses	Kurse
+Course / Membership	Kurs / Mitgliedschaft
+Course Content	Kursinhalt
+Course Cover	Kurs-Cover
+Course Details	Kursdetails
+Course Information	Kursinformationen
+Course Orders	Kursbestellungen
+Course Performance	Kursleistung
+Course Sales Page	Kurs-Verkaufsseite
+Course name	Kursname
+Course title	Kurstitel
+Course description	Kursbeschreibung
+Course status	Kursstatus
+Curriculum	Lehrplan
+Modules	Module
+Module	Modul
+Module title	Modultitel
+Module name	Modulname
+Lessons	Lektionen
+Lesson	Lektion
+Lesson title	Lektionstitel
+Lesson name	Lektionsname
+Lesson type	Lektionstyp
+Lesson content	Lektionsinhalt
+Lesson duration	Lektionsdauer
+Students	Kursteilnehmer
+Student	Kursteilnehmer
+Student name	Name des Teilnehmers
+Student email	E-Mail des Teilnehmers
+Student details	Teilnehmerdetails
+Enrollment	Einschreibung
+Enrollments	Einschreibungen
+Enrollment date	Einschreibedatum
+Enrollment status	Einschreibestatus
+Enrollment limit	Teilnehmerlimit
+Progress	Fortschritt
+Average progress	Durchschnittlicher Fortschritt
+Completion	Abschluss
+Completion rate	Abschlussquote
+Completed · Mark incomplete	Abgeschlossen · Als unvollständig markieren
+Completed in preview	In der Vorschau abgeschlossen
+Instructor	Kursleiter
+Instructor name	Name des Kursleiters
+Instructor bio	Biografie des Kursleiters
+Certificate	Zertifikat
+Certificates	Zertifikate
+Community	Community
+Community URL	Community-URL
+Membership	Mitgliedschaft
+Memberships	Mitgliedschaften
+Bundle	Paketangebot
+Bundles	Paketangebote
+Bundle Information	Paketinformationen
+Bundle offer	Paketangebot
+Component Products	Enthaltene Produkte
+Component Items	Enthaltene Artikel
+Pricing	Preisgestaltung
+Price	Preis
+Base Price	Grundpreis
+Regular price	Regulärer Preis
+Sale price	Aktionspreis
+Selling price	Verkaufspreis
+Compare-at price	Vergleichspreis
+Compare Price (Optional)	Vergleichspreis (optional)
+Currency	Währung
+Amount	Betrag
+Quantity	Menge
+Stock	Lagerbestand
+SKU	SKU
+Inventory	Inventar
+Taxes	Steuern
+Tax	Steuer
+Tax rate	Steuersatz
+Shipping	Versand
+Delivery	Lieferung
+Delivery URL	Liefer-URL
+Delivery instructions	Lieferhinweise
+Access	Zugang
+Access & Delivery	Zugang & Lieferung
+Access & Download Settings	Zugangs- & Downloadeinstellungen
+Access Type	Zugangsart
+Access duration	Zugangsdauer
+Access release date	Freischaltdatum
+Access delivered	Zugang bereitgestellt
+Lifetime	Lebenslang
+Lifetime access	Lebenslanger Zugang
+Limited	Begrenzt
+Unlimited	Unbegrenzt
+One-time	Einmalig
+One-time payment	Einmalzahlung
+Recurring	Wiederkehrend
+Subscription	Abonnement
+Subscriptions	Abonnements
+Monthly	Monatlich
+Yearly	Jährlich
+Annually	Jährlich
+Weekly	Wöchentlich
+Daily	Täglich
+Billing Interval	Abrechnungsintervall
+Billing period	Abrechnungszeitraum
+Installments	Ratenzahlung
+Free trial	Kostenlose Testphase
+Trial period	Testzeitraum
+Trial days	Testtage
+Discount	Rabatt
+Discounts	Rabatte
+Discount code	Rabattcode
+Discount Code	Rabattcode
+Discount name	Rabattname
+Discount type	Rabattart
+Discount value	Rabattwert
+Discount amount	Rabattbetrag
+Discount percentage	Rabattprozentsatz
+Create Discount	Rabatt erstellen
+Create New Discount	Neuen Rabatt erstellen
+Edit Discount	Rabatt bearbeiten
+Add Another Discount	Weiteren Rabatt hinzufügen
+Automatic Discount	Automatischer Rabatt
+Percentage	Prozentsatz
+Fixed amount	Festbetrag
+Applies To	Gilt für
+Applies to	Gilt für
+Usage limit	Nutzungslimit
+Usage limits	Nutzungslimits
+Coupon usage limit	Gutschein-Nutzungslimit
+Start Date	Startdatum
+End Date	Enddatum
+Expiration date	Ablaufdatum
+Expired	Abgelaufen
+Scheduled	Geplant
+Scheduled date	Geplantes Datum
+Minimum purchase	Mindestbestellwert
+Minimum purchase amount	Mindestkaufbetrag
+Payments	Zahlungen
+Payment	Zahlung
+Payment status	Zahlungsstatus
+Payment method	Zahlungsmethode
+Payment methods	Zahlungsmethoden
+Payment provider	Zahlungsanbieter
+Payment providers	Zahlungsanbieter
+Connected payment provider	Verbundener Zahlungsanbieter
+Accepted payment methods	Akzeptierte Zahlungsmethoden
+Paid	Bezahlt
+Unpaid	Unbezahlt
+Refunded	Erstattet
+Refund	Rückerstattung
+Refunds	Rückerstattungen
+Awaiting payment	Warten auf Zahlung
+Payment successful	Zahlung erfolgreich
+Payment failed	Zahlung fehlgeschlagen
+Checkout	Checkout
+Checkout Preview	Checkout-Vorschau
+Checkout Settings	Checkout-Einstellungen
+Checkout preferences	Checkout-Präferenzen
+Checkout preview submitted successfully	Checkout-Vorschau erfolgreich abgesendet
+Cart	Warenkorb
+Order	Bestellung
+Orders	Bestellungen
+Order details	Bestelldetails
+Order summary	Bestellübersicht
+Order ID	Bestell-ID
+Order date	Bestelldatum
+Order status	Bestellstatus
+Order total	Bestellsumme
+Total	Gesamt
+Subtotal	Zwischensumme
+Total amount	Gesamtbetrag
+Total price	Gesamtpreis
+Total revenue	Gesamtumsatz
+Revenue	Umsatz
+Sales	Verkäufe
+Total sales	Gesamtverkäufe
+Transactions	Transaktionen
+Transaction	Transaktion
+Transaction history	Transaktionsverlauf
+Invoice	Rechnung
+Invoices	Rechnungen
+Receipt	Beleg
+Billing	Abrechnung
+Billing & Payments	Abrechnung & Zahlungen
+Billing email	Abrechnungs-E-Mail
+Billing navigation	Abrechnungsnavigation
+Wallet	Wallet
+Balance	Kontostand
+Credits	Guthaben
+Available credits	Verfügbares Guthaben
+Add Credits	Guthaben aufladen
+Top up	Aufladen
+Top-up	Aufladung
+Auto Recharge	Automatisches Aufladen
+Auto recharge	Automatisches Aufladen
+Bank Transfer	Banküberweisung
+Bank transfer	Banküberweisung
+Credit card	Kreditkarte
+Card number	Kartennummer
+Cardholder name	Name des Karteninhabers
+Expiry date	Ablaufdatum
+CVC	CVC
+Secure checkout	Sicherer Checkout
+Continue to checkout	Weiter zum Checkout
+Continue to payment	Weiter zur Zahlung
+Continue to secure checkout	Weiter zum sicheren Checkout
+Continue securely	Sicher fortfahren
+Continue shopping	Weiter einkaufen
+Complete my order	Bestellung abschließen
+Buy now	Jetzt kaufen
+Add to cart	In den Warenkorb
+Upsell	Upsell
+Downsell	Downsell
+Order bump	Order-Bump
+Add Upsell or Downsell	Upsell oder Downsell hinzufügen
+Analytics	Analysen
+Analytics overview	Analyseübersicht
+Analytics sections	Analysebereiche
+Analytics event fired	Analyse-Ereignis ausgelöst
+Performance	Leistung
+Insights	Einblicke
+Reports	Berichte
+Report	Bericht
+Export report	Bericht exportieren
+Export CSV	CSV exportieren
+Conversion	Conversion
+Conversions	Conversions
+Conversion Rate	Conversion-Rate
+Conversion rate	Conversion-Rate
+Conversion by page	Conversion nach Seite
+Conversion goal	Conversion-Ziel
+Average Conversion	Durchschnittliche Conversion
+Average Order Value	Durchschnittlicher Bestellwert
+Avg. Response Time	Durchschn. Antwortzeit
+Avg. Session Duration	Durchschn. Sitzungsdauer
+Bounce Rate	Absprungrate
+Cost Per Lead (CPL)	Kosten pro Lead (CPL)
+Cost per lead	Kosten pro Lead
+Visitors	Besucher
+Visits	Besuche
+Unique visitors	Eindeutige Besucher
+Page views	Seitenaufrufe
+Sessions	Sitzungen
+Session	Sitzung
+Traffic	Traffic
+Traffic sources	Traffic-Quellen
+Traffic source	Traffic-Quelle
+Engagement	Engagement
+Engagement rate	Engagement-Rate
+Click rate	Klickrate
+Clicks	Klicks
+Click-through rate	Click-Through-Rate
+Open rate	Öffnungsrate
+Drop-off	Abbruch
+Drop-off rate	Abbruchquote
+Retention	Kundenbindung
+Churn	Abwanderung
+Cohorts	Kohorten
+Returning customers	Wiederkehrende Kunden
+New customers	Neukunden
+Customer lifetime value	Customer Lifetime Value
+Attendance	Teilnahme
+Attendance Rate	Teilnahmequote
+Cancellation Rate	Stornierungsquote
+Cancellations	Stornierungen
+No-show	Nichterscheinen
+No show	Nichterscheinen
+No-shows	Nichterscheinen
+Attended	Teilgenommen
+Booking Performance	Buchungsleistung
+Average meeting time	Durchschnittliche Besprechungsdauer
+Busiest hours	Stoßzeiten
+Top products	Top-Produkte
+Top pages	Top-Seiten
+Top sources	Top-Quellen
+Best Selling Product	Meistverkauftes Produkt
+Best converting	Beste Conversion
+Change vs previous period	Veränderung gegenüber Vorzeitraum
+Compare	Vergleichen
+Comparison	Vergleich
+Previous period	Vorheriger Zeitraum
+Growth	Wachstum
+Average revenue growth	Durchschnittliches Umsatzwachstum
+Metric	Kennzahl
+Metrics	Kennzahlen
+Chart	Diagramm
+Settings navigation	Einstellungsnavigation
+Account Settings	Kontoeinstellungen
+Account Overview	Kontoübersicht
+Business Settings	Unternehmenseinstellungen
+Business Name	Unternehmensname
+Business name	Unternehmensname
+Business type	Unternehmensart
+Business email	Geschäfts-E-Mail
+Business address	Geschäftsadresse
+Business identity	Unternehmensidentität
+Business logo URL	URL des Unternehmenslogos
+Business tools	Business-Tools
+Business services	Unternehmensleistungen
+Business	Unternehmen
+Team	Team
+Team members	Teammitglieder
+Team member	Teammitglied
+Members	Mitglieder
+Member	Mitglied
+Role	Rolle
+Roles	Rollen
+Permissions	Berechtigungen
+Permission	Berechtigung
+Admin	Admin
+Administrator	Administrator
+Super Admin	Super-Admin
+User	Benutzer
+Users	Benutzer
+Viewer	Betrachter
+Editor	Bearbeiter
+Invite	Einladen
+Invite member	Mitglied einladen
+Invite team member	Teammitglied einladen
+Send invitation	Einladung senden
+Invitations	Einladungen
+Pending invitation	Ausstehende Einladung
+Security	Sicherheit
+Security settings	Sicherheitseinstellungen
+Current password	Aktuelles Passwort
+New password	Neues Passwort
+Confirm new password	Neues Passwort bestätigen
+Confirm password	Passwort bestätigen
+Change password	Passwort ändern
+Update password	Passwort aktualisieren
+Two-factor authentication	Zwei-Faktor-Authentifizierung
+Active sessions	Aktive Sitzungen
+Login history	Anmeldeverlauf
+Delete account	Konto löschen
+Account deletion	Kontolöschung
+Integrations	Integrationen
+Integration	Integration
+Integration settings	Integrationseinstellungen
+Connected Tools	Verbundene Tools
+Connected tools	Verbundene Tools
+Connected account	Verbundenes Konto
+Connected and ready	Verbunden und einsatzbereit
+Connection needs attention	Verbindung erfordert Aufmerksamkeit
+Connection preferences	Verbindungseinstellungen
+Connection test passed.	Verbindungstest erfolgreich.
+Test connection	Verbindung testen
+Connect / Authorize	Verbinden / Autorisieren
+Confirm disconnect	Trennen bestätigen
+API access	API-Zugriff
+API key	API-Schlüssel
+API keys	API-Schlüssel
+Webhooks	Webhooks
+Webhook URL	Webhook-URL
+Endpoint	Endpunkt
+Secret key	Geheimer Schlüssel
+Access token	Zugriffstoken
+Tools	Tools
+Tools & Setup	Tools & Einrichtung
+Appearance	Erscheinungsbild
+Appearance Mode	Darstellungsmodus
+Branding	Branding
+Brand color	Markenfarbe
+Brand Color Palette	Markenfarbpalette
+Brand heading	Markenüberschrift
+Brand body	Markenfließtext
+Logo	Logo
+Logo URL	Logo-URL
+Upload logo	Logo hochladen
+Change Photo	Foto ändern
+Change Image	Bild ändern
+Change Cover	Cover ändern
+Profile photo	Profilfoto
+Change profile photo	Profilfoto ändern
+Bio	Biografie
+Personal information	Persönliche Angaben
+Contact Support	Support kontaktieren
+Contact support	Support kontaktieren
+Help	Hilfe
+Support	Support
+Help center	Hilfe-Center
+Documentation	Dokumentation
+Terms of Service	Nutzungsbedingungen
+Terms of service	Nutzungsbedingungen
+Privacy Policy	Datenschutzerklärung
+Privacy policy	Datenschutzerklärung
+Terms & Conditions	Allgemeine Geschäftsbedingungen
+Basic	Basis
+Basic Information	Grundlegende Informationen
+Basic analytics	Basis-Analysen
+Advanced analytics	Erweiterte Analysen
+Basic automations	Basis-Automatisierungen
+Advanced automations	Erweiterte Automatisierungen
+Plan	Tarif
+Plans	Tarife
+Current plan	Aktueller Tarif
+Upgrade	Upgraden
+Upgrade plan	Tarif upgraden
+Downgrade	Downgrade durchführen
+Cancel subscription	Abonnement kündigen
+Cancel anytime	Jederzeit kündbar
+Usage	Nutzung
+Usage & limits	Nutzung & Limits
+Storage	Speicherplatz
+Storage usage	Speichernutzung
+Limit	Limit
+Limits	Limits
+Unlimited access	Unbegrenzter Zugriff
+Feature	Funktion
+Features	Funktionen
+Included	Enthalten
+Not included	Nicht enthalten
+Enabled modules	Aktivierte Module
+Modules & access	Module & Zugriff
+Active filters	Aktive Filter
+Active users	Aktive Nutzer
+Active Students	Aktive Teilnehmer
+Active Customers	Aktive Kunden
+Active customer	Aktiver Kunde
+Active now	Jetzt aktiv
+Active item	Aktives Element
+All Clients	Alle Kunden
+All Connections	Alle Verbindungen
+All integrations	Alle Integrationen
+All industries	Alle Branchen
+All goals	Alle Ziele
+All states	Alle Status
+All pricing options	Alle Preisoptionen
+All tracked sessions	Alle erfassten Sitzungen
+All systems operational	Alle Systeme betriebsbereit
+All systems go	Alle Systeme startklar
+Amount	Betrag
+Access your WhatsApp Business account	Auf dein WhatsApp Business-Konto zugreifen
+Access only the API scopes you approve	Zugriff nur auf die von dir freigegebenen API-Bereiche
+Automatically add credits when your balance is low.	Guthaben automatisch aufladen, wenn dein Kontostand niedrig ist.
+Automatically create meeting links for your booked calls.	Besprechungslinks für deine gebuchten Gespräche automatisch erstellen.
+A clear view of what’s happening across your workspace.	Ein klarer Überblick über alles, was in deinem Arbeitsbereich passiert.
+Create booking links, manage your availability and let clients book appointments with you.	Erstelle Buchungslinks, verwalte deine Verfügbarkeit und lass Kunden Termine bei dir buchen.
+Build and manage the paths that turn visitors into customers.	Erstelle und verwalte die Pfade, die Besucher zu Kunden machen.
+Connect the tools that keep your business in sync.	Verbinde die Tools, die dein Unternehmen synchron halten.
+Manage all your customer conversations in one place.	Verwalte alle deine Kundengespräche an einem Ort.
+Build relationships and keep your pipeline moving.	Baue Beziehungen auf und halte deine Pipeline in Bewegung.
+Thoughtful follow-ups that help every lead move forward.	Durchdachte Follow-ups, die jeden Lead weiterbringen.
+Manage your offers, products and connected payments.	Verwalte deine Angebote, Produkte und verbundenen Zahlungen.
+Understand performance across your business.	Verstehe die Performance in deinem gesamten Unternehmen.
+Manage your workspace and business preferences.	Verwalte deinen Arbeitsbereich und deine Unternehmenseinstellungen.
+Based on your workspace data	Basierend auf den Daten deines Arbeitsbereichs
+Back to dashboard	Zurück zum Dashboard
+Back to Products	Zurück zu Produkte
+Back to products	Zurück zu den Produkten
+Back to product	Zurück zum Produkt
+Back to Discounts	Zurück zu Rabatte
+Back to booking pages	Zurück zu den Buchungsseiten
+Back to bookings	Zurück zu den Buchungen
+Back to calendar	Zurück zum Kalender
+Back to contacts	Zurück zu den Kontakten
+Back to pipeline	Zurück zur Pipeline
+Back to overview	Zurück zur Übersicht
+Back to asset list	Zurück zur Asset-Liste
+Back to website	Zurück zur Website
+Back to AI Copilot	Zurück zum AI Copilot
+Back to funnels	Zurück zu den Funnels
+Back to funnel	Zurück zum Funnel
+Create Funnel	Funnel erstellen
+Create funnel	Funnel erstellen
+Choose a ready-to-edit page or form for your business.	Wähle eine direkt bearbeitbare Seite oder ein Formular für dein Unternehmen.
+Close Preview	Vorschau schließen
+Close dialog	Dialog schließen
+Close menu	Menü schließen
+Close edit menu	Bearbeitungsmenü schließen
+Close checkout	Checkout schließen
+Close variants	Varianten schließen
+Close appointment editor	Termin-Editor schließen
+Close course menu	Kursmenü schließen
+Close course actions	Kursaktionen schließen
+Close curriculum actions	Lehrplanaktionen schließen
+Close all conversations	Alle Gespräche schließen
+Close when clicking outside	Beim Klicken außerhalb schließen
+Collapse chat history	Chatverlauf einklappen
+All changes saved	Alle Änderungen gespeichert
+Additional details	Zusätzliche Details
+Additional workflows	Zusätzliche Workflows
+Address or location instructions	Adresse oder Wegbeschreibung
+Address or meeting details	Adresse oder Besprechungsdetails
+Address or place	Adresse oder Ort
+After a delay	Nach einer Verzögerung
+After approval	Nach Freigabe
+After manual approval	Nach manueller Freigabe
+After specific date	Nach bestimmtem Datum
+After event — attended	Nach dem Termin — teilgenommen
+After event — no show	Nach dem Termin — nicht erschienen
+After-booking action	Aktion nach der Buchung
+Allow direct download after purchase	Direkten Download nach dem Kauf erlauben
+Allow guest checkout	Gastbestellung erlauben
+Allow multiple bookings	Mehrfachbuchungen erlauben
+Allow multiple items open	Mehrere geöffnete Elemente erlauben
+Allow recurring bookings	Wiederkehrende Buchungen erlauben
+Allow self-cancel / reschedule	Selbstständiges Stornieren / Umbuchen erlauben
+Always enforced	Immer erforderlich
+Apply enrollment	Einschreibung anwenden
+Apply now	Jetzt bewerben
+Apply range	Zeitraum anwenden
+Apply styles to	Stile anwenden auf
+Apply to all pages	Auf alle Seiten anwenden
+Asset	Asset
+Assets	Assets
+Asset URL	Asset-URL
+Asset configuration	Asset-Konfiguration
+Asset duplicated	Asset dupliziert
+Asset management	Asset-Verwaltung
+Asset name	Asset-Name
+Asset not found	Asset nicht gefunden
+Asset options	Asset-Optionen
+Asset status	Asset-Status
+Asset type	Asset-Typ
+Assigned asset	Zugewiesenes Asset
+Assign a provider	Anbieter zuweisen
+Assigned To	Zugewiesen an
+Author name	Autorenname
+Avatar image	Profilbild
+Average cost / year	Durchschnittliche Kosten / Jahr
+Automatic Discount	Automatischer Rabatt
+Automation & Scaling	Automatisierung & Skalierung
+Automation paused for team attention	Automatisierung zur Prüfung durch das Team pausiert
+Automation sequence created as a draft.	Automatisierungssequenz als Entwurf erstellt.
+Automation sequence updated.	Automatisierungssequenz aktualisiert.
+Available to assign	Zur Zuweisung verfügbar
+Before image	Vorher-Bild
+After image	Nachher-Bild
+Before label	Vorher-Beschriftung
+After label	Nachher-Beschriftung
+Before & after	Vorher & Nachher
+Before / after slider	Vorher-/Nachher-Schieberegler
+Bar color	Balkenfarbe
+Bar height	Balkenhöhe
+Best Value	Bestes Preis-Leistungs-Verhältnis
+Best seller	Bestseller
+Box count	Anzahl der Boxen
+Boxed	Eingerahmt
+Boxed tabs	Eingerahmte Tabs
+Boxes	Boxen
+Bordered cards	Karten mit Rahmen
+Both	Beide
+Brand Story	Markengeschichte
+Brand strategy	Markenstrategie
+Brand strategy funnel	Markenstrategie-Funnel
+Brand strategy session	Markenstrategie-Sitzung
+Brand theme applied to all funnel pages	Markenthema auf alle Funnel-Seiten angewendet
+Brand designer	Markendesigner
+Breadcrumb	Brotkrümelnavigation
+Build Follow-Up Sequence	Follow-up-Sequenz erstellen
+Build and sell your content	Erstelle und verkaufe deine Inhalte
+Build and sell your online course	Erstelle und verkaufe deinen Online-Kurs
+Build your curriculum with modules and lessons.	Stelle deinen Lehrplan mit Modulen und Lektionen zusammen.
+Business / website name	Unternehmens- / Website-Name
+Business-specific assistants, configured for your workspace.	Unternehmensspezifische Assistenten, konfiguriert für deinen Arbeitsbereich.
+Button preview · set a label in the Content panel	Button-Vorschau · lege im Bereich „Inhalt“ eine Beschriftung fest
+Cancellation Trigger	Stornierungsauslöser
+Cancellation access trigger	Zugriffsauslöser bei Stornierung
+Cancellation settings	Stornierungseinstellungen
+Capability	Fähigkeit
+Caption	Bildunterschrift
+Captured	Erfasst
+Captured leads	Erfasste Leads
+Change date or time	Datum oder Uhrzeit ändern
+Change product thumbnail	Produkt-Vorschaubild ändern
+Change product type	Produkttyp ändern
+Change time	Uhrzeit ändern
+Changelog	Änderungsprotokoll
+Changes appear as you edit.	Änderungen werden während der Bearbeitung direkt angezeigt.
+Changes apply to this browser's demo workspace.	Änderungen gelten für den Demo-Arbeitsbereich dieses Browsers.
+Changes are available for this session; browser storage is unavailable.	Änderungen gelten für diese Sitzung; der Browserspeicher ist nicht verfügbar.
+Changes could not be saved. Browser storage is full or unavailable.	Änderungen konnten nicht gespeichert werden. Der Browserspeicher ist voll oder nicht verfügbar.
+Check conditions	Bedingungen prüfen
+Check consent & record demo	Einwilligung prüfen & Demo erfassen
+Check list	Checkliste
+Check provider status	Anbieterstatus prüfen
+Checking approved business context…	Freigegebener Unternehmenskontext wird geprüft…
+Checking lead records…	Lead-Datensätze werden geprüft…
+Checking required service details…	Erforderliche Servicedetails werden geprüft…
+Choose	Auswählen
+Choose a CSV file	CSV-Datei auswählen
+Choose a file	Datei auswählen
+Choose a file to upload	Datei zum Hochladen auswählen
+Choose a page	Seite auswählen
+Choose a page type	Seitentyp auswählen
+Choose an asset	Asset auswählen
+Choose contact	Kontakt auswählen
+Choose document	Dokument auswählen
+Choose icon	Symbol auswählen
+Choose page	Seite auswählen
+Choose page color	Seitenfarbe auswählen
+Choose plan	Tarif wählen
+Choose your plan	Wähle deinen Tarif
+Choose a booking page.	Wähle eine Buchungsseite aus.
+Choose a date to see available times	Wähle ein Datum, um verfügbare Zeiten zu sehen
+Choose a highlighted date to see available times.	Wähle ein hervorgehobenes Datum, um verfügbare Zeiten zu sehen.
+Choose a time that works for you	Wähle eine Uhrzeit, die dir passt
+Choose a time that works for you.	Wähle eine Uhrzeit, die dir passt.
+Clear date	Datum zurücksetzen
+Clear dates	Daten zurücksetzen
+Clear discount code	Rabattcode entfernen
+Clear pricing	Transparente Preise
+Click a time slot to add an appointment	Klicke auf ein Zeitfenster, um einen Termin hinzuzufügen
+Click or drag an image to upload	Klicke oder ziehe ein Bild hierher, um es hochzuladen
+Click or drop images to add	Klicke oder ziehe Bilder hierher, um sie hinzuzufügen
+Click the microphone to stop	Klicke zum Beenden auf das Mikrofon
+Click to toggle between % and €	Klicken, um zwischen % und € zu wechseln
+Collect customer information	Kundeninformationen erfassen
+Collect customer name	Kundennamen erfassen
+Collect lead details	Lead-Daten erfassen
+Collect preferences	Präferenzen erfassen
+Color	Farbe
+Commercial use license	Lizenz für kommerzielle Nutzung
+Communication	Kommunikation
+Company FAQs	Unternehmens-FAQs
+Company or website	Unternehmen oder Website
+Company, Phone number	Unternehmen, Telefonnummer
+Compare currency	Vergleichswährung
+Comparison position	Vergleichsposition
+Comparison table	Vergleichstabelle
+Composer mode	Editor-Modus
+Concise and direct	Prägnant und direkt
+Confident	Souverän
+Configure	Konfigurieren
+Configure action	Aktion konfigurieren
+Configure automation	Automatisierung konfigurieren
+Configured	Konfiguriert
+Confirm & create	Bestätigen & erstellen
+Confirm & send	Bestätigen & senden
+Confirm the calendar invite	Kalendereinladung bestätigen
+Conflict Details:	Konfliktdetails:
+Conflict details for	Konfliktdetails für
+Connected Funnel URL	URL des verbundenen Funnels
+Connected To	Verbunden mit
+Connected funnel page	Verbundene Funnel-Seite
+Connected offer	Verbundenes Angebot
+Connected page	Verbundene Seite
+Connected products	Verbundene Produkte
+Connected project funnel	Verbundener Projekt-Funnel
+Connected service	Verbundene Dienstleistung
+Connected to your business	Mit deinem Unternehmen verbunden
+Connect to	Verbinden mit
+Consultation	Beratung
+Consultations	Beratungen
+Consultation Call	Beratungsgespräch
+Consultation Funnel	Beratungs-Funnel
+Consultation follow-up	Follow-up zur Beratung
+Consultation / Booking Pipeline	Beratungs- / Buchungs-Pipeline
+Consulting	Beratung
+Consulting Session	Beratungssitzung
+Consulting and coaching	Beratung und Coaching
+Consulting, coaching and bookable sessions	Beratung, Coaching und buchbare Sitzungen
+Contact sales	Vertrieb kontaktieren
+Contact task due date	Fälligkeitsdatum der Kontaktaufgabe
+Contact task title	Titel der Kontaktaufgabe
+Contact tasks	Kontaktaufgaben
+Content (URL or text)	Inhalt (URL oder Text)
+Content Generator	Content-Generator
+Content List	Inhaltsliste
+Content list	Inhaltsliste
+Content color	Inhaltsfarbe
+Content width	Inhaltsbreite
+Continue to Destination	Weiter zum Ziel
+Continue to verification	Weiter zur Verifizierung
+Continue with	Weiter mit
+Contracted	Vertraglich vereinbart
+Converted customer sequence	Sequenz für konvertierte Kunden
+Copy Product Link	Produktlink kopieren
+Core Values	Kernwerte
+Corner style	Eckenstil
+Count	Anzahl
+Counter	Zähler
+Current	Aktuell
+Custom fields	Benutzerdefinierte Felder
+Data	Daten
+Delete permanently	Endgültig löschen
+Dismiss	Ausblenden
+Display	Anzeige
+Display name	Anzeigename
+Document	Dokument
+Documents	Dokumente
+Download file	Datei herunterladen
+Download invoice	Rechnung herunterladen
+Download receipt	Beleg herunterladen
+Empty	Leer
+Enabled	Aktiviert
+Export data	Daten exportieren
+External link	Externer Link
+Favorites	Favoriten
+File	Datei
+Files	Dateien
+File name	Dateiname
+File size	Dateigröße
+File type	Dateityp
+Folder	Ordner
+Footer	Footer
+Header	Header
+Header & Footer	Header & Footer
+Global styles	Globale Stile
+Group	Gruppe
+Groups	Gruppen
+Horizontal alignment	Horizontale Ausrichtung
+Vertical alignment	Vertikale Ausrichtung
+Image gallery	Bildergalerie
+Insights & analytics	Einblicke & Analysen
+Instructions	Anweisungen
+Integrate	Integrieren
+Items	Elemente
+Item	Element
+Item name	Elementname
+Language settings	Spracheinstellungen
+Manage	Verwalten
+Manage products	Produkte verwalten
+Manage team	Team verwalten
+Manual	Manuell
+Manual payment	Manuelle Zahlung
+Maximum	Maximum
+Minimum	Minimum
+Menu	Menü
+Mobile preview	Mobilvorschau
+Desktop preview	Desktop-Vorschau
+Tablet preview	Tablet-Vorschau
+New message	Neue Nachricht
+No data	Keine Daten
+No results	Keine Ergebnisse
+No results found	Keine Ergebnisse gefunden
+No products found	Keine Produkte gefunden
+No contacts found	Keine Kontakte gefunden
+No conversations found	Keine Gespräche gefunden
+No appointments	Keine Termine
+No appointments found	Keine Termine gefunden
+Not available	Nicht verfügbar
+Not set	Nicht festgelegt
+Not configured	Nicht konfiguriert
+Options	Optionen
+Page preview	Seitenvorschau
+Pagination	Seitennummerierung
+Rows per page	Zeilen pro Seite
+Per page	Pro Seite
+Personal	Persönlich
+Preferences	Präferenzen
+Primary	Primär
+Primary color	Primärfarbe
+Secondary	Sekundär
+Secondary color	Sekundärfarbe
+Public	Öffentlich
+Private	Privat
+Published URL	Veröffentlichte URL
+Publish changes	Änderungen veröffentlichen
+Publish page	Seite veröffentlichen
+Publish website	Website veröffentlichen
+Recent activity	Letzte Aktivitäten
+Recent orders	Letzte Bestellungen
+Recent conversations	Letzte Gespräche
+Record	Datensatz
+Records	Datensätze
+Redirect	Weiterleitung
+Redirect URL	Weiterleitungs-URL
+Remove image	Bild entfernen
+Rename	Umbenennen
+Reorder	Neu anordnen
+Replace	Ersetzen
+Request	Anfrage
+Requests	Anfragen
+Resend	Erneut senden
+Resend invitation	Einladung erneut senden
+Reset filters	Filter zurücksetzen
+Return	Zurückkehren
+Review	Überprüfen
+Reviews	Bewertungen
+Review draft	Entwurf prüfen
+Run	Ausführen
+Run demo	Demo ausführen
+Sample	Beispiel
+Search products	Produkte durchsuchen
+Search contacts	Kontakte durchsuchen
+Search templates	Vorlagen durchsuchen
+Search pages	Seiten durchsuchen
+Search leads	Leads durchsuchen
+Select product	Produkt auswählen
+Select products	Produkte auswählen
+Select a product	Wähle ein Produkt
+Select template	Vorlage auswählen
+Select a template	Wähle eine Vorlage
+Select page	Seite auswählen
+Select a page	Wähle eine Seite
+Select category	Kategorie auswählen
+Select a category	Wähle eine Kategorie
+Select status	Status auswählen
+Select a status	Wähle einen Status
+Select language	Sprache auswählen
+Select a language	Wähle eine Sprache
+Send email	E-Mail senden
+Send test	Test senden
+Settings saved	Einstellungen gespeichert
+Settings saved.	Einstellungen gespeichert.
+Show	Anzeigen
+Hide	Ausblenden
+Show all	Alle anzeigen
+Show more	Mehr anzeigen
+Show less	Weniger anzeigen
+Show details	Details anzeigen
+Sort order	Sortierreihenfolge
+Statistics	Statistiken
+Stop	Stoppen
+Summary	Zusammenfassung
+Sync	Synchronisieren
+Sync now	Jetzt synchronisieren
+Sync status	Synchronisierungsstatus
+Synced	Synchronisiert
+Syncing...	Wird synchronisiert...
+Target	Ziel
+Test	Testen
+Test mode	Testmodus
+Text size	Textgröße
+Text weight	Schriftstärke
+Tracking	Tracking
+Tracking code	Tracking-Code
+Tracking settings	Tracking-Einstellungen
+Trigger event	Auslöseereignis
+Unselect all	Auswahl aufheben
+URL	URL
+Value	Wert
+Values	Werte
+View all	Alle ansehen
+View details	Details ansehen
+View website	Website ansehen
+View page	Seite ansehen
+View product	Produkt ansehen
+Welcome back	Willkommen zurück
+Your profile	Dein Profil
+Your workspace	Dein Arbeitsbereich
+Zoom	Zoom
+Zoom in	Vergrößern
+Zoom out	Verkleinern
+Terms of Service	Nutzungsbedingungen
+Terms	Bedingungen
+Privacy	Datenschutz
+Data Deletion	Datenlöschung
+Data Deletion Instructions	Anleitung zur Datenlöschung
+Data Protection & Privacy	Datenschutz & Privatsphäre
+Online Deletion Request	Online-Antrag auf Datenlöschung
+Meta / Facebook Settings Steps	Schritte in den Meta- / Facebook-Einstellungen
+Check Deletion Status	Löschstatus prüfen
+Submit Data Deletion Request	Antrag auf Datenlöschung einreichen
+Verify Status	Status überprüfen
+Table of Contents	Inhaltsverzeichnis
+Legal & Compliance	Rechtliches & Compliance
+Switch	Wechseln
+Switching…	Wird gewechselt…
+Pin	Anheften
+Pinned	Angeheftet
+pinned	angeheftet
+Pin to top	Oben anheften
+Unpin sub-account	Unterkonto lösen
+Sub-Accounts	Unterkonten
+Search sub-accounts...	Unterkonten durchsuchen...
+Communication Wallet	Kommunikations-Wallet
+Communication Wallet balance	Guthaben des Kommunikations-Wallets
+Top Up Communication Wallet	Kommunikations-Wallet aufladen
+Carrier transit funds for WhatsApp, SMS, and messaging networks	Verbindungsguthaben für WhatsApp, SMS und Messaging-Netzwerke
+Overview & Usage Analytics	Übersicht & Nutzungsanalysen
+Pending Top-Up Requests	Ausstehende Aufladeanfragen
+Transactions & Audit Ledger	Transaktionen & Prüfjournal
+Coupons & Promo Codes	Gutscheine & Aktionscodes
+Create Coupon Code	Gutscheincode erstellen
+Billing & Wallet Hub	Abrechnungs- & Wallet-Zentrum
+Communication Wallet & Hub	Kommunikations-Wallet & -Zentrum

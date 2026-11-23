@@ -12,6 +12,7 @@ import type { StoredAuth, Role } from '../types/auth';
 import { isPlatformTeamRole } from '../router/platformAccess';
 import { clearPhoenixBrand, loadPhoenixBrand } from './phoenixBrand';
 import { loginWithPhoenix } from './phoenixLogin';
+import { translateTextForLanguage } from '../i18n/display';
 
 /* ------------------------------------------------------------------ */
 /* Strict session errors                                               */
@@ -65,7 +66,7 @@ const NOTICE_MESSAGES: Record<SessionErrorCode, { en: string; ar: string }> = {
 
 export function sessionErrorMessage(code: SessionErrorCode): string {
   const lang = store.getState().ui.language;
-  return lang === 'ar' ? NOTICE_MESSAGES[code].ar : NOTICE_MESSAGES[code].en;
+  return lang === 'ar' ? NOTICE_MESSAGES[code].ar : translateTextForLanguage(NOTICE_MESSAGES[code].en, lang);
 }
 
 /** Reads and clears the notice left by a forced sign-out (shown on the login page). */

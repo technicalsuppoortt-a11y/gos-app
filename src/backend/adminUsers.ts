@@ -9,6 +9,7 @@ import type { Invite } from '../pages/onboarding/onboarding-store';
 import { auth, backendError, callBackend, db, primaryDb, sendOfficialPasswordResetEmail } from './firebase';
 import { showToast } from '../utils/toast';
 import { isOwnedSwitchAccount } from './switchAccountOwnership';
+import { translateTextForLanguage } from '../i18n/display';
 
 const links = new Map<string, string>();
 const linkRequests = new Map<string, Promise<string>>();
@@ -84,7 +85,7 @@ export class ActivationError extends Error {
   }
   localizedMessage() {
     const lang = store.getState().ui.language;
-    return lang === 'ar' ? ACTIVATION_MESSAGES[this.code].ar : ACTIVATION_MESSAGES[this.code].en;
+    return lang === 'ar' ? ACTIVATION_MESSAGES[this.code].ar : translateTextForLanguage(ACTIVATION_MESSAGES[this.code].en, lang);
   }
 }
 

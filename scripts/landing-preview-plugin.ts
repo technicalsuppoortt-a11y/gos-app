@@ -30,6 +30,7 @@ export function landingPreviewPlugin(): Plugin {
       for (const [module, adapter] of Object.entries(replacements)) {
         if (new RegExp('/src/' + module + '\\.[jt]sx?$').test(normalized)) return resolve(adapters, adapter) + marker;
       }
+      if (/\/src\/(?:i18n\/|pages\/pagefly\/templates\/|pages\/landing\/landing-content\.ts$|pages\/landing\/white-label\/white-label-content\.ts$)/.test(normalized)) return path;
       return /\.[jt]sx?$/.test(path) ? path + marker : path;
     },
     load(id) { if (id.endsWith(marker)) return readFileSync(id.slice(0, -marker.length), 'utf8'); },

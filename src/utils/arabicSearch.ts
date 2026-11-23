@@ -1,14 +1,17 @@
 const ARABIC_DIACRITICS_RE = /[\u0610-\u061A\u064B-\u065F\u0670\u06D6-\u06ED\u0640]/g;
+const COMBINING_MARKS_RE = /[\u0300-\u036F]/g;
 
 /**
- * Normalizes English & Arabic search text so Arabic queries match across
- * alef variants (أ/إ/آ -> ا), taa marbuta (ة -> ه), alef maqsura (ى -> ي),
- * Arabic-Indic digits (٠-٩ -> 0-9), and tashkeel diacritics.
+ * Normalizes multilingual search text (Arabic, English, Dutch, German) so queries match across
+ * Arabic alef/taa/yaa variants, Arabic-Indic digits, German ß -> ss, and Latin diacritics (ä/ö/ü/ë/é…).
  */
 export function normalizeSearchText(value: unknown): string {
   if (value === null || value === undefined) return '';
   return String(value)
     .toLowerCase()
+    .replace(/ß/g, 'ss')
+    .normalize('NFKD')
+    .replace(COMBINING_MARKS_RE, '')
     .replace(ARABIC_DIACRITICS_RE, '')
     .replace(/[أإآٱ]/g, 'ا')
     .replace(/ة/g, 'ه')

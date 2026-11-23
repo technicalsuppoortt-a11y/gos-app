@@ -1,6 +1,6 @@
 # Interface localization
 
-Arabic and English use the existing i18next language setting. The language switcher persists `i18nextLng`; the document `lang` and `dir` update on every language change.
+Arabic (`ar`), English (`en`), Dutch (`nl`) and German (`de`) use the existing i18next language setting. The language switcher dropdown persists `i18nextLng`; the document `lang` and `dir` (`ar` -> `rtl`, `en`/`nl`/`de` -> `ltr`) update on every language change.
 
 Components call `useUILanguage()` to subscribe without changing their identity or remounting. Translate presentation strings with `translateText(copy)`; `localizeNode(children)` translates strings and arrays while preserving React elements, keys, handlers, numbers and other values. English returns the original string, including whitespace. Unknown text remains unchanged so user-authored content, personal names, URLs and technical values are preserved.
 

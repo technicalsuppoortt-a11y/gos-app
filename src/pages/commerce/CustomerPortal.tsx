@@ -62,14 +62,14 @@ import { readStoredFile } from './files';
 import { videoEmbedUrl } from './mediaMetadata';
 import { LanguageSwitcher } from '../../components/ui/LanguageSwitcher';
 import { ThemeToggle } from '../../components/ui/ThemeToggle';
-import { localizeNode, translateText as t, useUILanguage } from '../../i18n/display';
+import { localizeNode, translateText as t, useUILanguage, translateText } from '../../i18n/display';
 import { showToast } from '../../utils/toast';
 import './customer-portal.css';
 
 function formatBytes(bytes?: number, ar = false): string {
   if (!bytes || bytes <= 0) return t('Instant access');
-  if (bytes < 1024 * 1024) return `${Math.max(1, Math.round(bytes / 1024))} ${ar ? 'ك.ب' : 'KB'}`;
-  return `${(bytes / (1024 * 1024)).toFixed(1)} ${ar ? 'م.ب' : 'MB'}`;
+  if (bytes < 1024 * 1024) return `${Math.max(1, Math.round(bytes / 1024))} ${ar ? 'ك.ب' : translateText('KB')}`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} ${ar ? 'م.ب' : translateText('MB')}`;
 }
 
 function formatPortalLabel(value: string | undefined, ar: boolean): string {
@@ -1336,14 +1336,14 @@ function PortalPasswordDialog({ close }: { close: () => void }) {
     setError('');
 
     if (!currentPassword) {
-      setError(ar ? 'يرجى إدخال كلمة المرور الحالية.' : 'Please enter your current password.');
+      setError(ar ? 'يرجى إدخال كلمة المرور الحالية.' : translateText('Please enter your current password.'));
       return;
     }
     if (newPassword.length < 8) {
       setError(
         ar
           ? 'يجب أن تتكون كلمة المرور الجديدة من 8 أحرف على الأقل.'
-          : 'New password must be at least 8 characters long.'
+          : translateText('New password must be at least 8 characters long.')
       );
       return;
     }
@@ -1351,7 +1351,7 @@ function PortalPasswordDialog({ close }: { close: () => void }) {
       setError(
         ar
           ? 'يرجى اختيار كلمة مرور جديدة مختلفة عن كلمة المرور الحالية.'
-          : 'Choose a new password different from your current password.'
+          : translateText('Choose a new password different from your current password.')
       );
       return;
     }
@@ -1359,7 +1359,7 @@ function PortalPasswordDialog({ close }: { close: () => void }) {
       setError(
         ar
           ? 'كلمتا المرور غير متطابقتين.'
-          : 'The new passwords do not match.'
+          : translateText('The new passwords do not match.')
       );
       return;
     }
@@ -1373,7 +1373,7 @@ function PortalPasswordDialog({ close }: { close: () => void }) {
       showToast.success(
         ar
           ? 'تم تحديث كلمة المرور بنجاح.'
-          : 'Your password was updated successfully.'
+          : translateText('Your password was updated successfully.')
       );
       close();
     } catch (cause) {
@@ -1409,7 +1409,7 @@ function PortalPasswordDialog({ close }: { close: () => void }) {
               <p className="cportal-modal-subtitle">
                 {ar
                   ? 'أدخل كلمة المرور الحالية واختر كلمة مرور جديدة لحسابك.'
-                  : 'Enter your current password and choose a new secure password.'}
+                  : translateText('Enter your current password and choose a new secure password.')}
               </p>
             </div>
           </div>
@@ -1446,7 +1446,7 @@ function PortalPasswordDialog({ close }: { close: () => void }) {
                   setCurrentPassword(e.target.value);
                   if (error) setError('');
                 }}
-                placeholder={ar ? 'أدخل كلمة المرور الحالية' : 'Enter your current password'}
+                placeholder={ar ? 'أدخل كلمة المرور الحالية' : translateText('Enter your current password')}
                 className="cportal-password-input"
               />
               <button
@@ -1479,7 +1479,7 @@ function PortalPasswordDialog({ close }: { close: () => void }) {
                   setNewPassword(e.target.value);
                   if (error) setError('');
                 }}
-                placeholder={ar ? '8 أحرف على الأقل' : 'At least 8 characters'}
+                placeholder={ar ? '8 أحرف على الأقل' : translateText('At least 8 characters')}
                 className="cportal-password-input"
               />
               <button
@@ -1496,7 +1496,7 @@ function PortalPasswordDialog({ close }: { close: () => void }) {
 
           <div className="cportal-field-group">
             <label htmlFor="portal-confirm-pw" className="cportal-field-label">
-              {ar ? 'تأكيد كلمة المرور الجديدة' : 'Confirm new password'} <span className="text-rose-500">*</span>
+              {ar ? 'تأكيد كلمة المرور الجديدة' : translateText('Confirm new password')} <span className="text-rose-500">*</span>
             </label>
             <div className="cportal-password-input-wrap">
               <input
@@ -1512,7 +1512,7 @@ function PortalPasswordDialog({ close }: { close: () => void }) {
                   setConfirmPassword(e.target.value);
                   if (error) setError('');
                 }}
-                placeholder={ar ? 'أعد كتابة كلمة المرور الجديدة' : 'Re-enter your new password'}
+                placeholder={ar ? 'أعد كتابة كلمة المرور الجديدة' : translateText('Re-enter your new password')}
                 className="cportal-password-input"
               />
               <button
@@ -1530,7 +1530,7 @@ function PortalPasswordDialog({ close }: { close: () => void }) {
           <p className="cportal-password-hint">
             {ar
               ? 'استخدم 8 أحرف على الأقل وتأكد من اختلافها عن كلمة المرور الحالية.'
-              : 'Use at least 8 characters and make sure it differs from your current password.'}
+              : translateText('Use at least 8 characters and make sure it differs from your current password.')}
           </p>
 
           <div className="cportal-modal-actions">
@@ -1540,14 +1540,14 @@ function PortalPasswordDialog({ close }: { close: () => void }) {
               onClick={close}
               disabled={busy}
             >
-              {ar ? 'إلغاء' : 'Cancel'}
+              {ar ? 'إلغاء' : translateText('Cancel')}
             </button>
             <button
               type="submit"
               className="cportal-btn-primary cportal-submit-btn"
               disabled={busy}
             >
-              {busy ? (ar ? 'جاري التحديث…' : 'Updating…') : t('Change password')}
+              {busy ? (ar ? 'جاري التحديث…' : translateText('Updating…')) : t('Change password')}
             </button>
           </div>
         </form>
@@ -1610,7 +1610,7 @@ function PortalReview({ purchase, owned, fallback }: { purchase: CustomerPurchas
     event.preventDefault();
     if (!owned || purchase.preview || busy || sent) return;
     if (!rating || !comment.trim()) {
-      setError(ar ? 'يرجى اختيار التقييم وكتابة رأيك.' : 'Please select a rating and write your review.');
+      setError(ar ? 'يرجى اختيار التقييم وكتابة رأيك.' : translateText('Please select a rating and write your review.'));
       return;
     }
     setError('');
@@ -1618,7 +1618,7 @@ function PortalReview({ purchase, owned, fallback }: { purchase: CustomerPurchas
     try {
       setSummary(await submitPortalReview(purchase, rating, comment.trim()));
       setSent(true);
-      showToast.success(ar ? 'شكراً لك! تم إرسال تقييمك بنجاح.' : 'Thank you! Your review has been submitted.');
+      showToast.success(ar ? 'شكراً لك! تم إرسال تقييمك بنجاح.' : translateText('Thank you! Your review has been submitted.'));
     } catch (cause) {
       setError(backendError(cause));
     } finally {
@@ -1634,7 +1634,7 @@ function PortalReview({ purchase, owned, fallback }: { purchase: CustomerPurchas
         <div>
           <h2>{t('Ratings & reviews')}</h2>
           <p className="cportal-review-subtitle">
-            {ar ? 'آراء العملاء وتقييمات التجربة التعليمية' : 'Student reviews and product experience feedback'}
+            {ar ? 'آراء العملاء وتقييمات التجربة التعليمية' : translateText('Student reviews and product experience feedback')}
           </p>
         </div>
         <RatingBadge product={reviews} />
@@ -1654,7 +1654,7 @@ function PortalReview({ purchase, owned, fallback }: { purchase: CustomerPurchas
                         {(review.author || 'U').charAt(0).toUpperCase()}
                       </div>
                       <div>
-                        <b>{review.author || (ar ? 'عميل موثق' : 'Verified Student')}</b>
+                        <b>{review.author || (ar ? 'عميل موثق' : translateText('Verified Student'))}</b>
                         {review.createdAt && (
                           <time dateTime={review.createdAt}>
                             {Number.isFinite(Date.parse(review.createdAt))
@@ -1683,11 +1683,11 @@ function PortalReview({ purchase, owned, fallback }: { purchase: CustomerPurchas
               <div className="cportal-review-empty-icon">
                 <Star size={24} className="stroke-[1.8]" />
               </div>
-              <h3>{ar ? 'لا توجد تقييمات بعد' : 'No reviews yet'}</h3>
+              <h3>{ar ? 'لا توجد تقييمات بعد' : translateText('No reviews yet')}</h3>
               <p>
                 {ar
                   ? 'كن أول من يشارك رأيه حول هذا المنتج وساعد الآخرين في التعلم.'
-                  : 'Be the first to share your experience and help fellow students.'}
+                  : translateText('Be the first to share your experience and help fellow students.')}
               </p>
             </div>
           )}
@@ -1701,17 +1701,17 @@ function PortalReview({ purchase, owned, fallback }: { purchase: CustomerPurchas
           ) : sent || purchase.reviewedAt ? (
             <div className="cportal-review-success-card">
               <CheckCircle2 size={32} className="text-emerald-500 mb-2 shrink-0" />
-              <h3>{ar ? 'شكراً لك على تقييمك!' : 'Thank you for your review!'}</h3>
+              <h3>{ar ? 'شكراً لك على تقييمك!' : translateText('Thank you for your review!')}</h3>
               <p>
                 {ar
                   ? 'تم تسجيل رأيك ومشاركته بنجاح.'
-                  : 'Your review has been published and helps improve the course experience.'}
+                  : translateText('Your review has been published and helps improve the course experience.')}
               </p>
             </div>
           ) : (
             <form className="cportal-review-form" onSubmit={submit}>
               <h3 className="cportal-review-form-title">
-                {ar ? 'شارك تجربتك وتقييمك' : 'Share your rating & review'}
+                {ar ? 'شارك تجربتك وتقييمك' : translateText('Share your rating & review')}
               </h3>
 
               <div className="cportal-star-picker">
@@ -1763,7 +1763,7 @@ function PortalReview({ purchase, owned, fallback }: { purchase: CustomerPurchas
                     placeholder={
                       ar
                         ? 'ما الذي أعجبك في هذا المنتج؟ وما الذي يمكن تحسينه؟'
-                        : 'What did you like most about this product? Share actionable feedback…'
+                        : translateText('What did you like most about this product? Share actionable feedback…')
                     }
                     className="cportal-review-textarea"
                   />
@@ -1785,7 +1785,7 @@ function PortalReview({ purchase, owned, fallback }: { purchase: CustomerPurchas
                 disabled={busy || !rating || !comment.trim()}
               >
                 <Send size={15} className="shrink-0" />
-                <span>{busy ? (ar ? 'جاري الإرسال…' : 'Submitting…') : t('Submit review')}</span>
+                <span>{busy ? (ar ? 'جاري الإرسال…' : translateText('Submitting…')) : t('Submit review')}</span>
               </button>
             </form>
           )}

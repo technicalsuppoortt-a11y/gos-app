@@ -3,6 +3,7 @@ import { useSelector } from 'react-redux';
 import type { RootState } from '../../store';
 import { previewScreens } from './preview/screens';
 import { retryImport } from '../../router/chunkRecovery';
+import { translateTextForLanguage } from '../../i18n/display';
 import welcomeArtStyles from '../dashboard/welcome-art.css?inline';
 type Snapshots = typeof import('./preview/static-snapshots.json');
 import './native-dashboard-preview.css';
@@ -43,7 +44,7 @@ const SHADOW_THEME_OVERRIDES = `
 `;
 
 /** Original native markup, captured ahead of time. No dashboard app boots here. */
-export function NativeDashboardPreview({ tab, ar, title }: { tab: number; ar: boolean; title: string }) {
+export function NativeDashboardPreview({ tab, ar, language = ar ? 'ar' : 'en', title }: { tab: number; ar: boolean; language?: string; title: string }) {
   const host = useRef<HTMLDivElement>(null);
   const [snapshots, setSnapshots] = useState<Snapshots | null>(null);
   useEffect(() => {
@@ -75,11 +76,23 @@ export function NativeDashboardPreview({ tab, ar, title }: { tab: number; ar: bo
     canvas.className = `lp-static-document${theme === 'dark' ? ' dark' : ''}`;
     canvas.dataset.theme = theme;
     canvas.dir = ar ? 'rtl' : 'ltr';
-    canvas.lang = ar ? 'ar' : 'en';
+    canvas.lang = ar ? 'ar' : language;
     canvas.inert = true;
     const screens = snapshots.screens as Record<string, string>;
     const markup = screens[key] ?? screens[`${ar ? 'ar' : 'en'}-${theme}-dashboard`] ?? '';
     canvas.innerHTML = `<div class="lp-static-body"><div class="lp-static-app">${expandImages(markup)}</div></div>`;
+    if (!ar && (language === 'nl' || language === 'de')) {
+      const walker = document.createTreeWalker(canvas, NodeFilter.SHOW_TEXT);
+      while (walker.nextNode()) {
+        const node = walker.currentNode;
+        if (node.parentElement?.closest('script,style,code,pre')) continue;
+        const raw = node.nodeValue ?? '';
+        const trimmed = raw.trim();
+        if (!trimmed || /^[A-Z]{1,2}$/.test(trimmed)) continue;
+        const translated = translateTextForLanguage(raw, language);
+        if (translated !== raw) node.nodeValue = translated;
+      }
+    }
     const fit = () => {
       const isDashboard = screen.id === 'dashboard';
       const scale = isDashboard
@@ -92,9 +105,9 @@ export function NativeDashboardPreview({ tab, ar, title }: { tab: number; ar: bo
     fit();
     const observer = new ResizeObserver(fit); observer.observe(host.current);
     return () => observer.disconnect();
-  }, [key, ar, theme, snapshots]);
+  }, [key, ar, language, theme, snapshots]);
   return <div className="lp-native-preview" data-preview-screen={screen.id} role="img" aria-label={title}>
-    <span className="lp-native-demo-label">{ar ? 'بيانات توضيحية' : 'Demo data'}</span>
+    <span className="lp-native-demo-label">{ar ? 'بيانات توضيحية' : translateTextForLanguage('Demo data', language)}</span>
     <div ref={host} className="lp-native-static"/>
   </div>;
 }

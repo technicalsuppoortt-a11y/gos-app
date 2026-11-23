@@ -1,0 +1,480 @@
+Create with AI	Maken met AI
+Build a personalized layout from your business brief.	Maak een gepersonaliseerde lay-out op basis van je bedrijfsbriefing.
+AI Funnel Generator	AI-funnelgenerator
+Business Type	Bedrijfstype
+Target Audience	Doelgroep
+e.g. Small business owners	bijv. Ondernemers in het mkb
+Your brief	Jouw briefing
+Enter your business name, business type and target audience.	Voer je bedrijfsnaam, bedrijfstype en doelgroep in.
+Your editable layout will reflect your audience, conversion goal and brand colors. Review each page before publishing.	Je bewerkbare lay-out sluit aan op je doelgroep, conversiedoel en merkkleuren. Controleer elke pagina voordat je publiceert.
+Grounded in approved workspace records	Gebaseerd op goedgekeurde werkruimtegegevens
+Messages are shown from workspace conversations linked to CRM leads.	Berichten worden getoond uit werkruimtegesprekken die gekoppeld zijn aan CRM-leads.
+Only verified business content should be added. Source details are saved to your workspace; file uploads to an AI provider are not enabled yet.	Voeg alleen geverifieerde bedrijfsinhoud toe. Brongegevens worden opgeslagen in je werkruimte; bestandsuploads naar een AI-provider zijn nog niet ingeschakeld.
+Approved knowledge is synced to your workspace and used by AI assistants.	Goedgekeurde kennis wordt gesynchroniseerd met je werkruimte en gebruikt door AI-assistenten.
+Verified completed revenue	Geverifieerde voltooide omzet
+Verified payments from your connected payment provider will appear here.	Geverifieerde betalingen van je gekoppelde betalingsprovider verschijnen hier.
+Transactions are recorded only after the payment provider verifies the payment.	Transacties worden pas geregistreerd nadat de betalingsprovider de betaling heeft geverifieerd.
+vs. previous period	t.o.v. vorige periode
+Daily views and conversions chart	Grafiek met dagelijkse weergaven en conversies
+No traffic sources recorded for this period.	Geen verkeersbronnen geregistreerd voor deze periode.
+No device data recorded.	Geen apparaatgegevens geregistreerd.
+No visits recorded	Geen bezoeken geregistreerd
+No data	Geen gegevens
+CRM contacts captured by	CRM-contacten vastgelegd door
+No leads captured yet	Nog geen leads vastgelegd
+Leads appear here once visitors submit a form on this funnel.	Leads verschijnen hier zodra bezoekers een formulier in deze funnel indienen.
+Leads exported	Leads geëxporteerd
+Workspace activity	Werkruimte-activiteit
+Quick Connection Steps	Snelle koppelstappen
+Manage Facebook Page messages in your unified inbox and automations.	Beheer berichten van je Facebook-pagina in je gecombineerde inbox en automatiseringen.
+Make Sure You Are a Page Admin	Zorg dat je paginabeheerder bent
+Open your Facebook Page → Settings → Page access and confirm your account has full control of the Page.	Open je Facebook-pagina → Instellingen → Paginatoegang en controleer of je account volledige controle over de pagina heeft.
+Turn On Page Messaging	Berichten voor pagina inschakelen
+In your Page settings, make sure people can message your Page so new conversations can reach your Inbox.	Zorg er in je pagina-instellingen voor dat mensen berichten naar je pagina kunnen sturen, zodat nieuwe gesprekken in je Inbox terechtkomen.
+Authorize via Meta Business Login	Autoriseren via Meta Business-login
+Click "Connect" below, sign in with your Facebook Admin account, and select the Page you want to sync.	Klik hieronder op "Koppelen", log in met je Facebook-beheerdersaccount en selecteer de pagina die je wilt synchroniseren.
+Test & Enable Automatic Sync	Testen & automatische synchronisatie inschakelen
+Run the built-in Connection Test to verify webhook delivery and keep "Automatic sync" turned on so new messages appear in your Inbox immediately.	Voer de ingebouwde verbindingstest uit om de Webhook-aflevering te controleren en laat "Automatische synchronisatie" ingeschakeld zodat nieuwe berichten direct in je Inbox verschijnen.
+Connected Facebook Page	Gekoppelde Facebook-pagina
+Read the Facebook Pages you manage	De Facebook-pagina's lezen die je beheert
+Receive and reply to Page messages and comments in real time	Paginaberichten en reacties in realtime ontvangen en beantwoorden
+Grant all requested permissions for the Page during the Meta popup—deselecting any of them can stop new messages from reaching your Inbox.	Verleen alle gevraagde rechten voor de pagina in het Meta-pop-upvenster—als je er een uitschakelt, bereiken nieuwe berichten je Inbox mogelijk niet.
+Comment Replies	Reacties op opmerkingen
+Admin access to a Facebook Business Page	Beheerderstoegang tot een zakelijke Facebook-pagina
+Messaging turned on for the Page	Berichten ingeschakeld voor de pagina
+Connect with Meta	Koppelen met Meta
+Connect manually	Handmatig koppelen
+Connect manually with my own Meta app	Handmatig koppelen met mijn eigen Meta-app
+Connect WhatsApp Cloud API for customer messaging, broadcasts, and automated AI follow-ups.	Koppel de WhatsApp Cloud API voor klantberichten, broadcasts en geautomatiseerde AI-opvolgingen.
+A Meta Business Portfolio (Business Manager) account	Een Meta Business Portfolio-account (Business Manager)
+A phone number that can receive an SMS or call code and is not active on the regular WhatsApp app	Een telefoonnummer dat een SMS- of belcode kan ontvangen en niet actief is in de gewone WhatsApp-app
+For manual setup: your own Meta app with the WhatsApp product added	Voor handmatige installatie: je eigen Meta-app waaraan het WhatsApp-product is toegevoegd
+Prepare Your Phone Number	Bereid je telefoonnummer voor
+Use a number that is not registered on the regular WhatsApp or WhatsApp Business app, or delete that account from the app first.	Gebruik een nummer dat niet is geregistreerd in de gewone WhatsApp- of WhatsApp Business-app, of verwijder dat account eerst uit de app.
+Option 1: Connect with Meta	Optie 1: Koppelen met Meta
+Click "Connect with Meta", log in to your Meta Business Portfolio, then create or pick your WhatsApp Business profile and verify the number with the 6-digit code.	Klik op "Koppelen met Meta", log in op je Meta Business Portfolio, maak of kies vervolgens je WhatsApp Business-profiel en verifieer het nummer met de 6-cijferige code.
+Option 2: Connect Manually	Optie 2: Handmatig koppelen
+Click "Connect manually", add the Callback URL and Verify token shown to your Meta app webhook and subscribe to "messages", then paste your Phone number ID, permanent access token and App Secret.	Klik op "Handmatig koppelen", voeg de getoonde Callback-URL en verificatietoken toe aan de Webhook van je Meta-app, abonneer je op "messages" en plak vervolgens je telefoonnummer-ID, permanente toegangstoken en App Secret.
+Send a Test Message	Testbericht verzenden
+Message your WhatsApp number from another phone and check that the conversation appears in your Inbox.	Stuur vanaf een andere telefoon een bericht naar je WhatsApp-nummer en controleer of het gesprek in je Inbox verschijnt.
+Use Connect with Meta if you are not sure. Choose manual setup only if you already run your own Meta app and have a permanent System User token.	Gebruik Koppelen met Meta als je twijfelt. Kies alleen voor handmatige installatie als je al een eigen Meta-app gebruikt en een permanent systeemgebruikerstoken hebt.
+Access your verified WhatsApp Business Account (WABA) and phone number	Toegang tot je geverifieerde WhatsApp Business-account (WABA) en telefoonnummer
+Send approved template messages and receive customer replies in real time	Goedgekeurde sjabloonberichten verzenden en antwoorden van klanten in realtime ontvangen
+Connect with your own Meta app	Koppelen met je eigen Meta-app
+First add this webhook to your app in Meta, and subscribe to the messages field.	Voeg eerst deze Webhook toe aan je app in Meta en abonneer je op het veld messages.
+Phone number ID	Telefoonnummer-ID
+Permanent access token	Permanent toegangstoken
+Disconnect Facebook Messenger	Facebook Messenger ontkoppelen
+Disconnect WhatsApp Business	WhatsApp Business ontkoppelen
+Connect Facebook Messenger	Facebook Messenger koppelen
+Customer Details	Klantgegevens
+View buyer profile, payment method, and transaction reference	Bekijk kopersprofiel, betaalmethode en transactiereferentie
+Buyer Profile	Kopersprofiel
+Verified Buyer	Geverifieerde koper
+No email recorded	Geen e-mailadres geregistreerd
+Not provided	Niet opgegeven
+Copy email	E-mailadres kopiëren
+Copy phone	Telefoonnummer kopiëren
+CRM Stage	CRM-fase
+Payment & Transaction Details	Betalings- en transactiegegevens
+Transaction Reference	Transactiereferentie
+Transaction reference	Transactiereferentie
+Copy transaction reference	Transactiereferentie kopiëren
+Payment Method	Betaalmethode
+Purchase Date	Aankoopdatum
+Approval Date	Goedkeuringsdatum
+Amount Paid	Betaald bedrag
+Discount Code	Kortingscode
+Purchased Customers	Kopende klanten
+Select buyer	Koper selecteren
+Fulfillment & Portal Access	Levering & portaaltoegang
+Service Status	Servicestatus
+Digital Delivery	Digitale levering
+downloads	downloads
+Customer Portal	Klantenportaal
+Customer Portal Login Link	Inloglink voor klantenportaal
+Copy login link	Inloglink kopiëren
+Login link	Inloglink
+Set Customer Password	Klantwachtwoord instellen
+Send Reset Email	Herstel-e-mail verzenden
+Save Password	Wachtwoord opslaan
+Minimum 8 characters	Minimaal 8 tekens
+Assign a password so this customer can sign in immediately at /auth/login:	Wijs een wachtwoord toe zodat deze klant direct kan inloggen via /auth/login:
+Customer email is required to set portal credentials.	Het e-mailadres van de klant is vereist om inloggegevens voor het portaal in te stellen.
+Customer portal password updated and access synced.	Wachtwoord voor het klantenportaal bijgewerkt en toegang gesynchroniseerd.
+Could not update customer password. Try sending a reset email instead.	Kon het klantwachtwoord niet bijwerken. Probeer in plaats daarvan een herstel-e-mail te sturen.
+Password reset email sent to customer.	E-mail voor wachtwoordherstel verzonden naar de klant.
+Could not send reset email. Set a password directly instead.	Kon herstel-e-mail niet verzenden. Stel in plaats daarvan rechtstreeks een wachtwoord in.
+Could not send reset email.	Kon herstel-e-mail niet verzenden.
+Could not copy to clipboard.	Kon niet naar klembord kopiëren.
+Direct Checkout	Direct afrekenen
+Free Enrollment	Gratis inschrijving
+Course Enrollment	Cursusinschrijving
+CRM Enrollment	CRM-inschrijving
+Active Access	Actieve toegang
+See Customer Page	Klantpagina bekijken
+Open Customer Portal	Klantenportaal openen
+Active in your account:	Actief in je account:
+My Purchases	Mijn aankopen
+My Purchases view selected.	Weergave Mijn aankopen geselecteerd.
+All Products view selected.	Weergave Alle producten geselecteerd.
+Products sub-views	Subweergaven voor producten
+Purchased & active in your account	Gekocht en actief in je account
+No purchased products yet	Nog geen gekochte producten
+Products and courses you purchase or enroll in via checkout will appear here in your personal library.	Producten en cursussen die je koopt of waarvoor je je inschrijft via de checkout verschijnen hier in je persoonlijke bibliotheek.
+No purchased products match your search filter.	Geen gekochte producten komen overeen met je zoekfilter.
+Explore All Products	Alle producten bekijken
+Price: Low to High	Prijs: laag naar hoog
+Continue Course	Cursus voortzetten
+Start Course	Cursus starten
+Access Service	Dienst openen
+Access Files	Bestanden openen
+Continue Learning	Verder leren
+Manage & Schedule	Beheren & inplannen
+Access Downloads	Downloads openen
+CUSTOMER ACCESS PORTAL	KLANTENPORTAAL
+Access your purchases	Toegang tot je aankopen
+Sign in with your email and password to open your purchased courses, files, and services.	Log in met je e-mailadres en wachtwoord om je gekochte cursussen, bestanden en diensten te openen.
+Sign in to Customer Portal	Inloggen op het klantenportaal
+Encrypted access to your purchased library	Versleutelde toegang tot je gekochte bibliotheek
+© 2026 Upklick Inc.	© 2026 Upklick Inc.
+Choose a new password to access your purchases.	Kies een nieuw wachtwoord om toegang te krijgen tot je aankopen.
+Confirm new password	Nieuw wachtwoord bevestigen
+Use at least 12 characters, including a letter and a number or symbol.	Gebruik minimaal 12 tekens, waaronder een letter en een cijfer of symbool.
+The passwords do not match.	De wachtwoorden komen niet overeen.
+Sign in again	Opnieuw inloggen
+Purchased Library & Learning Hub	Aankoopbibliotheek & leeromgeving
+All My Purchases	Al mijn aankopen
+Back to Dashboard	Terug naar Dashboard
+Signed out successfully.	Succesvol uitgelogd.
+Verify your email to access purchases.	Verifieer je e-mailadres om toegang te krijgen tot je aankopen.
+Send verification email	Verificatie-e-mail verzenden
+Check your email for a verification link.	Controleer je e-mail voor een verificatielink.
+Loading your library…	Je bibliotheek laden…
+Syncing your purchased courses, downloads, and service bookings.	Je gekochte cursussen, downloads en geboekte diensten worden gesynchroniseerd.
+Customer page preview	Voorbeeld van klantpagina
+This purchase is unavailable.	Deze aankoop is niet beschikbaar.
+Verified Customer Access	Geverifieerde klanttoegang
+Welcome back,	Welkom terug,
+Access all your enrolled courses, instant digital downloads, and scheduled services in one unified space.	Krijg op één centrale plek toegang tot al je ingeschreven cursussen, directe digitale downloads en ingeplande diensten.
+Active Items	Actieve items
+Downloads & Services	Downloads & diensten
+Product categories	Productcategorieën
+All Purchases	Alle aankopen
+No items match your filter	Geen items komen overeen met je filter
+Once you complete a purchase or your payment receipt is approved, your courses, digital downloads, and services appear here automatically.	Zodra je een aankoop afrondt of je betalingsbewijs is goedgekeurd, verschijnen je cursussen, digitale downloads en diensten hier automatisch.
+Try clearing your search query or switching category tabs.	Probeer je zoekopdracht te wissen of naar een ander categorietabblad te schakelen.
+Structured self-paced video curriculum and downloadable resources.	Gestructureerd videoleerplan in je eigen tempo met downloadbare materialen.
+Dedicated session delivery, scheduling link, and status tracking.	Persoonlijke sessie-uitvoering, planningslink en statusoverzicht.
+Instant digital files, templates, and lifetime access updates.	Direct beschikbare digitale bestanden, sjablonen en levenslange updates.
+Self-paced modules	Modules in eigen tempo
+Self-paced	In eigen tempo
+deliverable files	leverbare bestanden
+Instant access	Directe toegang
+Digital File	Digitaal bestand
+Enrolled Course	Ingeschreven cursus
+Join Student Community	Lid worden van cursistencommunity
+Open the attached lesson material below to study and complete this unit.	Open het bijgevoegde lesmateriaal hieronder om dit onderdeel te bestuderen en af te ronden.
+Review the key concepts for this lesson below, then mark it complete to track your course progress.	Bekijk hieronder de belangrijkste begrippen van deze les en markeer deze als voltooid om je cursusvoortgang bij te houden.
+Open Lesson Resource	Lesmateriaal openen
+Lesson marked as incomplete.	Les gemarkeerd als onvoltooid.
+Lesson completed! Progress saved.	Les voltooid! Voortgang opgeslagen.
+Mark Complete	Markeren als voltooid
+Mark complete	Markeren als voltooid
+Certificate of Completion Unlocked!	Certificaat van voltooiing ontgrendeld!
+Issued by	Uitgegeven door
+Print Certificate	Certificaat afdrukken
+Course Progress	Cursusvoortgang
+lessons completed	lessen voltooid
+INSTRUCTOR	DOCENT
+Download recorded.	Download geregistreerd.
+Could not open file. Contact support if the issue persists.	Kon bestand niet openen. Neem contact op met support als het probleem aanhoudt.
+Your Downloadable Files & Assets	Jouw downloadbare bestanden & materialen
+Instant verified access · Downloads synced to your account	Directe geverifieerde toegang · Downloads gesynchroniseerd met je account
+Downloaded	Gedownload
+Open Resource	Bron openen
+Complete Package	Volledig pakket
+Ready in your verified customer account	Klaar in je geverifieerde klantaccount
+Unlocked	Ontgrendeld
+License & Fulfillment Details	Licentie- & leveringsgegevens
+Access Tier	Toegangsniveau
+Total Downloads	Totaal aantal downloads
+Order Reference	Bestelreferentie
+DELIVERY NOTES	LEVERINGSNOTITIES
+Booked Service	Geboekte dienst
+Schedule Your Session	Plan je sessie in
+Service Fulfillment Tracker	Voortgang van dienstverlening
+Live status synced with your provider	Actuele status gesynchroniseerd met je aanbieder
+Order Confirmed	Bestelling bevestigd
+Session Scheduled	Sessie ingepland
+Payment verified & service unlocked	Betaling geverifieerd en dienst ontgrendeld
+Choose your preferred date & time	Kies je gewenste datum en tijd
+Session delivered & notes shared	Sessie uitgevoerd en notities gedeeld
+Open Booking Calendar	Boekingsagenda openen
+Confirm Session Requested	Bevestigen dat sessie is aangevraagd
+Session status updated to Scheduled.	Sessiestatus bijgewerkt naar Ingepland.
+Session Specifications	Sessiespecificaties
+Delivery Mode	Leveringsvorm
+Online	Online
+Specialist	Specialist
+PREPARATION & INSTRUCTIONS	VOORBEREIDING & INSTRUCTIES
+Your sign-in password was updated.	Je inlogwachtwoord is bijgewerkt.
+Customers can leave a rating and review after signing in.	Klanten kunnen na het inloggen een beoordeling en recensie achterlaten.
+Open / Download	Openen / downloaden
+Open full receipt	Volledig betalingsbewijs openen
+Could not load product access.	Kon producttoegang niet laden.
+This action is unavailable.	Deze actie is niet beschikbaar.
+Updated.	Bijgewerkt.
+your purchased products	je gekochte producten
+your purchased courses, files, or services	je gekochte cursussen, bestanden of diensten
+Search...	Zoeken...
+Search…	Zoeken…
+Search your purchased products...	Zoek in je gekochte producten...
+Search your purchased courses, files, or services…	Zoek in je gekochte cursussen, bestanden of diensten…
+Search products...	Producten zoeken...
+Search by product, customer, email, method, or transaction ID...	Zoeken op product, klant, e-mail, methode of transactie-ID...
+Search by customer, product, method or reference…	Zoeken op klant, product, methode of referentie…
+Search by user name, email, method or coupon…	Zoeken op gebruikersnaam, e-mail, methode of kortingscode…
+Search product users	Productgebruikers zoeken
+Search product templates	Productsjablonen zoeken
+Search customers by name, email, or phone...	Klanten zoeken op naam, e-mail of telefoonnummer...
+Search templates, niches or tags…	Sjablonen, niches of tags zoeken…
+Search templates by name, style, or topic...	Sjablonen zoeken op naam, stijl of onderwerp...
+Search assets, workspace, or owner…	Items, werkruimte of eigenaar zoeken…
+Search available contacts…	Beschikbare contacten zoeken…
+Search by invoice #, plan, payment method, reference…	Zoeken op factuur #, pakket, betaalmethode, referentie…
+Search by name or email…	Zoeken op naam of e-mail…
+Search by name, email or ID…	Zoeken op naam, e-mail of ID…
+Search by name, email or plan…	Zoeken op naam, e-mail of pakket…
+Search by template name or use case…	Zoeken op sjabloonnaam of toepassing…
+Search city or timezone…	Stad of tijdzone zoeken…
+Search clauses in Terms of Service...	Bepalingen in de Servicevoorwaarden zoeken...
+Search countries…	Landen zoeken…
+Search currencies…	Valuta's zoeken…
+Search events, workspaces or triggers…	Gebeurtenissen, werkruimtes of triggers zoeken…
+Search ledger entries…	Grootboekmutaties zoeken…
+Search name, owner or workspace…	Naam, eigenaar of werkruimte zoeken…
+Search policy clauses...	Beleidsbepalingen zoeken...
+Search Privacy Policy clauses	Bepalingen in het Privacybeleid zoeken
+Search subscribers	Abonnees zoeken
+Search subscribers…	Abonnees zoeken…
+Search timezones…	Tijdzones zoeken…
+Search tools (e.g., AI, Funnel, CRM)...	Tools zoeken (bijv. AI, Funnel, CRM)...
+Search workspace name, ID, or model…	Werkruimtenaam, ID of model zoeken…
+Search workspace or owner ID…	Werkruimte- of eigenaars-ID zoeken…
+Search workspaces	Werkruimtes zoeken
+Search workspaces…	Werkruimtes zoeken…
+Search sub-accounts	Subaccounts zoeken
+Search sub-accounts...	Subaccounts zoeken...
+Search admins or sections…	Beheerders of secties zoeken…
+Search admins or sections	Beheerders of secties zoeken
+Search sections…	Secties zoeken…
+Search sections	Secties zoeken
+Search world city or country…	Wereldstad of land zoeken…
+Search requests	Aanvragen zoeken
+Full Access	Volledige toegang
+Commerce & Funnels Only	Alleen e-commerce & funnels
+Support Only	Alleen support
+All platform modules and all workspace settings tabs	Alle platformmodules en alle tabbladen van de werkruimte-instellingen
+Products & Payments, Funnels, Booking, Contacts, Analytics & Commerce settings	Producten & betalingen, Funnels, Boekingen, Contacten, Analyse & e-commerce-instellingen
+Inbox, CRM & Leads, Contacts, AI Follow-up & Booking	Inbox, CRM & leads, Contacten, AI-opvolging & Boekingen
+Manually select allowed modules and settings tabs below	Selecteer hieronder handmatig de toegestane modules en instellingentabbladen
+Sales Team	Salesteam
+Support Team	Supportteam
+Support Routing & Shift Schedule	Supportroutering & dienstrooster
+Unified assignment share and shift availability across Inbox, AI Follow-up & CRM	Gecombineerde toewijzingsverdeling en dienstbeschikbaarheid voor Inbox, AI-opvolging & CRM
+Lead Allocation Percentage	Toewijzingspercentage voor leads
+Agents with higher allocation percentages receive proportionally more leads when on shift.	Medewerkers met een hoger toewijzingspercentage ontvangen naar verhouding meer leads tijdens hun dienst.
+Active support pool	Actieve supportpool
+Shift Schedule	Dienstrooster
+Schedule enforced	Rooster actief
+Always available	Altijd beschikbaar
+Enable shift schedule	Dienstrooster inschakelen
+Working Days	Werkdagen
+All week	Hele week
+Sun–Thu	Zo–do
+Mon–Fri	Ma–vr
+Sun	Zo
+Mon	Ma
+Tue	Di
+Wed	Wo
+Thu	Do
+Fri	Vr
+Sat	Za
+Shift Start Time	Begintijd dienst
+Shift End Time	Eindtijd dienst
+Workspace Timezone	Tijdzone van werkruimte
+On Shift	In dienst
+Off Shift	Buiten dienst
+On Shift Now	Nu in dienst
+Off Shift Now	Nu buiten dienst
+Select at least one working day for the Sales shift schedule.	Selecteer minimaal één werkdag voor het salesdienstrooster.
+Select at least one working day for the shift schedule.	Selecteer minimaal één werkdag voor het dienstrooster.
+Sales routing & shift schedule updated.	Salesroutering en dienstrooster bijgewerkt.
+Sales Team & Routing	Salesteam & routering
+Live shift availability, weighted lead routing across Inbox, AI Follow-up & CRM, and per-agent revenue attribution.	Actuele dienstbeschikbaarheid, gewogen leadroutering voor Inbox, AI-opvolging & CRM en omzettoewijzing per medewerker.
+Team & Roles	Team & rollen
+Add Sales Agent	Salesmedewerker toevoegen
+Add First Sales Agent	Eerste salesmedewerker toevoegen
+Weighted Sales Routing Active	Gewogen salesroutering actief
+Owner Fallback Routing Active	Terugvalroutering naar eigenaar actief
+No Sales Agent On Shift	Geen salesmedewerker in dienst
+New leads and "Take Over Conversation" handoffs are automatically routed to on-shift Sales agents by allocation percentage.	Nieuwe leads en overdrachten via "Gesprek overnemen" worden op basis van het toewijzingspercentage automatisch doorgestuurd naar salesmedewerkers in dienst.
+All Sales agents are currently off-shift or inactive. Incoming leads and human handoffs automatically route to Workspace Owner:	Alle salesmedewerkers zijn momenteel buiten dienst of inactief. Binnenkomende leads en persoonlijke overdrachten worden automatisch doorgestuurd naar de eigenaar van de werkruimte:
+Workspace Live Time	Actuele tijd in werkruimte
+On-Shift Agents	Medewerkers in dienst
+Ready for live handoffs	Klaar voor directe overdrachten
+Fallback: Workspace Owner	Terugvaloptie: eigenaar van werkruimte
+Assigned Leads	Toegewezen leads
+Synced across CRM, Inbox & AI	Gesynchroniseerd tussen CRM, Inbox & AI
+Active / Resolved Chats	Actieve / opgeloste chats
+Active / Resolved	Actief / opgelost
+Active vs. resolved threads	Actieve vs. opgeloste gesprekken
+Attributed Revenue	Toegewezen omzet
+Attributed Sales	Toegewezen verkopen
+attributed sales	toegewezen verkopen
+Sales Agents & Attribution Breakdown	Overzicht van salesmedewerkers & toewijzing
+Click any agent to inspect their assigned leads, active/resolved conversations, and attributed sales.	Klik op een medewerker om diens toegewezen leads, actieve/opgeloste gesprekken en toegewezen verkopen te bekijken.
+Search agent by name or email…	Medewerker zoeken op naam of e-mail…
+All Agents	Alle medewerkers
+No dedicated Sales agents configured yet	Nog geen speciale salesmedewerkers ingesteld
+Use Add Sales Agent to enable shift-based weighted routing. Until then, all leads and handoffs route safely to the Workspace Owner.	Gebruik Salesmedewerker toevoegen om gewogen routering op basis van diensten in te schakelen. Tot die tijd worden alle leads en overdrachten veilig naar de eigenaar van de werkruimte gestuurd.
+Owner Fallback	Terugval naar eigenaar
+Fallback Active	Terugvaloptie actief
+Standby Fallback	Stand-by terugvaloptie
+Fallback Routing Share (When 0 Sales On Shift)	Terugvalverdeling (wanneer 0 salesmedewerkers in dienst zijn)
+Configured Lead Allocation	Ingestelde leadtoewijzing
+Live	Live
+24/7 Automatic Fallback	24/7 automatische terugvaloptie
+24/7 (Schedule disabled)	24/7 (rooster uitgeschakeld)
+View Attribution & Leads	Toewijzing & leads bekijken
+Edit Shift & %	Dienst & % bewerken
+Configure Shift & Allocation	Dienst & toewijzing instellen
+No leads are currently assigned to this agent.	Er zijn momenteel geen leads toegewezen aan deze medewerker.
+No conversations are currently assigned to this agent.	Er zijn momenteel geen gesprekken toegewezen aan deze medewerker.
+No paid orders or converted sales attributed yet.	Nog geen betaalde bestellingen of geconverteerde verkopen toegewezen.
+Live sales conversation	Actief verkoopgesprek
+Human Handoff	Overdracht aan medewerker
+Open Chat	Chat openen
+Open in CRM	Openen in CRM
+Open in Inbox	Openen in Inbox
+Converted CRM Deal	Geconverteerde CRM-deal
+Product Purchase	Productaankoop
+Assigned Contact	Toegewezen contact
+Handled by	Behandeld door
+Routed to	Doorgestuurd naar
+Assigned to	Toegewezen aan
+Conversation handed off to human Sales	Gesprek overgedragen aan een salesmedewerker
+Take over conversation	Gesprek overnemen
+Hand back to AI	Teruggeven aan AI
+AI is handling this conversation again.	AI behandelt dit gesprek weer.
+Unassigned (Auto-Route)	Niet toegewezen (automatische routering)
+Sales	Verkopen
+Mark all read	Alles markeren als gelezen
+No notifications right now	Momenteel geen meldingen
+New lead assignments, human handoffs, and shift updates appear here in real time.	Nieuwe leadtoewijzingen, persoonlijke overdrachten en dienstroosterupdates verschijnen hier in realtime.
+Loading conversations...	Gesprekken laden...
+Unable to load conversations	Kan gesprekken niet laden
+Response actions	Antwoordacties
+Dislike	Niet nuttig
+Regenerating...	Opnieuw genereren...
+Listen	Beluisteren
+Stop listening	Stoppen met luisteren
+Response exported	Antwoord geëxporteerd
+Assistant response regenerated	Antwoord van assistent opnieuw gegenereerd
+Audio playback is not Salesed in this browser.	Audioweergave wordt niet ondersteund in deze browser.
+Build an Audience	Een publiek opbouwen
+Collect email addresses and build your email list	Verzamel e-mailadressen en bouw je verzendlijst op
+Sell	Verkopen
+Sell a product or service	Verkoop een product of dienst
+Custom	Aangepast
+Build a custom funnel from scratch	Bouw vanaf nul een aangepaste funnel
+Create With AI	Maken met AI
+Generate a personalized funnel layout from your business brief	Genereer een gepersonaliseerde funnellay-out op basis van je bedrijfsbriefing
+Enter a funnel name to continue.	Voer een funnelnaam in om door te gaan.
+Could not create funnel.	Kon funnel niet aanmaken.
+Create Funnel	Funnel aanmaken
+Funnel name	Funnelnaam
+Enter funnel name	Voer funnelnaam in
+Funnel domain	Funneldomein
+Choose funnel goal	Kies funneldoel
+Currency	Valuta
+Funnel currency	Funnelvaluta
+Funnel Settings	Funnelinstellingen
+Back to Steps	Terug naar stappen
+Add at least one step to your funnel before publishing.	Voeg minimaal één stap toe aan je funnel voordat je publiceert.
+Per-Element CRM Lead Routing	CRM-leadroutering per element
+Each Form and Booking Calendar routes leads independently to its own pipeline and initial stage.	Elk formulier en elke boekingsagenda stuurt leads afzonderlijk door naar een eigen pipeline en startfase.
+No Form or Booking Calendar elements found yet. Add a Form or Calendar in the Page Builder to configure its CRM routing.	Nog geen formulier- of boekingsagenda-elementen gevonden. Voeg in de paginabouwer een formulier of agenda toe om de CRM-routering in te stellen.
+Form CRM Lead Routing	CRM-leadroutering voor formulier
+Booking Calendar CRM Lead Routing	CRM-leadroutering voor boekingsagenda
+Button action type	Actietype van knop
+Action destination	Actiebestemming
+Go to Next Funnel Step	Ga naar volgende funnelstap
+Go to Specific Page / Step	Ga naar specifieke pagina / stap
+External URL	Externe URL
+Submit Form / Trigger Order	Formulier verzenden / bestelling starten
+Scroll to Section	Scrollen naar sectie
+Open Popup / Modal	Pop-up / modaal venster openen
+Open Booking Modal	Boekingsvenster openen
+Download File	Bestand downloaden
+Phone Call (tel:)	Telefoongesprek (tel:)
+Send Email (mailto:)	E-mail sturen (mailto:)
+Next step override (optional)	Volgende stap overschrijven (optioneel)
+Automatic (Next step in funnel flow)	Automatisch (volgende stap in funnelflow)
+Target page / step	Doelpagina / -stap
+Choose a page or step...	Kies een pagina of stap...
+Destination URL	Bestemmings-URL
+Open in new tab	Openen in nieuw tabblad
+Target Form / Order	Doelformulier / -bestelling
+Auto (First Form / Order on page)	Automatisch (eerste formulier / bestelling op pagina)
+Choose section on page	Kies sectie op pagina
+Select a section...	Selecteer een sectie...
+Target section ID	ID van doelsectie
+#pricing or section ID	#pricing of sectie-ID
+Popup source	Pop-upbron
+Built-in Lead Capture Popup	Ingebouwde pop-up voor leadregistratie
+Built-in Special Offer Modal	Ingebouwd venster voor speciale aanbieding
+Page Popup	Paginapop-up
+Popup headline	Pop-upkoptekst
+Enter popup headline	Voer pop-upkoptekst in
+Popup description	Pop-upbeschrijving
+Supporting popup message	Ondersteunende pop-uptekst
+Popup CTA label	CTA-tekst van pop-up
+Submit & Continue	Verzenden & doorgaan
+Get Instant Access	Krijg direct toegang
+Enter your details below to unlock immediate access.	Vul hieronder je gegevens in om direct toegang te krijgen.
+File URL	Bestands-URL
+File name (optional)	Bestandsnaam (optioneel)
+Phone number	Telefoonnummer
+Phone number (optional)	Telefoonnummer (optioneel)
+Email subject (optional)	E-mailonderwerp (optioneel)
+Inquiry from website	Aanvraag via website
+This is the final step in the funnel flow.	Dit is de laatste stap in de funnelflow.
+Choose a target page or step in button settings.	Kies een doelpagina of -stap in de knopinstellingen.
+Add a destination URL in button settings.	Voeg een bestemmings-URL toe in de knopinstellingen.
+Invalid destination URL.	Ongeldige bestemmings-URL.
+Add a Form or Order element on this page to submit.	Voeg een formulier- of bestelelement aan deze pagina toe om te kunnen verzenden.
+Add a file URL to download in button settings.	Voeg in de knopinstellingen een bestands-URL toe om te downloaden.
+Unable to start download.	Kan download niet starten.
+Add a phone number in button settings.	Voeg een telefoonnummer toe in de knopinstellingen.
+Add an email address in button settings.	Voeg een e-mailadres toe in de knopinstellingen.
+Configure an action for this button in the Page Builder.	Stel in de paginabouwer een actie in voor deze knop.
+Submitted successfully!	Succesvol verzonden!
+Your submission has been received.	Je inzending is ontvangen.
+SPECIAL OFFER	SPECIALE AANBIEDING
+INSTANT ACCESS	DIRECTE TOEGANG
+100% secure & private	100% veilig & privé
+Configuration	Configuratie
+Automation Rules	Automatiseringsregels
+A/B Test	A/B-test
+Stats	Statistieken
+Deadline Settings	Deadline-instellingen
+Inactive Page	Inactieve pagina
+Fallback	Terugvaloptie
+Displayed when the funnel is disabled	Weergegeven wanneer de funnel is uitgeschakeld
+Order Form	Bestelformulier
+Thank You Page	Bedankpagina
+Opt-in / Squeeze Page	Opt-in- / squeezepagina
+Funnel Step Templates	Sjablonen voor funnelstappen
+Global Funnel Step Templates Library	Algemene sjablonenbibliotheek voor funnelstappen

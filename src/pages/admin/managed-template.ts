@@ -2,6 +2,7 @@ import builtInArabic from '../../../functions/seed-data/template-metadata-ar.jso
 import builtInCopy from '../../../functions/seed-data/template-content-ar.json';
 import builtInDesignCopy from '../../../functions/seed-data/template-design-copy-ar.json';
 import { translateTemplateCopy } from '../../../functions/template-arabic.js';
+import { translateText } from '../../i18n/display';
 import type { Template } from '../system-template-data';
 import type { BuilderDocument } from '../BuilderWorkspace';
 export type ManagedTemplate = Template & {
@@ -41,7 +42,7 @@ const arabicCategories: Record<string, string> = {
 };
 
 export function templateCategoryLabel(category: string, arabic: boolean) {
-  return arabic ? arabicCategories[category] || category : category;
+  return arabic ? arabicCategories[category] || category : translateText(category);
 }
 
 const builtInMetadata = builtInArabic as Record<string, { name: string; title_ar: string; description_ar: string }>;

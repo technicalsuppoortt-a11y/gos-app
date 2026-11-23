@@ -1,0 +1,55 @@
+Pre-booking screening	Vorab-Screening vor der Buchung
+Visitors must pass every screening question before choosing a time. Remove all screening questions to allow anyone to continue.	Besucher müssen jede Screening-Frage erfolgreich beantworten, bevor sie einen Termin auswählen können. Entferne alle Screening-Fragen, damit jeder fortfahren kann.
+Minimum amount	Mindestbetrag
+Qualifying choices	Qualifizierende Auswahlmöglichkeiten
+Add screening question	Screening-Frage hinzufügen
+Edit screening question	Screening-Frage bearbeiten
+Remove screening question	Screening-Frage entfernen
+Screening question	Screening-Frage
+Qualification rule	Qualifizierungsregel
+Minimum accepted amount	Akzeptierter Mindestbetrag
+What is your project budget in USD?	Wie hoch ist dein Projektbudget in USD?
+Mark each choice that should let a visitor continue.	Markiere jede Option, mit der ein Besucher fortfahren darf.
+Qualifies	Qualifiziert
+Enter distinct choices and mark at least one as qualifying.	Gib unterschiedliche Optionen ein und markiere mindestens eine als qualifizierend.
+Enter a valid minimum amount.	Gib einen gültigen Mindestbetrag ein.
+Enter a question.	Gib eine Frage ein.
+Save question	Frage speichern
+Review the screening questions before saving.	Überprüfe die Screening-Fragen vor dem Speichern.
+Screening	Screening
+Screening answers	Screening-Antworten
+Before you book	Vor deiner Buchung
+Answer these required questions to see if this appointment is a fit.	Beantworte diese Pflichtfragen, um zu prüfen, ob dieser Termin passend ist.
+Checking answers…	Antworten werden geprüft…
+Continue to availability	Weiter zur Verfügbarkeit
+Thank you for your interest	Vielen Dank für dein Interesse
+We’re unable to offer an appointment based on your answers. Thank you for taking the time to tell us about your needs.	Aufgrund deiner Angaben können wir dir derzeit leider keinen Termin anbieten. Vielen Dank, dass du dir die Zeit genommen hast, uns dein Anliegen mitzuteilen.
+Preview screening again	Screening-Vorschau erneut anzeigen
+Please check your answers and complete every screening question.	Bitte überprüfe deine Angaben und beantworte jede Screening-Frage vollständig.
+Could not check your answers. Please try again.	Deine Antworten konnten nicht geprüft werden. Bitte versuche es erneut.
+Voice note extraction	Sprachnotiz-Auswertung
+Transcribing and organizing your voice note…	Deine Sprachnotiz wird transkribiert und strukturiert…
+Optional: What should Copilot look for in this recording?	Optional: Worauf soll Copilot in dieser Aufnahme achten?
+Audio for transcription	Audio für Transkription
+Extract voice note	Sprachnotiz auswerten
+Copy JSON	JSON kopieren
+Transcript	Transkript
+Intent	Absicht
+Parameters	Parameter
+Voice note	Sprachnotiz
+Could not copy	Kopieren fehlgeschlagen
+Action items	Aufgabenpunkte
+The transcript is ready. Structured extraction is temporarily unavailable.	Das Transkript ist fertig. Die strukturierte Auswertung ist vorübergehend nicht verfügbar.
+Voice recording is unavailable in this browser. Attach an audio file instead.	Sprachaufnahmen sind in diesem Browser nicht verfügbar. Hänge stattdessen eine Audiodatei an.
+Recording stopped because the browser reported an audio error.	Die Aufnahme wurde beendet, da der Browser einen Audiofehler gemeldet hat.
+No audio was recorded. Try recording again.	Es wurde kein Audio aufgenommen. Versuche es erneut.
+Choose a supported audio file up to 15 MB.	Wähle eine unterstützte Audiodatei mit bis zu 15 MB aus.
+Keep your voice extraction request under 2,000 characters.	Halte deine Anfrage zur Sprachauswertung unter 2.000 Zeichen.
+No speech was detected. Try a clearer recording.	Es wurde keine Sprache erkannt. Versuche eine deutlichere Aufnahme.
+This recording is too long. Split it into shorter clips.	Diese Aufnahme ist zu lang. Teile sie in kürzere Abschnitte auf.
+The recording could not be decoded. Try a different audio file.	Die Aufnahme konnte nicht dekodiert werden. Versuche eine andere Audiodatei.
+Transcription took too long. Try again or send a shorter recording.	Die Transkription hat zu lange gedauert. Versuche es erneut oder sende eine kürzere Aufnahme.
+Transcription is temporarily unavailable. Please try again.	Die Transkription ist vorübergehend nicht verfügbar. Bitte versuche es erneut.
+Voice transcription is available in a connected workspace.	Die Sprachtranskription ist in einem verbundenen Arbeitsbereich verfügbar.
+Transcribe	Transkribieren
+Transcribing…	Wird transkribiert…

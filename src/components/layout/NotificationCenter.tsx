@@ -1,3 +1,4 @@
+import { translateText, useUILanguage } from '../../i18n/display';
 import { useCloudState, useEntities } from '../../backend/workspace';
 import {
   eventLabel,
@@ -10,7 +11,6 @@ import {
   useWorkspaceNotifications,
   type WorkspaceNotificationRecord,
 } from '../../backend/notifications';
-import { translateText } from '../../i18n/display';
 import { useLocation, useNavigate } from 'react-router-dom';
 import React from 'react';
 import { createPortal } from 'react-dom';
@@ -73,8 +73,9 @@ export function NotificationCenter() {
 
 function NotificationCenterContent() {
   const { user, tenant, role } = useSelector((s: RootState) => s.auth);
-  const ar = useSelector((s: RootState) => s.ui.language === 'ar');
-  const t = (en: string, arabic: string) => (ar ? arabic : en);
+  const uiLang = useUILanguage();
+  const ar = uiLang.startsWith('ar');
+  const t = (en: string, arabic: string) => (ar ? arabic : translateText(en));
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -417,8 +418,8 @@ function NotificationCenterContent() {
                       <Icon size={17} />
                     </span>
                     <div>
-                      <b>{ar ? n.ar : n.en}</b>
-                      <p>{ar ? n.detailAr : n.detail}</p>
+                      <b>{ar ? n.ar : translateText(n.en)}</b>
+                      <p>{ar ? n.detailAr : translateText(n.detail)}</p>
                       <time dateTime={n.at}>{timestamp(n.at)}</time>
                     </div>
                     {!n.read && <span className="nc-unread-dot" />}

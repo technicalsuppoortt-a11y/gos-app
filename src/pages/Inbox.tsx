@@ -645,7 +645,7 @@ export const Inbox: React.FC<Props> = ({ aiMode, setAiMode, setSent }) => {
       return;
     }
     if (value && readyKnowledgeCount === 0) {
-      showToast.error(isAr ? 'ارفع ودرّب قاعدة المعرفة أولاً حتى يتمكن الذكاء الاصطناعي من الرد.' : 'Upload and train your Knowledge Base first before going live.');
+      showToast.error(isAr ? 'ارفع ودرّب قاعدة المعرفة أولاً حتى يتمكن الذكاء الاصطناعي من الرد.' : translateText('Upload and train your Knowledge Base first before going live.'));
       return;
     }
     const ok = await gosAI.updateAssistant({ live_enabled: value });
@@ -653,8 +653,8 @@ export const Inbox: React.FC<Props> = ({ aiMode, setAiMode, setSent }) => {
       setAiMode(value);
       showToast.success(
         value
-          ? (isAr ? 'تم تفعيل الرد التلقائي بالذكاء الاصطناعي.' : 'AI auto-replies are now live across enabled channels.')
-          : (isAr ? 'تم إيقاف الرد التلقائي مؤقتاً.' : 'AI auto-replies paused workspace-wide.'),
+          ? (isAr ? 'تم تفعيل الرد التلقائي بالذكاء الاصطناعي.' : translateText('AI auto-replies are now live across enabled channels.'))
+          : (isAr ? 'تم إيقاف الرد التلقائي مؤقتاً.' : translateText('AI auto-replies paused workspace-wide.')),
       );
     }
   };
@@ -685,11 +685,11 @@ export const Inbox: React.FC<Props> = ({ aiMode, setAiMode, setSent }) => {
         showToast.info(
           isAr
             ? 'لم يجد الذكاء الاصطناعي إجابة مطابقة في قاعدة المعرفة لهذه الرسالة — أضف المعلومة لقاعدة المعرفة أو رد يدوياً.'
-            : 'No matching answer was found in your Knowledge Base for this message — add it to Knowledge or reply manually.',
+            : translateText('No matching answer was found in your Knowledge Base for this message — add it to Knowledge or reply manually.'),
         );
       } else {
         updateActive({ aiAutoReply: true, takenOver: false, aiState: 'answered' });
-        showToast.success(isAr ? 'تم إرسال رد الذكاء الاصطناعي من قاعدة المعرفة!' : 'AI reply sent from your Knowledge Base!');
+        showToast.success(isAr ? 'تم إرسال رد الذكاء الاصطناعي من قاعدة المعرفة!' : translateText('AI reply sent from your Knowledge Base!'));
       }
       inboxApi.retry();
     } catch (error) {
@@ -1022,7 +1022,7 @@ export const Inbox: React.FC<Props> = ({ aiMode, setAiMode, setSent }) => {
     showToast.success(
       takingOver
         ? (isAr ? `أنت تتولى الرد على ${active.name.split(" ")[0]} الآن.` : `You're now handling ${active.name.split(" ")[0]}'s conversation.`)
-        : (isAr ? "تمت إعادة المحادثة للرد التلقائي بالذكاء الاصطناعي." : "AI is handling this conversation again."),
+        : (isAr ? "تمت إعادة المحادثة للرد التلقائي بالذكاء الاصطناعي." : translateText("AI is handling this conversation again.")),
     );
     if (takingOver) inputRef.current?.focus();
   };
@@ -1304,7 +1304,7 @@ export const Inbox: React.FC<Props> = ({ aiMode, setAiMode, setSent }) => {
         <section className={`${CARD} inbox-col-thread flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden`} aria-label={translateText(`Conversation with ${active.name}`)}>
           {/* chat header */}
           <header className="inbox-thread-header flex shrink-0 items-center gap-2 sm:gap-3 border-b border-slate-100 px-3 sm:px-5 py-2.5 sm:py-3 dark:border-white/[0.06]">
-            <button type="button" onClick={() => setMobileInboxPane("list")} aria-label={language === "ar" ? "العودة للمحادثات" : "Back to conversations"} className={`${ICON_BTN} relative h-9 w-9 md:hidden`}>
+            <button type="button" onClick={() => setMobileInboxPane("list")} aria-label={language === "ar" ? "العودة للمحادثات" : translateText("Back to conversations")} className={`${ICON_BTN} relative h-9 w-9 md:hidden`}>
               <ArrowLeft size={16} className="rtl:rotate-180" />
               {unreadTotal > 0 && <span className="absolute -end-1 -top-1 grid h-4 min-w-4 place-items-center rounded-full bg-rose-500 px-1 text-[9px] font-bold text-white">{unreadTotal}</span>}
             </button>
@@ -1325,7 +1325,7 @@ export const Inbox: React.FC<Props> = ({ aiMode, setAiMode, setSent }) => {
                   <Sparkles size={11} fill="currentColor" />{translateText(" AI Active")}</span>
               ) : active.aiState === 'handoff' ? (
                 <span className="inline-flex h-[22px] items-center gap-1 rounded-md border border-amber-200 bg-amber-50 px-2 text-[11px] font-semibold text-amber-700 dark:border-amber-400/25 dark:bg-amber-500/15 dark:text-amber-300">
-                  <CircleAlert size={11} /> {isAr ? 'بانتظار رد الفريق' : 'Needs Human'}
+                  <CircleAlert size={11} /> {isAr ? 'بانتظار رد الفريق' : translateText('Needs Human')}
                 </span>
               ) : (
                 <span className="inline-flex h-[22px] items-center gap-1 rounded-md border border-slate-200 bg-slate-50 px-2 text-[11px] font-semibold text-slate-500 dark:border-white/10 dark:bg-white/10 dark:text-slate-300">
@@ -1347,7 +1347,7 @@ export const Inbox: React.FC<Props> = ({ aiMode, setAiMode, setSent }) => {
             >
               <Star size={16} fill={active.starred ? "currentColor" : "none"} />
             </button>
-            <button type="button" onClick={() => setMobileInboxPane("details")} aria-label={language === "ar" ? "تفاصيل العميل" : "Lead details"} className={`${ICON_BTN} h-9 w-9 md:hidden`}><UserRound size={16} /></button>
+            <button type="button" onClick={() => setMobileInboxPane("details")} aria-label={language === "ar" ? "تفاصيل العميل" : translateText("Lead details")} className={`${ICON_BTN} h-9 w-9 md:hidden`}><UserRound size={16} /></button>
             <div className="relative" ref={moreRef}>
               <button
                 id="inbox-more"
@@ -1416,12 +1416,12 @@ export const Inbox: React.FC<Props> = ({ aiMode, setAiMode, setSent }) => {
                 <Sparkles size={14} className="shrink-0 text-amber-600 dark:text-amber-300" />
                 <span className="truncate">
                   {readyKnowledgeCount === 0
-                    ? (isAr ? 'قاعدة المعرفة غير مدرّبة بعد — ارفع ملفاتك أو نصوصك حتى يبدأ الذكاء الاصطناعي في الرد تلقائياً.' : 'Knowledge Base is not trained yet — upload sources so AI can reply automatically.')
+                    ? (isAr ? 'قاعدة المعرفة غير مدرّبة بعد — ارفع ملفاتك أو نصوصك حتى يبدأ الذكاء الاصطناعي في الرد تلقائياً.' : translateText('Knowledge Base is not trained yet — upload sources so AI can reply automatically.'))
                     : !workspaceAiLive
-                      ? (isAr ? 'الرد التلقائي بالذكاء الاصطناعي متوقف حالياً على مستوى مساحة العمل.' : 'AI auto-reply is currently paused workspace-wide.')
+                      ? (isAr ? 'الرد التلقائي بالذكاء الاصطناعي متوقف حالياً على مستوى مساحة العمل.' : translateText('AI auto-reply is currently paused workspace-wide.'))
                       : !activeChannelLive
                         ? (isAr ? `الرد التلقائي متوقف على قناة ${channelMeta[active.channel].label}.` : `AI auto-reply is paused on ${channelMeta[active.channel].label}.`)
-                        : (isAr ? 'تم تحويل آخر رسالة للفريق لعدم تطابقها مع قاعدة المعرفة — يمكنك الرد يدوياً أو تجربة رد الذكاء الاصطناعي الآن.' : 'Last message was handed off to your team — reply manually or let AI answer from your Knowledge Base now.')}
+                        : (isAr ? 'تم تحويل آخر رسالة للفريق لعدم تطابقها مع قاعدة المعرفة — يمكنك الرد يدوياً أو تجربة رد الذكاء الاصطناعي الآن.' : translateText('Last message was handed off to your team — reply manually or let AI answer from your Knowledge Base now.'))}
                 </span>
               </div>
               <div className="flex shrink-0 items-center gap-2">
@@ -1431,7 +1431,7 @@ export const Inbox: React.FC<Props> = ({ aiMode, setAiMode, setSent }) => {
                     onClick={() => navigate('/dashboard/follow-up')}
                     className="rounded-lg bg-amber-600 px-2.5 py-1 text-[11px] font-semibold text-white hover:bg-amber-700"
                   >
-                    {isAr ? 'فتح قاعدة المعرفة' : 'Open Knowledge'}
+                    {isAr ? 'فتح قاعدة المعرفة' : translateText('Open Knowledge')}
                   </button>
                 ) : !workspaceAiLive ? (
                   <button
@@ -1440,7 +1440,7 @@ export const Inbox: React.FC<Props> = ({ aiMode, setAiMode, setSent }) => {
                     onClick={() => void toggleWorkspaceAi(true)}
                     className="rounded-lg bg-[#7C3AED] px-2.5 py-1 text-[11px] font-semibold text-white hover:bg-purple-700 disabled:opacity-60"
                   >
-                    {isAr ? 'تفعيل الرد التلقائي' : 'Turn AI On'}
+                    {isAr ? 'تفعيل الرد التلقائي' : translateText('Turn AI On')}
                   </button>
                 ) : !activeChannelLive ? (
                   <button
@@ -1459,7 +1459,7 @@ export const Inbox: React.FC<Props> = ({ aiMode, setAiMode, setSent }) => {
                     className="inline-flex items-center gap-1 rounded-lg bg-[#7C3AED] px-2.5 py-1 text-[11px] font-semibold text-white hover:bg-purple-700 disabled:opacity-60"
                   >
                     {aiReplySending ? <LoaderCircle size={12} className="animate-spin" /> : <Sparkles size={12} />}
-                    <span>{aiReplySending ? (isAr ? 'جارٍ الرد…' : 'Replying…') : (isAr ? 'رد بالذكاء الاصطناعي' : 'Reply with AI')}</span>
+                    <span>{aiReplySending ? (isAr ? 'جارٍ الرد…' : translateText('Replying…')) : (isAr ? 'رد بالذكاء الاصطناعي' : translateText('Reply with AI'))}</span>
                   </button>
                 )}
               </div>
@@ -1556,7 +1556,7 @@ export const Inbox: React.FC<Props> = ({ aiMode, setAiMode, setSent }) => {
                               <Sparkles size={10} className="text-purple-400" fill="currentColor" />{translateText(" AI Assistant ·")}
                               {(m.citationsCount ?? 0) > 0 && (
                                 <span className="rounded bg-purple-100/80 px-1.5 py-0.5 text-[9.5px] font-semibold text-purple-700 dark:bg-purple-500/20 dark:text-purple-200">
-                                  {isAr ? 'من قاعدة المعرفة' : 'Knowledge Base'}
+                                  {isAr ? 'من قاعدة المعرفة' : translateText('Knowledge Base')}
                                 </span>
                               )}
                             </>
@@ -1809,7 +1809,7 @@ export const Inbox: React.FC<Props> = ({ aiMode, setAiMode, setSent }) => {
         {/* ---------- Column 3: CRM + AI context ---------- */}
         <aside className="inbox-scroll inbox-col-details hidden min-h-0 w-[300px] shrink-0 flex-col gap-2.5 overflow-y-auto min-[1200px]:flex 2xl:w-[330px]" aria-label={translateText("Lead details")}>
           <div className={`${CARD} flex shrink-0 items-center gap-2.5 px-3 py-2.5 md:hidden`}>
-            <button type="button" onClick={() => setMobileInboxPane("thread")} aria-label={language === "ar" ? "العودة للمحادثة" : "Back to chat"} className={`${ICON_BTN} h-8 w-8`}>
+            <button type="button" onClick={() => setMobileInboxPane("thread")} aria-label={language === "ar" ? "العودة للمحادثة" : translateText("Back to chat")} className={`${ICON_BTN} h-8 w-8`}>
               <ArrowLeft size={15} className="rtl:rotate-180" />
             </button>
             <b className={`text-[13.5px] font-bold ${HEADING}`}>{language === "ar" ? "تفاصيل العميل" : translateText("Lead Details")}</b>

@@ -1,0 +1,148 @@
+Get App	App downloaden
+Manual Transfer Methods	Handmatige overboekingsmethoden
+Professional Payment Gateways	Professionele betalingsgateways
+Currently Added Methods	Momenteel toegevoegde methoden
+Select a method to add its details:	Selecteer een methode om de gegevens toe te voegen:
+Configure wallet or bank transfer details for your customers.	Stel portemonnee- of bankoverschrijvingsgegevens in voor je klanten.
+No transfer methods added yet.	Nog geen overboekingsmethoden toegevoegd.
+Add a transfer method	Overboekingsmethode toevoegen
+Connect a payment gateway for local or international card payments.	Koppel een betalingsgateway voor lokale of internationale kaartbetalingen.
+International payments via Visa & Mastercard	Internationale betalingen via Visa & Mastercard
+Global digital wallet	Wereldwijde digitale portemonnee
+Payment gateway for the Middle East & GCC	Betalingsgateway voor het Midden-Oosten & GCC
+Local Egyptian payments and cards	Lokale Egyptische betalingen en kaarten
+Manage Account	Account beheren
+Recorded events	Geregistreerde gebeurtenissen
+Recorded conversions	Geregistreerde conversies
+Tracking scope authorized	Trackingbereik geautoriseerd
+Install Upklick	Upklick installeren
+Your workspace, one tap away.	Je werkruimte binnen handbereik.
+Fast access	Snelle toegang
+Standalone app	Zelfstandige app
+Secure workspace	Beveiligde werkruimte
+Open this page in Safari.	Open deze pagina in Safari.
+Tap Share in the browser toolbar.	Tik op Deel in de werkbalk van de browser.
+Choose Add to Home Screen, then tap Add.	Kies Zet op beginscherm en tik op Voeg toe.
+Install Upklick for quick access from your home screen or desktop.	Installeer Upklick voor snelle toegang vanaf je beginscherm of bureaublad.
+Open your browser menu and choose Install app or Add to Home Screen. If unavailable, try Chrome or Edge over HTTPS.	Open je browsermenu en kies App installeren of Toevoegen aan startscherm. Probeer anders Chrome of Edge via HTTPS.
+Install Now	Nu installeren
+Not now	Niet nu
+Marketing Tracking	Marketingtracking
+Connect Accounts	Accounts koppelen
+Event SDK	Event SDK
+Event Library	Gebeurtenissenbibliotheek
+Realtime	Realtime
+Health Check	Statuscontrole
+Debug Logs	Debuglogboeken
+Test Center	Testcentrum
+AI Optimization	AI-optimalisatie
+Readiness checks	Gereedheidscontroles
+Session events	Sessiegebeurtenissen
+Session conversions	Sessieconversies
+Quick setup	Snelle installatie
+Loading tracking settings…	Trackinginstellingen laden…
+Pixel setup	Pixel-instellingen
+Advanced configuration	Geavanceerde configuratie
+Meta Pixel ID	Meta Pixel-ID
+GA4 Measurement ID	GA4-meet-ID
+Enable tracking	Tracking inschakelen
+Enable tracking after reviewing your consent requirements	Schakel tracking in nadat je de toestemmingsvereisten hebt gecontroleerd
+Developer mode	Ontwikkelaarsmodus
+Custom events	Aangepaste gebeurtenissen
+Add custom event	Aangepaste gebeurtenis toevoegen
+No custom events configured.	Geen aangepaste gebeurtenissen ingesteld.
+Local test	Lokale test
+Local only	Alleen lokaal
+Dispatched	Verzonden
+No events observed in this session.	Geen gebeurtenissen waargenomen in deze sessie.
+Session conversion pipeline	Conversiepipeline van sessie
+This session	Deze sessie
+of previous stage	van vorige fase
+Event distribution	Gebeurtenisverdeling
+No production events observed.	Geen productiegebeurtenissen waargenomen.
+Infrastructure checks	Infrastructuurcontroles
+Local test events	Lokale testgebeurtenissen
+Configuration recommendations	Configuratie-aanbevelingen
+Mapped to Meta & GA4	Gekoppeld aan Meta & GA4
+Custom event	Aangepaste gebeurtenis
+Transfer account / wallet number	Rekening- / portemonneenummer voor overboeking
+Merchant account reference	Referentie handelaarsaccount
+Customer instructions	Instructies voor klant
+Enable payment method	Betaalmethode inschakelen
+Configure Account	Account instellen
+Add Method	Methode toevoegen
+Wallet or direct bank transfer	Portemonnee of directe bankoverschrijving
+Secure provider checkout	Veilig afrekenen via provider
+Loading payment methods…	Betaalmethoden laden…
+Contact your administrator to configure payment methods.	Neem contact op met je beheerder om betaalmethoden in te stellen.
+Payment methods could not be loaded.	Betaalmethoden konden niet worden geladen.
+No payment methods configured.	Geen betaalmethoden ingesteld.
+Manage payment methods	Betaalmethoden beheren
+No payment methods enabled. Contact your administrator to configure payment methods.	Geen betaalmethoden ingeschakeld. Neem contact op met je beheerder om betaalmethoden in te stellen.
+Manual transfers require verification before fulfillment. This is a checkout preview.	Handmatige overboekingen vereisen verificatie vóór levering. Dit is een voorbeeld van de checkout.
+Standard event catalog	Standaard gebeurteniscatalogus
+Unified tracking SDK	Gecombineerde tracking-SDK
+Mode	Modus
+Destinations	Bestemmingen
+Payload	Payload
+Account label	Accountlabel
+Publishable Key	Openbare sleutel (Publishable Key)
+Secret Key	Geheime sleutel (Secret Key)
+Webhook Secret (optional)	Webhook-geheim (optioneel)
+Client ID	Client-ID
+Client Secret	Client Secret
+Profile ID	Profiel-ID
+Server Key	Serversleutel
+Merchant Code	Handelaarscode
+Secure Key	Beveiligingssleutel
+Merchant ID	Handelaars-ID
+Payment API Key	Betalings-API-sleutel
+Secret API Key	Geheime API-sleutel
+PayTabs region	PayTabs-regio
+Sandbox	Sandbox
+Try Demo Account	Demo-account proberen
+Available credits	Beschikbare credits
+Demo credits	Democredits
+Demo credits · simulated balance	Democredits · gesimuleerd saldo
+Exit demo · all changes are simulated	Demo afsluiten · alle wijzigingen zijn gesimuleerd
+Exit Demo Account	Demo-account afsluiten
+Loading gateway configuration…	Gatewayconfiguratie laden…
+Saved securely — leave blank to keep	Veilig opgeslagen — laat leeg om te behouden
+Secrets are stored privately and never shown again. Changing the account, mode or region requires new secrets. Checkout is enabled after the provider connection is verified.	Geheime sleutels worden afgeschermd opgeslagen en nooit opnieuw getoond. Bij het wijzigen van account, modus of regio zijn nieuwe geheime sleutels vereist. Afrekenen wordt ingeschakeld zodra de verbinding met de provider is geverifieerd.
+Project Management	Projectmanagement
+B2B	B2B
+Medical	Medisch
+Product Development	Productontwikkeling
+Coaching	Coaching
+SaaS/Agency	SaaS/Bureau
+Fitness/Coaching	Fitness/Coaching
+Healthcare/Clinic	Gezondheidszorg/Kliniek
+Professional Services	Zakelijke dienstverlening
+Lead Generation	Leadgeneratie
+Cards and mobile wallets in Egypt and the Middle East	Betaalkaarten en mobiele portemonnees in Egypte en het Midden-Oosten
+Configure Paymob	Paymob instellen
+Edit Paymob	Paymob bewerken
+Remove Paymob	Paymob verwijderen
+Enable Paymob	Paymob inschakelen
+Disable Paymob	Paymob uitschakelen
+Public Key	Openbare sleutel (Public Key)
+Card Integration ID	Integratie-ID voor kaarten
+Card Integration ID (optional)	Integratie-ID voor kaarten (optioneel)
+Mobile Wallet Integration ID	Integratie-ID voor mobiele portemonnee
+Mobile Wallet Integration ID (optional)	Integratie-ID voor mobiele portemonnee (optioneel)
+Integration IDs (comma-separated)	Integratie-ID's (kommagescheiden)
+Integration IDs (comma-separated) (optional)	Integratie-ID's (kommagescheiden) (optioneel)
+Iframe ID	Iframe-ID
+Iframe ID (optional)	Iframe-ID (optioneel)
+HMAC Secret	HMAC-geheim
+Transaction callback URL (Processed & Response)	Callback-URL voor transacties (verwerkt & respons)
+Verify these Paymob credentials before enabling checkout.	Verifieer deze Paymob-gegevens voordat je afrekenen inschakelt.
+Paymob credentials verified successfully.	Paymob-gegevens succesvol geverifieerd.
+Paymob did not confirm these credentials.	Paymob heeft deze gegevens niet bevestigd.
+Paymob settings saved, but the connection could not be verified. Check your keys, mode and integration IDs.	Paymob-instellingen opgeslagen, maar de verbinding kon niet worden geverifieerd. Controleer je sleutels, modus en integratie-ID's.
+Paymob · Cards	Paymob · Kaarten
+Paymob · Mobile Wallets	Paymob · Mobiele portemonnees
+Paymob payment was not completed. Please try again or choose another payment method.	De Paymob-betaling is niet voltooid. Probeer het opnieuw of kies een andere betaalmethode.
+Paymob payment was not confirmed yet. Please check your transaction status or try again.	De Paymob-betaling is nog niet bevestigd. Controleer je transactiestatus of probeer het opnieuw.
+Test Connection	Verbinding testen
+Copy webhook URL	Webhook-URL kopiëren

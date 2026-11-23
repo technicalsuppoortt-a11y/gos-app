@@ -96,7 +96,7 @@ export const CurrencySelector: React.FC<{
             ))}
           </div>
           <a className="global-currency-attribution" href="https://www.exchangerate-api.com" target="_blank" rel="noreferrer">
-            {ar ? 'أسعار الصرف من Exchange Rate API' : 'Rates By Exchange Rate API'}
+            {ar ? 'أسعار الصرف من Exchange Rate API' : translateText('Rates By Exchange Rate API')}
           </a>
         </div>
       )}
