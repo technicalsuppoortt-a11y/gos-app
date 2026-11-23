@@ -1423,7 +1423,7 @@ export const Inbox: React.FC<Props> = ({ aiMode, setAiMode, setSent }) => {
           </header>
 
           {/* Live AI & Knowledge Base status banner */}
-          {!demoInbox && active.id && (readyKnowledgeCount === 0 || !workspaceAiLive || !activeChannelLive || active.aiState === 'handoff') && (
+          {!demoInbox && active.id && (readyKnowledgeCount === 0 || !workspaceAiLive || !activeChannelLive || active.aiState === 'handoff' || active.takenOver || active.aiState === 'human_takeover') && (
             <div className="flex flex-wrap items-center justify-between gap-2 border-b border-amber-200/70 bg-amber-50/70 px-4 py-2 text-[12px] text-amber-900 dark:border-amber-400/20 dark:bg-amber-500/10 dark:text-amber-100">
               <div className="flex items-center gap-2 min-w-0">
                 <Sparkles size={14} className="shrink-0 text-amber-600 dark:text-amber-300" />
@@ -1434,7 +1434,9 @@ export const Inbox: React.FC<Props> = ({ aiMode, setAiMode, setSent }) => {
                       ? (isAr ? 'الرد التلقائي بالذكاء الاصطناعي متوقف حالياً على مستوى مساحة العمل.' : translateText('AI auto-reply is currently paused workspace-wide.'))
                       : !activeChannelLive
                         ? (isAr ? `الرد التلقائي متوقف على قناة ${channelMeta[active.channel].label}.` : `AI auto-reply is paused on ${channelMeta[active.channel].label}.`)
-                        : (isAr ? 'تم تحويل المحادثة للفريق وإيقاف الرد التلقائي مؤقتاً حتى يتواصل أحد ممثلي الفريق مع العميل.' : 'Conversation handed off to your team — AI auto-reply is paused so a teammate can take over cleanly.')}
+                        : active.aiState === 'handoff'
+                          ? (isAr ? 'تم تحويل المحادثة للفريق وإيقاف الرد التلقائي مؤقتاً حتى يتواصل أحد ممثلي الفريق مع العميل.' : 'Conversation handed off to your team — AI auto-reply is paused so a teammate can take over cleanly.')
+                          : (isAr ? 'تم إيقاف الرد التلقائي لهذه المحادثة لأن أحد أعضاء الفريق (أو تطبيق واتساب بزنس) تولّى الرد يدوياً.' : 'AI auto-reply is paused on this chat because a teammate (or WhatsApp Business app) took over manually.')}
                 </span>
               </div>
               <div className="flex shrink-0 items-center gap-2">

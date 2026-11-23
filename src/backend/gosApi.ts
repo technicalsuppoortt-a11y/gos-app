@@ -46,7 +46,7 @@ async function meteredRequest<T>(request: MeteredGosRequest, signal?: AbortSigna
   return result;
 }
 export type GosSource = { id: string; name: string; type: 'text' | 'file' | 'instructions' | 'url' | 'faq' | 'products'; status: string; detail?: string | null; url?: string | null; parent_id?: string | null; progress_percent?: number; chunks_done?: number; chunks_total?: number; content?: string; chunk_count?: number; item_count?: number; error?: string; path?: string | null };
-export type GosAssistant = { live_enabled: boolean; channels: Record<string, boolean> };
+export type GosAssistant = { live_enabled: boolean; channels: Record<string, boolean>; tone?: string; use_emojis?: boolean };
 export type GosSourceInput = { name: string; type: 'url'; url: string } | { name: string; type: Exclude<GosSource['type'], 'file' | 'url'>; content: string };
 export type GosTrainingBucket = { ready?: number; limit?: number; items?: GosSource[] };
 export type GosTraining = { files?: GosSource[] | GosTrainingBucket; links?: GosSource[] | GosTrainingBucket; embedding_percent?: number; embedding_percentage?: number; progress?: number };
@@ -55,6 +55,7 @@ export type PlaygroundCitation = { source_id?: string; source_name?: string; exc
 export type PlaygroundTest = { id: string; question: string; answer: string; outcome: string; citations: (PlaygroundCitation | string | unknown)[]; verdict?: string; note?: string | null; context_consistent?: boolean; channel?: string | null; city?: string | null; messages?: { role: 'user' | 'assistant'; content: string }[]; created_at?: string | null; session_id?: string; source_id?: string };
 export type ApiRecord = Record<string, any>;
 export type CopilotThinkingLevel = 'low' | 'medium' | 'high';
+export type CopilotReplyStyle = 'friendly' | 'serious' | 'funny';
 export type CopilotFormKind =
   | 'create_lead'
   | 'update_lead_stage'
@@ -97,9 +98,9 @@ export type CopilotForm = {
   resultSummary?: CopilotAssetSummary | null;
 };
 export type CopilotHistoryMessage = { id?: string; role: 'user' | 'assistant'; text: string; transcript?: string };
-export type CopilotInput = { text: string; conversationId?: string; webSearch?: boolean; deepResearch?: boolean; thinkingLevel?: CopilotThinkingLevel; uiLanguage?: string; isNewConversation?: boolean; history?: CopilotHistoryMessage[] };
+export type CopilotInput = { text: string; conversationId?: string; webSearch?: boolean; deepResearch?: boolean; thinkingLevel?: CopilotThinkingLevel; replyStyle?: CopilotReplyStyle; useEmojis?: boolean; uiLanguage?: string; isNewConversation?: boolean; history?: CopilotHistoryMessage[] };
 export type CopilotResponse = { text?: string; grounded?: boolean; followUps?: string[]; conversationId?: string; leads?: ApiRecord[]; href?: string; hrefLabel?: string; form?: CopilotForm | null; draft?: ApiRecord | null; conversation?: ApiRecord };
-export type CopilotActionInput = { kind: CopilotFormKind; values: Record<string, string>; conversationId?: string; formId?: string; record?: ApiRecord; requestId?: string; uiLanguage?: string };
+export type CopilotActionInput = { kind: CopilotFormKind; values: Record<string, string>; conversationId?: string; formId?: string; record?: ApiRecord; requestId?: string; uiLanguage?: string; replyStyle?: CopilotReplyStyle; useEmojis?: boolean };
 export type TrackId = 'bookings' | 'products' | 'funnels' | 'meta' | 'copilot' | 'webchat';
 export type TrackChannelMode = 'auto' | 'whatsapp' | 'email' | 'meta_dm';
 export type TrackConfig = {
@@ -263,8 +264,8 @@ export const gosApi = {
   },
   submitCopilotAction: (body: CopilotActionInput, signal?: AbortSignal) => gosRequest<{ ok: boolean; kind: CopilotFormKind; formId?: string | null; recordId?: string; message: string; href?: string; hrefLabel?: string; leads?: ApiRecord[] | null; asset?: ApiRecord | null; summary?: CopilotAssetSummary | null; conversation?: ApiRecord | null }>('/ai/copilot/action', { method: 'POST', body, signal }),
   transcribeCopilotAudio: (body: { audio: string; format: string; language?: string } | FormData, signal?: AbortSignal) => gosRequest<{ transcript: string }>('/ai/copilot/transcribe', { method: 'POST', body, signal }),
-  copilotVoice: (body: { audio: string; format: string; conversationId?: string; requestId?: string; focus?: string; thinkingLevel?: CopilotThinkingLevel; uiLanguage?: string; language?: string; isNewConversation?: boolean; history?: CopilotHistoryMessage[] }, signal?: AbortSignal) => gosRequest<ApiRecord>('/ai/copilot/voice', { method: 'POST', body, signal }),
-  copilotVoiceStream: async (body: { audio: string; format: string; conversationId?: string; requestId?: string; focus?: string; thinkingLevel?: CopilotThinkingLevel; uiLanguage?: string; language?: string; isNewConversation?: boolean; history?: CopilotHistoryMessage[] }, handlers: GosStreamHandlers = {}, signal?: AbortSignal): Promise<ApiRecord> => {
+  copilotVoice: (body: { audio: string; format: string; conversationId?: string; requestId?: string; focus?: string; thinkingLevel?: CopilotThinkingLevel; replyStyle?: CopilotReplyStyle; useEmojis?: boolean; uiLanguage?: string; language?: string; isNewConversation?: boolean; history?: CopilotHistoryMessage[] }, signal?: AbortSignal) => gosRequest<ApiRecord>('/ai/copilot/voice', { method: 'POST', body, signal }),
+  copilotVoiceStream: async (body: { audio: string; format: string; conversationId?: string; requestId?: string; focus?: string; thinkingLevel?: CopilotThinkingLevel; replyStyle?: CopilotReplyStyle; useEmojis?: boolean; uiLanguage?: string; language?: string; isNewConversation?: boolean; history?: CopilotHistoryMessage[] }, handlers: GosStreamHandlers = {}, signal?: AbortSignal): Promise<ApiRecord> => {
     try {
       return await gosStreamRequest<ApiRecord>('/ai/copilot/voice/stream', body, handlers, signal);
     } catch (error) {

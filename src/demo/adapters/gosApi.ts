@@ -311,7 +311,12 @@ export async function gosRequest<T>(input: string, options: { method?: string; b
           return { ok: true, kind, recordId: id, message: ar ? `تمت إضافة **${values.name}** إلى قاعدة المعرفة.` : `Added **${values.name}** to AI Knowledge Base.`, href: '/dashboard/follow-up', hrefLabel: ar ? 'فتح المتابعة الذكية' : 'Open AI Follow-Up' } as T;
         }
         if (kind === 'update_assistant') {
-          write('assistant', { live_enabled: values.live_enabled === 'true', channels: { whatsapp: values.whatsapp === 'true', instagram: values.instagram === 'true', messenger: values.messenger === 'true', webchat: values.webchat === 'true' } });
+          write('assistant', {
+            live_enabled: values.live_enabled === 'true',
+            tone: values.tone || 'Friendly',
+            use_emojis: values.use_emojis !== 'false',
+            channels: { whatsapp: values.whatsapp === 'true', instagram: values.instagram === 'true', messenger: values.messenger === 'true', webchat: values.webchat === 'true' },
+          });
           return { ok: true, kind, recordId: 'assistant', message: ar ? 'تم تحديث إعدادات المساعد الذكي بنجاح.' : 'Updated AI Assistant settings.', href: '/dashboard/follow-up', hrefLabel: ar ? 'فتح المتابعة الذكية' : 'Open AI Follow-Up' } as T;
         }
         if (kind === 'landing') {
@@ -437,13 +442,6 @@ export async function gosRequest<T>(input: string, options: { method?: string; b
         href = '/dashboard/crm';
         hrefLabel = ar ? 'فتح إدارة العملاء (CRM)' : 'Open CRM & Leads';
         text = ar ? `إليك أبرز **${leadsOut.length}** عملاء محتملين في مساحة عملك حالياً:` : `Here are the top **${leadsOut.length}** leads in your CRM right now:`;
-      } else if (/(?:انشئ|أنشئ|اعمل|ابني|صمم)\s+(?:صفحة\s+هبوط|فانل|مسار)|\b(create|build|design|new)\s+(a\s+)?(high-converting\s+)?(landing\s+page|funnel)/i.test(rawPrompt) && rawPrompt.length < 75 && !/افتح\s+نموذج|open.*brief|open.*form/i.test(rawPrompt)) {
-        text = ar
-          ? 'ممتاز جداً! عشان أبني لك **فانل احترافي متكامل** بدل قالب ضعيف، جاوبني سريعاً على 4 أسئلة بسيطة:\n\n1. **اسم النشاط أو المنتج والمجال (Niche):** بتقدم إيه بالضبط؟\n2. **هدف الفانل:** تجميع عملاء (Lead Magnet)، بيع مباشر + Checkout، حجز استشارة، ولا ورشة/ويبينار؟\n3. **الجمهور المستهدف وأكبر مشكلة بيواجهها:** مين عميلك المثالي وإيه اللي مزعّله؟\n4. **تفاصيل العرض والسعر واللغة المفضلة (عربي RTL ولا إنجليزي)؟**\n\nتقدر تكتبلي إجابتك في رسالة أو فويس نوت، أو تضغط تحت لفتح **نموذج مهندس الفانلز الشامل** فوراً!'
-          : "Awesome! So I can build a **truly high-converting, multi-step funnel** instead of a weak generic template, tell me 4 quick things:\n\n1. **Business / Product & Niche:** What are we promoting?\n2. **Funnel Goal:** Lead Generation (2 steps), Direct Sales + Checkout (3–4 steps), Booking / Consultation (3 steps), or Webinar?\n3. **Target Audience & #1 Pain Point:** Who is your ideal buyer and what frustrates them most?\n4. **Core Offer, Price & Preferred Language (English LTR or Arabic RTL)?**\n\nReply right here (or send a voice note), or click below to open the **full AI Funnel Architect Brief** right away!";
-        followUps = ar
-          ? ['افتح نموذج تصميم الفانل الشامل', 'فانل حجز استشارة مجانية بالعربي لعيادة تجميل', 'فانل بيع كورس أونلاين بـ 199 دولار']
-          : ['Open the full Funnel Architect Brief', 'Build a 3-step booking funnel for my agency', 'Build a sales funnel for my $199 course'];
       } else {
         const formKind = isQuestionOrAdvice
           ? null
@@ -452,10 +450,11 @@ export async function gosRequest<T>(input: string, options: { method?: string; b
             /جهة\s+اتصال|\b(add|create)\s+(a\s+)?contact/i.test(rawPrompt) ? 'create_contact' :
             /احجز\s+(موعد|ميعاد)|\b(book|schedule)\s+(an?\s+)?(appointment|call)/i.test(rawPrompt) ? 'create_appointment' :
             /خدمة\s+حجز|نظام\s+حجز|booking\s+flow|booking\s+service/i.test(rawPrompt) ? 'booking' :
-            /(?:انشئ|أنشئ|اعمل|جهز|اطلق)\s+حملة|\b(create|launch|build|new)\s+(a\s+)?(whatsapp\s+|email\s+|marketing\s+)?campaign/i.test(rawPrompt) ? 'campaign' :
-            /(?:انشئ|أنشئ|اعمل|اضف|أضف|ضيف)\s+(?:منتج|كورس)|\b(create|build|add|new)\s+(a\s+)?(course|product)/i.test(rawPrompt) ? 'product' :
-            /(?:افتح\s+نموذج|open.*brief|(?:انشئ|أنشئ|اعمل|ابني|صمم)\s+(?:صفحة\s+هبوط|فانل)|\b(create|build|design|new)\s+(a\s+)?(landing\s+page|funnel))/i.test(rawPrompt) ? 'landing' :
-            /(?:اضف|أضف|ضيف|درب)\s+(?:معلومة|قاعدة\s+المعرفة)|\b(add|train)\s+.*knowledge/i.test(rawPrompt) ? 'create_knowledge' : null;
+            /(?:انشئ|أنشئ|اعمل|جهز|اطلق|افتح\s+نموذج\s+الحمل)\s*حمل|\b(create|launch|build|make|new|open)\s+(a\s+)?(tailored\s+|whatsapp\s+|email\s+|marketing\s+)?campaign/i.test(rawPrompt) ? 'campaign' :
+            /(?:انشئ|أنشئ|اعمل|اضف|أضف|ضيف|افتح\s+نموذج\s+إنشاء)\s*(?:ال)?(?:منتج|كورس)|\b(create|build|make|add|new|open)\s+(a\s+)?(course|product)/i.test(rawPrompt) ? 'product' :
+            /(?:افتح\s+نموذج|open.*brief|(?:انشئ|أنشئ|اعمل|ابني|صمم)\s*(?:لي\s+)?(?:صفحة\s+هبوط|فانل|موقع)|\b(create|build|design|make|new)\s+(a\s+)?(high-converting\s+|complete\s+)?(landing\s+page|funnel|website))/i.test(rawPrompt) ? 'landing' :
+            /(?:اضف|أضف|ضيف|درب)\s+(?:معلومة|قاعدة\s+المعرفة)|\b(add|train)\s+.*knowledge/i.test(rawPrompt) ? 'create_knowledge' :
+            /(?:فعل|شغل|اضبط|حدث)\s+(?:الرد\s+التلقائي|المساعد\s+الذكي)|\b(configure|update|enable)\s+(ai\s+)?(assistant|auto-reply)/i.test(rawPrompt) ? 'update_assistant' : null;
         if (formKind) {
           grounded = true;
           const tomorrow = new Date(Date.now() + 86_400_000).toISOString().slice(0, 10);
@@ -466,11 +465,12 @@ export async function gosRequest<T>(input: string, options: { method?: string; b
             update_lead_stage: { lead_id: meta.leads[0]?.id || '', pipeline_id: meta.pipelines[0]?.id || 'main', stage: 'QUALIFIED', notes: '' },
             create_contact: { name: nameMatch?.[1]?.trim() ?? '', phone: phoneMatch?.[0]?.trim() ?? '', email: '', company: '' },
             create_appointment: { customerName: nameMatch?.[1]?.trim() ?? '', serviceName: meta.calendars[0]?.name || (ar ? 'جلسة استشارية' : 'Strategy Session'), date: tomorrow, time: '11:00', duration: '45', location: 'Google Meet', whatsapp: phoneMatch?.[0]?.trim() ?? '', email: '' },
-            booking: { name: ar ? 'جلسة استشارية' : 'Strategy Session', duration: '45', price: '0', currency: 'USD', location: 'Google Meet', content: ar ? 'جلسة تشخيص وخطة عمل مخصصة.' : 'One-on-one strategy consultation.' },
-            campaign: { name: ar ? 'حملة متابعة واتساب' : 'WhatsApp Growth Campaign', channel: 'WhatsApp', audience: 'All Leads', content: ar ? 'أهلاً بك! حابين نساعدك تبدأ معانا خطوة بخطوة — تحب نحجز مكالمة سريعة؟' : 'Hi! Ready to take the next step? Reply here to claim your spot.' },
-            product: { name: ar ? 'البرنامج التدريبي المتكامل' : 'Signature Coaching Program', productType: 'Online Course', price: '199', currency: 'USD', billing: 'One-time', content: ar ? 'برنامج عملي متكامل لمضاعفة المبيعات.' : 'Step-by-step program to scale your revenue.' },
-            landing: { name: '', assetKind: 'funnel', funnelType: /حجز|استشار|book/i.test(rawPrompt) ? 'booking' : /بيع|كورس|sale|course/i.test(rawPrompt) ? 'sale' : 'audience', stepsCount: '3', businessName: '', niche: '', targetAudience: '', painPoints: '', offerSummary: '', uniqueValue: '', price: '0', currency: 'USD', headline: '', primaryCta: '', tone: 'persuasive', language: ar ? 'ar' : 'en', accentColor: '#7C3AED', goal: 'Capture Leads', content: '' },
+            booking: { name: ar ? 'جلسة استشارية' : 'Strategy Session', duration: '45', price: '0', currency: 'USD', location: 'Google Meet', schedulePreset: 'mon_fri_9_5', bufferTime: '15', bookingMode: '1on1', requireApproval: 'false', confirmationBody: '', content: ar ? 'جلسة تشخيص وخطة عمل مخصصة.' : 'One-on-one strategy consultation.' },
+            campaign: { name: ar ? 'حملة متابعة واتساب' : 'WhatsApp Growth Campaign', channel: 'WhatsApp', audience: 'All Leads', goal: '', stepsCount: '3', tone: String(body.replyStyle || 'friendly'), useEmojis: body.useEmojis === false ? 'false' : 'true', cta: '', content: ar ? 'أهلاً بك! حابين نساعدك تبدأ معانا خطوة بخطوة — تحب نحجز مكالمة سريعة؟' : 'Hi! Ready to take the next step? Reply here to claim your spot.' },
+            product: { name: ar ? 'البرنامج التدريبي المتكامل' : 'Signature Coaching Program', productType: 'Online Course', price: '199', currency: 'USD', billing: 'One-time', deliveryMethod: 'portal', targetAudience: '', guarantee: '', content: ar ? 'برنامج عملي متكامل لمضاعفة المبيعات.' : 'Step-by-step program to scale your revenue.' },
+            landing: { name: '', assetKind: 'funnel', funnelType: /حجز|استشار|book/i.test(rawPrompt) ? 'booking' : /بيع|كورس|sale|course/i.test(rawPrompt) ? 'sale' : 'audience', stepsCount: '3', businessName: '', niche: '', targetAudience: '', painPoints: '', offerSummary: '', uniqueValue: '', price: '0', currency: 'USD', headline: '', primaryCta: '', tone: 'persuasive', useEmojis: body.useEmojis === false ? 'false' : 'true', language: ar ? 'ar' : 'en', accentColor: '#7C3AED', goal: 'Capture Leads', content: '' },
             create_knowledge: { name: ar ? 'معلومات عن خدماتنا' : 'Business Overview', sourceType: 'text', url: '', content: '' },
+            update_assistant: { live_enabled: 'true', whatsapp: 'true', instagram: 'true', messenger: 'true', webchat: 'true', tone: 'Friendly', use_emojis: 'true', goal: ar ? 'الرد على العملاء وحجز المواعيد' : 'Answer customer questions and book calls' },
           };
           form = { id: `form-${crypto.randomUUID()}`, kind: formKind, status: 'pending', values: defaults[formKind] ?? {}, meta };
           text = ar
@@ -484,6 +484,11 @@ export async function gosRequest<T>(input: string, options: { method?: string; b
             ? ['اكتبلي صياغة عملية جاهزة للنشر', 'فصّل لي الخطوة الأولى بأمثلة', 'إزاي أطبق ده على مشروعي؟']
             : ['Write ready-to-use copy for this', 'Give me concrete examples', 'How do I apply this to my workspace?'];
         }
+      }
+      if (body.useEmojis === false) {
+        const stripEmoji = (s: string) => s.replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}\uFE0E\uFE0F\u200D]+/gu, '').replace(/[ \t]{2,}/g, ' ').trim();
+        text = stripEmoji(text);
+        followUps = followUps.map(stripEmoji).filter(Boolean);
       }
       const convId = body.conversationId || crypto.randomUUID();
       const userMsg = { id: body.requestId || crypto.randomUUID(), role: 'user', text: rawPrompt };

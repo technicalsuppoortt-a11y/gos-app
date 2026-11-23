@@ -1238,6 +1238,7 @@ html.dark :is(
   .ai-iform-toggle-banner strong,
   .ai-funnel-goal-card b,
   .ai-funnel-step-chip b,
+  .ai-funnel-step-option b,
   .af-search input,
   .af-assistant-profile b,
   .af-knowledge-head b,
@@ -1679,6 +1680,7 @@ html.dark :is(
   .ai-iform-toggle-banner small,
   .ai-funnel-goal-card small,
   .ai-funnel-step-chip small,
+  .ai-funnel-step-option small,
   .af-channel-main>small,
   .af-tabs button,
   .af-conversation-copy p,
@@ -1927,6 +1929,7 @@ html.dark :is(
   .ai-history-filter-menu,
   .ai-funnel-goal-card,
   .ai-funnel-step-chip,
+  .ai-funnel-step-option,
   .af-knowledge-box,
   .af-template-card,
   .af-modal,
@@ -2252,6 +2255,7 @@ html.dark :is(
   .column-count,
   .all-inbox-icon,
   .calendar-sync-note,
+  .ai-funnel-step-badge,
   .af-avatar-slate,
   .af-composer-clear,
   .af-citation-badge,
@@ -3251,6 +3255,7 @@ html.dark :is(
 }
 html.dark :is(
   .aiu-badge.muted,
+  .ai-emoji-toggle.is-off,
   .crm-pipeline-workspace .crm2-subnav-btn,
   .aw-domain-link .fn-domain-badge,
   .sys-step-icon.is-inactive
@@ -3671,6 +3676,7 @@ html.dark :is(
 html.dark :is(
   .ai-iform-pill:hover:not(:disabled),
   .ai-funnel-goal-card:hover:not(:disabled),
+  .ai-funnel-step-option:hover:not(:disabled),
   .bk-qual-remove-btn:hover:not(:disabled),
   .bk-copy-inline-action:hover:not(:disabled)
 ):not([data-form-theme]):not([data-form-theme] *):not([data-public-asset]):not([data-public-asset] *):not(:where(.tb-block,.tb-form-showcase,.aw-live-preview,.aw-asset-image,.aw-step-image,.fb-site-window,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,[role=switch],.af-switch,.aw-default,.bk-switch-track,.aw-primary,.aw-primary-split,.button-primary,.bk-button.primary,.cw-button.primary,.st-button.primary,.crm-button.primary)):not(:where(.tb-block,.tb-form-showcase,.aw-live-preview,.aw-asset-image,.aw-step-image,.fb-site-window,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,[role=switch],.af-switch,.aw-default,.bk-switch-track,.aw-primary,.aw-primary-split,.button-primary,.bk-button.primary,.cw-button.primary,.st-button.primary,.crm-button.primary) *) {
@@ -3701,6 +3707,11 @@ html.dark :is(
 ):not([data-form-theme]):not([data-form-theme] *):not([data-public-asset]):not([data-public-asset] *):not(:where(.tb-block,.tb-form-showcase,.aw-live-preview,.aw-asset-image,.aw-step-image,.fb-site-window,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,[role=switch],.af-switch,.aw-default,.bk-switch-track,.aw-primary,.aw-primary-split,.button-primary,.bk-button.primary,.cw-button.primary,.st-button.primary,.crm-button.primary)):not(:where(.tb-block,.tb-form-showcase,.aw-live-preview,.aw-asset-image,.aw-step-image,.fb-site-window,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,[role=switch],.af-switch,.aw-default,.bk-switch-track,.aw-primary,.aw-primary-split,.button-primary,.bk-button.primary,.cw-button.primary,.st-button.primary,.crm-button.primary) *) {
     border-top-color: var(--ui-border);
     background: linear-gradient(180deg, var(--ui-surface-raised) 0%, var(--ui-surface-raised) 100%)
+}
+html.dark :is(
+  .ai-funnel-step-option.active
+):not([data-form-theme]):not([data-form-theme] *):not([data-public-asset]):not([data-public-asset] *):not(:where(.tb-block,.tb-form-showcase,.aw-live-preview,.aw-asset-image,.aw-step-image,.fb-site-window,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,[role=switch],.af-switch,.aw-default,.bk-switch-track,.aw-primary,.aw-primary-split,.button-primary,.bk-button.primary,.cw-button.primary,.st-button.primary,.crm-button.primary)):not(:where(.tb-block,.tb-form-showcase,.aw-live-preview,.aw-asset-image,.aw-step-image,.fb-site-window,.fb-live-preview-frame,.fn-focused-canvas,.pf-page,.pf-thumb,.pf-renderer,.pf-canvas,.bk-public,.bk-preview-frame,.bk-live-preview,.lp-page,.product-live-preview,.pp-live-preview,.cw-live-preview,.checkout-screen,.landing-page,[role=switch],.af-switch,.aw-default,.bk-switch-track,.aw-primary,.aw-primary-split,.button-primary,.bk-button.primary,.cw-button.primary,.st-button.primary,.crm-button.primary) *) {
+    background: linear-gradient(135deg, var(--ui-surface-raised) 0%, var(--ui-surface-raised) 100%)
 }
 html.dark :is(
   .af-button-secondary:hover,
