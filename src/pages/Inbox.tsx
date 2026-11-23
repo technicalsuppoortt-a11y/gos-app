@@ -730,6 +730,15 @@ export const Inbox: React.FC<Props> = ({ aiMode, setAiMode, setSent }) => {
     });
   }, [channelFilter, conversations, folder, search, tagFilter, currentUser.id, currentUser.name, findAssignment, allCrmLeads, language]);
 
+  // Switching to a channel tab must not leave another channel's thread open.
+  useEffect(() => {
+    if (channelFilter === 'all') return;
+    const current = conversations.find((c) => c.id === activeId);
+    if (current?.channel === channelFilter) return;
+    const next = visible[0]?.id;
+    if (next && next !== activeId) setActiveId(next);
+  }, [channelFilter, visible]);
+
   /* ---------------- helpers ---------------- */
   const updateActive = (patch: Partial<Conversation> | ((c: Conversation) => Partial<Conversation>)) =>
     setConversations((list) =>

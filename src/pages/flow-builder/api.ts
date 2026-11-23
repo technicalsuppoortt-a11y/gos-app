@@ -49,7 +49,11 @@ export const api = {
     call<{ channel: Channel }>('POST', '/ai/channels/meta/connect', { channel, page_ids: pageIds }).then(r => r.channel),
   disconnectPage: (channel: string, pageId: string) =>
     call<{ channel: Channel }>('PUT', `/ai/channels/${encodeURIComponent(channel)}`, { enabled: false, page_id: pageId }).then(r => r.channel),
-  disconnect: (channel: string) => call<{ channel: Channel }>('PUT', `/ai/channels/${encodeURIComponent(channel)}`, { enabled: false }).then(r => r.channel),
+  disconnect: (channel: string) =>
+    call<{ channel: Channel }>('PUT', `/ai/channels/${encodeURIComponent(channel)}`, { enabled: false }).then(r => r.channel),
+  // Deletes the conversations, messages, media and contacts the channel brought in, for good. The channel stays connected.
+  deleteChannelData: (channel: string) =>
+    call<{ queued: boolean }>('DELETE', `/ai/channels/${encodeURIComponent(channel)}/data`),
   list: () => call<Pick<Flow, 'id' | 'name' | 'status' | 'has_unpublished_changes' | 'updated_at'>[]>('GET', '/flows'),
   create: (name: string) => call<Flow>('POST', '/flows', { name }),
   get: (id: string) => call<Flow>('GET', `/flows/${encodeURIComponent(id)}`),

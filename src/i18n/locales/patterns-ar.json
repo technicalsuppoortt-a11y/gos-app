@@ -182,6 +182,7 @@
   "Applies to {{0}}": "ينطبق على {{0}}",
   "Disconnect {{0}}? Automations and the AI will stop replying there.": "هل تريد قطع اتصال {{0}}؟ ستتوقف الأتمتة والذكاء الاصطناعي عن الرد عبر هذه القناة.",
   "Disconnect {{0}}": "قطع اتصال {{0}}",
+  "Delete every conversation, message, file and contact from {{0}}? The channel stays connected. This cannot be undone.": "هل تريد حذف كل المحادثات والرسائل والملفات وجهات الاتصال الخاصة بـ {{0}}؟ ستظل القناة متصلة. لا يمكن التراجع عن ذلك.",
   "Manage {{0}}": "إدارة {{0}}",
   "Enable {{0}}": "تفعيل {{0}}",
   "Disable {{0}}": "تعطيل {{0}}",

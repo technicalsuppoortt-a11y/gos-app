@@ -744,14 +744,17 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent, section = "f
       return;
     }
     try {
-      const config = await channelApi.metaConfig();
+      // Both are needed before the Facebook window can open, so ask for them at the same time.
+      const [config, loginUrl] = await Promise.all([channelApi.metaConfig(), channelApi.metaLoginUrl(target).catch((error: unknown) => error)]);
       if (!config.channels[target]) throw new Error('This channel is not available yet. Add the Meta app credentials on the API first.');
-      const claim = await metaConnectWindow(popup, await channelApi.metaLoginUrl(target));
+      if (typeof loginUrl !== 'string') throw loginUrl instanceof Error ? loginUrl : new Error('Meta did not finish connecting.');
+      const claim = await metaConnectWindow(popup, loginUrl);
       const result = await channelApi.metaClaim(claim);
       if (result.channel) {
         setChannelAccount(result.channel);
-        await changeChannel(target, true);
         tell('The Meta account is linked. Replies can use it now.');
+        // The server already turned the channel on; this only syncs the local assistant copy, so don't wait on it.
+        void changeChannel(target, true)?.catch?.(() => undefined);
         return;
       }
       if (target === 'whatsapp') throw new Error('Meta finished without a WhatsApp number. Try connecting again.');
@@ -772,8 +775,8 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent, section = "f
       const linked = await channelApi.metaConnect(metaPages.channel, page.id);
       setChannelAccount(linked);
       setMetaPages(null);
-      await changeChannel(metaPages.channel, true);
       tell('The Meta account is linked. Replies can use it now.');
+      void changeChannel(metaPages.channel, true)?.catch?.(() => undefined);
     } catch (error) {
       setChannelAccountError(error instanceof Error ? error.message : 'Could not connect that page.');
     } finally {
