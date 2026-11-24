@@ -915,6 +915,8 @@ export const Inbox: React.FC<Props> = ({ aiMode, setAiMode, setSent }) => {
     setReactingId(message.id);
     const previous = message.id in myReactions ? myReactions[message.id] : (message.reactions?.agent ?? null);
     setMyReactions(prev => ({ ...prev, [message.id]: emoji }));
+    // Demo conversations have no server: the reaction only shows here.
+    if (demoInbox) { setReactingId(null); return; }
     try {
       await gosApi.reactToMessage(conversationId, message.id, emoji);
     } catch (error) {
@@ -1693,7 +1695,7 @@ export const Inbox: React.FC<Props> = ({ aiMode, setAiMode, setSent }) => {
                           );
                         })()}
                         <span className={`mt-1 flex items-center gap-1 px-1 text-[10.5px] ${SUBTLE}`}>
-                          {incoming && !demoInbox && ['whatsapp', 'messenger', 'instagram'].includes(active.channel) && (
+                          {incoming && (
                             <span className="relative order-last">
                               <button
                                 type="button"
