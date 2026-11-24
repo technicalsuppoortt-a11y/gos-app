@@ -10297,5 +10297,11 @@
   "Details, Pricing & Guarantee": "Details, prijzen en garantie",
   "Live Auto-Reply & Active Channels": "Live automatisch antwoorden en kanalen",
   "Reply Style, Emojis & Primary Goal": "Antwoordstijl, emoji's en hoofddoel",
-  "Multi-Step Funnel": "Meerstaps-funnel"
+  "Multi-Step Funnel": "Meerstaps-funnel",
+  "Interactive buttons": "Interactieve knoppen",
+  "Attach up to 3 interactive buttons (max 20 chars each)": "Voeg tot 3 interactieve knoppen toe (max. 20 tekens per knop)",
+  "Book / Prices": "Boeken / Prijzen",
+  "Confirm / Reschedule": "Bevestigen / Verzetten",
+  "Toggle reply button vs URL link": "Schakelen tussen antwoordknop en URL-link",
+  "Add another button": "Nog een knop toevoegen"
 }

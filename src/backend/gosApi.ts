@@ -46,7 +46,7 @@ async function meteredRequest<T>(request: MeteredGosRequest, signal?: AbortSigna
   return result;
 }
 export type GosSource = { id: string; name: string; type: 'text' | 'file' | 'instructions' | 'url' | 'faq' | 'products'; status: string; detail?: string | null; url?: string | null; parent_id?: string | null; progress_percent?: number; chunks_done?: number; chunks_total?: number; content?: string; chunk_count?: number; item_count?: number; error?: string; path?: string | null };
-export type GosAssistant = { live_enabled: boolean; channels: Record<string, boolean>; tone?: string; use_emojis?: boolean };
+export type GosAssistant = { live_enabled: boolean; channels: Record<string, boolean>; name?: string; role?: string; language?: string; goal?: string; tone?: string; use_emojis?: boolean };
 export type GosSourceInput = { name: string; type: 'url'; url: string } | { name: string; type: Exclude<GosSource['type'], 'file' | 'url'>; content: string };
 export type GosTrainingBucket = { ready?: number; limit?: number; items?: GosSource[] };
 export type GosTraining = { files?: GosSource[] | GosTrainingBucket; links?: GosSource[] | GosTrainingBucket; embedding_percent?: number; embedding_percentage?: number; progress?: number };
@@ -279,7 +279,11 @@ export const gosApi = {
   conversations: (signal?: AbortSignal) => gosRequest<{ conversations: ApiRecord[] }>('/inbox/conversations', { signal }),
   conversation: (conversationId: string, signal?: AbortSignal) => gosRequest<{ conversation: ApiRecord; messages: ApiRecord[] }>(`/inbox/conversations/${id(conversationId)}`, { signal }),
   // A team member's reply, sent to the customer through the connected Messenger, Instagram or WhatsApp channel.
-  replyToConversation: (conversationId: string, body: string) => gosRequest<{ conversation: ApiRecord; message: ApiRecord }>(`/inbox/conversations/${id(conversationId)}/replies`, { method: 'POST', body: { body } }),
+  replyToConversation: (conversationId: string, body: string, buttons?: Array<{ id?: string; title: string; kind?: 'reply' | 'url'; url?: string | null }>) =>
+    gosRequest<{ conversation: ApiRecord; message: ApiRecord }>(`/inbox/conversations/${id(conversationId)}/replies`, {
+      method: 'POST',
+      body: buttons && buttons.length > 0 ? { body, buttons } : { body },
+    }),
   setConversationAi: (conversationId: string, ai_auto_reply: boolean) => gosRequest<{ conversation: ApiRecord }>(`/inbox/conversations/${id(conversationId)}/ai`, { method: 'PATCH', body: { ai_auto_reply } }),
   triggerConversationAiReply: (conversationId: string) => gosRequest<{ conversation: ApiRecord; message: ApiRecord | null; outcome: string }>(`/inbox/conversations/${id(conversationId)}/ai-reply`, { method: 'POST', body: {} }),
   deleteConversation: (conversationId: string) => gosRequest<{ deleted: boolean }>(`/inbox/conversations/${id(conversationId)}`, { method: 'DELETE' }),

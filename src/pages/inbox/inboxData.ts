@@ -33,6 +33,13 @@ export type InboxLiveAction = {
   lead_id?: string | null;
 };
 
+export type InboxMessageButton = {
+  id: string;
+  title: string;
+  kind?: 'reply' | 'url';
+  url?: string | null;
+};
+
 export type Message = {
   id: string;
   sender: Sender;
@@ -49,6 +56,8 @@ export type Message = {
   citationsCount?: number;
   /** Structured verified action executed by the AI Follow-Up backend (e.g. saved booking or handoff). */
   action?: InboxLiveAction | null;
+  /** Interactive quick-reply / link buttons sent natively on WhatsApp, Messenger, Instagram, or Webchat. */
+  buttons?: InboxMessageButton[];
 };
 
 export type Activity = { id: string; kind: ActivityKind; text: string; time: string };

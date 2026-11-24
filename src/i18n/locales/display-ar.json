@@ -6865,5 +6865,12 @@
   "Details, Pricing & Guarantee": "التفاصيل والتسعير والضمان",
   "Live Auto-Reply & Active Channels": "تفعيل الرد التلقائي والقنوات",
   "Reply Style, Emojis & Primary Goal": "أسلوب الرد والإيموجيز والهدف",
-  "Multi-Step Funnel": "فانل متعدد الخطوات"
+  "Multi-Step Funnel": "فانل متعدد الخطوات",
+  "Interactive buttons": "أزرار تفاعلية",
+  "Attach up to 3 interactive buttons (max 20 chars each)": "أضف حتى 3 أزرار تفاعلية (حد أقصى 20 حرف لكل زر)",
+  "Book / Prices": "حجز / أسعار",
+  "Confirm / Reschedule": "تأكيد / تعديل",
+  "Toggle reply button vs URL link": "تبديل بين زر رد سريع ورابط خارجي",
+  "Remove button": "إزالة الزر",
+  "Add another button": "إضافة زر آخر"
 }

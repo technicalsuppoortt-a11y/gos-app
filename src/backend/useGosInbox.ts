@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { gosApi, type ApiRecord } from './gosApi';
-import type { Attachment, Conversation, InboxLiveAction } from '../pages/inbox/inboxData';
+import type { Attachment, Conversation, InboxLiveAction, InboxMessageButton } from '../pages/inbox/inboxData';
 
 const MEDIA_LABEL = /^\[(Image|Video|Voice message|Document|Sticker|Media)\]$/;
 
@@ -44,6 +44,24 @@ function normalizeAction(raw: unknown): InboxLiveAction | null {
   };
 }
 
+function normalizeButtons(raw: unknown): InboxMessageButton[] {
+  if (!Array.isArray(raw)) return [];
+  const out: InboxMessageButton[] = [];
+  for (const item of raw.slice(0, 3)) {
+    if (!item || typeof item !== 'object') continue;
+    const b = item as Record<string, unknown>;
+    const title = typeof b.title === 'string' ? b.title.trim() : '';
+    if (!title) continue;
+    out.push({
+      id: typeof b.id === 'string' && b.id.trim() ? b.id.trim() : `btn-${out.length + 1}`,
+      title,
+      kind: b.kind === 'url' ? 'url' : 'reply',
+      url: typeof b.url === 'string' && b.url.trim() ? b.url.trim() : null,
+    });
+  }
+  return out;
+}
+
 function mediaAttachment(message: ApiRecord): Attachment {
   const mime = String(message.media.mime || '');
   return {
@@ -81,9 +99,10 @@ export function normalizeConversation(row: ApiRecord, messages: ApiRecord[] = ro
       text: message.media?.url && MEDIA_LABEL.test(message.body || '') ? '' : stripLeakedActionJson(String(message.body || '')),
       ...(message.media?.url ? { attachments: [mediaAttachment(message)] } : {}),
       time: message.created_at || '',
-      sender: message.actor === 'agent' ? 'agent' : message.role === 'assistant' || ['ai', 'assistant'].includes(message.sender) || ['ai', 'assistant'].includes(message.sender_type) || message.direction === 'outbound' ? 'ai' : 'customer',
+      sender: ['agent', 'owner'].includes(String(message.actor || '')) ? 'agent' : message.role === 'assistant' || ['ai', 'assistant'].includes(message.sender) || ['ai', 'assistant'].includes(message.sender_type) || message.direction === 'outbound' ? 'ai' : 'customer',
       citationsCount: Array.isArray(message.citations) ? message.citations.length : 0,
       action: normalizeAction(message.action),
+      buttons: normalizeButtons(message.buttons),
       ...(message.delivery_status === 'failed'
         ? { status: 'failed' as const, error: message.delivery_error || 'Meta rejected this reply.' }
         : message.delivery_status === 'unknown'

@@ -511,7 +511,21 @@ export async function gosRequest<T>(input: string, options: { method?: string; b
     if (parts[1] === 'conversations' && parts[2] && parts[3] === 'ai-reply' && method === 'POST') {
       const existing = rows('conversations').find(row => row.id === parts[2]);
       const now = new Date().toISOString();
-      const reply = { id: crypto.randomUUID(), conversation_id: parts[2], direction: 'outbound', actor: 'assistant', body: 'Hello! Thanks for reaching out — how can we help you today?', outcome: 'answered', citations: [{ source_id: 'demo', source_name: 'Knowledge Base' }], created_at: now };
+      const reply = {
+        id: crypto.randomUUID(),
+        conversation_id: parts[2],
+        direction: 'outbound',
+        actor: 'assistant',
+        body: 'Hello! Thanks for reaching out — how can we help you today?',
+        buttons: [
+          { id: 'ai_book', title: 'Book Appointment', kind: 'reply', url: null },
+          { id: 'ai_services', title: 'Services & Prices', kind: 'reply', url: null },
+          { id: 'ai_team', title: 'Talk to Team', kind: 'reply', url: null },
+        ],
+        outcome: 'answered',
+        citations: [{ source_id: 'demo', source_name: 'Knowledge Base' }],
+        created_at: now,
+      };
       const updated = { ...(existing ?? { id: parts[2] }), ai_paused: false, ai_state: 'answered', last_message: reply.body, updated_at: now, messages: [...(existing?.messages ?? []), reply] };
       entityMutation('conversations', parts[2], updated);
       return { conversation: updated, message: reply, outcome: 'answered' } as T;

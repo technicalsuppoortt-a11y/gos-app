@@ -10297,5 +10297,11 @@
   "Details, Pricing & Guarantee": "Details, Preise & Garantie",
   "Live Auto-Reply & Active Channels": "Live-Auto-Antwort & aktive Kanäle",
   "Reply Style, Emojis & Primary Goal": "Antwortstil, Emojis & Hauptziel",
-  "Multi-Step Funnel": "Mehrstufiger Funnel"
+  "Multi-Step Funnel": "Mehrstufiger Funnel",
+  "Interactive buttons": "Interaktive Schaltflächen",
+  "Attach up to 3 interactive buttons (max 20 chars each)": "Bis zu 3 interaktive Schaltflächen anhängen (max. 20 Zeichen pro Button)",
+  "Book / Prices": "Buchen / Preise",
+  "Confirm / Reschedule": "Bestätigen / Umplanen",
+  "Toggle reply button vs URL link": "Zwischen Antwort-Button und URL-Link wechseln",
+  "Add another button": "Weitere Schaltfläche hinzufügen"
 }

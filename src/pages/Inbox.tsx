@@ -29,9 +29,11 @@ import {
   ChevronRight,
   Circle,
   CircleCheck,
+  CornerDownRight,
   ExternalLink,
   FileText,
   LayoutTemplate,
+  Link2,
   LoaderCircle,
   Mail,
   MailOpen,
@@ -40,6 +42,7 @@ import {
   MessageSquarePlus,
   Mic,
   MoreHorizontal,
+  MousePointerClick,
   Paperclip,
   Pause,
   Pencil,
@@ -79,6 +82,7 @@ import type {
   Attachment,
   ChannelId,
   Conversation,
+  InboxMessageButton,
   Message,
   TagId,
   VoiceNote,
@@ -591,6 +595,8 @@ export const Inbox: React.FC<Props> = ({ aiMode, setAiMode, setSent }) => {
   const [mode, setMode] = useState<ComposerMode>("reply");
   const [draft, setDraft] = useState("");
   const [attachments, setAttachments] = useState<Attachment[]>([]);
+  const [replyButtons, setReplyButtons] = useState<InboxMessageButton[]>([]);
+  const [buttonsEditorOpen, setButtonsEditorOpen] = useState(false);
   const [assistLoading, setAssistLoading] = useState(false);
   const [sending, setSending] = useState(false);
   const [recording, setRecording] = useState(false);
@@ -862,17 +868,26 @@ export const Inbox: React.FC<Props> = ({ aiMode, setAiMode, setSent }) => {
   const canSend = !sending && Boolean(draft.trim() || attachments.length || voiceDraft);
 
   // Shows the reply as "Sending…" at once; a rejected reply stays in the thread with Meta's reason and a retry.
-  const deliverReply = async (conversationId: string, text: string, messageId: string) => {
+  const deliverReply = async (conversationId: string, text: string, messageId: string, buttons: InboxMessageButton[] = []) => {
+    const cleanButtons = buttons
+      .map((b, idx) => ({
+        id: b.id || `staff_btn_${idx + 1}`,
+        title: b.title.trim().slice(0, 20),
+        kind: b.kind === 'url' && b.url?.trim() ? ('url' as const) : ('reply' as const),
+        url: b.kind === 'url' && b.url?.trim() ? b.url.trim() : null,
+      }))
+      .filter((b) => b.title.length > 0)
+      .slice(0, 3);
     const put = (patch: Partial<Message>) => setPendingReplies(prev => {
       const list = prev[conversationId] || [];
-      const base: Message = { id: messageId, sender: 'agent', text, time: new Date().toISOString() };
+      const base: Message = { id: messageId, sender: 'agent', text, time: new Date().toISOString(), ...(cleanButtons.length ? { buttons: cleanButtons } : {}) };
       const exists = list.some(m => m.id === messageId);
       return { ...prev, [conversationId]: exists ? list.map(m => (m.id === messageId ? { ...m, ...patch } : m)) : [...list, { ...base, ...patch }] };
     });
     put({ status: 'sending', error: undefined });
     setSending(true);
     try {
-      await gosApi.replyToConversation(conversationId, text);
+      await gosApi.replyToConversation(conversationId, text, cleanButtons);
       // The server copy replaces this one on the next refresh.
       put({ status: undefined });
       setSent(true);
@@ -890,13 +905,16 @@ export const Inbox: React.FC<Props> = ({ aiMode, setAiMode, setSent }) => {
     if (!canSend) return;
     const text = draft.trim();
     const requestId = crypto.randomUUID();
+    const attachedButtons = replyButtons.filter((b) => b.title.trim().length > 0).slice(0, 3);
     if (!demoInbox) {
-      // The API sends text replies only; notes, files and voice notes stay demo-only for now.
+      // The API sends text replies (with optional interactive buttons); notes, files and voice notes stay demo-only for now.
       if (mode === 'note' || attachments.length || voiceDraft || !text) { showToast.info('Only text replies can be sent to customers for now.'); return; }
       setSending(true);
       const conversationId = active.id;
       setDraft('');
-      await deliverReply(conversationId, text, requestId);
+      setReplyButtons([]);
+      setButtonsEditorOpen(false);
+      await deliverReply(conversationId, text, requestId, attachedButtons);
       return;
     }
     const message: Message = {
@@ -906,6 +924,7 @@ export const Inbox: React.FC<Props> = ({ aiMode, setAiMode, setSent }) => {
       time: nowTime(),
       attachments: attachments.length ? attachments : undefined,
       voice: voiceDraft ?? undefined,
+      ...(mode === "reply" && attachedButtons.length ? { buttons: attachedButtons } : {}),
     };
     updateActive((c) => ({
       messages: [...c.messages, message],
@@ -927,6 +946,8 @@ export const Inbox: React.FC<Props> = ({ aiMode, setAiMode, setSent }) => {
     }));
     setDraft("");
     setAttachments([]);
+    setReplyButtons([]);
+    setButtonsEditorOpen(false);
     setVoiceDraft(null);
     setElapsed(0);
     if (mode === "reply") setSent(true);
@@ -1579,6 +1600,38 @@ export const Inbox: React.FC<Props> = ({ aiMode, setAiMode, setSent }) => {
                               <ChevronRight size={15} className="shrink-0 text-emerald-600 transition group-hover:translate-x-0.5 dark:text-emerald-300" />
                             </button>
                           )}
+                          {m.buttons && m.buttons.length > 0 && (
+                            <div className="mt-2.5 border-t border-purple-200/50 pt-2 dark:border-purple-400/20">
+                              <span className="mb-1.5 flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wide text-purple-600/80 dark:text-purple-300/80">
+                                <MousePointerClick size={11} />
+                                {isAr ? 'أزرار تفاعلية مرسلة للعميل' : translateText('Interactive buttons')}
+                              </span>
+                              <div className="flex flex-wrap gap-1.5">
+                                {m.buttons.map((btn) =>
+                                  btn.kind === 'url' && btn.url ? (
+                                    <a
+                                      key={btn.id}
+                                      href={btn.url}
+                                      target="_blank"
+                                      rel="noreferrer"
+                                      className="inline-flex items-center gap-1.5 rounded-lg border border-purple-200 bg-white px-2.5 py-1.5 text-[11.5px] font-semibold text-purple-700 shadow-xs transition hover:border-purple-400 hover:bg-purple-50 dark:border-purple-400/30 dark:bg-white/10 dark:text-purple-200 dark:hover:bg-purple-500/20"
+                                    >
+                                      <span>{btn.title}</span>
+                                      <ExternalLink size={11} />
+                                    </a>
+                                  ) : (
+                                    <span
+                                      key={btn.id}
+                                      className="inline-flex items-center gap-1.5 rounded-lg border border-purple-200/90 bg-white px-2.5 py-1.5 text-[11.5px] font-semibold text-purple-800 shadow-xs dark:border-purple-400/30 dark:bg-white/10 dark:text-purple-100"
+                                    >
+                                      <CornerDownRight size={11} className="text-purple-500 dark:text-purple-300" />
+                                      <span>{btn.title}</span>
+                                    </span>
+                                  ),
+                                )}
+                              </div>
+                            </div>
+                          )}
                           {localizeNode(m.card === "consultation" && (
                             <button
                               onClick={() => navigate("/dashboard/booking")}
@@ -1621,7 +1674,7 @@ export const Inbox: React.FC<Props> = ({ aiMode, setAiMode, setSent }) => {
                             {m.error}
                             {m.status === 'failed' && (
                               <span className="mt-1 flex gap-3">
-                                <button type="button" disabled={sending} className="font-semibold underline disabled:opacity-50" onClick={() => void deliverReply(active.id, m.text || '', m.id)}>{translateText("Retry")}</button>
+                                <button type="button" disabled={sending} className="font-semibold underline disabled:opacity-50" onClick={() => void deliverReply(active.id, m.text || '', m.id, m.buttons || [])}>{translateText("Retry")}</button>
                                 <button type="button" className="underline opacity-80" onClick={() => dismissFailedReply(active.id, m.id)}>{translateText("Remove")}</button>
                               </span>
                             )}
@@ -1723,6 +1776,29 @@ export const Inbox: React.FC<Props> = ({ aiMode, setAiMode, setSent }) => {
                 {localizeNode(assistLoading ? <LoaderCircle size={14} className="animate-spin" /> : <Sparkles size={14} />)}
                 {localizeNode(assistLoading ? "Writing…" : "AI Assist")}
               </button>
+              <button
+                type="button"
+                id="inbox-buttons-toggle"
+                onClick={() => {
+                  setButtonsEditorOpen((v) => !v);
+                  if (!buttonsEditorOpen && replyButtons.length === 0) {
+                    setReplyButtons([{ id: 'btn_1', title: '', kind: 'reply', url: null }]);
+                  }
+                }}
+                className={`flex h-8 items-center gap-1.5 rounded-lg border px-2.5 text-[12px] font-semibold transition ${
+                  buttonsEditorOpen || replyButtons.some((b) => b.title.trim())
+                    ? 'border-purple-300 bg-purple-100/80 text-purple-800 dark:border-purple-400/40 dark:bg-purple-500/25 dark:text-purple-100'
+                    : 'border-slate-200/80 bg-white text-slate-600 hover:border-purple-200 hover:bg-purple-50 hover:text-purple-700 dark:border-white/10 dark:bg-white/[0.03] dark:text-slate-300'
+                }`}
+              >
+                <MousePointerClick size={13.5} />
+                <span>{isAr ? 'أزرار تفاعلية' : translateText('Buttons')}</span>
+                {replyButtons.filter((b) => b.title.trim()).length > 0 && (
+                  <span className="rounded-full bg-[#7C3AED] px-1.5 text-[10px] font-bold text-white">
+                    {replyButtons.filter((b) => b.title.trim()).length}
+                  </span>
+                )}
+              </button>
               <div className="ms-auto flex items-center gap-2">
                 <Toggle
                   size="sm"
@@ -1750,6 +1826,132 @@ export const Inbox: React.FC<Props> = ({ aiMode, setAiMode, setSent }) => {
                 </button>
               </div>
             </div>
+
+            {buttonsEditorOpen && mode === 'reply' && (
+              <div className="mt-2 rounded-xl border border-purple-200/80 bg-purple-50/50 p-2.5 dark:border-purple-400/20 dark:bg-purple-500/10">
+                <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+                  <span className="flex items-center gap-1.5 text-[11px] font-bold text-purple-800 dark:text-purple-200">
+                    <MousePointerClick size={12} />
+                    {isAr ? 'أضف حتى 3 أزرار تفاعلية (حد أقصى 20 حرف لكل زر)' : translateText('Attach up to 3 interactive buttons (max 20 chars each)')}
+                  </span>
+                  <div className="flex flex-wrap items-center gap-1">
+                    {(
+                      [
+                        {
+                          label: isAr ? 'حجز / أسعار' : translateText('Book / Prices'),
+                          items: isAr
+                            ? [
+                                { id: 'p_book', title: 'حجز موعد', kind: 'reply' as const, url: null },
+                                { id: 'p_price', title: 'الخدمات والأسعار', kind: 'reply' as const, url: null },
+                                { id: 'p_team', title: 'تواصل مع الفريق', kind: 'reply' as const, url: null },
+                              ]
+                            : [
+                                { id: 'p_book', title: 'Book Appointment', kind: 'reply' as const, url: null },
+                                { id: 'p_price', title: 'Services & Prices', kind: 'reply' as const, url: null },
+                                { id: 'p_team', title: 'Talk to Team', kind: 'reply' as const, url: null },
+                              ],
+                        },
+                        {
+                          label: isAr ? 'تأكيد / تعديل' : translateText('Confirm / Reschedule'),
+                          items: isAr
+                            ? [
+                                { id: 'p_yes', title: 'تأكيد الموعد', kind: 'reply' as const, url: null },
+                                { id: 'p_resch', title: 'تغيير الوقت', kind: 'reply' as const, url: null },
+                              ]
+                            : [
+                                { id: 'p_yes', title: 'Confirm Slot', kind: 'reply' as const, url: null },
+                                { id: 'p_resch', title: 'Pick Another Time', kind: 'reply' as const, url: null },
+                              ],
+                        },
+                      ]
+                    ).map((preset) => (
+                      <button
+                        key={preset.label}
+                        type="button"
+                        onClick={() => setReplyButtons(preset.items)}
+                        className="rounded-md border border-purple-200 bg-white px-2 py-0.5 text-[10.5px] font-semibold text-purple-700 hover:bg-purple-100 dark:border-purple-400/30 dark:bg-white/10 dark:text-purple-200"
+                      >
+                        + {preset.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div className="space-y-1.5">
+                  {replyButtons.map((btn, idx) => (
+                    <div key={btn.id} className="flex flex-wrap items-center gap-1.5">
+                      <input
+                        type="text"
+                        maxLength={20}
+                        value={btn.title}
+                        onChange={(e) =>
+                          setReplyButtons((prev) =>
+                            prev.map((item, i) => (i === idx ? { ...item, title: e.target.value.slice(0, 20) } : item)),
+                          )
+                        }
+                        placeholder={isAr ? `عنوان الزر ${idx + 1} (مثال: حجز موعد)` : `Button ${idx + 1} label (e.g. Book Call)`}
+                        className="h-8 min-w-[160px] flex-1 rounded-lg border border-slate-200 bg-white px-2.5 text-[12px] text-slate-800 outline-none focus:border-purple-400 dark:border-white/15 dark:bg-slate-900/70 dark:text-white"
+                      />
+                      <button
+                        type="button"
+                        title={isAr ? 'تبديل بين زر رد سريع ورابط خارجي' : translateText('Toggle reply button vs URL link')}
+                        onClick={() =>
+                          setReplyButtons((prev) =>
+                            prev.map((item, i) =>
+                              i === idx
+                                ? { ...item, kind: item.kind === 'url' ? 'reply' : 'url', url: item.kind === 'url' ? null : item.url || 'https://' }
+                                : item,
+                            ),
+                          )
+                        }
+                        className={`flex h-8 items-center gap-1 rounded-lg border px-2 text-[11px] font-semibold ${
+                          btn.kind === 'url'
+                            ? 'border-purple-300 bg-purple-100 text-purple-800 dark:border-purple-400/40 dark:bg-purple-500/25 dark:text-purple-100'
+                            : 'border-slate-200 bg-white text-slate-600 dark:border-white/15 dark:bg-white/5 dark:text-slate-300'
+                        }`}
+                      >
+                        {btn.kind === 'url' ? <Link2 size={12} /> : <CornerDownRight size={12} />}
+                        <span>{btn.kind === 'url' ? 'URL' : isAr ? 'رد' : 'Reply'}</span>
+                      </button>
+                      {btn.kind === 'url' && (
+                        <input
+                          type="url"
+                          dir="ltr"
+                          value={btn.url || ''}
+                          onChange={(e) =>
+                            setReplyButtons((prev) =>
+                              prev.map((item, i) => (i === idx ? { ...item, url: e.target.value } : item)),
+                            )
+                          }
+                          placeholder="https://..."
+                          className="h-8 min-w-[170px] flex-1 rounded-lg border border-slate-200 bg-white px-2.5 text-[12px] text-slate-800 outline-none focus:border-purple-400 dark:border-white/15 dark:bg-slate-900/70 dark:text-white"
+                        />
+                      )}
+                      <span className="text-[10px] tabular-nums text-slate-400">{btn.title.length}/20</span>
+                      <button
+                        type="button"
+                        aria-label={translateText('Remove button')}
+                        onClick={() => setReplyButtons((prev) => prev.filter((_, i) => i !== idx))}
+                        className="grid h-7 w-7 place-items-center rounded-lg text-slate-400 hover:bg-rose-50 hover:text-rose-500 dark:hover:bg-rose-500/15"
+                      >
+                        <X size={13} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+                {replyButtons.length < 3 && (
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setReplyButtons((prev) => [...prev, { id: `btn_${Date.now()}`, title: '', kind: 'reply', url: null }])
+                    }
+                    className="mt-2 inline-flex items-center gap-1 text-[11.5px] font-semibold text-purple-700 hover:text-purple-900 dark:text-purple-300"
+                  >
+                    <Plus size={13} />
+                    {isAr ? 'إضافة زر آخر' : translateText('Add another button')}
+                  </button>
+                )}
+              </div>
+            )}
 
             {localizeNode(attachments.length > 0 && (
               <div className="inbox-scroll-x mt-2 flex gap-2 overflow-x-auto pb-1">
