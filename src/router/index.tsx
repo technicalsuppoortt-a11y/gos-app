@@ -59,8 +59,7 @@ const AssetStandalonePreview = lazy(() => import('../pages/AssetStandalonePrevie
 const FunnelBuilder = lazy(() => import('../pages/FunnelBuilder').then(module => ({ default: module.FunnelBuilder })));
 const CRMRecord = lazy(() => import('../pages/crm/CRMRecord').then(module => ({ default: module.CRMRecord })));
 const DiscountEditorPage = lazy(() => import('../pages/DiscountEditorPage').then(module => ({ default: module.DiscountEditorPage })));
-const PrivacyPage = lazy(() => import('../pages/PrivacyPage').then(module => ({ default: module.PrivacyPage })));
-const TermsOfServicePage = lazy(() => import('../pages/TermsOfServicePage').then(module => ({ default: module.TermsOfServicePage })));
+const LegalPage = lazy(() => import('../pages/legal/LegalPage').then(module => ({ default: module.LegalPage })));
 const DataDeletionPage = lazy(() => import('../pages/DataDeletionPage').then(module => ({ default: module.DataDeletionPage })));
 
 const ProductLivePreview = lazy(() => import('../pages/commerce/ProductLivePreview').then(module => ({ default: module.ProductLivePreview })));
@@ -104,8 +103,12 @@ export const router = createBrowserRouter([
   { path: '/asset-preview/:assetId/:pageId?', element: <ProtectedRoute allowedRoles={['USER']}><WorkspaceData><Suspended><AssetStandalonePreview /></Suspended></WorkspaceData></ProtectedRoute> },
   { path: '/book/:slug', element: <Suspended><PublicBookingPage /></Suspended> },
   { path: '/commerce/policies/:kind', element: <Suspended><CommercePolicyPage /></Suspended> },
-  { path: '/privacy', element: <Suspended><PrivacyPage /></Suspended> },
-  { path: '/terms-of-service', element: <Suspended><TermsOfServicePage /></Suspended> },
+  { path: '/privacy', element: <Suspended><LegalPage section="privacy" /></Suspended> },
+  { path: '/privacy-policy', element: <Suspended><LegalPage section="privacy" /></Suspended> },
+  { path: '/terms-of-service', element: <Suspended><LegalPage section="terms" /></Suspended> },
+  { path: '/refund-policy', element: <Suspended><LegalPage section="refund" /></Suspended> },
+  { path: '/shipping-policy', element: <Suspended><LegalPage section="shipping" /></Suspended> },
+  { path: '/contact-us', element: <Suspended><LegalPage section="contact" /></Suspended> },
   { path: '/Terms-of-Service', element: <Navigate to="/terms-of-service" replace /> },
   { path: '/terms', element: <Navigate to="/terms-of-service" replace /> },
   { path: '/data-deletion', element: <Suspended><DataDeletionPage /></Suspended> },

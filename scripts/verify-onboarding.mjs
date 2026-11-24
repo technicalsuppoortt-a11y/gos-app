@@ -45,7 +45,7 @@ try {
   await page.getByRole('button', { name: 'Continue', exact: true }).click();
   await page.getByRole('button', { name: 'Clinic Care, appointments & patients' }).click();
   await page.getByRole('button', { name: 'Continue', exact: true }).click();
-  await page.getByRole('button', { name: 'العربية' }).click();
+  await page.getByRole('button', { name: 'Arabic' }).click();
   assert.equal(await page.locator('.ob-wizard').getAttribute('dir'), 'rtl');
   await page.screenshot({ path: 'artifacts/onboarding/localization-rtl.png', fullPage: true });
   await page.getByRole('button', { name: 'English Left to right' }).click();

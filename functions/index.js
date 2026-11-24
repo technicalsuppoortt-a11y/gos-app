@@ -5,6 +5,7 @@ import { generateBuilderDraft as generateBuilderDraftRequest } from './ai-builde
 import { adminDashboardStatusRequest } from './admin-dashboard.js';
 import { createSupportCallable } from './support.js';
 import { isSuspended, superAdminRequest } from './super-admin.js';
+import { registerTrialAdminRequest } from './admin-trial-signup.js';
 import { captureAssetLeadRequest } from './lead-capture.js';
 import { recordPublicAnalytics } from './public-analytics.js';
 import { configurePaymentMethodsRequest } from './payment-methods.js';
@@ -59,6 +60,7 @@ initializeApp();
 const db = getFirestore(), auth = getAuth();
 export const supportChat = createSupportCallable({ actor, db });
 export const superAdminOperations = onCall({ cors: true, invoker: 'public', timeoutSeconds: 60 }, request => superAdminRequest(request, { actor, db, auth }));
+export const registerTrialAdmin = onCall({ cors: true, invoker: 'public', timeoutSeconds: 60 }, request => registerTrialAdminRequest(request, { db, auth }));
 export const auditPlatformIntegrations = onDocumentWritten('settings/{id}', async event => {
   const { id } = event.params;
   if (!['paymentMethods', 'marketingTracking'].includes(id)) return;

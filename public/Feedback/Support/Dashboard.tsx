@@ -1031,7 +1031,7 @@ export default function Dashboard({ initialTab }: { initialTab?: string } = {}) 
                 className="flex items-center gap-1.5 px-1.5 py-1 sm:px-3 sm:py-1.5 text-[10px] sm:text-xs font-bold bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-850 rounded-xl hover:border-slate-400 dark:hover:border-slate-700 transition"
               >
                 <Languages className="h-3.5 w-3.5 text-slate-550 dark:text-slate-400" />
-                <span>{state.settings.language === "ar" ? "العربية" : "English"}</span>
+                <span>{state.settings.language === "ar" ? "Arabic" : "English"}</span>
                 <ChevronDown className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-slate-400" />
               </button>
 
@@ -1050,7 +1050,7 @@ export default function Dashboard({ initialTab }: { initialTab?: string } = {}) 
                           : "hover:bg-slate-100 dark:hover:bg-slate-900 text-slate-650 dark:text-slate-400"
                       }`}
                     >
-                      <span>العربية</span>
+                      <span>Arabic</span>
                       {state.settings.language === "ar" && (
                         <Check className="h-3.5 w-3.5 shrink-0" />
                       )}

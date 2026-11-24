@@ -134,7 +134,7 @@ export function AdminSitePreviewCanvas({ value }: { value: SitePreview }) {
                   aria-pressed={previewLang === 'ar'}
                   onClick={() => setPreviewLang('ar')}
                 >
-                  <span>العربية (RTL)</span>
+                  <span>Arabic (RTL)</span>
                 </button>
               </div>
             )}

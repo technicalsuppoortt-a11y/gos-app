@@ -881,7 +881,7 @@ export default function SettingsSection() {
                         : "text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300"
                     }`}
                   >
-                    العربية
+                    Arabic
                   </button>
                   <button
                     type="button"

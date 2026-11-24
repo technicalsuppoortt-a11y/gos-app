@@ -12,9 +12,9 @@ export interface LocaleOption {
 }
 
 export const LOCALE_OPTIONS: readonly LocaleOption[] = [
-  { code: 'ar', shortLabel: 'AR', nativeLabel: 'العربية', englishLabel: 'Arabic', dir: 'rtl' },
+  { code: 'ar', shortLabel: 'AR', nativeLabel: 'Arabic', englishLabel: 'Arabic', dir: 'rtl' },
   { code: 'en', shortLabel: 'EN', nativeLabel: 'English', englishLabel: 'English', dir: 'ltr' },
-  { code: 'nl', shortLabel: 'NL', nativeLabel: 'Nederlands', englishLabel: 'Dutch', dir: 'ltr' },
+  { code: 'nl', shortLabel: 'NL', nativeLabel: 'Dutch', englishLabel: 'Dutch', dir: 'ltr' },
   { code: 'de', shortLabel: 'DE', nativeLabel: 'Deutsch', englishLabel: 'German', dir: 'ltr' },
 ] as const;
 

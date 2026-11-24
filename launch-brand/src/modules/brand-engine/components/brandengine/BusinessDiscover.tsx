@@ -1104,12 +1104,12 @@ export function BusinessDiscover(_props: {
                 </p>
                 <p>
                   <span>{t("Languages", "اللغات")}</span>
-                  <b>{profile.language === "both" ? t("Arabic + English", "العربية + الإنجليزية") : profile.language === "ar" ? t("Arabic", "العربية") : profile.language === "en" ? t("English", "الإنجليزية") : "—"}</b>
+                  <b>{profile.language === "both" ? t("Arabic + English", "العربية + الإنجليزية") : profile.language === "ar" ? t("Arabic", "Arabic") : profile.language === "en" ? t("English", "الإنجليزية") : "—"}</b>
                 </p>
                 {profile.language === "both" && profile.defaultLanguage && (
                   <p>
                     <span>{t("Default language", "اللغة الافتراضية")}</span>
-                    <b>{profile.defaultLanguage === "ar" ? t("Arabic", "العربية") : t("English", "الإنجليزية")}</b>
+                    <b>{profile.defaultLanguage === "ar" ? t("Arabic", "Arabic") : t("English", "الإنجليزية")}</b>
                   </p>
                 )}
                 <p>

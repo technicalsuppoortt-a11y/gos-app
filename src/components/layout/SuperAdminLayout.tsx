@@ -185,6 +185,16 @@ export const SuperAdminLayout: React.FC = () => {
             <Search size={14}/>
             <input
               ref={saSearchInputRef}
+              type="search"
+              name="gos_sa_topbar_lookup_q"
+              autoComplete="off"
+              autoCorrect="off"
+              autoCapitalize="off"
+              spellCheck={false}
+              data-lpignore="true"
+              data-1p-ignore="true"
+              data-bwignore="true"
+              data-form-type="other"
               placeholder={translateText(canOpen('/super-admin/clients') ? 'Search admins or sections…' : 'Search sections…')}
               aria-label={translateText(canOpen('/super-admin/clients') ? 'Search admins or sections' : 'Search sections')}
               value={saSearch}

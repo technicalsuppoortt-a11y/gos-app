@@ -1880,7 +1880,7 @@ ${tailContent}
           className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold bg-white/10 dark:bg-slate-900/40 backdrop-blur-md border border-white/20 dark:border-slate-850 text-white rounded-full hover:bg-white/20 transition cursor-pointer shadow-md"
         >
           <Globe className="w-3.5 h-3.5 text-purple-400" />
-          <span>{currentLang === "ar" ? "English" : "العربية"}</span>
+          <span>{currentLang === "ar" ? "English" : "Arabic"}</span>
         </button>
       </div>
       )}

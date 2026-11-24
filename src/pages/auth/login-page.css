@@ -360,3 +360,6 @@ html.dark .login-landing-btn,
 .dark .login-landing-btn { color: #cbd5e1 !important; }
 html.dark .login-landing-btn:hover,
 .dark .login-landing-btn:hover { color: #c4b5fd !important; }
+.login-page .login-footer .upklick-legal-links { display:flex; flex-wrap:wrap; gap:6px 12px; line-height:1.7; }
+.login-page .login-footer .upklick-legal-links a { white-space:normal; }
+.login-page .login-footer a:focus-visible { outline:2px solid #8b5cf6; outline-offset:3px; border-radius:2px; }

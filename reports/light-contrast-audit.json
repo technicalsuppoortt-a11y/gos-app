@@ -1,5 +1,5 @@
 {
-  "scannedStylesheets": 114,
+  "scannedStylesheets": 115,
   "correctedDeclarations": 870,
   "correctedVariables": 12,
   "referenceSurface": "#ffffff",
@@ -23,32 +23,32 @@
     },
     {
       "file": "src/components/layout/Header.tsx",
-      "line": 357,
+      "line": 366,
       "utility": "text-slate-400"
     },
     {
       "file": "src/components/layout/Header.tsx",
-      "line": 378,
+      "line": 387,
       "utility": "text-slate-400"
     },
     {
       "file": "src/components/layout/Header.tsx",
-      "line": 383,
+      "line": 392,
       "utility": "text-slate-500"
     },
     {
       "file": "src/components/layout/Header.tsx",
-      "line": 488,
+      "line": 497,
       "utility": "text-gray-500"
     },
     {
       "file": "src/components/layout/Header.tsx",
-      "line": 549,
+      "line": 558,
       "utility": "text-gray-400"
     },
     {
       "file": "src/components/layout/Header.tsx",
-      "line": 551,
+      "line": 560,
       "utility": "text-gray-400"
     },
     {
@@ -68,42 +68,42 @@
     },
     {
       "file": "src/components/layout/SubAccountSwitcher.tsx",
-      "line": 387,
+      "line": 396,
       "utility": "text-gray-400"
     },
     {
       "file": "src/components/layout/SubAccountSwitcher.tsx",
-      "line": 457,
+      "line": 466,
       "utility": "text-gray-500"
     },
     {
       "file": "src/components/layout/SubAccountSwitcher.tsx",
-      "line": 490,
+      "line": 499,
       "utility": "text-gray-400"
     },
     {
       "file": "src/components/layout/SubAccountSwitcher.tsx",
-      "line": 507,
+      "line": 516,
       "utility": "text-gray-400"
     },
     {
       "file": "src/components/layout/SubAccountSwitcher.tsx",
-      "line": 560,
+      "line": 569,
       "utility": "text-gray-500"
     },
     {
       "file": "src/components/layout/SubAccountSwitcher.tsx",
-      "line": 577,
+      "line": 586,
       "utility": "text-gray-400"
     },
     {
       "file": "src/components/layout/SuperAdminLayout.tsx",
-      "line": 216,
+      "line": 226,
       "utility": "text-slate-400"
     },
     {
       "file": "src/components/layout/SuperAdminLayout.tsx",
-      "line": 232,
+      "line": 242,
       "utility": "text-slate-400"
     },
     {
@@ -243,37 +243,37 @@
     },
     {
       "file": "src/pages/auth/LoginPage.tsx",
-      "line": 295,
+      "line": 296,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/auth/LoginPage.tsx",
-      "line": 320,
+      "line": 321,
       "utility": "text-slate-400"
     },
     {
       "file": "src/pages/auth/LoginPage.tsx",
-      "line": 324,
+      "line": 325,
       "utility": "text-slate-400"
     },
     {
       "file": "src/pages/auth/LoginPage.tsx",
-      "line": 324,
+      "line": 325,
       "utility": "text-slate-400"
     },
     {
       "file": "src/pages/auth/LoginPage.tsx",
-      "line": 348,
+      "line": 349,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/auth/LoginPage.tsx",
-      "line": 351,
+      "line": 352,
       "utility": "text-slate-400"
     },
     {
       "file": "src/pages/auth/LoginPage.tsx",
-      "line": 360,
+      "line": 362,
       "utility": "text-slate-100"
     },
     {
@@ -1531,7 +1531,7 @@
     },
     {
       "file": "src/components/layout/product-header.css",
-      "line": 266,
+      "line": 277,
       "selector": ".layout-header .layout-header-user small",
       "before": "#94a3b8",
       "after": "#475569",
@@ -5068,7 +5068,7 @@
     {
       "file": "src/pages/booking/booking-editor-reference.css",
       "line": 83,
-      "selector": ".bk-configurator-heading svg:first-child,\r\n.bk-reference-editor .bk-configurator-heading svg:first-child",
+      "selector": ".bk-configurator-heading svg:first-child,\n.bk-reference-editor .bk-configurator-heading svg:first-child",
       "before": "#979bb0",
       "after": "#334155",
       "contrastOnWhite": 2.75
@@ -5228,7 +5228,7 @@
     {
       "file": "src/pages/commerce/checkout-requests.css",
       "line": 409,
-      "selector": ".cr-ref-code,\r\n.cr-ref-tag",
+      "selector": ".cr-ref-code,\n.cr-ref-tag",
       "before": "#94a3b8",
       "after": "#334155",
       "contrastOnWhite": 2.56
@@ -5396,7 +5396,7 @@
     {
       "file": "src/pages/commerce/customer-portal.css",
       "line": 1904,
-      "selector": ".cportal-password-input-wrap button.cportal-password-toggle,\r\n.cportal-password-toggle",
+      "selector": ".cportal-password-input-wrap button.cportal-password-toggle,\n.cportal-password-toggle",
       "before": "#94a3b8",
       "after": "#334155",
       "contrastOnWhite": 2.56

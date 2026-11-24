@@ -66,3 +66,16 @@ html.dark .pf-template-filters input::placeholder { color: #cbd5e1; }
 .fb-live-preview-frame.desktop { width: 100% !important; max-width: none !important; }
 .fb-live-preview-frame.desktop > .fb-live-page { border: 0 !important; border-radius: 0 !important; box-shadow: none !important; }
 @media (prefers-reduced-motion: reduce) { :is(.aw-select-popup,.commerce-select-content,.bk-select-content,.adm-select-popup,.ui-select-panel,[role=menu]) { animation: none !important; } }
+/* Composite fields already show focus through their wrapper border color.
+   Layered important rules also override the generated workspace theme rings. */
+@layer composite-input-focus {
+  .lp-trial-input-wrap input:is(:focus, :focus-visible),
+  .layout-header .layout-search input:is(:focus, :focus-visible),
+  .ai-composer textarea[name="gos_copilot_prompt_composer"]:is(:focus, :focus-visible),
+  .lp-trial-input-wrap:focus-within,
+  .layout-header .layout-search:focus-within,
+  .ai-composer:has(textarea[name="gos_copilot_prompt_composer"]:focus) {
+    outline: none !important;
+    box-shadow: none !important;
+  }
+}

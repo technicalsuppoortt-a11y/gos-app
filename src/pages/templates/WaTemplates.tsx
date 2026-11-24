@@ -261,7 +261,7 @@ function TemplateEditor({ from, onClose }: { from: WaTemplate | null; onClose: (
               </label>
               <label className="cp-field">{t('Language')}
                 <select value={language} onChange={e => setLanguage(e.target.value)}>
-                  <option value="en">{t("English (en)")}</option><option value="en_US">{t("English US (en_US)")}</option><option value="ar">العربية (ar)</option>
+                  <option value="en">{t("English (en)")}</option><option value="en_US">{t("English US (en_US)")}</option><option value="ar">Arabic (ar)</option>
                 </select>
               </label>
             </div>

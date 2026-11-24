@@ -609,7 +609,7 @@ export default function SettingsPage() {
                           }}
                         >
                           {language === lang && <Check size={14} />}
-                          {lang === 'ar' ? '🇸🇦 العربية' : '🇬🇧 English'}
+                          {lang === 'ar' ? '🇸🇦 Arabic' : '🇬🇧 English'}
                         </motion.button>
                       ))}
                     </div>

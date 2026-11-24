@@ -18,6 +18,7 @@ import { showToast } from '../../utils/toast';
 import i18n from '../../i18n/i18n';
 import { startDemoSession } from '../../demo/mode';
 import './login-page.css';
+import { LegalLinks } from '../legal/LegalLinks';
 
 
 export const LoginPage: React.FC = () => {
@@ -349,8 +350,9 @@ export const LoginPage: React.FC = () => {
       </motion.div>
 
       <footer className="login-footer flex flex-wrap items-center justify-between gap-y-2 text-[11px] text-slate-400 dark:text-slate-400 mt-6">
-        <span>{translateText("© 2026 Upklick Inc.")}</span>
-        <nav aria-label="Legal"><Link to="/terms-of-service">{translateText("Service")}</Link><span aria-hidden="true">•</span><Link to="/privacy">{translateText("Privacy Policy")}</Link><span aria-hidden="true">•</span><Link to="/data-deletion">{translateText("Data Deletion")}</Link></nav>
+        <span>© 2026 UpKlick</span>
+        <LegalLinks language={currentLang} />
+        <Link to="/data-deletion">{translateText("Data Deletion")}</Link>
       </footer>
     </section>
 

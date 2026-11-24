@@ -139,9 +139,9 @@ export function ProfilePanel({ data, save }: {
                 value={draft.language}
                 onChange={value => updateRegional('language', normalizeLocale(value) ?? 'en')}
                 options={[
-                  { value: 'Arabic', label: 'AR · العربية' },
+                  { value: 'Arabic', label: 'AR · Arabic' },
                   { value: 'English', label: 'EN · English' },
-                  { value: 'Dutch', label: 'NL · Nederlands' },
+                  { value: 'Dutch', label: 'NL · Dutch' },
                   { value: 'German', label: 'DE · Deutsch' },
                 ]}
               />

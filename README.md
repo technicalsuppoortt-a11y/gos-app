@@ -7,10 +7,10 @@
 - develop support
 - Notification
 - payment methods must be different => done
-- Currency
-===========================================
+- # Currency
 
 # User Dashboad
+
 - logic of setting in user dashboard => done until test
   - profile => done
   - Bussiness
@@ -19,11 +19,13 @@
   - Team & roles => done
   - Pixel => done
   - Security => done
-- Product and checkout => done 
+- Product and checkout => done
 - Booking Questions => done
 - Analysis Conversition filter => done
 - Integration and guideline how to connected
-## hesham and Abbas 
+
+## hesham and Abbas
+
 - Loading of Crm and lead take many times
 - AI Follow-Up
   - Flow and trigers (many chat refrence) => knwoldege base
@@ -44,7 +46,7 @@
   - Settings
 - Ai Copilot
   - from record to text
-  - apply all type of data => text , record , attachment 
+  - apply all type of data => text , record , attachment
   - Handled fast answers like questions and templets
   - Handle :
     - Booking
@@ -54,12 +56,12 @@
 - Inbox
   - Can support multi connection => lead have more than number or email
   - تصنفيات الواتس
-  /* hesham and Abbas */
-===========================================
+    /_ hesham and Abbas _/
+    ===========================================
 
 # Admin Dashbaord
 
-- Plans and Subscription  and remove wallet=> done
+- Plans and Subscription and remove wallet=> done
   - Control of creidets => done
 - Agency User Cycle
   - ADD or Auto Created => done
@@ -89,16 +91,39 @@
 ======================
 
 # Advanced
+
 - Move Launch brand in gos => done
 - Make Upklick Domain
 - Plan and subscription from joe academy => option can apply free plan
-- Upload Vercel to VPS Server
-===================
+- # Upload Vercel to VPS Server
+
 # Log Later
+
 - Landing Management
   - Add Preview
   - Can control of every thins and every media
-- Website Chat
-============================================
-# v2 
-- Multi Language => 
+- # Website Chat
+
+# v2
+
+- Multi Language => Dutch , Deutsch
+- Landing page
+  - الكلام يبقي عربي مش مصري
+    1- header
+    - improve
+    - انشي حساب مجاني => Book a Free Consultation
+      2- Live AI Follow-Up Demo => mobile design , background chabt
+    - whats
+    - massenger
+    - instagram
+    - website chat
+      3- remove Before vs After section and The power of one platform section
+      4- replace How It Works with Compare section
+      5- Real Results
+    - must be last section
+    - must be more professional and attractive
+      6- merge The problem & the opportunity section with The Problem section in The Problem
+      section
+      7- merge in one section with professioanl horzenzintal bars - The product you will sell to your clients section - Fully ready infrastructure - Full White-Label section - Commercial control & integrated payment gateways section - with real icons and brands of paynebt gateways and methods - Launch & operation steps
+      8- keep The plan & FAQ in isolated section
+      9- merge Book a Free Consultation section in Complete Follow-Up System section

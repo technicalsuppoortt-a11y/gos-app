@@ -570,7 +570,7 @@ export default function AdminDashboardPage() {
   const [isLangDropdownOpen, setIsLangDropdownOpen] = useState(false);
 
   const LANGUAGES = [
-    { code: "ar", label: "العربية", fullLabel: "العربية (Arabic)", flag: "🇸🇦" },
+    { code: "ar", label: "Arabic", fullLabel: "Arabic", flag: "🇸🇦" },
     {
       code: "ar-GCC",
       label: "الخليجية",
@@ -12838,7 +12838,7 @@ export default function AdminDashboardPage() {
                         options={[
                           {
                             value: "ar",
-                            label: "العربية (Arabic)",
+                            label: "Arabic",
                             icon: Globe,
                           },
                           {
@@ -14245,7 +14245,7 @@ export default function AdminDashboardPage() {
                               : "none",
                         }}
                       >
-                        العربية
+                        Arabic
                       </button>
                       <button
                         type="button"

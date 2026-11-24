@@ -699,7 +699,7 @@ export function SuperAdminFunnelTemplates() {
                   setPreviewTarget(cur => (cur ? { ...cur, previewLang: 'ar' } : cur))
                 }
               >
-                العربية (RTL)
+                Arabic (RTL)
               </button>
             </div>
             <div className="sys-filter-pills">

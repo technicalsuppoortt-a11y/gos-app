@@ -440,7 +440,7 @@ export function DiscoveryConsole() {
                   onChange={(event) => setLanguage(event.target.value as "En" | "Ar")}
                 >
                   <option value="En">English</option>
-                  <option value="Ar">العربية</option>
+                  <option value="Ar">Arabic</option>
                 </select>
               </div>
               {activeFields.map((field) => {

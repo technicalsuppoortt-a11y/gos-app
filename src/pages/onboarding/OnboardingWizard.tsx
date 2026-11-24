@@ -624,9 +624,9 @@ export function OnboardingWizard() {
                 </label>
                 <div className="ob-language">
                   {[
-                    ["ar", "العربية", t("Right to left", "من اليمين إلى اليسار")],
+                    ["ar", "Arabic", t("Right to left", "من اليمين إلى اليسار")],
                     ["en", "English", t("Left to right", "من اليسار إلى اليمين")],
-                    ["nl", "Nederlands", t("Left to right", "من اليسار إلى اليمين")],
+                    ["nl", "Dutch", t("Left to right", "من اليسار إلى اليمين")],
                     ["de", "Deutsch", t("Left to right", "من اليسار إلى اليمين")],
                   ].map(([code, name, hint]) => (
                     <button
@@ -1025,7 +1025,7 @@ export function OnboardingWizard() {
               {countries.find((country) => country.value === setup.country)
                 ?.label || setup.country}{" "}
               · {setup.currency}
-              <span>{ar ? "العربية" : "English"}</span>
+              <span>{ar ? "Arabic" : "English"}</span>
             </div>
           </div>
           <div className="ob-preview-caption">

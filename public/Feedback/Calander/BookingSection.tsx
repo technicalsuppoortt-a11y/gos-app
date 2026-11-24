@@ -1307,7 +1307,7 @@ export default function BookingSection({
 
   // ---- Options (now defined after translateText) ----
   const languageOptions = [
-    { value: "ar", label: "العربية" },
+    { value: "ar", label: "Arabic" },
     { value: "en", label: "English" },
   ];
 

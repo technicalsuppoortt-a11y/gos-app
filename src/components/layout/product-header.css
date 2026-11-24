@@ -113,6 +113,17 @@ html.dark .layout-header .layout-header-breadcrumb > h1 {
   font-size: 12px;
 }
 
+.layout-header .layout-search input::-webkit-search-decoration,
+.layout-header .layout-search input::-webkit-search-cancel-button,
+.sa-search input::-webkit-search-decoration,
+.sa-search input::-webkit-search-cancel-button,
+.ai-history-search input::-webkit-search-decoration,
+.ai-history-search input::-webkit-search-cancel-button {
+  -webkit-appearance: none;
+  appearance: none;
+  display: none;
+}
+
 .layout-header .layout-search kbd {
   font-size: 10px;
   height: 18px;

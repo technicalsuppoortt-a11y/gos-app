@@ -355,9 +355,9 @@ export function WorkspaceBrandSettings() {
                       value={resetting ? preferenceDefaults.language : edits.language ?? effective.language}
                       onChange={value => update('language', value as WorkspacePreferences['language'])}
                       options={[
-                        { value: 'ar', label: 'AR · العربية' },
+                        { value: 'ar', label: 'AR · Arabic' },
                         { value: 'en', label: 'EN · English' },
-                        { value: 'nl', label: 'NL · Nederlands' },
+                        { value: 'nl', label: 'NL · Dutch' },
                         { value: 'de', label: 'DE · Deutsch' },
                       ]}
                     />

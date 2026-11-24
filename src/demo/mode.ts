@@ -49,6 +49,18 @@ export function isDemoSessionActive(): boolean {
   return window.name === WINDOW_NAME_FLAG;
 }
 
+export type LocalAdminTrialSeed = {
+  id: string;
+  tenantId: string;
+  name: string;
+  workspaceName: string;
+  email: string;
+  phone?: string;
+  language?: string;
+  trialDays: number;
+  credits: number;
+};
+
 /** Starts a fresh demo session in this tab and opens the dashboard. */
 export function startDemoSession(target = '/dashboard') {
   const storage = nativeSession();
@@ -56,6 +68,22 @@ export function startDemoSession(target = '/dashboard') {
   try { storage?.setItem(FLAG, '1'); } catch { window.name = WINDOW_NAME_FLAG; }
   // A document load is required so the backend-free module graph replaces the
   // live one; the destination is the regular SPA route.
+  window.location.assign(target);
+}
+
+/**
+ * Starts an isolated local Admin Free Trial workspace in this tab (used on localhost
+ * when Cloud Functions have not yet been deployed or emulated) and opens `/admin/overview`.
+ */
+export function startAdminTrialDemoSession(seed: LocalAdminTrialSeed, target = '/admin/overview') {
+  const storage = nativeSession();
+  clearDemoNamespace(storage);
+  try {
+    storage?.setItem(DEMO_STORAGE_PREFIX + 'gos.demo-admin-trial-session', JSON.stringify(seed));
+    storage?.setItem(FLAG, '1');
+  } catch {
+    window.name = WINDOW_NAME_FLAG;
+  }
   window.location.assign(target);
 }
 

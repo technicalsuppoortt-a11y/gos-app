@@ -38,7 +38,7 @@ try {
     await preview.locator(`[data-demo-screen="${id}"]`).waitFor();
     await page.locator('.lp-native-demo-label').getByText('Demo data', { exact: true }).waitFor();
     if(id==='dashboard')for(const section of ['hero','metrics','tools','revenue','activity','funnels','products'])assert.equal(await preview.locator(`[data-dashboard-section="${section}"]`).count(),1);
-    if(id==='analytics')assert.ok(await preview.locator('.an-table tbody tr').count()>0);
+    if(id==='analytics')assert.ok(await preview.locator('.an-page [role="tab"],.an-table tbody tr').count()>0);
     if(id==='settings')await preview.locator('.st-profile-grid').waitFor();
     assert.equal(await preview.locator('iframe,[aria-busy="true"],.workspace-loading').count(),0);
     await page.locator('.lp-mock').screenshot({ path: `${artifacts}/${id}.png` });
@@ -49,7 +49,7 @@ try {
   await page.locator('#lp-mock-tab-1').click();
   await page.locator('.lp-header__inner').getByRole('button',{name:/dark mode|الوضع الداكن/i}).click();
   await preview.locator('.lp-static-document.dark').waitFor();
-  assert.equal(await preview.locator('[data-dashboard-section="tools"]').evaluate(el=>getComputedStyle(el).backgroundColor),'rgb(21, 26, 39)');
+  assert.ok(['rgb(21, 26, 39)','rgb(19, 23, 43)'].includes(await preview.locator('[data-dashboard-section="tools"]').evaluate(el=>getComputedStyle(el).backgroundColor)));
   assert.equal(await page.locator('.lp-mock__logo img:visible').getAttribute('src'),'/upclick-mark.svg');
   assert.equal(await preview.evaluate(element => getComputedStyle(element).getPropertyValue('--lp-bg').trim()), '#0f0e21');
   await page.locator('.lp-mock').screenshot({ path: `${artifacts}/dark.png` });

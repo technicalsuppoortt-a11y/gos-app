@@ -290,7 +290,16 @@ export const Header: React.FC<HeaderProps> = ({ title, onMenu }) => {
             <Search size={15} className="shrink-0" />
             <input 
               ref={searchInputRef}
-              type="text"
+              type="search"
+              name="gos_topbar_lookup_q"
+              autoComplete="off"
+              autoCorrect="off"
+              autoCapitalize="off"
+              spellCheck={false}
+              data-lpignore="true"
+              data-1p-ignore="true"
+              data-bwignore="true"
+              data-form-type="other"
               role="combobox"
               aria-expanded={searchOpen && hasSearchQuery}
               aria-controls="header-search-listbox"

@@ -66,6 +66,12 @@ export default defineConfig({
     // With VITE_GOS_API_BASE_URL=/ the page calls /api on its own origin and Vite forwards it to Herd.
     proxy: {
       '/api': 'http://ai-follow-up.test',
+      // Same-origin proxy for Firebase Cloud Functions in local dev (prevents browser CORS preflight blocks on localhost).
+      '/api-functions': {
+        target: 'https://us-central1-gos-app-3c7fb.cloudfunctions.net',
+        changeOrigin: true,
+        rewrite: path => path.replace(/^\/api-functions/, ''),
+      },
       // Launch Brand dev server (npm run dev:launch-brand), on the same address as gos for the live previews.
       '/launch-brand': { target: 'http://localhost:5175', ws: true },
     },

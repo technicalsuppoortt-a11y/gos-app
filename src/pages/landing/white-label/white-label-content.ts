@@ -1,39 +1,266 @@
 /* =========================================================
-   White-Label program — 10-step chapter copy (EN / AR).
-   Kept outside LandingCopy on purpose: the landing CMS
-   validates published content against LandingCopy's exact
-   shape, so adding keys there would discard saved edits.
+   Upgraded Landing & White-Label Program Copy (EN / AR / NL / DE).
+   Kept outside LandingCopy on purpose: the landing CMS validates
+   published content against LandingCopy's exact shape, so keeping
+   extended structured copy here preserves saved CMS drafts.
+   All Arabic (ar) copy is authored in clean, natural Modern Standard Arabic.
    ========================================================= */
+
+export type ReplacedBrand = {
+  name: string;
+  short: string;
+  color: string;
+};
+
+export type CompareRow = {
+  feature: string;
+  replaces: ReplacedBrand[];
+  otherCost: string;
+  uniqueTag?: boolean;
+};
 
 export type WhiteLabelCopy = {
   nav: string;
-  chapter: { eyebrow: string; title: string; text: string; steps: string };
+  headerNav: {
+    problem: string;
+    solution: string;
+    aiDemo: string;
+    compare: string;
+    whiteLabel: string;
+    planFaq: string;
+    results: string;
+  };
+  heroTransform: {
+    wlPill: string;
+    wlTag: string;
+    sectionTitle: string;
+    sectionSub: string;
+    beforeBadge: string;
+    beforeLabel: string;
+    beforeSub: string;
+    arrowLabel: string;
+    arrowSub: string;
+    afterBadge: string;
+    afterLabel: string;
+    afterSub: string;
+    pickBrand: string;
+    domainReady: string;
+    syncedNote: string;
+  };
   s1: {
-    badge: string; tag: string; title: string; subtitle: string; checks: string[]; cta: string; logoHere: string;
-    morph: {
-      label: string; stages: string[]; play: string; pause: string; replay: string; upklick: string; brand: string;
-      nav: string[]; workspace: string; kpis: string[]; chart: string; bars: string; gauge: string; leads: string; live: string;
-      people: string[];
+    badge: string;
+    tag: string;
+    title: string;
+    subtitle: string;
+    checks: string[];
+    cta: string;
+    logoHere: string;
+  };
+  s2: {
+    badge: string;
+    audiences: string[];
+    titleA: string;
+    titleHighlight: string;
+    titleB: string;
+    cards: string[];
+    solution: string;
+  };
+  s3: {
+    badge: string;
+    title: string;
+    hub: string;
+    nodes: string[];
+  };
+  s4: {
+    badge: string;
+    tag: string;
+    title: string;
+    features: string[];
+    brand: string;
+    domain: string;
+    secure: string;
+  };
+  s5: {
+    badge: string;
+    titleHighlight: string;
+    titleA: string;
+    titleB: string;
+    plansTitle: string;
+    plans: string[];
+    paymentsTitle: string;
+    active: string;
+    ready: string;
+  };
+  s6: {
+    badge: string;
+    title: string;
+    tools: { title: string; text: string }[];
+  };
+  s8: {
+    badge: string;
+    title: string;
+    steps: string[];
+    chips: string[];
+  };
+  s9: {
+    badge: string;
+    title: string;
+    subtitle: string;
+    planBadge: string;
+    planName: string;
+    price: string;
+    period: string;
+    planNote: string;
+    trialHighlight: string;
+    features: string[];
+    cta: string;
+    faqTitle: string;
+    faq: { q: string; a: string }[];
+  };
+  barsSection: {
+    badge: string;
+    title: string;
+    subtitle: string;
+  };
+  compareSection: {
+    badge: string;
+    title: string;
+    subtitle: string;
+    colFeature: string;
+    colReplaces: string;
+    colOther: string;
+    colPlatform: string;
+    overallLabel: string;
+    overallOther: string;
+    overallPrice: string;
+    overallPeriod: string;
+    trialPill: string;
+    cta: string;
+    rows: CompareRow[];
+  };
+  demoChannels: {
+    switchLabel: string;
+    channels: {
+      id: 'whatsapp' | 'messenger' | 'instagram' | 'webchat';
+      label: string;
+      stageSub: string;
+      status: string;
+      placeholder: string;
+    }[];
+    seen: string;
+  };
+  resultsUpgrade: {
+    ratingPill: string;
+    verified: string;
+    kpis: { value: string; label: string; sub: string }[];
+    proofMeta: { metric: string; category: string; outcome: string }[];
+    bannerTitle: string;
+    bannerSub: string;
+    bannerCta: string;
+  };
+  trialModal: {
+    badge: string;
+    specialTag: string;
+    sideTitle: string;
+    sideLead: string;
+    perks: { title: string; text: string }[];
+    termsTitle: string;
+    termsList: string[];
+    formTitle: string;
+    formSubtitle: string;
+    nameLabel: string;
+    namePlaceholder: string;
+    workspaceLabel: string;
+    workspacePlaceholder: string;
+    domainPreview: string;
+    emailLabel: string;
+    emailPlaceholder: string;
+    phoneLabel: string;
+    phoneOptional: string;
+    phonePlaceholder: string;
+    passwordLabel: string;
+    passwordPlaceholder: string;
+    passwordHint: string;
+    strengthLabels: [string, string, string, string];
+    agreePrefix: string;
+    termsLink: string;
+    andText: string;
+    privacyLink: string;
+    agreeTrialSuffix: string;
+    submit: string;
+    submitting: string;
+    haveAccount: string;
+    loginCta: string;
+    closeLabel: string;
+    successTitle: string;
+    successText: string;
+    errors: {
+      name: string;
+      workspace: string;
+      email: string;
+      password: string;
+      terms: string;
+      exists: string;
+      paused: string;
+      unavailable: string;
+      generic: string;
     };
   };
-  s2: { badge: string; audiences: string[]; titleA: string; titleHighlight: string; titleB: string; cards: string[]; solution: string };
-  s3: { badge: string; title: string; hub: string; nodes: string[] };
-  s4: { badge: string; tag: string; title: string; features: string[]; brand: string; domain: string; secure: string };
-  s5: { badge: string; titleHighlight: string; titleA: string; titleB: string; plansTitle: string; plans: string[]; paymentsTitle: string; active: string; ready: string };
-  s6: { badge: string; title: string; tools: { title: string; text: string }[] };
-  s7: { badge: string; title: string; beforeTitle: string; before: string[]; afterTitle: string; after: string[] };
-  s8: { badge: string; title: string; steps: string[]; chips: string[] };
-  s9: { badge: string; planName: string; price: string; period: string; planNote: string; features: string[]; cta: string; faqTitle: string; faq: { q: string; a: string }[] };
-  s10: { badge: string; titleA: string; titleB: string; text: string; cta: string; chips: string[] };
+};
+
+const COMPARE_BRANDS = {
+  chatgpt: { name: 'ChatGPT Team', short: 'AI', color: '#10A37F' },
+  jasper: { name: 'Jasper AI', short: 'J', color: '#8B5CF6' },
+  manychat: { name: 'ManyChat', short: 'MC', color: '#0084FF' },
+  airai: { name: 'Air AI', short: 'VA', color: '#6366F1' },
+  respond: { name: 'Respond.io', short: 'R', color: '#2563EB' },
+  intercom: { name: 'Intercom', short: 'IC', color: '#1F2937' },
+  hubspot: { name: 'HubSpot', short: 'HS', color: '#FF7A59' },
+  pipedrive: { name: 'Pipedrive', short: 'PD', color: '#16A34A' },
+  clickfunnels: { name: 'ClickFunnels', short: 'CF', color: '#F97316' },
+  webflow: { name: 'Webflow', short: 'W', color: '#4353FF' },
+  wix: { name: 'Wix', short: 'WX', color: '#0F172A' },
+  calendly: { name: 'Calendly', short: 'C', color: '#006BFF' },
+  acuity: { name: 'Acuity', short: 'AC', color: '#0D9488' },
+  kajabi: { name: 'Kajabi', short: 'K', color: '#2563EB' },
+  teachable: { name: 'Teachable', short: 'T', color: '#10B981' },
+  activecampaign: { name: 'ActiveCampaign', short: 'AC', color: '#356AE6' },
+  mailchimp: { name: 'Mailchimp', short: 'M', color: '#D97706' },
+  zapier: { name: 'Zapier', short: 'Z', color: '#FF4F00' },
+  make: { name: 'Make', short: 'MK', color: '#9333EA' },
+  cloudflare: { name: 'Cloudflare Pro', short: 'CF', color: '#F59E0B' },
+  namecheap: { name: 'Domain Reseller', short: 'DR', color: '#DE3723' },
+  databox: { name: 'Databox', short: 'DB', color: '#0284C7' },
+  mixpanel: { name: 'Mixpanel', short: 'MX', color: '#7C3AED' },
 };
 
 const en: WhiteLabelCopy = {
   nav: 'White-Label',
-  chapter: {
-    eyebrow: 'Upklick White-Label Program',
-    title: 'Launch your own software company — in 10 clear steps',
-    text: 'For agencies, consultants and software teams who want to sell a complete AI platform under their own brand.',
-    steps: '10 steps',
+  headerNav: {
+    problem: 'The Problem',
+    solution: 'AI System',
+    aiDemo: 'Live Demo',
+    compare: 'Compare',
+    whiteLabel: 'White-Label',
+    planFaq: 'Plan & FAQ',
+    results: 'Results',
+  },
+  heroTransform: {
+    wlPill: 'Own your software company',
+    wlTag: 'White-Label',
+    sectionTitle: 'From Upklick Engine to 100% Your Software Brand',
+    sectionSub: 'Every dashboard, tool, login screen, and domain transforms seamlessly into your own company identity — with the exact same enterprise polish.',
+    beforeBadge: 'Before · Engine',
+    beforeLabel: 'Upklick Platform',
+    beforeSub: 'Ready AI & 12 business tools',
+    arrowLabel: '1-Click White-Label',
+    arrowSub: 'Your Logo · Domain · Colors',
+    afterBadge: 'After · Your SaaS',
+    afterLabel: 'Your Brand',
+    afterSub: '100% owned client experience',
+    pickBrand: 'Preview brand theme:',
+    domainReady: 'SSL Active',
+    syncedNote: 'Click any sidebar tool to preview both dashboards in sync',
   },
   s1: {
     badge: 'Own your software company',
@@ -45,347 +272,571 @@ const en: WhiteLabelCopy = {
       'We are the tech provider: Meta, AI, email and domains connected',
       '12 business tools in one system for your clients',
     ],
-    cta: 'Book a free consultation now',
+    cta: 'Start Now',
     logoHere: 'Your logo here',
-    morph: {
-      label: 'Animated preview: the Upklick dashboard transforms into your white-label brand',
-      stages: ['Upklick dashboard', 'Brand morph', 'Your white-label'],
-      play: 'Play animation',
-      pause: 'Pause animation',
-      replay: 'Replay',
-      upklick: 'Upklick',
-      brand: 'Your brand',
-      nav: ['Dashboard', 'AI Copilot', 'Inbox', 'CRM & Leads', 'Booking', 'Analytics'],
-      workspace: 'Workspace',
-      kpis: ['Revenue', 'New leads', 'Bookings'],
-      chart: 'Performance',
-      bars: 'Weekly sales',
-      gauge: 'Goal',
-      leads: 'Recent leads',
-      live: 'Live',
-      people: ['Sarah Ahmed', 'Omar Khaled', 'Lina Hassan'],
-    },
   },
   s2: {
-    badge: 'The problem & the opportunity',
+    badge: 'The Opportunity',
     audiences: ['Marketing agencies', 'Coaches & consultants', 'Software companies', 'Clinics, real estate & stores'],
     titleA: 'Building software from',
-    titleHighlight: 'scratch is costly and complex..',
-    titleB: 'and selling services alone never builds a stable monthly income',
+    titleHighlight: 'scratch is costly and complex —',
+    titleB: 'and selling services alone rarely creates predictable monthly recurring revenue',
     cards: [
-      'Huge development and maintenance costs',
-      'Complex Meta and API approvals',
-      'Clients scattered across 10 different tools',
+      'Zero scratch-development or maintenance overhead',
+      'Pre-approved official Meta & AI provider stack',
+      'Unify clients scattered across 10+ disconnected tools',
       'A service client leaves — a system client stays',
     ],
-    solution: 'The solution: receive the entire infrastructure ready, and sell it under your name from day one',
+    solution: 'The opportunity: receive the entire AI & follow-up infrastructure ready, and sell it under your own brand from day one.',
   },
   s3: {
     badge: 'Fully ready infrastructure',
-    title: 'We are the provider running everything behind the scenes.. and you are the only owner in front of your clients',
+    title: 'We run the entire technical stack behind the scenes — you are the sole owner in front of your clients',
     hub: 'Your platform, your name',
     nodes: [
-      'Official Meta channels provider: WhatsApp, Instagram and Messenger',
-      'AI provider on credits — no API keys needed',
-      'Email marketing campaigns provider, ready and active',
-      'Domain registration and resale provider — at your margin',
+      'Official Meta channels provider: WhatsApp, Instagram & Messenger',
+      'AI provider on credits — zero API keys to manage',
+      'Ready-to-send email marketing & broadcast relay',
+      'Domain registration & resale provider — at your profit margin',
     ],
   },
   s4: {
-    badge: 'Full white-label',
-    tag: 'Full White-Label',
-    title: 'Our name disappears completely.. every screen, email and link carries only your company identity',
+    badge: 'Full White-Label',
+    tag: '100% Your Brand',
+    title: 'Our name disappears completely — every screen, email, and link carries only your company identity',
     features: [
-      'Brand identity studio with dark and light modes',
-      'Your own domain with a free SSL certificate',
-      'Login pages and emails in your company name',
-      'PWA mobile app with your brand icon',
+      'Brand identity studio with Light & Dark modes',
+      'Your custom domain with automatic free SSL',
+      'Branded login screens and transactional emails',
+      'Installable PWA mobile app with your brand icon',
     ],
     brand: 'Your brand',
     domain: 'app.yourbrand.com',
-    secure: 'Secure connection',
+    secure: 'SSL Active',
   },
   s5: {
     badge: 'Commercial control & integrated payment gateways',
-    titleHighlight: 'Tailor your plans',
-    titleA: 'with the pricing that suits you..',
-    titleB: 'and get paid through the payment methods your clients already use',
+    titleHighlight: 'Engineer your plans',
+    titleA: 'at the margins you choose —',
+    titleB: 'and collect payments through the gateways your clients already trust',
     plansTitle: 'Plans & profit engineering',
-    plans: ['Monthly, yearly and lifetime plans', 'Sell extra credits and discount coupons', 'Multi-currency: EGP - SAR - AED - USD'],
-    paymentsTitle: 'Collect payments locally and internationally',
-    active: 'Active',
-    ready: 'Ready to connect',
+    plans: [
+      'Monthly, annual, fixed-duration & lifetime plans',
+      'Sell extra AI credits, seats & promotional coupons',
+      'Multi-currency billing: USD · EUR · SAR · AED · EGP',
+    ],
+    paymentsTitle: 'Integrated global & regional payment methods',
+    active: 'Integrated',
+    ready: 'Ready',
   },
   s6: {
     badge: 'The product you will sell to your clients',
-    title: 'Offer your clients a complete business operating system that runs marketing and sales from one screen',
+    title: 'Deliver a complete AI business operating system that runs marketing, sales, and fulfillment from one screen',
     tools: [
-      { title: 'Smart sales agent', text: 'AI Copilot and voice' },
-      { title: 'Unified inbox', text: 'WhatsApp, Instagram and Messenger' },
-      { title: 'Websites & funnels builder', text: 'Drag and drop' },
-      { title: 'Chatbot flow designer', text: 'Visual automation' },
-      { title: 'CRM client management', text: 'With shift distribution' },
-      { title: 'Appointment booking pages', text: 'Google Calendar sync' },
-      { title: 'Sell products & courses', text: 'WhatsApp and email campaigns' },
-      { title: 'Live analytics & PDF reports', text: 'With pixel tracking' },
-    ],
-  },
-  s7: {
-    badge: 'The power of one platform',
-    title: 'Replace 12 separate tools and subscriptions with one platform carrying your company name',
-    beforeTitle: 'Instead of 12 scattered subscriptions',
-    before: [
-      'Website and funnel builder tools',
-      'CRM and appointment booking software',
-      'WhatsApp and chatbot tools',
-      'Course platforms and email campaigns',
-      'AI API invoices and domain purchases',
-    ],
-    afterTitle: 'All ready inside your one platform',
-    after: [
-      'Websites, funnels, hosting and ready templates',
-      'Complete CRM with smart appointment booking',
-      'Unified Meta inbox and visual automation',
-      'Course hosting with built-in email marketing',
-      'AI credits and domain resale at your margin',
+      { title: 'AI Copilot & Voice Agent', text: '24/7 autonomous sales assistant' },
+      { title: 'Unified Meta Inbox', text: 'WhatsApp, Instagram, Messenger & Web' },
+      { title: 'Websites & Funnels Builder', text: 'Drag-and-drop pages & templates' },
+      { title: 'Visual Flow Automation', text: 'Smart chatbot & follow-up sequences' },
+      { title: 'CRM & Lead Pipeline', text: 'Deal stages & team shift routing' },
+      { title: 'Booking & Calendar Engine', text: 'Two-way Google Calendar sync' },
+      { title: 'Products, Courses & Portal', text: 'Digital checkout & member library' },
+      { title: 'Live Analytics & BI Reports', text: 'Meta/Google pixel & revenue tracking' },
     ],
   },
   s8: {
     badge: 'Launch & operation steps',
-    title: 'From receiving the platform to your first client subscription in 4 clear steps',
+    title: 'Go from activating your Admin account to your first paying subscriber in 4 clear steps',
     steps: [
-      'Customize your identity and connect your domain',
-      'Build your plans and activate payment methods',
-      'Present the ready demo and open your client accounts',
-      'Track your profits and support clients in one click',
+      'Customize your brand identity & connect your domain',
+      'Create subscription tiers & connect payment gateways',
+      'Present your live demo & onboard client workspaces',
+      'Track recurring margins & support clients in one click',
     ],
-    chips: ['Ready-to-present demo account', 'One-click login to client accounts', 'Support chat in your name'],
+    chips: ['Ready-to-present demo workspace', 'One-click client account switch', 'Built-in support chat in your name'],
   },
   s9: {
     badge: 'The plan & FAQ',
-    planName: 'The all-inclusive Super Admin plan',
+    title: 'One Transparent Plan. Unlimited Growth Potential.',
+    subtitle: 'Everything you need to run your AI follow-up engine and scale your own White-Label software company — backed by an instant Free Trial.',
+    planBadge: 'All-Inclusive Platform Plan',
+    planName: 'Super Admin & White-Label Plan',
     price: '$99',
     period: '/ month',
-    planNote: 'Direct subscription — unlimited clients',
+    planNote: 'Direct subscription — unlimited client accounts & zero revenue commission',
+    trialHighlight: 'Includes 14-Day Free Admin Trial · $0 due today',
     features: [
-      'Full white-label with your domain and a mobile app',
-      'We are the provider: Meta, AI, email and domains',
-      'All 12 tools plus local and international payment gateways',
+      'Full 100% White-Label studio, custom domain & PWA mobile app',
+      'Built-in tech provider: official Meta, AI credits, email & domains',
+      'All 12 business, CRM, funnel, booking & AI follow-up tools included',
+      'Connect Stripe, Paymob, Paddle, Fawry, Kashier, wallets & cards',
+      'Create unlimited custom monthly, annual & lifetime client plans',
+      'One-click client workspace switching & branded support desk',
     ],
-    cta: 'Book a free consultation',
-    faqTitle: 'Most frequently asked questions',
+    cta: 'Start Now',
+    faqTitle: 'Frequently Asked Questions',
     faq: [
       {
+        q: 'How does the Free Trial Admin account work?',
+        a: 'Click "Start Now" to create your Admin workspace immediately with our complimentary Free Trial. You get instant access to Brand Studio, plan creation, starter AI credits, and all 12 tools before paying anything.',
+      },
+      {
         q: 'Can my clients see the Upklick name anywhere?',
-        a: 'No. Screens, login pages, emails, links, your domain and the mobile app all carry your brand only — the platform runs behind the scenes under your identity.',
+        a: 'No. Screens, login portals, emails, links, your custom domain, and the PWA mobile app carry exclusively your brand identity.',
       },
       {
-        q: 'Do I need to be a developer or create developer accounts with Meta and OpenAI?',
-        a: 'No. We act as the technical provider for Meta channels, AI, email and domains, so there are no API keys or developer approvals to manage. You configure everything from your dashboard.',
+        q: 'Do I need developer accounts or API keys for Meta and OpenAI?',
+        a: 'No. We operate as your underlying technical provider for official Meta channels, AI models, email delivery, and domain registration — zero API keys or developer approvals required.',
       },
       {
-        q: 'How do I receive subscription payments from my clients?',
-        a: 'You connect your own payment gateways — such as Stripe, PayPal, Fawry, Vodafone Cash or InstaPay — and client subscriptions are collected through them directly.',
+        q: 'How do I collect subscription payments from my clients?',
+        a: 'Connect your own Stripe, Paymob, Paddle, PayPal, Fawry, Kashier, Vodafone Cash, or InstaPay accounts and collect 100% of client payments directly.',
       },
       {
-        q: 'How do I keep a profit margin on AI usage and messages?',
-        a: 'You decide the prices of your plans, extra credits and bundles. Set them above your cost and every client usage contributes to your margin.',
+        q: 'How do I earn profit margins on AI usage and communications?',
+        a: 'You set your own plan prices, credit bundles, and per-unit top-up rates above wholesale cost — every client renewal and top-up builds your recurring margin.',
+      },
+      {
+        q: 'Does the AI replace human sales teams, or work alongside them?',
+        a: 'It empowers them. The AI responds in seconds 24/7, qualifies leads, and books calls, while allowing human agents to take over any chat in one click from the Unified Inbox.',
       },
     ],
   },
-  s10: {
-    badge: 'Your next step to owning your software',
-    titleA: 'Start your software company today..',
-    titleB: 'and let every client build their business inside your platform',
-    text: 'Book your free consultation, see the Super Admin and client dashboards live, and start selling for $99 a month.',
-    cta: 'Book a free consultation now',
-    chips: ['Own the brand completely', 'Own your pricing and profit', 'Own your client relationship'],
+  barsSection: {
+    badge: 'White-Label Architecture',
+    title: 'Everything Built for You to Sell, Operate & Scale.',
+    subtitle: 'Five integrated pillars engineered into one scannable operating system — ready under your brand from day one.',
+  },
+  compareSection: {
+    badge: 'Platform Comparison',
+    title: 'What’s Included with Upklick',
+    subtitle: 'Replace a fragmented stack of 12+ expensive monthly subscriptions with one unified AI & White-Label operating system.',
+    colFeature: 'Features',
+    colReplaces: 'Replaces',
+    colOther: 'Other tools',
+    colPlatform: 'Upklick',
+    overallLabel: 'OVERALL PRICE',
+    overallOther: '$1,646+ / MONTH',
+    overallPrice: '$99',
+    overallPeriod: '/mo',
+    trialPill: 'Free Admin Trial Included',
+    cta: 'Start Now',
+    rows: [
+      { feature: 'AI Copilot & Autonomous Agents', replaces: [COMPARE_BRANDS.chatgpt, COMPARE_BRANDS.jasper], otherCost: '$99/monthly' },
+      { feature: '24/7 AI Follow-Up & Voice Qualification', replaces: [COMPARE_BRANDS.airai, COMPARE_BRANDS.manychat], otherCost: '$149/monthly' },
+      { feature: 'Unified Multi-Channel Inbox (WA, IG, FB)', replaces: [COMPARE_BRANDS.respond, COMPARE_BRANDS.intercom], otherCost: '$129/monthly' },
+      { feature: 'CRM & Multi-Stage Deal Pipelines', replaces: [COMPARE_BRANDS.hubspot, COMPARE_BRANDS.pipedrive], otherCost: '$99/monthly' },
+      { feature: 'Unlimited Sales Funnels & Website Builder', replaces: [COMPARE_BRANDS.clickfunnels, COMPARE_BRANDS.webflow, COMPARE_BRANDS.wix], otherCost: '$297/monthly' },
+      { feature: 'Booking Pages & Google Calendar Sync', replaces: [COMPARE_BRANDS.calendly, COMPARE_BRANDS.acuity], otherCost: '$29/monthly' },
+      { feature: 'Courses, Digital Products & Multi-Gateway Checkout', replaces: [COMPARE_BRANDS.kajabi, COMPARE_BRANDS.teachable], otherCost: '$159/monthly' },
+      { feature: 'Email & WhatsApp Broadcast Campaigns', replaces: [COMPARE_BRANDS.activecampaign, COMPARE_BRANDS.mailchimp], otherCost: '$99/monthly' },
+      { feature: 'Visual Chatbot & Workflow Automations', replaces: [COMPARE_BRANDS.zapier, COMPARE_BRANDS.make], otherCost: '$89/monthly' },
+      { feature: 'Custom Domains, Registrar Resale & Auto-SSL', replaces: [COMPARE_BRANDS.cloudflare, COMPARE_BRANDS.namecheap], otherCost: '$49/monthly' },
+      { feature: 'Live Analytics, Pixel Attribution & BI Reports', replaces: [COMPARE_BRANDS.databox, COMPARE_BRANDS.mixpanel], otherCost: '$149/monthly' },
+      { feature: '100% White-Label SaaS & Branded Mobile App', replaces: [], otherCost: 'Unique to Upklick ($299+ value)', uniqueTag: true },
+    ],
+  },
+  demoChannels: {
+    switchLabel: 'Select live channel:',
+    channels: [
+      { id: 'whatsapp', label: 'WhatsApp', stageSub: 'From WhatsApp Business', status: 'online', placeholder: 'Message' },
+      { id: 'messenger', label: 'Messenger', stageSub: 'From Facebook Messenger', status: 'Active now', placeholder: 'Aa' },
+      { id: 'instagram', label: 'Instagram', stageSub: 'From Instagram DM', status: 'Active now', placeholder: 'Message...' },
+      { id: 'webchat', label: 'Website Chat', stageSub: 'From Website Live Widget', status: 'Replies in <10s', placeholder: 'Ask anything...' },
+    ],
+    seen: 'Seen just now',
+  },
+  resultsUpgrade: {
+    ratingPill: '4.9 / 5 Verified Partner Satisfaction',
+    verified: 'Verified Partner',
+    kpis: [
+      { value: '+38%', label: 'More Booked Calls', sub: 'Automated AI qualification & reminders' },
+      { value: '< 10s', label: 'Instant First Reply', sub: '24/7 across WhatsApp, IG, Messenger & Web' },
+      { value: '12-in-1', label: 'Tools Consolidated', sub: 'Saving $1,500+/mo in software bloat' },
+      { value: '3.4x', label: 'Recurring Revenue Lift', sub: 'Agencies transitioning to SaaS ownership' },
+    ],
+    proofMeta: [
+      { metric: '+42% Booked Calls', category: 'Coaching & Advisory', outcome: 'From manual chasing to automated daily bookings' },
+      { metric: '9s Avg. Reply Speed', category: 'B2B Consulting', outcome: 'Zero missed inquiries across WhatsApp & Instagram' },
+      { metric: '24 Active SaaS Clients', category: 'White-Label Agency', outcome: 'Launched branded platform & recurring MRR in 3 weeks' },
+    ],
+    bannerTitle: 'Ready to Achieve Real Results Under Your Own Brand?',
+    bannerSub: 'Create your Admin account now, activate your Free Trial instantly, and experience the complete platform firsthand.',
+    bannerCta: 'Start Now',
+  },
+  trialModal: {
+    badge: 'Special Admin Access',
+    specialTag: 'Free Trial Included',
+    sideTitle: 'Launch Your Admin Workspace with a Free Trial',
+    sideLead: 'Create your full Admin account today with $0 upfront. Test every tool, customize your White-Label identity, and onboard your business with confidence.',
+    perks: [
+      { title: '14-Day Complimentary Admin Trial', text: 'Full platform & White-Label studio unlocked immediately — $0 due today.' },
+      { title: 'All 12 AI & Business Tools Active', text: 'AI Copilot, Follow-Up, Unified Inbox, Funnels, CRM, Booking, Payments & BI.' },
+      { title: 'Starter AI Credits & Demo Workspace', text: 'Includes starter AI credits plus a ready-seeded Agency workspace.' },
+      { title: 'Seamless Upgrade Anytime ($99/mo)', text: 'Keep your custom domain, branding, plans, and clients when you subscribe.' },
+    ],
+    termsTitle: 'Free Trial Eligibility & Special Terms',
+    termsList: [
+      'Eligible for new Admin workspaces (1 complimentary trial per organization).',
+      'No credit card required to activate your trial workspace.',
+      'Full data ownership — upgrade to the $99/mo unlimited plan anytime.',
+    ],
+    formTitle: 'Create Your Admin Account',
+    formSubtitle: 'Set up your credentials and brand workspace in under 60 seconds.',
+    nameLabel: 'Full name',
+    namePlaceholder: 'e.g. Mohamed Tarek',
+    workspaceLabel: 'Company or software brand name',
+    workspacePlaceholder: 'e.g. Orbit Growth Cloud',
+    domainPreview: 'Workspace preview:',
+    emailLabel: 'Work email',
+    emailPlaceholder: 'you@yourcompany.com',
+    phoneLabel: 'Phone / WhatsApp',
+    phoneOptional: 'Optional',
+    phonePlaceholder: '+1 555 234 5678',
+    passwordLabel: 'Create password',
+    passwordPlaceholder: 'At least 8 characters',
+    passwordHint: 'Use 8+ characters with letters and numbers.',
+    strengthLabels: ['Too short', 'Fair', 'Good', 'Strong'],
+    agreePrefix: 'I agree to the',
+    termsLink: 'Terms of Service',
+    andText: 'and',
+    privacyLink: 'Privacy Policy',
+    agreeTrialSuffix: 'and confirm eligibility for one complimentary Admin Free Trial.',
+    submit: 'Start Free Trial Now',
+    submitting: 'Creating your Admin workspace…',
+    haveAccount: 'Already have an account?',
+    loginCta: 'Log in',
+    closeLabel: 'Close signup dialog',
+    successTitle: 'Your Admin Trial Workspace is Ready!',
+    successText: 'Signing you into your Admin dashboard now…',
+    errors: {
+      name: 'Please enter your full name (at least 2 characters).',
+      workspace: 'Please enter your company or brand name (at least 2 characters).',
+      email: 'Please enter a valid work email address.',
+      password: 'Password must be between 8 and 128 characters.',
+      terms: 'Please accept the Terms and Free Trial eligibility to continue.',
+      exists: 'An account with this email already exists. Please log in instead.',
+      paused: 'New trial registrations are temporarily paused. Please try again shortly.',
+      unavailable: 'Could not reach the signup service right now. Please check your connection and try again.',
+      generic: 'Could not create your Admin account. Please verify your details and try again.',
+    },
   },
 };
 
 const ar: WhiteLabelCopy = {
-  nav: 'وايت ليبل',
-  chapter: {
-    eyebrow: 'برنامج Upklick للعلامة البيضاء',
-    title: 'أطلق شركتك البرمجية الخاصة — في 10 خطوات واضحة',
-    text: 'للوكالات والاستشاريين وفرق البرمجيات اللي عايزة تبيع منصة ذكاء اصطناعي متكاملة باسمها.',
-    steps: '10 خطوات',
+  nav: 'العلامة البيضاء',
+  headerNav: {
+    problem: 'المشكلة',
+    solution: 'النظام الذكي',
+    aiDemo: 'العرض الحي',
+    compare: 'المقارنة',
+    whiteLabel: 'العلامة البيضاء',
+    planFaq: 'الباقة والأسئلة',
+    results: 'النتائج',
+  },
+  heroTransform: {
+    wlPill: 'امتلك شركتك البرمجية الخاصة',
+    wlTag: 'White-Label',
+    sectionTitle: 'من محرك Upklick إلى منصتك البرمجية الخاصة بنسبة 100%',
+    sectionSub: 'تتحول كل لوحة تحكم وأداة وشاشة دخول ونطاق بسلاسة تامة لتحمل هوية شركتك وحدها — بنفس التصميم الاحترافي المتكامل.',
+    beforeBadge: 'قبل · المحرك الأساسي',
+    beforeLabel: 'منصة Upklick',
+    beforeSub: 'ذكاء اصطناعي و12 أداة أعمال جاهزة',
+    arrowLabel: 'تحويل فوري للهوية',
+    arrowSub: 'شعارك · نطاقك · ألوان علامتك',
+    afterBadge: 'بعد · منصتك الخاصة',
+    afterLabel: 'علامتك التجارية',
+    afterSub: 'تجربة عميل مملوكة لك بالكامل',
+    pickBrand: 'جرّب هوية العلامة:',
+    domainReady: 'SSL مفعّل',
+    syncedNote: 'اضغط على أي أداة في القائمة الجانبية لمعاينة اللوحتين معاً بالتزامن',
   },
   s1: {
     badge: 'امتلك شركتك البرمجية',
     tag: 'White-Label',
-    title: 'امتلك منصة ذكاء اصطناعي تقدّم حلول متكاملة لإدارة تجارتك الإلكترونية',
-    subtitle: 'منصة متكاملة باسمك ولوجو شركتك',
+    title: 'امتلك منصة ذكاء اصطناعي متكاملة تقدّم حلولاً شاملة لإدارة وتنمية الأعمال الرقمية',
+    subtitle: 'منصة سحابية متكاملة تحمل اسمك وشعار شركتك',
     checks: [
-      'براندك 100% بدومينك وتطبيق موبايل باسمك',
-      'إحنا البروفايدر التقني: ربط ميتا والـ AI والإيميل والدومينات',
-      '12 أداة بيزنس في سيستم واحد لعملائك',
+      'علامتك التجارية بنسبة 100% مع نطاقك الخاص وتطبيق جوال باسمك',
+      'نحن المزوّد التقني المتكامل: ربط قنوات Meta والذكاء الاصطناعي والبريد والنطاقات',
+      '12 أداة أعمال متكاملة في نظام واحد تقدّمه لعملائك',
     ],
-    cta: 'احجز استشارة مجانية الآن',
-    logoHere: 'اللوجو بتاعك هنا',
-    morph: {
-      label: 'معاينة متحركة: لوحة Upklick بتتحول للعلامة البيضاء الخاصة بيك',
-      stages: ['لوحة Upklick', 'تحويل الهوية', 'علامتك البيضاء'],
-      play: 'تشغيل الحركة',
-      pause: 'إيقاف الحركة مؤقتاً',
-      replay: 'إعادة التشغيل',
-      upklick: 'Upklick',
-      brand: 'براندك',
-      nav: ['لوحة التحكم', 'المساعد الذكي', 'صندوق الرسائل', 'العملاء المحتملين', 'الحجوزات', 'التحليلات'],
-      workspace: 'مساحة العمل',
-      kpis: ['الإيرادات', 'عملاء جدد', 'الحجوزات'],
-      chart: 'الأداء',
-      bars: 'مبيعات الأسبوع',
-      gauge: 'الهدف',
-      leads: 'أحدث العملاء',
-      live: 'مباشر',
-      people: ['سارة أحمد', 'عمر خالد', 'لينا حسن'],
-    },
+    cta: 'ابدأ الآن',
+    logoHere: 'شعار شركتك هنا',
   },
   s2: {
-    badge: 'المشكلة والفرصة',
-    audiences: ['وكالات التسويق', 'المدربين والاستشاريين', 'شركات البرمجيات', 'العيادات والعقارات والمتاجر'],
-    titleA: 'بناء سوفتوير من',
-    titleHighlight: 'الصفر مكلف ومعقد..',
-    titleB: 'وبيع الخدمات لوحده مبيبنيش دخل شهري مستقر',
+    badge: 'الفرصة الاستراتيجية',
+    audiences: ['وكالات التسويق', 'المدربون والمستشارون', 'شركات البرمجيات', 'العيادات والعقارات والمتاجر'],
+    titleA: 'تطوير البرمجيات من',
+    titleHighlight: 'الصفر مكلف ومعقّد —',
+    titleB: 'وتقديم الخدمات وحده لا يبني إيراداً شهرياً متكرراً ومستقراً',
     cards: [
-      'تكلفة برمجة وصيانة ضخمة',
-      'تعقيد موافقات ميتا والـ API',
-      'عملاء متشتتين بين 10 أدوات',
-      'عميل الخدمة بيمشي وعميل السيستم بيكمّل',
+      'توفير تكاليف التطوير البرمجي والصيانة الباهظة',
+      'اعتمادات Meta وواجهات البرمجة مجهزة مسبقاً بالكامل',
+      'توحيد أعمال العملاء بدلاً من تشتتهم بين 10 أدوات منفصلة',
+      'عميل الخدمة يغادر سريعاً — بينما عميل النظام يستمر طويلاً',
     ],
-    solution: 'الحل إنك تستلم البنية التحتية كلها جاهزة وتبيعها باسمك من أول يوم',
+    solution: 'الفرصة الحقيقية: تسلّم البنية التحتية للذكاء الاصطناعي والمتابعة جاهزة بالكامل، وابدأ بيعها تحت علامتك التجارية منذ اليوم الأول.',
   },
   s3: {
     badge: 'بنية تحتية جاهزة بالكامل',
-    title: 'إحنا البروفايدر اللي بنوفرلك كل حاجة في الكواليس.. وإنت المالك الوحيد قدام عملائك',
-    hub: 'منصتك باسمك',
+    title: 'ندير البنية التقنية بالكامل خلف الكواليس — وتظهر أنت المالك الوحيد أمام عملائك',
+    hub: 'منصتك بهويتك',
     nodes: [
-      'بروفايدر رسمي لقنوات Meta: واتساب وإنستجرام وماسنجر',
-      'مزود الذكاء الاصطناعي بالكريدت بدون مفاتيح API',
-      'مزود حملات الإيميل ماركيتنج جاهز ومفعّل',
-      'مزود حجز وإعادة بيع الدومينات بربحك',
+      'مزوّد رسمي لقنوات Meta: واتساب وإنستغرام وماسنجر',
+      'مزوّد ذكاء اصطناعي بنظام الرصيد — دون الحاجة لمفاتيح API',
+      'منظومة حملات بريد إلكتروني مدمجة وجاهزة للإرسال',
+      'نظام تسجيل وإعادة بيع النطاقات بهامش ربحك الخاص',
     ],
   },
   s4: {
     badge: 'علامة بيضاء كاملة',
-    tag: 'Full White-Label',
-    title: 'اسمنا بيختفي تماماً.. كل شاشة وإيميل ولينك بيحمل هوية شركتك لوحدك',
+    tag: 'هويتك 100%',
+    title: 'يختفي اسمنا تماماً؛ فكل شاشة وبريد إلكتروني ورابط يحمل هوية شركتك وحدها',
     features: [
-      'استوديو الهوية البصرية والوضع الليلي والنهاري',
-      'دومينك الخاص مع شهادة SSL مجانية',
-      'صفحات الدخول والإيميلات باسم شركتك',
-      'تطبيق موبايل PWA بأيقونة براندك',
+      'استوديو متكامل للهوية البصرية بالوضعين الفاتح والداكن',
+      'نطاقك المخصص مع شهادة أمان SSL مجانية وتلقائية',
+      'صفحات تسجيل الدخول ورسائل البريد باسم شركتك',
+      'تطبيق جوال تقدمي (PWA) يحمل أيقونة علامتك التجارية',
     ],
-    brand: 'براندك',
+    brand: 'علامتك التجارية',
     domain: 'app.yourbrand.com',
-    secure: 'اتصال آمن',
+    secure: 'SSL آمن',
   },
   s5: {
     badge: 'تحكم تجاري وبوابات دفع متكاملة',
-    titleHighlight: 'فصّل باقاتك',
-    titleA: 'بالتسعير اللي يناسبك..',
-    titleB: 'واستقبل فلوسك بطرق الدفع اللي عميلك بيستخدمها',
-    plansTitle: 'هندسة الباقات والأرباح',
-    plans: ['باقات شهرية وسنوية ومدى الحياة', 'بيع كريدت إضافي وكوبونات خصم', 'تعدد العملات: EGP - SAR - AED - USD'],
-    paymentsTitle: 'تحصيل المدفوعات محلياً ودولياً',
-    active: 'مفعّل',
+    titleHighlight: 'صمّم باقاتك',
+    titleA: 'بهوامش الربح التي تناسبك —',
+    titleB: 'وحصّل المدفوعات عبر البوابات والوسائل المعتمدة لدى عملائك محلياً ودولياً',
+    plansTitle: 'هندسة الباقات وهوامش الربح',
+    plans: [
+      'باقات شهرية وسنوية ومحددة المدة ومدى الحياة',
+      'بيع أرصدة الذكاء الاصطناعي الإضافية والمقاعد وكوبونات الخصم',
+      'دعم تعدد العملات: USD · EUR · SAR · AED · EGP',
+    ],
+    paymentsTitle: 'بوابات وطرق دفع عالمية وإقليمية متكاملة',
+    active: 'متكامل',
     ready: 'جاهز للربط',
   },
   s6: {
-    badge: 'المنتج اللي هتبيعه لعملائك',
-    title: 'قدّم لعملائك نظام تشغيل بيزنس متكامل بيدير التسويق والمبيعات من شاشة واحدة',
+    badge: 'المنتج الذي ستقدّمه لعملائك',
+    title: 'امنح عملاءك نظام تشغيل أعمال متكاملاً يدير التسويق والمبيعات وخدمة العملاء من شاشة واحدة',
     tools: [
-      { title: 'وكيل مبيعات ذكي', text: 'AI Copilot وصوتي' },
-      { title: 'صندوق رسائل موحد', text: 'لواتساب وإنستجرام وماسنجر' },
-      { title: 'بناء المواقع والـ Funnels', text: 'بالسحب والإفلات' },
-      { title: 'رسم مسارات الشات بوت', text: 'والأتمتة المرئية' },
-      { title: 'إدارة العملاء CRM', text: 'وتوزيع الورديات' },
-      { title: 'صفحات حجز المواعيد', text: 'وربط جوجل كالندر' },
-      { title: 'بيع المنتجات والكورسات', text: 'وحملات واتساب والإيميل' },
-      { title: 'تحليلات حية وتقارير PDF', text: 'وتتبع البيكسل' },
-    ],
-  },
-  s7: {
-    badge: 'قوة التجميع في منصة واحدة',
-    title: 'استبدل 12 أداة واشتراك منفصل بمنصة واحدة شايلة اسم شركتك',
-    beforeTitle: 'بدل تشتت 12 اشتراك منفصل',
-    before: [
-      'أدوات بناء المواقع والفانلز',
-      'برامج الـ CRM وحجز المواعيد',
-      'أدوات الواتساب والشات بوت',
-      'منصات الكورسات وحملات الإيميل',
-      'فواتير الـ AI API وشراء الدومينات',
-    ],
-    afterTitle: 'كلهم جاهزين جوه منصتك الواحدة',
-    after: [
-      'مواقع وفانلز واستضافة وقوالب جاهزة',
-      'CRM متكامل وحجز مواعيد ذكي',
-      'صندوق رسائل ميتا الموحد وأتمتة مرئية',
-      'استضافة كورسات وإيميل ماركيتنج مدمج',
-      'كريدت AI وإعادة بيع الدومينات بربحك',
+      { title: 'مساعد المبيعات الذكي والصوتي', text: 'وكيل ذكاء اصطناعي على مدار الساعة' },
+      { title: 'صندوق الوارد الموحد', text: 'واتساب وإنستغرام وماسنجر ودردشة الموقع' },
+      { title: 'منشئ المواقع ومسارات البيع', text: 'محرر سحب وإفلات وقوالب احترافية' },
+      { title: 'مصمم مسارات الأتمتة المرئية', text: 'بناء الشات بوت وسلاسل المتابعة الذكية' },
+      { title: 'إدارة علاقات العملاء (CRM)', text: 'مراحل الصفقات وتوزيع المهام والمناوبات' },
+      { title: 'محرك حجز المواعيد والتقويم', text: 'مزامنة ثنائية فورية مع تقويم Google' },
+      { title: 'بيع المنتجات والدورات الرقمية', text: 'صفحات دفع ذكية وبوابة خاصة للعملاء' },
+      { title: 'التحليلات الحية وتقارير الأداء', text: 'تتبع البيكسل ومؤشرات العائد والتحويل' },
     ],
   },
   s8: {
     badge: 'خطوات الإطلاق والتشغيل',
-    title: 'من استلام المنصة لأول اشتراك عميل في 4 خطوات واضحة',
+    title: 'من تفعيل حساب المدير إلى أول مشترك فعلي في منصتك عبر 4 خطوات واضحة',
     steps: [
-      'خصّص هويتك واربط دومينك',
-      'ابني باقاتك وفعّل طرق الدفع',
-      'اعرض الديمو الجاهز وافتح حسابات عملائك',
-      'تابع أرباحك وادعم عملائك بضغطة زر',
+      'خصّص هويتك البصرية واربط نطاقك الخاص',
+      'أنشئ باقات الاشتراك وفعّل بوابات الدفع',
+      'استعرض الحساب التجريبي الجاهز وافتح حسابات عملائك',
+      'تابع نمو أرباحك وادعم عملاءك بنقرة واحدة',
     ],
-    chips: ['حساب ديمو جاهز للعرض', 'دخول لحساب العميل بضغطة زر', 'شات دعم فني باسمك'],
+    chips: ['حساب عرض تجريبي جاهز فوراً', 'الدخول السريع لحسابات العملاء للمساندة', 'نظام محادثات دعم فني باسم شركتك'],
   },
   s9: {
     badge: 'الباقة والأسئلة الشائعة',
-    planName: 'باقة السوبر أدمن الشاملة',
+    title: 'باقة شاملة وشفافة لنمو غير محدود.',
+    subtitle: 'كل ما تحتاجه لتشغيل منظومة المتابعة الذكية وإطلاق شركتك البرمجية بالعلامة البيضاء — مع تجربة مجانية فورية لحساب المدير.',
+    planBadge: 'الباقة الشاملة للمنصة',
+    planName: 'باقة المدير الشاملة والعلامة البيضاء',
     price: '$99',
     period: '/ شهرياً',
-    planNote: 'اشتراك مباشر - عدد عملاء غير محدود',
+    planNote: 'اشتراك مباشر ثابت — عدد غير محدود من حسابات العملاء ودون أي عمولة على مبيعاتك',
+    trialHighlight: 'تشمل تجربة مجانية لمدة 14 يوماً · 0$ مستحق اليوم',
     features: [
-      'وايت ليبل كامل بدومينك وتطبيق موبايل',
-      'إحنا البروفايدر: ميتا والـ AI والإيميل والدومينات',
-      'كل الـ 12 أداة وبوابات الدفع المحلية والدولية',
+      'علامة بيضاء كاملة 100% مع نطاقك المخصص وتطبيق جوال PWA',
+      'مزوّد تقني مدمج: قنوات Meta الرسمية والذكاء الاصطناعي والبريد والنطاقات',
+      'جميع أدوات الأعمال الـ 12 لإدارة العملاء والمسارات والحجوزات والمتابعة الذكية',
+      'ربط مباشر مع Stripe وPaymob وPaddle وفوري وكاشير والمحافظ والبطاقات',
+      'إنشاء عدد غير محدود من الباقات الشهرية والسنوية لعملائك بتسعيرك الخاص',
+      'التبديل الفوري لمساندة حسابات العملاء ونظام دعم فني مدمج باسمك',
     ],
-    cta: 'احجز استشارة مجانية',
-    faqTitle: 'أكثر الأسئلة شيوعاً',
+    cta: 'ابدأ الآن',
+    faqTitle: 'الأسئلة الأكثر شيوعاً',
     faq: [
       {
-        q: 'هل عملائي ممكن يشوفوا اسم Upklick في أي مكان؟',
-        a: 'لأ. الشاشات وصفحات الدخول والإيميلات واللينكات ودومينك وتطبيق الموبايل كلها بتحمل براندك إنت بس — والمنصة شغالة في الكواليس بهويتك.',
+        q: 'كيف تعمل التجربة المجانية لحساب المدير؟',
+        a: 'اضغط على «ابدأ الآن» لإنشاء حساب المدير الخاص بك فوراً مع تفعيل الفترة التجريبية المجانية تلقائياً؛ حيث تحصل على وصول كامل لاستوديو الهوية البصرية وإنشاء الباقات ورصيد الذكاء الاصطناعي الترحيبي وكافة الأدوات الـ 12 دون أي رسوم مسبقة.',
       },
       {
-        q: 'هل لازم أكون مبرمج أو أعمل حسابات مطورين في ميتا وOpenAI؟',
-        a: 'لأ. إحنا البروفايدر التقني لقنوات ميتا والذكاء الاصطناعي والإيميل والدومينات، فمفيش مفاتيح API ولا موافقات مطورين تتعامل معاها. كل حاجة بتتظبط من لوحة التحكم بتاعتك.',
+        q: 'هل يظهر اسم Upklick لعملائي في أي مكان داخل المنصة؟',
+        a: 'لا على الإطلاق. جميع الشاشات وصفحات الدخول ورسائل البريد الإلكتروني والروابط والنطاق المخصص وتطبيق الجوال تحمل اسم وشعار شركتك وحدها.',
       },
       {
-        q: 'إزاي بستلم فلوس الاشتراكات من عملائي؟',
-        a: 'بتربط بوابات الدفع الخاصة بيك — زي Stripe وPayPal وفوري وفودافون كاش وإنستاباي — واشتراكات عملائك بتتحصّل من خلالها مباشرة.',
+        q: 'هل أحتاج إلى خبرة برمجية أو إنشاء حسابات مطورين في Meta وOpenAI؟',
+        a: 'لا. نعمل كمزوّد تقني متكامل لقنوات Meta الرسمية ونماذج الذكاء الاصطناعي والبريد الإلكتروني وتسجيل النطاقات، دون الحاجة لإدارة مفاتيح API أو انتظار موافقات المطورين.',
       },
       {
-        q: 'إزاي بضمن هامش ربحي من الذكاء الاصطناعي والرسائل؟',
-        a: 'إنت اللي بتحدد أسعار باقاتك والكريدت الإضافي والحزم. حطها أعلى من تكلفتك وكل استخدام من عملائك بيزوّد ربحك.',
+        q: 'كيف أتسلم مدفوعات الاشتراكات من عملائي؟',
+        a: 'تربط حساباتك الخاصة في بوابات الدفع مثل Stripe وPaymob وPaddle وPayPal وفوري وكاشير وفودافون كاش وإنستاباي، وتُحصّل الاشتراكات مباشرة إلى حساباتك بنسبة 100%.',
+      },
+      {
+        q: 'كيف أحقق هامش ربح من استهلاك الذكاء الاصطناعي والرسائل؟',
+        a: 'أنت من يحدد أسعار الباقات وحزم الرصيد الإضافية لعملائك أعلى من تكلفة المزوّد، بحيث يضيف كل اشتراك أو شحن رصيد عوائد متكررة لشركتك.',
+      },
+      {
+        q: 'هل يستبدل الذكاء الاصطناعي فريق المبيعات أم يتكامل معه؟',
+        a: 'يتكامل معه بكفاءة؛ إذ يتولى الرد الفوري خلال ثوانٍ وتأهيل العملاء وحجز المواعيد على مدار الساعة، مع إتاحة التدخل البشري الفوري بنقرة واحدة من صندوق الوارد الموحد.',
       },
     ],
   },
-  s10: {
-    badge: 'خطوتك الجاية لامتلاك السوفتوير بتاعك',
-    titleA: 'ابدأ شركتك البرمجية النهاردة..',
-    titleB: 'وخلّي كل عميل يبني بيزنسه جوه منصتك إنت',
-    text: 'احجز استشارتك المجانية وشوف لوحة السوبر أدمن ولوحة العميل لايف وابدأ البيع بـ 99$ شهرياً',
-    cta: 'احجز استشارة مجانية الآن',
-    chips: ['امتلك البراند بالكامل', 'امتلك قرار التسعير والربح', 'امتلك علاقتك بالعميل'],
+  barsSection: {
+    badge: 'منظومة العلامة البيضاء المتكاملة',
+    title: 'كل ما يلزمك للبيع والتشغيل والتوسع في قسم واحد منظم.',
+    subtitle: 'خمس ركائز أساسية مصممة في مسارات أفقية واضحة — جاهزة للعمل تحت علامتك التجارية منذ اللحظة الأولى.',
+  },
+  compareSection: {
+    badge: 'مقارنة المنصة والأدوات',
+    title: 'ماذا يتضمن اشتراكك في Upklick؟',
+    subtitle: 'استبدل أكثر من 12 اشتراكاً شهرياً منفصلاً ومكلفاً بنظام تشغيل موحد للذكاء الاصطناعي والعلامة البيضاء.',
+    colFeature: 'الأدوات والمزايا',
+    colReplaces: 'يغنيك عن',
+    colOther: 'الأدوات الأخرى',
+    colPlatform: 'Upklick',
+    overallLabel: 'إجمالي التكلفة الشهرية',
+    overallOther: '+$1,646 / شهرياً',
+    overallPrice: '$99',
+    overallPeriod: '/شهرياً',
+    trialPill: 'يشمل تجربة مجانية لحساب المدير',
+    cta: 'ابدأ الآن',
+    rows: [
+      { feature: 'مساعد الذكاء الاصطناعي والوكلاء المستقلون (AI Copilot)', replaces: [COMPARE_BRANDS.chatgpt, COMPARE_BRANDS.jasper], otherCost: '$99 / شهرياً' },
+      { feature: 'المتابعة الذكية والتأهيل الصوتي على مدار الساعة', replaces: [COMPARE_BRANDS.airai, COMPARE_BRANDS.manychat], otherCost: '$149 / شهرياً' },
+      { feature: 'صندوق الوارد الموحد (واتساب، إنستغرام، ماسنجر)', replaces: [COMPARE_BRANDS.respond, COMPARE_BRANDS.intercom], otherCost: '$129 / شهرياً' },
+      { feature: 'إدارة علاقات العملاء ومسارات الصفقات (CRM)', replaces: [COMPARE_BRANDS.hubspot, COMPARE_BRANDS.pipedrive], otherCost: '$99 / شهرياً' },
+      { feature: 'منشئ المواقع ومسارات المبيعات غير المحدودة (Funnels)', replaces: [COMPARE_BRANDS.clickfunnels, COMPARE_BRANDS.webflow, COMPARE_BRANDS.wix], otherCost: '$297 / شهرياً' },
+      { feature: 'صفحات حجز المواعيد ومزامنة تقويم Google', replaces: [COMPARE_BRANDS.calendly, COMPARE_BRANDS.acuity], otherCost: '$29 / شهرياً' },
+      { feature: 'المنتجات والدورات الرقمية والدفع متعدد البوابات', replaces: [COMPARE_BRANDS.kajabi, COMPARE_BRANDS.teachable], otherCost: '$159 / شهرياً' },
+      { feature: 'حملات البريد الإلكتروني وواتساب التسويقية', replaces: [COMPARE_BRANDS.activecampaign, COMPARE_BRANDS.mailchimp], otherCost: '$99 / شهرياً' },
+      { feature: 'الأتمتة المرئية ومسارات الشات بوت الذكية', replaces: [COMPARE_BRANDS.zapier, COMPARE_BRANDS.make], otherCost: '$89 / شهرياً' },
+      { feature: 'النطاقات المخصصة وإعادة بيع النطاقات وشهادات SSL', replaces: [COMPARE_BRANDS.cloudflare, COMPARE_BRANDS.namecheap], otherCost: '$49 / شهرياً' },
+      { feature: 'التحليلات الحية وتتبع البيكسل وتقارير ذكاء الأعمال', replaces: [COMPARE_BRANDS.databox, COMPARE_BRANDS.mixpanel], otherCost: '$149 / شهرياً' },
+      { feature: 'علامة بيضاء كاملة 100% وتطبيق جوال باسم علامتك', replaces: [], otherCost: 'حصري في Upklick (بقيمة +$299)', uniqueTag: true },
+    ],
+  },
+  demoChannels: {
+    switchLabel: 'اختر قناة المحادثة الحية:',
+    channels: [
+      { id: 'whatsapp', label: 'واتساب', stageSub: 'عبر واتساب للأعمال', status: 'متصل الآن', placeholder: 'اكتب رسالة...' },
+      { id: 'messenger', label: 'ماسنجر', stageSub: 'عبر فيسبوك ماسنجر', status: 'نشط الآن', placeholder: 'Aa' },
+      { id: 'instagram', label: 'إنستغرام', stageSub: 'عبر رسائل إنستغرام', status: 'نشط الآن', placeholder: 'مراسلة...' },
+      { id: 'webchat', label: 'دردشة الموقع', stageSub: 'عبر نافذة الموقع المباشرة', status: 'يرد خلال أقل من 10 ثوانٍ', placeholder: 'اكتب استفسارك...' },
+    ],
+    seen: 'تمت المشاهدة الآن',
+  },
+  resultsUpgrade: {
+    ratingPill: '4.9 / 5 متوسط رضا الشركاء الموثقين',
+    verified: 'شريك موثق',
+    kpis: [
+      { value: '+38%', label: 'زيادة في المواعيد المحجوزة', sub: 'تأهيل ذكي وتذكيرات تلقائية مستمرة' },
+      { value: '< 10 ث', label: 'سرعة الاستجابة الأولى', sub: 'على مدار الساعة عبر واتساب وإنستغرام والموقع' },
+      { value: '12 في 1', label: 'أداة أعمال متكاملة', sub: 'توفير أكثر من 1,500$ شهرياً من الاشتراكات' },
+      { value: '3.4x', label: 'نمو الإيرادات المتكررة', sub: 'للوكالات المنتقلة إلى ملكية منصتها الخاصة' },
+    ],
+    proofMeta: [
+      { metric: '+42% مواعيد مؤكدة', category: 'التدريب والاستشارات', outcome: 'الانتقال من المتابعة اليدوية إلى الحجوزات اليومية المؤتمتة' },
+      { metric: '9 ثوانٍ متوسط الرد', category: 'استشارات الأعمال', outcome: 'القضاء التام على ضياع الاستفسارات عبر واتساب وإنستغرام' },
+      { metric: '24 عميلاً مشتركاً نشطاً', category: 'وكالة علامة بيضاء', outcome: 'إطلاق منصة بهوية خاصة وبناء دخل شهري متكرر خلال 3 أسابيع' },
+    ],
+    bannerTitle: 'هل أنت مستعد لتحقيق نتائج حقيقية تحت علامتك التجارية؟',
+    bannerSub: 'أنشئ حساب المدير الآن، وفعّل تجربتك المجانية فوراً، واختبر المنصة المتكاملة بنفسك.',
+    bannerCta: 'ابدأ الآن',
+  },
+  trialModal: {
+    badge: 'وصول خاص لحساب المدير',
+    specialTag: 'تجربة مجانية متضمنة',
+    sideTitle: 'أطلق مساحة عمل المدير مع تجربة مجانية فورية',
+    sideLead: 'أنشئ حساب المدير الكامل اليوم بتكلفة 0$ مقدماً. اختبر جميع الأدوات الـ 12، وخصّص هويتك البصرية بالعلامة البيضاء، وابدأ بثقة تامة.',
+    perks: [
+      { title: 'تجربة مجانية لمدة 14 يوماً لحساب المدير', text: 'تفعيل فوري للمنصة الكاملة واستوديو العلامة البيضاء — 0$ مستحق اليوم.' },
+      { title: 'تفعيل جميع أدوات الأعمال والذكاء الاصطناعي الـ 12', text: 'المساعد الذكي، المتابعة، صندوق الوارد، المواقع، إدارة العملاء، الحجوزات، والمدفوعات.' },
+      { title: 'رصيد ذكاء اصطناعي ترحيبي ومساحة وكالة جاهزة', text: 'يشمل رصيداً مجانياً للتجربة مع مساحة عمل وكالة مهيأة مسبقاً.' },
+      { title: 'ترقية سلسة في أي وقت (99$ / شهرياً)', text: 'احتفظ بنطاقك وهويتك وباقاتك وعملائك بالكامل عند الترقية للاشتراك الدائم.' },
+    ],
+    termsTitle: 'شروط وأهلية التجربة المجانية الخاصة',
+    termsList: [
+      'متاحة لحسابات المديرين الجديدة (فترة تجريبية مجانية واحدة لكل مؤسسة).',
+      'لا يُشترط إدخال بطاقة ائتمانية لتفعيل مساحة العمل التجريبية.',
+      'ملكية كاملة لبياناتك — مع إمكانية الترقية لباقة الـ 99$ غير المحدودة في أي وقت.',
+    ],
+    formTitle: 'إنشاء حساب مدير جديد',
+    formSubtitle: 'أعدّ بيانات الدخول واسم منصتك خلال أقل من 60 ثانية.',
+    nameLabel: 'الاسم الكامل',
+    namePlaceholder: 'مثال: محمد طارق',
+    workspaceLabel: 'اسم الشركة أو العلامة البرمجية',
+    workspacePlaceholder: 'مثال: Orbit السحابية للأعمال',
+    domainPreview: 'معاينة النطاق:',
+    emailLabel: 'البريد الإلكتروني للعمل',
+    emailPlaceholder: 'you@yourcompany.com',
+    phoneLabel: 'رقم الجوال / واتساب',
+    phoneOptional: 'اختياري',
+    phonePlaceholder: '+966 50 123 4567',
+    passwordLabel: 'كلمة المرور',
+    passwordPlaceholder: '8 أحرف على الأقل',
+    passwordHint: 'استخدم 8 أحرف أو أكثر تجمع بين الأحرف والأرقام.',
+    strengthLabels: ['قصيرة جداً', 'مقبولة', 'جيدة', 'قوية'],
+    agreePrefix: 'أوافق على',
+    termsLink: 'شروط الخدمة',
+    andText: 'و',
+    privacyLink: 'سياسة الخصوصية',
+    agreeTrialSuffix: 'وأقرّ بأهلية الحصول على تجربة مجانية واحدة لحساب المدير الجديد.',
+    submit: 'ابدأ التجربة المجانية الآن',
+    submitting: 'جارٍ إعداد مساحة عمل المدير…',
+    haveAccount: 'هل لديك حساب بالفعل؟',
+    loginCta: 'تسجيل الدخول',
+    closeLabel: 'إغلاق نافذة التسجيل',
+    successTitle: 'أصبحت مساحة عمل المدير التجريبية جاهزة!',
+    successText: 'جارٍ توجيهك الآن إلى لوحة تحكم المدير…',
+    errors: {
+      name: 'يرجى إدخال الاسم الكامل (حرفان على الأقل).',
+      workspace: 'يرجى إدخال اسم الشركة أو العلامة التجارية (حرفان على الأقل).',
+      email: 'يرجى إدخال عنوان بريد إلكتروني صالح للعمل.',
+      password: 'يجب أن تتكون كلمة المرور من 8 إلى 128 حرفاً.',
+      terms: 'يرجى الموافقة على الشروط وأهلية التجربة المجانية للمتابعة.',
+      exists: 'يوجد حساب مسجل بهذا البريد الإلكتروني بالفعل. يرجى تسجيل الدخول بدلاً من ذلك.',
+      paused: 'التسجيل التجريبي متوقف مؤقتاً حالياً. يرجى المحاولة بعد قليل.',
+      unavailable: 'تعذر الاتصال بخدمة إنشاء الحساب حالياً. يرجى التحقق من اتصالك والمحاولة مجدداً.',
+      generic: 'تعذر إنشاء حساب المدير. يرجى مراجعة البيانات والمحاولة مرة أخرى.',
+    },
   },
 };
 
 const nl: WhiteLabelCopy = {
   nav: 'White-Label',
-  chapter: {
-    eyebrow: 'Upklick White-Label Programma',
-    title: 'Start je eigen softwarebedrijf — in 10 duidelijke stappen',
-    text: 'Voor bureaus, consultants en softwareteams die een compleet AI-platform onder hun eigen merk willen verkopen.',
-    steps: '10 stappen',
+  headerNav: {
+    problem: 'Het probleem',
+    solution: 'AI-systeem',
+    aiDemo: 'Live demo',
+    compare: 'Vergelijk',
+    whiteLabel: 'White-Label',
+    planFaq: 'Abonnement & FAQ',
+    results: 'Resultaten',
+  },
+  heroTransform: {
+    wlPill: 'Bezit je eigen softwarebedrijf',
+    wlTag: 'White-Label',
+    sectionTitle: 'Van Upklick-engine naar 100% jouw softwaremerk',
+    sectionSub: 'Elk dashboard, elke tool, inlogpagina en domeinnaam verandert naadloos in jouw bedrijfsidentiteit — met exact dezelfde professionele afwerking.',
+    beforeBadge: 'Vóór · Engine',
+    beforeLabel: 'Upklick Platform',
+    beforeSub: 'Kant-en-klare AI & 12 tools',
+    arrowLabel: '1-klik White-Label',
+    arrowSub: 'Jouw logo · domein · kleuren',
+    afterBadge: 'Na · Jouw SaaS',
+    afterLabel: 'Jouw Merk',
+    afterSub: '100% eigen klantervaring',
+    pickBrand: 'Bekijk merkthema:',
+    domainReady: 'SSL Actief',
+    syncedNote: 'Klik op een zijbalktool om beide dashboards synchroon te bekijken',
   },
   s1: {
     badge: 'Bezit je eigen softwarebedrijf',
@@ -397,171 +848,283 @@ const nl: WhiteLabelCopy = {
       'Wij zijn de technische provider: Meta, AI, e-mail en domeinen gekoppeld',
       '12 zakelijke tools in één systeem voor je klanten',
     ],
-    cta: 'Plan nu een gratis adviesgesprek',
+    cta: 'Start nu',
     logoHere: 'Jouw logo hier',
-    morph: {
-      label: 'Geanimeerd voorbeeld: het Upklick-dashboard verandert in jouw white-label merk',
-      stages: ['Upklick-dashboard', 'Merktransformatie', 'Jouw white-label'],
-      play: 'Animatie afspelen',
-      pause: 'Animatie pauzeren',
-      replay: 'Opnieuw afspelen',
-      upklick: 'Upklick',
-      brand: 'Jouw merk',
-      nav: ['Dashboard', 'AI Copilot', 'Postvak IN', 'CRM & Leads', 'Afspraken', 'Analyses'],
-      workspace: 'Werkruimte',
-      kpis: ['Omzet', 'Nieuwe leads', 'Afspraken'],
-      chart: 'Prestaties',
-      bars: 'Weekomzet',
-      gauge: 'Doel',
-      leads: 'Recente leads',
-      live: 'Live',
-      people: ['Sarah Ahmed', 'Omar Khaled', 'Lina Hassan'],
-    },
   },
   s2: {
-    badge: 'Het probleem & de kans',
+    badge: 'De kans',
     audiences: ['Marketingbureaus', 'Coaches & consultants', 'Softwarebedrijven', 'Klinieken, vastgoed & webshops'],
     titleA: 'Software vanaf nul bouwen is',
-    titleHighlight: 'duur en complex..',
-    titleB: 'en alleen diensten verkopen levert nooit een stabiel maandelijks inkomen op',
+    titleHighlight: 'duur en complex —',
+    titleB: 'en alleen losse diensten verkopen bouwt zelden voorspelbare maandelijkse omzet op',
     cards: [
-      'Hoge ontwikkelings- en onderhoudskosten',
-      'Complexe Meta- en API-goedkeuringen',
-      'Klanten verspreid over 10 losse tools',
+      'Geen hoge ontwikkel- en onderhoudskosten',
+      'Direct gekoppelde officiële Meta- & AI-infrastructuur',
+      'Breng klanten samen vanuit 10+ losse abonnementen',
       'Een dienstenklant vertrekt — een systeemklant blijft',
     ],
-    solution: 'De oplossing: ontvang de volledige infrastructuur gebruiksklaar en verkoop vanaf dag één onder je eigen naam',
+    solution: 'De kans: ontvang de volledige AI- en opvolginfrastructuur gebruiksklaar en verkoop vanaf dag één onder je eigen merknaam.',
   },
   s3: {
     badge: 'Volledig gebruiksklare infrastructuur',
-    title: 'Wij draaien alles achter de schermen.. en jij bent de enige eigenaar richting je klanten',
+    title: 'Wij beheren alle techniek achter de schermen — jij bent de enige eigenaar richting je klanten',
     hub: 'Jouw platform, jouw naam',
     nodes: [
-      'Officiële Meta-kanalenprovider: WhatsApp, Instagram en Messenger',
-      'AI-provider op basis van tegoed — geen API-sleutels nodig',
-      'Provider voor e-mailmarketingcampagnes, direct klaar en actief',
-      'Provider voor domeinregistratie en wederverkoop — met jouw winstmarge',
+      'Officiële Meta-kanalenprovider: WhatsApp, Instagram & Messenger',
+      'AI-provider op tegoedbasis — geen API-sleutels nodig',
+      'Kant-en-klare e-mailmarketing en campagnerelay',
+      'Domeinregistratie en wederverkoop met jouw winstmarge',
     ],
   },
   s4: {
-    badge: 'Volledige white-label',
-    tag: 'Full White-Label',
-    title: 'Onze naam verdwijnt volledig.. elk scherm, elke e-mail en elke link draagt alleen jouw bedrijfsidentiteit',
+    badge: 'Volledige White-Label',
+    tag: '100% Jouw Merk',
+    title: 'Onze naam verdwijnt volledig — elk scherm, elke e-mail en elke link draagt uitsluitend jouw bedrijfsidentiteit',
     features: [
-      'Merkidentiteitsstudio met donkere en lichte modus',
-      'Je eigen domein met een gratis SSL-certificaat',
-      'Inlogpagina’s en e-mails uit naam van jouw bedrijf',
-      'PWA mobiele app met je eigen merkicoon',
+      'Merkidentiteitsstudio met lichte en donkere modus',
+      'Eigen domeinnaam met gratis automatisch SSL-certificaat',
+      'Inlogpagina’s en systeemmails uit naam van jouw bedrijf',
+      'Installeerbare PWA mobiele app met jouw merkicoon',
     ],
     brand: 'Jouw merk',
     domain: 'app.jouwmerk.nl',
-    secure: 'Beveiligde verbinding',
+    secure: 'SSL Actief',
   },
   s5: {
     badge: 'Commerciële controle & geïntegreerde betaalmethoden',
     titleHighlight: 'Stel je abonnementen samen',
-    titleA: 'met de prijzen die bij jou passen..',
-    titleB: 'en ontvang betalingen via de betaalmethoden die je klanten al gebruiken',
+    titleA: 'met de marges die bij jou passen —',
+    titleB: 'en ontvang betalingen via de betaalmethoden die je klanten al vertrouwen',
     plansTitle: 'Abonnementen & winstmodel',
-    plans: ['Maand-, jaar- en lifetime-abonnementen', 'Verkoop extra tegoed en kortingscodes', 'Meerdere valuta: EUR - USD - EGP - SAR - AED'],
-    paymentsTitle: 'Ontvang lokaal en internationaal betalingen',
-    active: 'Actief',
-    ready: 'Klaar om te koppelen',
+    plans: [
+      'Maand-, jaar-, vaste looptijd- en lifetime-abonnementen',
+      'Verkoop extra AI-tegoed, teamseats en kortingscodes',
+      'Meerdere valuta: EUR · USD · SAR · AED · EGP',
+    ],
+    paymentsTitle: 'Geïntegreerde internationale & regionale betaalmethoden',
+    active: 'Geïntegreerd',
+    ready: 'Gereed',
   },
   s6: {
     badge: 'Het product dat je aan je klanten verkoopt',
-    title: 'Bied je klanten een compleet bedrijfssysteem waarmee ze marketing en verkoop vanuit één scherm aansturen',
+    title: 'Bied je klanten een compleet AI-bedrijfssysteem waarmee ze marketing, verkoop en levering vanuit één scherm aansturen',
     tools: [
-      { title: 'Slimme verkoopassistent', text: 'AI Copilot en spraak' },
-      { title: 'Gecombineerd postvak IN', text: 'WhatsApp, Instagram en Messenger' },
-      { title: 'Website- & funnelbouwer', text: 'Drag-and-drop' },
-      { title: 'Chatbot-flowontwerper', text: 'Visuele automatisering' },
-      { title: 'CRM-klantbeheer', text: 'Met dienstverdeling' },
-      { title: 'Afspraakboekingspagina’s', text: 'Google Agenda-synchronisatie' },
-      { title: 'Producten & cursussen verkopen', text: 'WhatsApp- en e-mailcampagnes' },
-      { title: 'Live analyses & PDF-rapporten', text: 'Met pixeltracking' },
-    ],
-  },
-  s7: {
-    badge: 'De kracht van één platform',
-    title: 'Vervang 12 losse tools en abonnementen door één platform met jouw bedrijfsnaam',
-    beforeTitle: 'In plaats van 12 versnipperde abonnementen',
-    before: [
-      'Losse website- en funnelbouwers',
-      'CRM- en afspraaksoftware',
-      'WhatsApp- en chatbottools',
-      'Cursusplatformen en e-mailcampagnes',
-      'AI API-facturen en losse domeinaankopen',
-    ],
-    afterTitle: 'Alles klaar in jouw ene platform',
-    after: [
-      'Websites, funnels, hosting en kant-en-klare templates',
-      'Compleet CRM met slimme afspraakplanning',
-      'Gecombineerde Meta-inbox en visuele automatisering',
-      'Cursushosting met ingebouwde e-mailmarketing',
-      'AI-tegoed en domeinwederverkoop met jouw marge',
+      { title: 'AI Copilot & Spraakagent', text: '24/7 slimme verkoopassistent' },
+      { title: 'Gecombineerde Meta-inbox', text: 'WhatsApp, Instagram, Messenger & Web' },
+      { title: 'Website- & Funnelbouwer', text: 'Drag-and-drop pagina’s & templates' },
+      { title: 'Visuele Flow-automatisering', text: 'Slimme chatbots & opvolgreeksen' },
+      { title: 'CRM & Leadpipeline', text: 'Dealfasen & teamdienstverdeling' },
+      { title: 'Boekings- & Agendasysteem', text: 'Tweeweg Google Agenda-synchronisatie' },
+      { title: 'Producten, Cursussen & Portaal', text: 'Digitale checkout & ledenbibliotheek' },
+      { title: 'Live Analyses & BI-rapporten', text: 'Meta/Google-pixel & omzetinzicht' },
     ],
   },
   s8: {
     badge: 'Stappen voor lancering & beheer',
-    title: 'Van oplevering van het platform tot je eerste klantabonnement in 4 heldere stappen',
+    title: 'Van activatie van je Admin-account tot je eerste betalende klant in 4 heldere stappen',
     steps: [
-      'Pas je merkidentiteit aan en koppel je domein',
-      'Stel je abonnementen samen en activeer betaalmethoden',
-      'Presenteer de kant-en-klare demo en open klantaccounts',
-      'Volg je winst en ondersteun klanten met één klik',
+      'Pas je merkidentiteit aan en koppel je eigen domein',
+      'Maak abonnementsvormen en activeer je betaalgateways',
+      'Presenteer de live demo en open klantwerkruimtes',
+      'Volg je terugkerende marges en ondersteun klanten in één klik',
     ],
-    chips: ['Presentatieklaar demo-account', 'Met één klik inloggen op klantaccounts', 'Supportchat onder jouw naam'],
+    chips: ['Presentatieklare demowerkruimte', 'Met één klik wisselen naar klantaccounts', 'Ingebouwde supportchat op jouw naam'],
   },
   s9: {
-    badge: 'Het abonnement & veelgestelde vragen',
-    planName: 'Het alles-in-één Super Admin-abonnement',
+    badge: 'Het abonnement & FAQ',
+    title: 'Één transparant abonnement. Onbeperkte groeiruimte.',
+    subtitle: 'Alles wat je nodig hebt voor AI-opvolging én je eigen White-Label softwarebedrijf — inclusief directe gratis proefperiode.',
+    planBadge: 'Alles-in-één Platformplan',
+    planName: 'Super Admin & White-Label Abonnement',
     price: '$99',
     period: '/ maand',
-    planNote: 'Direct abonnement — onbeperkt aantal klanten',
+    planNote: 'Direct abonnement — onbeperkt aantal klanten & 0% omzetcommissie',
+    trialHighlight: 'Inclusief 14 dagen gratis Admin-proefperiode · $0 vandaag',
     features: [
-      'Volledige white-label met je eigen domein en mobiele app',
-      'Wij zijn de provider: Meta, AI, e-mail en domeinen',
-      'Alle 12 tools plus lokale en internationale betaalgateways',
+      'Volledige 100% White-Label studio, eigen domein & PWA mobiele app',
+      'Ingebouwde tech-provider: officiële Meta, AI-tegoed, e-mail & domeinen',
+      'Alle 12 zakelijke, CRM-, funnel-, boekings- & AI-opvolgtools inbegrepen',
+      'Koppel Stripe, Paymob, Paddle, Fawry, Kashier, wallets & kaarten',
+      'Maak onbeperkt eigen maand-, jaar- & lifetime-klantabonnementen',
+      'Met één klik meekijken in klantaccounts & eigen supportdesk',
     ],
-    cta: 'Plan een gratis adviesgesprek',
-    faqTitle: 'Meest gestelde vragen',
+    cta: 'Start nu',
+    faqTitle: 'Veelgestelde vragen',
     faq: [
       {
-        q: 'Zien mijn klanten ergens de naam Upklick?',
-        a: 'Nee. Schermen, inlogpagina’s, e-mails, links, je domein en de mobiele app dragen uitsluitend jouw merk — het platform draait volledig achter de schermen onder jouw identiteit.',
+        q: 'Hoe werkt het gratis Admin-proefaccount?',
+        a: 'Klik op "Start nu" om direct je Admin-werkruimte te openen met onze gratis proefperiode. Je krijgt onmiddellijk toegang tot Brand Studio, abonnementsbeheer, AI-starttegoed en alle 12 tools zonder vooraf te betalen.',
       },
       {
-        q: 'Moet ik ontwikkelaar zijn of developer-accounts aanmaken bij Meta en OpenAI?',
-        a: 'Nee. Wij fungeren als technische provider voor Meta-kanalen, AI, e-mail en domeinen, dus je hoeft geen API-sleutels of ontwikkelaarsgoedkeuringen te beheren. Je stelt alles in vanuit je dashboard.',
+        q: 'Zien mijn klanten ergens de naam Upklick?',
+        a: 'Nee. Schermen, inlogpagina’s, e-mails, links, je eigen domein en de PWA-app tonen uitsluitend jouw merk.',
+      },
+      {
+        q: 'Heb ik developer-accounts of API-sleutels bij Meta en OpenAI nodig?',
+        a: 'Nee. Wij leveren de volledige technische koppeling voor Meta-kanalen, AI-modellen, e-mail en domeinen achter de schermen.',
       },
       {
         q: 'Hoe ontvang ik abonnementsbetalingen van mijn klanten?',
-        a: 'Je koppelt je eigen betaalgateways — zoals Stripe, PayPal, Fawry, Vodafone Cash of InstaPay — en klantabonnementen worden rechtstreeks via jouw rekeningen geïnd.',
+        a: 'Koppel je eigen Stripe, Paymob, Paddle, PayPal, Fawry of lokale wallets en ontvang 100% van alle klantbetalingen rechtstreeks.',
       },
       {
-        q: 'Hoe behoud ik een winstmarge op AI-gebruik en berichten?',
-        a: 'Jij bepaalt de prijzen van je abonnementen, extra tegoed en bundels. Stel ze boven je inkoopprijs in en elk klantgebruik draagt direct bij aan jouw marge.',
+        q: 'Hoe verdien ik marge op AI-gebruik en berichten?',
+        a: 'Jij bepaalt zelf de verkoopprijzen van abonnementen en tegoedbundels boven de inkoopprijs, zodat elk gebruik bijdraagt aan je maandelijkse marge.',
+      },
+      {
+        q: 'Vervangt de AI mijn verkoopteam of werkt het samen?',
+        a: 'Het versterkt je team: de AI reageert binnen seconden 24/7, kwalificeert leads en plant afspraken, terwijl medewerkers elk gesprek met één klik kunnen overnemen.',
       },
     ],
   },
-  s10: {
-    badge: 'Je volgende stap naar je eigen softwarebedrijf',
-    titleA: 'Start vandaag nog je softwarebedrijf..',
-    titleB: 'en laat elke klant zijn bedrijf bouwen binnen jouw platform',
-    text: 'Plan je gratis adviesgesprek, bekijk het Super Admin- en klantdashboard live en start met verkopen voor $99 per maand.',
-    cta: 'Plan nu een gratis adviesgesprek',
-    chips: ['Volledig eigenaar van het merk', 'Bepaal zelf je prijzen en winst', 'Volledige regie over je klantrelatie'],
+  barsSection: {
+    badge: 'White-Label Architectuur',
+    title: 'Alles gebouwd om direct te verkopen, beheren en schalen.',
+    subtitle: 'Vijf geïntegreerde pijlers in overzichtelijke horizontale balken — vanaf dag één klaar onder jouw eigen merk.',
+  },
+  compareSection: {
+    badge: 'Platformvergelijking',
+    title: 'Wat is inbegrepen bij Upklick',
+    subtitle: 'Vervang 12+ losse, dure maandabonnementen door één compleet AI- & White-Label besturingssysteem.',
+    colFeature: 'Functies',
+    colReplaces: 'Vervangt',
+    colOther: 'Andere tools',
+    colPlatform: 'Upklick',
+    overallLabel: 'TOTALE PRIJS',
+    overallOther: '$1.646+ / MAAND',
+    overallPrice: '$99',
+    overallPeriod: '/mnd',
+    trialPill: 'Gratis Admin-proefperiode inbegrepen',
+    cta: 'Start nu',
+    rows: [
+      { feature: 'AI Copilot & Autonome Agenten', replaces: [COMPARE_BRANDS.chatgpt, COMPARE_BRANDS.jasper], otherCost: '$99/maandelijks' },
+      { feature: '24/7 AI-opvolging & Spraakkwalificatie', replaces: [COMPARE_BRANDS.airai, COMPARE_BRANDS.manychat], otherCost: '$149/maandelijks' },
+      { feature: 'Gecombineerde Multi-channel Inbox (WA, IG, FB)', replaces: [COMPARE_BRANDS.respond, COMPARE_BRANDS.intercom], otherCost: '$129/maandelijks' },
+      { feature: 'CRM & Multi-stage Dealpipelines', replaces: [COMPARE_BRANDS.hubspot, COMPARE_BRANDS.pipedrive], otherCost: '$99/maandelijks' },
+      { feature: 'Onbeperkte Salesfunnels & Websitebouwer', replaces: [COMPARE_BRANDS.clickfunnels, COMPARE_BRANDS.webflow, COMPARE_BRANDS.wix], otherCost: '$297/maandelijks' },
+      { feature: 'Boekingspagina’s & Google Agenda-sync', replaces: [COMPARE_BRANDS.calendly, COMPARE_BRANDS.acuity], otherCost: '$29/maandelijks' },
+      { feature: 'Cursussen, Digitale Producten & Checkout', replaces: [COMPARE_BRANDS.kajabi, COMPARE_BRANDS.teachable], otherCost: '$159/maandelijks' },
+      { feature: 'E-mail- & WhatsApp-campagnes', replaces: [COMPARE_BRANDS.activecampaign, COMPARE_BRANDS.mailchimp], otherCost: '$99/maandelijks' },
+      { feature: 'Visuele Chatbot- & Workflowautomatisering', replaces: [COMPARE_BRANDS.zapier, COMPARE_BRANDS.make], otherCost: '$89/maandelijks' },
+      { feature: 'Eigen Domeinen, Wederverkoop & Auto-SSL', replaces: [COMPARE_BRANDS.cloudflare, COMPARE_BRANDS.namecheap], otherCost: '$49/maandelijks' },
+      { feature: 'Live Analyses, Pixeltracking & BI-rapporten', replaces: [COMPARE_BRANDS.databox, COMPARE_BRANDS.mixpanel], otherCost: '$149/maandelijks' },
+      { feature: '100% White-Label SaaS & Eigen Mobiele App', replaces: [], otherCost: 'Uniek bij Upklick ($299+ waarde)', uniqueTag: true },
+    ],
+  },
+  demoChannels: {
+    switchLabel: 'Kies live kanaal:',
+    channels: [
+      { id: 'whatsapp', label: 'WhatsApp', stageSub: 'Via WhatsApp Business', status: 'online', placeholder: 'Bericht' },
+      { id: 'messenger', label: 'Messenger', stageSub: 'Via Facebook Messenger', status: 'Nu actief', placeholder: 'Aa' },
+      { id: 'instagram', label: 'Instagram', stageSub: 'Via Instagram DM', status: 'Nu actief', placeholder: 'Bericht...' },
+      { id: 'webchat', label: 'Websitechat', stageSub: 'Via Live Websitewidget', status: 'Antwoordt in <10s', placeholder: 'Stel je vraag...' },
+    ],
+    seen: 'Zojuist gezien',
+  },
+  resultsUpgrade: {
+    ratingPill: '4,9 / 5 Geverifieerde Partnerwaardering',
+    verified: 'Geverifieerde Partner',
+    kpis: [
+      { value: '+38%', label: 'Meer geboekte gesprekken', sub: 'Automatische AI-kwalificatie & herinneringen' },
+      { value: '< 10s', label: 'Direct eerste antwoord', sub: '24/7 op WhatsApp, IG, Messenger & Web' },
+      { value: '12-in-1', label: 'Geconsolideerde tools', sub: 'Bespaar $1.500+/mnd aan losse software' },
+      { value: '3.4x', label: 'Groei in terugkerende omzet', sub: 'Bureaus die overstappen op eigen SaaS' },
+    ],
+    proofMeta: [
+      { metric: '+42% Geboekte Calls', category: 'Coaching & Advies', outcome: 'Van handmatig opvolgen naar dagelijkse automatische boekingen' },
+      { metric: '9s Gem. Reactietijd', category: 'B2B Consultancy', outcome: 'Geen enkele gemiste aanvraag meer op WhatsApp & Instagram' },
+      { metric: '24 Actieve SaaS-klanten', category: 'White-Label Bureau', outcome: 'Eigen merkplatform en vaste MRR gelanceerd in 3 weken' },
+    ],
+    bannerTitle: 'Klaar voor echte resultaten onder je eigen merknaam?',
+    bannerSub: 'Maak nu je Admin-account aan, activeer direct je gratis proefperiode en ervaar het volledige platform zelf.',
+    bannerCta: 'Start nu',
+  },
+  trialModal: {
+    badge: 'Speciale Admin-toegang',
+    specialTag: 'Gratis proefperiode',
+    sideTitle: 'Start je Admin-werkruimte met een gratis proefperiode',
+    sideLead: 'Maak vandaag je volledige Admin-account aan voor $0 vooraf. Test alle 12 tools, stel je White-Label merk in en groei met vertrouwen.',
+    perks: [
+      { title: '14 dagen gratis Admin-proefperiode', text: 'Volledig platform & White-Label studio direct geactiveerd — $0 vandaag.' },
+      { title: 'Alle 12 AI- & zakelijke tools actief', text: 'AI Copilot, Opvolging, Inbox, Funnels, CRM, Boekingen, Betalingen & BI.' },
+      { title: 'AI-starttegoed & demowerkruimte', text: 'Inclusief gratis AI-starttegoed en een kant-en-klare Agency-werkruimte.' },
+      { title: 'Naadloos upgraden ($99/mnd)', text: 'Behoud je domein, merkstijl, abonnementen en klanten wanneer je doorgaat.' },
+    ],
+    termsTitle: 'Voorwaarden gratis proefperiode',
+    termsList: [
+      'Beschikbaar voor nieuwe Admin-werkruimtes (1 gratis proefperiode per organisatie).',
+      'Geen creditcard vereist om je proefwerkruimte te starten.',
+      'Volledig eigendom van je gegevens — upgrade op elk moment naar het $99/mnd plan.',
+    ],
+    formTitle: 'Maak je Admin-account aan',
+    formSubtitle: 'Stel je inloggegevens en merknaam in binnen 60 seconden.',
+    nameLabel: 'Volledige naam',
+    namePlaceholder: 'bijv. Mohamed Tarek',
+    workspaceLabel: 'Bedrijfs- of softwaremerknaam',
+    workspacePlaceholder: 'bijv. Orbit Growth Cloud',
+    domainPreview: 'Werkruimtevoorbeeld:',
+    emailLabel: 'Zakelijk e-mailadres',
+    emailPlaceholder: 'jij@jouwbedrijf.nl',
+    phoneLabel: 'Telefoon / WhatsApp',
+    phoneOptional: 'Optioneel',
+    phonePlaceholder: '+31 6 12345678',
+    passwordLabel: 'Wachtwoord aanmaken',
+    passwordPlaceholder: 'Minimaal 8 tekens',
+    passwordHint: 'Gebruik minimaal 8 tekens met letters en cijfers.',
+    strengthLabels: ['Te kort', 'Redelijk', 'Goed', 'Sterk'],
+    agreePrefix: 'Ik ga akkoord met de',
+    termsLink: 'Servicevoorwaarden',
+    andText: 'en het',
+    privacyLink: 'Privacybeleid',
+    agreeTrialSuffix: 'en bevestig één gratis Admin-proefperiode voor dit nieuwe account.',
+    submit: 'Gratis proefperiode starten',
+    submitting: 'Je Admin-werkruimte wordt aangemaakt…',
+    haveAccount: 'Heb je al een account?',
+    loginCta: 'Inloggen',
+    closeLabel: 'Sluiten',
+    successTitle: 'Je Admin-proefwerkruimte staat klaar!',
+    successText: 'Je wordt nu ingelogd op je Admin-dashboard…',
+    errors: {
+      name: 'Vul je volledige naam in (minimaal 2 tekens).',
+      workspace: 'Vul je bedrijfs- of merknaam in (minimaal 2 tekens).',
+      email: 'Vul een geldig zakelijk e-mailadres in.',
+      password: 'Het wachtwoord moet tussen 8 en 128 tekens lang zijn.',
+      terms: 'Ga akkoord met de voorwaarden om door te gaan.',
+      exists: 'Er bestaat al een account met dit e-mailadres. Log in plaats daarvan in.',
+      paused: 'Nieuwe proefregistraties zijn tijdelijk gepauzeerd. Probeer het straks opnieuw.',
+      unavailable: 'De registratieservice is momenteel niet bereikbaar. Controleer je verbinding en probeer het opnieuw.',
+      generic: 'Het aanmaken van je Admin-account is niet gelukt. Controleer je gegevens en probeer het opnieuw.',
+    },
   },
 };
 
 const de: WhiteLabelCopy = {
   nav: 'White-Label',
-  chapter: {
-    eyebrow: 'Upklick White-Label-Programm',
-    title: 'Starte dein eigenes Softwareunternehmen — in 10 klaren Schritten',
-    text: 'Für Agenturen, Berater und Softwareteams, die eine komplette KI-Plattform unter ihrer eigenen Marke verkaufen möchten.',
-    steps: '10 Schritte',
+  headerNav: {
+    problem: 'Das Problem',
+    solution: 'KI-System',
+    aiDemo: 'Live-Demo',
+    compare: 'Vergleich',
+    whiteLabel: 'White-Label',
+    planFaq: 'Tarif & FAQ',
+    results: 'Ergebnisse',
+  },
+  heroTransform: {
+    wlPill: 'Besitze dein eigenes Softwareunternehmen',
+    wlTag: 'White-Label',
+    sectionTitle: 'Von der Upklick-Engine zu 100 % deiner eigenen Softwaremarke',
+    sectionSub: 'Jedes Dashboard, jedes Tool, jeder Login-Screen und jede Domain verwandelt sich nahtlos in deine Unternehmensidentität — mit exakt derselben Enterprise-Qualität.',
+    beforeBadge: 'Vorher · Engine',
+    beforeLabel: 'Upklick Plattform',
+    beforeSub: 'Fertige KI & 12 Business-Tools',
+    arrowLabel: '1-Klick White-Label',
+    arrowSub: 'Dein Logo · Domain · Farben',
+    afterBadge: 'Nachher · Dein SaaS',
+    afterLabel: 'Deine Marke',
+    afterSub: '100 % eigenes Kundenerlebnis',
+    pickBrand: 'Markenthema testen:',
+    domainReady: 'SSL Aktiv',
+    syncedNote: 'Klicke auf ein Seitenleisten-Tool, um beide Dashboards synchron zu erleben',
   },
   s1: {
     badge: 'Besitze dein eigenes Softwareunternehmen',
@@ -573,161 +1136,253 @@ const de: WhiteLabelCopy = {
       'Wir sind der Technologie-Provider: Meta, KI, E-Mail und Domains fertig angebunden',
       '12 Business-Tools in einem System für deine Kunden',
     ],
-    cta: 'Jetzt kostenloses Beratungsgespräch buchen',
+    cta: 'Jetzt starten',
     logoHere: 'Dein Logo hier',
-    morph: {
-      label: 'Animierte Vorschau: Das Upklick-Dashboard verwandelt sich in deine White-Label-Marke',
-      stages: ['Upklick-Dashboard', 'Marken-Transformation', 'Dein White-Label'],
-      play: 'Animation abspielen',
-      pause: 'Animation pausieren',
-      replay: 'Neu abspielen',
-      upklick: 'Upklick',
-      brand: 'Deine Marke',
-      nav: ['Dashboard', 'AI Copilot', 'Posteingang', 'CRM & Leads', 'Termine', 'Analysen'],
-      workspace: 'Arbeitsbereich',
-      kpis: ['Umsatz', 'Neue Leads', 'Buchungen'],
-      chart: 'Performance',
-      bars: 'Wochenumsatz',
-      gauge: 'Ziel',
-      leads: 'Aktuelle Leads',
-      live: 'Live',
-      people: ['Sarah Ahmed', 'Omar Khaled', 'Lina Hassan'],
-    },
   },
   s2: {
-    badge: 'Das Problem & die Chance',
+    badge: 'Die Marktchance',
     audiences: ['Marketingagenturen', 'Coaches & Berater', 'Softwareunternehmen', 'Praxen, Immobilien & Online-Shops'],
     titleA: 'Software von Grund auf zu entwickeln ist',
-    titleHighlight: 'teuer und komplex..',
-    titleB: 'und reine Dienstleistungen schaffen selten ein stabiles monatliches Einkommen',
+    titleHighlight: 'teuer und komplex —',
+    titleB: 'und reine Dienstleistungen schaffen selten planbare monatliche Umsätze',
     cards: [
-      'Hohe Entwicklungs- und Wartungskosten',
-      'Komplexe Meta- und API-Freigaben',
-      'Kunden verteilt auf 10 verschiedene Tools',
+      'Keine hohen Entwicklungs- und Wartungskosten',
+      'Fertig freigeschaltete offizielle Meta- & KI-Infrastruktur',
+      'Kunden aus über 10 Einzel-Tools in einer Plattform vereinen',
       'Ein Dienstleistungskunde wechselt — ein Systemkunde bleibt',
     ],
-    solution: 'Die Lösung: Übernimm die komplette Infrastruktur schlüsselfertig und verkaufe sie ab Tag eins unter deinem Namen',
+    solution: 'Die Chance: Übernimm die komplette KI- und Follow-up-Infrastruktur schlüsselfertig und verkaufe sie ab Tag eins unter deiner eigenen Marke.',
   },
   s3: {
     badge: 'Schlüsselfertige Infrastruktur',
-    title: 'Wir betreiben alles im Hintergrund.. und du bist gegenüber deinen Kunden der alleinige Anbieter',
+    title: 'Wir betreiben den gesamten Tech-Stack im Hintergrund — du bist gegenüber deinen Kunden der alleinige Anbieter',
     hub: 'Deine Plattform, dein Name',
     nodes: [
-      'Offizieller Meta-Kanal-Provider: WhatsApp, Instagram und Messenger',
+      'Offizieller Meta-Kanal-Provider: WhatsApp, Instagram & Messenger',
       'KI-Provider auf Guthabenbasis — keine API-Schlüssel erforderlich',
-      'E-Mail-Marketing-Provider, sofort einsatzbereit und aktiv',
-      'Provider für Domainregistrierung und Weiterverkauf — mit deiner Marge',
+      'Sofort einsatzbereiter E-Mail-Marketing- & Kampagnen-Provider',
+      'Provider für Domainregistrierung & Weiterverkauf mit deiner Marge',
     ],
   },
   s4: {
     badge: 'Vollständiges White-Label',
-    tag: 'Full White-Label',
-    title: 'Unser Name verschwindet komplett.. jeder Bildschirm, jede E-Mail und jeder Link trägt nur deine Unternehmensidentität',
+    tag: '100 % Deine Marke',
+    title: 'Unser Name verschwindet komplett — jeder Bildschirm, jede E-Mail und jeder Link trägt ausschließlich deine Unternehmensidentität',
     features: [
       'Marken-Studio mit Hell- und Dunkelmodus',
-      'Eigene Domain inklusive kostenlosem SSL-Zertifikat',
-      'Login-Seiten und E-Mails im Namen deines Unternehmens',
-      'Mobile PWA-App mit deinem eigenen Marken-Icon',
+      'Eigene Domain mit kostenlosem Auto-SSL-Zertifikat',
+      'Login-Seiten und System-E-Mails im Namen deiner Firma',
+      'Installierbare PWA-Mobile-App mit deinem Marken-Icon',
     ],
     brand: 'Deine Marke',
     domain: 'app.deinemarke.de',
-    secure: 'Sichere Verbindung',
+    secure: 'SSL Aktiv',
   },
   s5: {
     badge: 'Kaufmännische Kontrolle & integrierte Zahlungsanbieter',
     titleHighlight: 'Gestalte deine Tarife',
-    titleA: 'mit den Preisen, die zu dir passen..',
-    titleB: 'und empfange Zahlungen über die Zahlungsmethoden, die deine Kunden bereits nutzen',
-    plansTitle: 'Tarife & Margensteuerung',
-    plans: ['Monats-, Jahres- und Lifetime-Tarife', 'Zusatzguthaben und Rabattcodes verkaufen', 'Mehrwährungsfähig: EUR - USD - EGP - SAR - AED'],
-    paymentsTitle: 'Zahlungen lokal und international einziehen',
-    active: 'Aktiv',
-    ready: 'Bereit zur Verbindung',
+    titleA: 'mit den Margen deiner Wahl —',
+    titleB: 'und ziehe Zahlungen über die Gateways ein, denen deine Kunden bereits vertrauen',
+    plansTitle: 'Tarif- & Margensteuerung',
+    plans: [
+      'Monats-, Jahres-, Laufzeit- & Lifetime-Tarife',
+      'Zusatz-KI-Guthaben, Team-Plätze & Rabattgutscheine verkaufen',
+      'Mehrwährungsfähig: EUR · USD · SAR · AED · EGP',
+    ],
+    paymentsTitle: 'Integrierte globale & regionale Zahlungsmethoden',
+    active: 'Integriert',
+    ready: 'Bereit',
   },
   s6: {
     badge: 'Das Produkt, das du deinen Kunden verkaufst',
-    title: 'Biete deinen Kunden ein komplettes Betriebssystem, das Marketing und Vertrieb auf einem Bildschirm vereint',
+    title: 'Biete deinen Kunden ein komplettes KI-Betriebssystem für Marketing, Vertrieb und Auslieferung auf einem Bildschirm',
     tools: [
-      { title: 'Intelligenter Vertriebsassistent', text: 'AI Copilot und Sprache' },
-      { title: 'Zentraler Posteingang', text: 'WhatsApp, Instagram und Messenger' },
-      { title: 'Website- & Funnel-Builder', text: 'Drag-and-drop' },
-      { title: 'Chatbot-Flow-Designer', text: 'Visuelle Automatisierung' },
-      { title: 'CRM-Kundenverwaltung', text: 'Mit Schichtverteilung' },
-      { title: 'Terminbuchungsseiten', text: 'Google Kalender-Synchronisierung' },
-      { title: 'Produkte & Kurse verkaufen', text: 'WhatsApp- und E-Mail-Kampagnen' },
-      { title: 'Live-Analysen & PDF-Berichte', text: 'Mit Pixel-Tracking' },
-    ],
-  },
-  s7: {
-    badge: 'Die Stärke einer zentralen Plattform',
-    title: 'Ersetze 12 einzelne Tools und Abonnements durch eine Plattform mit deinem Firmennamen',
-    beforeTitle: 'Statt 12 verstreuter Abonnements',
-    before: [
-      'Separate Website- und Funnel-Builder',
-      'CRM- und Terminbuchungs-Software',
-      'WhatsApp- und Chatbot-Tools',
-      'Kursplattformen und E-Mail-Kampagnen',
-      'KI-API-Rechnungen und einzelne Domainkäufe',
-    ],
-    afterTitle: 'Alles vereint in deiner eigenen Plattform',
-    after: [
-      'Websites, Funnels, Hosting und fertige Vorlagen',
-      'Vollständiges CRM mit intelligenter Terminbuchung',
-      'Zentraler Meta-Posteingang und visuelle Automatisierung',
-      'Kurs-Hosting mit integriertem E-Mail-Marketing',
-      'KI-Guthaben und Domain-Weiterverkauf mit deiner Marge',
+      { title: 'AI Copilot & Sprach-Agent', text: 'Autonomer 24/7-Vertriebsassistent' },
+      { title: 'Zentraler Meta-Posteingang', text: 'WhatsApp, Instagram, Messenger & Web' },
+      { title: 'Website- & Funnel-Builder', text: 'Drag-and-drop Seiten & Vorlagen' },
+      { title: 'Visuelle Flow-Automatisierung', text: 'Smarte Chatbots & Follow-up-Sequenzen' },
+      { title: 'CRM & Lead-Pipeline', text: 'Deal-Phasen & Schichtverteilung' },
+      { title: 'Terminbuchung & Kalender', text: 'Zwei-Wege Google-Kalender-Sync' },
+      { title: 'Produkte, Kurse & Kundenportal', text: 'Digitaler Checkout & Mitgliederbereich' },
+      { title: 'Live-Analysen & BI-Berichte', text: 'Meta/Google-Pixel & Umsatz-Tracking' },
     ],
   },
   s8: {
     badge: 'Start- & Betriebsschritte',
-    title: 'Von der Bereitstellung der Plattform bis zum ersten Kundenabonnement in 4 klaren Schritten',
+    title: 'Von der Aktivierung deines Admin-Kontos bis zum ersten zahlenden Kunden in 4 klaren Schritten',
     steps: [
       'Markenidentität anpassen und eigene Domain verbinden',
-      'Tarife erstellen und Zahlungsmethoden aktivieren',
-      'Fertige Demo präsentieren und Kundenkonten eröffnen',
-      'Gewinne verfolgen und Kunden mit einem Klick unterstützen',
+      'Abonnementtarife anlegen und Zahlungsgateways aktivieren',
+      'Live-Demo präsentieren und Kunden-Arbeitsbereiche eröffnen',
+      'Wiederkehrende Margen verfolgen und Kunden mit einem Klick betreuen',
     ],
-    chips: ['Präsentationsfertiges Demo-Konto', 'Ein-Klick-Login in Kundenkonten', 'Support-Chat unter deinem Namen'],
+    chips: ['Präsentationsfertiger Demo-Arbeitsbereich', 'Ein-Klick-Wechsel in Kundenkonten', 'Integrierter Support-Chat unter deinem Namen'],
   },
   s9: {
     badge: 'Der Tarif & FAQ',
-    planName: 'Der All-inclusive Super-Admin-Tarif',
+    title: 'Ein transparenter Tarif. Unbegrenztes Wachstumspotenzial.',
+    subtitle: 'Alles für dein KI-Follow-up-System und dein eigenes White-Label-Softwareunternehmen — inklusive sofortiger kostenloser Testphase.',
+    planBadge: 'All-inclusive Plattform-Tarif',
+    planName: 'Super-Admin- & White-Label-Tarif',
     price: '$99',
     period: '/ Monat',
-    planNote: 'Direktabonnement — unbegrenzte Kundenanzahl',
+    planNote: 'Direktabonnement — unbegrenzte Kundenkonten & 0 % Umsatzprovision',
+    trialHighlight: 'Inklusive 14 Tage kostenloser Admin-Testphase · heute $0 fällig',
     features: [
-      'Vollständiges White-Label mit eigener Domain und mobiler App',
-      'Wir sind der Provider: Meta, KI, E-Mail und Domains',
-      'Alle 12 Tools sowie lokale und internationale Zahlungsgateways',
+      'Vollständiges 100 % White-Label-Studio, eigene Domain & PWA-Mobile-App',
+      'Integrierter Tech-Provider: offizielle Meta-Kanäle, KI, E-Mail & Domains',
+      'Alle 12 Business-, CRM-, Funnel-, Buchungs- & KI-Follow-up-Tools enthalten',
+      'Stripe, Paymob, Paddle, Fawry, Kashier, Wallets & Karten direkt anbinden',
+      'Unbegrenzt eigene Monats-, Jahres- & Lifetime-Kundentarife erstellen',
+      'Ein-Klick-Kundenkonto-Wechsel & eigenes gebrandetes Support-System',
     ],
-    cta: 'Kostenloses Beratungsgespräch buchen',
+    cta: 'Jetzt starten',
     faqTitle: 'Häufig gestellte Fragen',
     faq: [
       {
+        q: 'Wie funktioniert das kostenlose Admin-Testkonto?',
+        a: 'Klicke auf „Jetzt starten“, um deinen Admin-Arbeitsbereich sofort mit unserer kostenlosen Testphase zu eröffnen. Du erhältst unmittelbaren Zugriff auf das Brand Studio, die Tariferstellung, KI-Startguthaben und alle 12 Tools ohne Vorauszahlung.',
+      },
+      {
         q: 'Sehen meine Kunden irgendwo den Namen Upklick?',
-        a: 'Nein. Oberflächen, Login-Seiten, E-Mails, Links, deine Domain und die mobile App tragen ausschließlich deine Marke — die Plattform läuft komplett im Hintergrund unter deiner Identität.',
+        a: 'Nein. Alle Oberflächen, Login-Seiten, E-Mails, Links, deine Domain und die PWA-App zeigen ausschließlich deine eigene Markenidentität.',
       },
       {
-        q: 'Muss ich Entwickler sein oder Entwicklerkonten bei Meta und OpenAI anlegen?',
-        a: 'Nein. Wir agieren als technischer Provider für Meta-Kanäle, KI, E-Mail und Domains — es sind keine API-Schlüssel oder Entwicklerfreigaben nötig. Du richtest alles bequem im Dashboard ein.',
+        q: 'Benötige ich Entwicklerkonten oder API-Schlüssel bei Meta und OpenAI?',
+        a: 'Nein. Wir stellen die gesamte technische Infrastruktur für offizielle Meta-Kanäle, KI-Modelle, E-Mail-Versand und Domains im Hintergrund bereit.',
       },
       {
-        q: 'Wie erhalte ich Abonnementzahlungen von meinen Kunden?',
-        a: 'Du verbindest deine eigenen Zahlungsgateways — etwa Stripe, PayPal, Fawry, Vodafone Cash oder InstaPay — und ziehst Kundenzahlungen direkt darüber ein.',
+        q: 'Wie ziehe ich Abonnementzahlungen von meinen Kunden ein?',
+        a: 'Verbinde deine eigenen Konten bei Stripe, Paymob, Paddle, PayPal, Fawry oder lokalen Wallets und erhalte 100 % deiner Kundenzahlungen direkt.',
       },
       {
-        q: 'Wie sichere ich meine Gewinnmarge bei KI-Nutzung und Nachrichten?',
-        a: 'Du legst die Preise deiner Tarife, Zusatzguthaben und Pakete selbst fest. Setze sie über deinen Einkaufspreis und jede Nutzung deiner Kunden steigert deine Marge.',
+        q: 'Wie verdiene ich an KI-Nutzung und Nachrichten mit?',
+        a: 'Du definierst deine eigenen Tarifpreise und Guthabenpakete oberhalb des Einkaufspreises — jede Verlängerung und Aufladung steigert deine Marge.',
+      },
+      {
+        q: 'Ersetzt die KI mein Vertriebsteam oder arbeitet sie mit ihm zusammen?',
+        a: 'Sie entlastet dein Team: Die KI antwortet rund um die Uhr in Sekunden, qualifiziert Leads und bucht Termine, während Mitarbeiter jedes Gespräch mit einem Klick übernehmen können.',
       },
     ],
   },
-  s10: {
-    badge: 'Dein nächster Schritt zur eigenen Software',
-    titleA: 'Starte noch heute dein Softwareunternehmen..',
-    titleB: 'und lass jeden Kunden sein Business auf deiner Plattform aufbauen',
-    text: 'Buche dein kostenloses Beratungsgespräch, erlebe das Super-Admin- und Kunden-Dashboard live und starte den Verkauf für $99 pro Monat.',
-    cta: 'Jetzt kostenloses Beratungsgespräch buchen',
-    chips: ['Marke vollständig besitzen', 'Preise und Marge selbst bestimmen', 'Kundenbeziehung komplett behalten'],
+  barsSection: {
+    badge: 'White-Label-Architektur',
+    title: 'Alles bereit zum Verkaufen, Betreiben und Skalieren.',
+    subtitle: 'Fünf integrierte Säulen in klaren horizontalen Leisten — ab Tag eins einsatzbereit unter deiner eigenen Marke.',
+  },
+  compareSection: {
+    badge: 'Plattform-Vergleich',
+    title: 'Was in Upklick enthalten ist',
+    subtitle: 'Ersetze über 12 teure Einzel-Abonnements durch ein zentrales KI- & White-Label-Betriebssystem.',
+    colFeature: 'Funktionen',
+    colReplaces: 'Ersetzt',
+    colOther: 'Andere Tools',
+    colPlatform: 'Upklick',
+    overallLabel: 'GESAMTPREIS',
+    overallOther: '$1.646+ / MONAT',
+    overallPrice: '$99',
+    overallPeriod: '/Monat',
+    trialPill: 'Kostenlose Admin-Testphase inklusive',
+    cta: 'Jetzt starten',
+    rows: [
+      { feature: 'AI Copilot & Autonome Agenten', replaces: [COMPARE_BRANDS.chatgpt, COMPARE_BRANDS.jasper], otherCost: '$99/monatlich' },
+      { feature: '24/7 KI-Follow-up & Sprachqualifizierung', replaces: [COMPARE_BRANDS.airai, COMPARE_BRANDS.manychat], otherCost: '$149/monatlich' },
+      { feature: 'Zentraler Multi-Channel-Posteingang (WA, IG, FB)', replaces: [COMPARE_BRANDS.respond, COMPARE_BRANDS.intercom], otherCost: '$129/monatlich' },
+      { feature: 'CRM & Mehrstufige Deal-Pipelines', replaces: [COMPARE_BRANDS.hubspot, COMPARE_BRANDS.pipedrive], otherCost: '$99/monatlich' },
+      { feature: 'Unbegrenzte Sales-Funnels & Website-Builder', replaces: [COMPARE_BRANDS.clickfunnels, COMPARE_BRANDS.webflow, COMPARE_BRANDS.wix], otherCost: '$297/monatlich' },
+      { feature: 'Terminbuchungsseiten & Google-Kalender-Sync', replaces: [COMPARE_BRANDS.calendly, COMPARE_BRANDS.acuity], otherCost: '$29/monatlich' },
+      { feature: 'Kurse, Digitale Produkte & Multi-Gateway-Checkout', replaces: [COMPARE_BRANDS.kajabi, COMPARE_BRANDS.teachable], otherCost: '$159/monatlich' },
+      { feature: 'E-Mail- & WhatsApp-Kampagnen', replaces: [COMPARE_BRANDS.activecampaign, COMPARE_BRANDS.mailchimp], otherCost: '$99/monatlich' },
+      { feature: 'Visuelle Chatbot- & Workflow-Automatisierungen', replaces: [COMPARE_BRANDS.zapier, COMPARE_BRANDS.make], otherCost: '$89/monatlich' },
+      { feature: 'Eigene Domains, Domain-Weiterverkauf & Auto-SSL', replaces: [COMPARE_BRANDS.cloudflare, COMPARE_BRANDS.namecheap], otherCost: '$49/monatlich' },
+      { feature: 'Live-Analysen, Pixel-Attribution & BI-Berichte', replaces: [COMPARE_BRANDS.databox, COMPARE_BRANDS.mixpanel], otherCost: '$149/monatlich' },
+      { feature: '100 % White-Label-SaaS & Eigene Mobile App', replaces: [], otherCost: 'Exklusiv bei Upklick ($299+ Wert)', uniqueTag: true },
+    ],
+  },
+  demoChannels: {
+    switchLabel: 'Live-Kanal wählen:',
+    channels: [
+      { id: 'whatsapp', label: 'WhatsApp', stageSub: 'Über WhatsApp Business', status: 'online', placeholder: 'Nachricht' },
+      { id: 'messenger', label: 'Messenger', stageSub: 'Über Facebook Messenger', status: 'Gerade aktiv', placeholder: 'Aa' },
+      { id: 'instagram', label: 'Instagram', stageSub: 'Über Instagram DM', status: 'Gerade aktiv', placeholder: 'Nachricht...' },
+      { id: 'webchat', label: 'Website-Chat', stageSub: 'Über Live-Website-Widget', status: 'Antwortet in <10s', placeholder: 'Frage stellen...' },
+    ],
+    seen: 'Gerade gesehen',
+  },
+  resultsUpgrade: {
+    ratingPill: '4,9 / 5 Verifizierte Partnerzufriedenheit',
+    verified: 'Verifizierter Partner',
+    kpis: [
+      { value: '+38 %', label: 'Mehr gebuchte Termine', sub: 'Automatische KI-Qualifizierung & Erinnerungen' },
+      { value: '< 10s', label: 'Sofortige Erstantwort', sub: '24/7 auf WhatsApp, IG, Messenger & Web' },
+      { value: '12-in-1', label: 'Konsolidierte Tools', sub: 'Über $1.500/Monat an Einzel-Tools gespart' },
+      { value: '3.4x', label: 'Mehr wiederkehrender Umsatz', sub: 'Agenturen mit eigener SaaS-Plattform' },
+    ],
+    proofMeta: [
+      { metric: '+42 % Gebuchte Calls', category: 'Coaching & Beratung', outcome: 'Vom manuellen Nachfassen zu täglichen automatischen Buchungen' },
+      { metric: '9s Ø Antwortzeit', category: 'B2B-Consulting', outcome: 'Keine verlorenen Anfragen mehr über WhatsApp & Instagram' },
+      { metric: '24 Aktive SaaS-Kunden', category: 'White-Label-Agentur', outcome: 'Eigene Markenplattform & planbarer MRR in 3 Wochen gestartet' },
+    ],
+    bannerTitle: 'Bereit für messbare Ergebnisse unter deiner eigenen Marke?',
+    bannerSub: 'Erstelle jetzt dein Admin-Konto, aktiviere sofort deine kostenlose Testphase und erlebe die gesamte Plattform live.',
+    bannerCta: 'Jetzt starten',
+  },
+  trialModal: {
+    badge: 'Exklusiver Admin-Zugang',
+    specialTag: 'Kostenlose Testphase',
+    sideTitle: 'Starte deinen Admin-Arbeitsbereich mit kostenloser Testphase',
+    sideLead: 'Erstelle noch heute dein vollwertiges Admin-Konto für $0 im Voraus. Teste alle 12 Tools, richte dein White-Label-Branding ein und starte risikofrei.',
+    perks: [
+      { title: '14 Tage kostenlose Admin-Testphase', text: 'Komplette Plattform & White-Label-Studio sofort freigeschaltet — heute $0 fällig.' },
+      { title: 'Alle 12 KI- & Business-Tools aktiv', text: 'AI Copilot, Follow-up, Posteingang, Funnels, CRM, Buchungen, Zahlungen & BI.' },
+      { title: 'KI-Startguthaben & Demo-Arbeitsbereich', text: 'Inklusive kostenlosem KI-Startguthaben und vorbereitetem Agency-Workspace.' },
+      { title: 'Nahtloses Upgrade jederzeit ($99/Monat)', text: 'Behalte Domain, Branding, Tarife und Kunden vollständig beim Wechsel.' },
+    ],
+    termsTitle: 'Teilnahmebedingungen der Gratis-Testphase',
+    termsList: [
+      'Gültig für neue Admin-Arbeitsbereiche (1 kostenlose Testphase pro Unternehmen).',
+      'Keine Kreditkarte zur Aktivierung deines Test-Arbeitsbereichs erforderlich.',
+      'Volle Datenhoheit — jederzeit Upgrade auf den unbegrenzten $99/Monat-Tarif möglich.',
+    ],
+    formTitle: 'Admin-Konto erstellen',
+    formSubtitle: 'Richte deine Zugangsdaten und deinen Markennamen in unter 60 Sekunden ein.',
+    nameLabel: 'Vollständiger Name',
+    namePlaceholder: 'z. B. Mohamed Tarek',
+    workspaceLabel: 'Firmen- oder Software-Markenname',
+    workspacePlaceholder: 'z. B. Orbit Growth Cloud',
+    domainPreview: 'Workspace-Vorschau:',
+    emailLabel: 'Geschäftliche E-Mail',
+    emailPlaceholder: 'name@deinefirma.de',
+    phoneLabel: 'Telefon / WhatsApp',
+    phoneOptional: 'Optional',
+    phonePlaceholder: '+49 170 1234567',
+    passwordLabel: 'Passwort festlegen',
+    passwordPlaceholder: 'Mindestens 8 Zeichen',
+    passwordHint: 'Mindestens 8 Zeichen mit Buchstaben und Zahlen verwenden.',
+    strengthLabels: ['Zu kurz', 'Ausreichend', 'Gut', 'Stark'],
+    agreePrefix: 'Ich stimme den',
+    termsLink: 'Nutzungsbedingungen',
+    andText: 'und der',
+    privacyLink: 'Datenschutzerklärung',
+    agreeTrialSuffix: 'zu und bestätige den Anspruch auf eine kostenlose Admin-Testphase.',
+    submit: 'Kostenlose Testphase starten',
+    submitting: 'Dein Admin-Arbeitsbereich wird erstellt…',
+    haveAccount: 'Bereits ein Konto vorhanden?',
+    loginCta: 'Anmelden',
+    closeLabel: 'Schließen',
+    successTitle: 'Dein Admin-Test-Arbeitsbereich ist bereit!',
+    successText: 'Du wirst jetzt in dein Admin-Dashboard eingeloggt…',
+    errors: {
+      name: 'Bitte gib deinen vollständigen Namen ein (mindestens 2 Zeichen).',
+      workspace: 'Bitte gib deinen Firmen- oder Markennamen ein (mindestens 2 Zeichen).',
+      email: 'Bitte gib eine gültige geschäftliche E-Mail-Adresse ein.',
+      password: 'Das Passwort muss zwischen 8 und 128 Zeichen lang sein.',
+      terms: 'Bitte bestätige die Bedingungen und die Testphasen-Berechtigung.',
+      exists: 'Für diese E-Mail-Adresse existiert bereits ein Konto. Bitte melde dich stattdessen an.',
+      paused: 'Neue Test-Registrierungen sind vorübergehend pausiert. Bitte versuche es in Kürze erneut.',
+      unavailable: 'Der Registrierungsdienst ist derzeit nicht erreichbar. Bitte prüfe deine Verbindung.',
+      generic: 'Dein Admin-Konto konnte nicht erstellt werden. Bitte überprüfe deine Angaben.',
+    },
   },
 };
 

@@ -9,7 +9,7 @@ import {
   updateProfile,
 } from 'firebase/auth';
 import { doc, getFirestore, initializeFirestore, setDoc } from 'firebase/firestore';
-import { getFunctions, httpsCallable } from 'firebase/functions';
+import { connectFunctionsEmulator, getFunctions, httpsCallable } from 'firebase/functions';
 import { getStorage } from 'firebase/storage';
 import publicDefaults from './gos-public-config.json';
 import { showToast } from '../utils/toast';
@@ -40,6 +40,17 @@ export let auth = primaryAuth;
 export let db = primaryDb;
 export let storage = getStorage(firebaseApp);
 export const primaryFunctions = getFunctions(firebaseApp, env.VITE_FIREBASE_FUNCTIONS_REGION || 'us-central1');
+if (env.VITE_USE_FIREBASE_EMULATORS === 'true' || env.VITE_FUNCTIONS_EMULATOR_PORT) {
+  try {
+    connectFunctionsEmulator(
+      primaryFunctions,
+      env.VITE_FUNCTIONS_EMULATOR_HOST || '127.0.0.1',
+      Number(env.VITE_FUNCTIONS_EMULATOR_PORT || 5001),
+    );
+  } catch {
+    /* Emulator already connected */
+  }
+}
 export let functions = primaryFunctions;
 export function setBackendContext(app = firebaseApp) {
   auth = getAuth(app);

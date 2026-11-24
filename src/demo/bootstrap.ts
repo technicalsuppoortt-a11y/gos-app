@@ -86,6 +86,10 @@ if (/^\/dashboard\/?$/i.test(location.pathname)) {
     import('../pages/DashboardPage.tsx?account-demo').catch(() => undefined),
     import('../pages/dashboard/HomeDashboard.tsx?account-demo').catch(() => undefined),
   );
+} else if (location.pathname.startsWith('/admin')) {
+  preloads.push(
+    import('../components/layout/AdminLayout.tsx?account-demo').catch(() => undefined),
+  );
 } else if (location.pathname === '/' && !params.has('oobCode')) {
   preloads.push(
     import('../pages/landing/LandingPage.tsx?account-demo').catch(() => undefined),

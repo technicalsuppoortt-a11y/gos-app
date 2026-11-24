@@ -105,7 +105,8 @@ const brandCopy = new Map([
 for (const [english, arabic] of Object.entries(catalogAr)) {
   assert.ok(english.trim());
   assert.ok(arabic.trim());
-  if (brandCopy.get(english) !== arabic) assert.match(arabic, /[\u0600-\u06ff]/, `Arabic text missing: ${english}`);
+  if (english === 'Arabic') assert.equal(arabic, 'Arabic', 'Language option label stays in English');
+  else if (brandCopy.get(english) !== arabic) assert.match(arabic, /[\u0600-\u06ff]/, `Arabic text missing: ${english}`);
   assert.ok(catalogNl[english]?.trim(), `Dutch translation missing for catalog key: ${english}`);
   assert.ok(catalogDe[english]?.trim(), `German translation missing for catalog key: ${english}`);
 }

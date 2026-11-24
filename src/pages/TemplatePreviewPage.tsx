@@ -152,7 +152,7 @@ export function StandaloneTemplatePreview({ title, asset, children, language, te
             const next = new URLSearchParams(current);
             next.set('lang', option);
             return next;
-          }, { replace: true })}>{option === 'ar' ? 'العربية' : 'English'}</button>)}
+          }, { replace: true })}>{option === 'ar' ? 'Arabic' : 'English'}</button>)}
         </div>}
       </div>
       {asset && page && <div className="template-preview-controls">

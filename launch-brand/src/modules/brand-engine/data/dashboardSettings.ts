@@ -174,7 +174,7 @@ export function dashboardSettings(state: BrandState, ar = false) {
       let text = String(value);
       if (!text.trim()) return;
       if (typeof value === "boolean") text = value ? (ar ? "نعم" : "Yes") : ar ? "لا" : "No";
-      if (text === "ar-EG") text = "العربية";
+      if (text === "ar-EG") text = "Arabic";
       if (text === "en-US") text = "English";
       if (text === "copilot-v1") text = ar ? "تصميم موحّد" : "Shared dashboard layout";
       if (key === "theme") text = value === "dark" ? (ar ? "داكن" : "Dark") : ar ? "فاتح" : "Light";

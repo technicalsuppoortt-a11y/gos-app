@@ -373,7 +373,16 @@ export function WorkspaceSwitcher({ isCollapsed = false, className = '', liveInv
                   <Search size={15} className="absolute start-3 text-gray-400 pointer-events-none" />
                   <input
                     ref={searchInputRef}
-                    type="text"
+                    type="search"
+                    name="gos_switcher_lookup_q"
+                    autoComplete="off"
+                    autoCorrect="off"
+                    autoCapitalize="off"
+                    spellCheck={false}
+                    data-lpignore="true"
+                    data-1p-ignore="true"
+                    data-bwignore="true"
+                    data-form-type="other"
                     value={searchQuery}
                     onChange={e => setSearchQuery(e.target.value)}
                     aria-label={translateText(platform ? 'Search workspaces' : 'Search sub-accounts')}

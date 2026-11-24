@@ -1659,6 +1659,12 @@ export const AICopilot: React.FC = () => {
             )}
             <textarea
               ref={promptRef}
+              name="gos_copilot_prompt_composer"
+              autoComplete="off"
+              data-lpignore="true"
+              data-1p-ignore="true"
+              data-bwignore="true"
+              data-form-type="other"
               dir="auto"
               value={prompt}
               disabled={busy && pendingMedia?.kind === 'audio'}
@@ -1997,7 +2003,21 @@ export const AICopilot: React.FC = () => {
                       transition={{ duration: 0.16 }}
                     >
                       <Search size={14} />
-                      <input autoFocus value={historySearch} onChange={event => setHistorySearch(event.target.value)} placeholder={translateText('Search conversations')} />
+                      <input
+                        autoFocus
+                        type="search"
+                        name="gos_copilot_thread_lookup"
+                        autoComplete="off"
+                        autoCorrect="off"
+                        spellCheck={false}
+                        data-lpignore="true"
+                        data-1p-ignore="true"
+                        data-bwignore="true"
+                        data-form-type="other"
+                        value={historySearch}
+                        onChange={event => setHistorySearch(event.target.value)}
+                        placeholder={translateText('Search conversations')}
+                      />
                     </motion.label>
                   ),
                 )}
@@ -3840,7 +3860,7 @@ function CopilotActionForm({
                       onClick={() => onChange('language', 'ar')}
                     >
                       {(v.language || (arabic ? 'ar' : 'en')) === 'ar' && <Check size={11} />}
-                      <span>العربية (RTL)</span>
+                      <span>Arabic (RTL)</span>
                     </button>
                     <button
                       type="button"
@@ -4270,7 +4290,7 @@ function CopilotActionForm({
             <div className="ai-funnel-blueprint-stats">
               <span>{summary.stepsCount} {t('خطوات', 'Steps')}</span>
               <span>{summary.totalSections} {t('قسم', 'Sections')}</span>
-              <span>{summary.language === 'ar' ? 'RTL العربية' : 'LTR English'}</span>
+              <span>{summary.language === 'ar' ? 'RTL Arabic' : 'LTR English'}</span>
             </div>
           </div>
           {Array.isArray(summary.steps) && summary.steps.length > 0 && (
@@ -4628,6 +4648,11 @@ function DraftPreview({ draft, update, confirm, busy }: { draft: Draft; update: 
       <label>
         {localizeNode(draft.kind === 'landing' ? 'Page name' : draft.kind === 'campaign' ? 'Campaign name' : draft.kind === 'booking' ? 'Service name' : 'Product name')}
         <input
+          name="gos_copilot_draft_label"
+          autoComplete="off"
+          data-lpignore="true"
+          data-1p-ignore="true"
+          data-form-type="other"
           value={draft.name}
           onChange={event => update('name', event.target.value)}
           placeholder={translateText(

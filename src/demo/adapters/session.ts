@@ -12,9 +12,64 @@ export const demoSession: StoredAuth = {
   token: 'local-demo-only-not-a-firebase-token',
 };
 
+export type DemoAdminTrialSeed = {
+  id: string;
+  tenantId: string;
+  name: string;
+  workspaceName: string;
+  email: string;
+  phone?: string;
+  language?: string;
+  trialDays?: number;
+  credits?: number;
+};
+
+export function readAdminTrialSeed(): DemoAdminTrialSeed | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    const adminRaw = window.sessionStorage.getItem('gos.demo-admin-trial-session');
+    if (!adminRaw) return null;
+    const parsed = JSON.parse(adminRaw);
+    if (!parsed?.email) return null;
+    const id = String(parsed.id || 'demo-trial-admin');
+    return {
+      id,
+      tenantId: String(parsed.tenantId || `agency-${id}`),
+      name: String(parsed.name || parsed.email.split('@')[0] || 'Admin'),
+      workspaceName: String(parsed.workspaceName || 'Trial Workspace'),
+      email: String(parsed.email).trim().toLowerCase(),
+      phone: parsed.phone ? String(parsed.phone) : undefined,
+      language: parsed.language === 'ar' ? 'ar' : 'en',
+      trialDays: Number(parsed.trialDays) || 14,
+      credits: Number(parsed.credits) || 1000,
+    };
+  } catch {
+    return null;
+  }
+}
+
 function readDemoOverride(): StoredAuth | null {
   if (typeof window === 'undefined') return null;
   try {
+    const parsedAdmin = readAdminTrialSeed();
+    if (parsedAdmin) {
+      return {
+        user: {
+          id: parsedAdmin.id,
+          name: parsedAdmin.name,
+          email: parsedAdmin.email,
+          accountType: 'agency',
+          mustChangePassword: false,
+          cashWalletRestricted: true,
+        },
+        role: 'ADMIN',
+        tenant: {
+          id: parsedAdmin.tenantId,
+          name: parsedAdmin.workspaceName,
+        },
+        token: 'local-demo-admin-token',
+      };
+    }
     const raw = window.sessionStorage.getItem('gos.demo-customer-session');
     if (!raw) return null;
     const parsed = JSON.parse(raw);
@@ -48,7 +103,8 @@ export type SessionErrorCode =
   | 'NO_WORKSPACE'
   | 'ACCESS_DENIED';
 
-export const login = async (): Promise<StoredAuth> => readDemoOverride() || demoSession;
+export const activeDemoSession = (): StoredAuth => readDemoOverride() || demoSession;
+export const login = async (): Promise<StoredAuth> => activeDemoSession();
 export const resolveSession = login;
 export const consumeAuthNotice = () => null;
 export const beginActivation = () => {};
@@ -102,6 +158,7 @@ export function FirebaseSession({ children }: { children: ReactNode }) {
 export async function logoutFirebase() {
   try {
     window.sessionStorage.removeItem('gos.demo-customer-session');
+    window.sessionStorage.removeItem('gos.demo-admin-trial-session');
   } catch {
     /* noop */
   }

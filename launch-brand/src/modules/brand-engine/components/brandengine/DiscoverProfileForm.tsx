@@ -337,7 +337,7 @@ export function DiscoverProfileForm({
             <div className="profile-section-body">
               <div>
                 {choices("language", [
-                  { id: "ar", en: "Arabic", ar: "العربية", code: "AR", hintEn: "Right-to-left interface & copy", hintAr: "واجهة ومحتوى باللغة العربية" },
+                  { id: "ar", en: "Arabic", ar: "Arabic", code: "AR", hintEn: "Right-to-left interface & copy", hintAr: "واجهة ومحتوى باللغة العربية" },
                   { id: "en", en: "English", ar: "الإنجليزية", code: "EN", hintEn: "Global English interface & copy", hintAr: "واجهة ومحتوى باللغة الإنجليزية" },
                   { id: "both", en: "Arabic + English", ar: "العربية + الإنجليزية", code: "AR·EN", hintEn: "Bilingual multi-market experience", hintAr: "تجربة ثنائية اللغة للأسواق المتعددة" },
                 ])}
@@ -345,7 +345,7 @@ export function DiscoverProfileForm({
                   <div className="profile-default-language">
                     <h3>{t("Default workspace language", "اللغة الافتراضية للمنصة")}</h3>
                     {choices("defaultLanguage", [
-                      { id: "ar", en: "Arabic", ar: "العربية", code: "AR" },
+                      { id: "ar", en: "Arabic", ar: "Arabic", code: "AR" },
                       { id: "en", en: "English", ar: "الإنجليزية", code: "EN" },
                     ])}
                   </div>

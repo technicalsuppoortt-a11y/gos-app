@@ -483,7 +483,7 @@ export function AIFunnelArchitectModal({
                   className={outputLanguage === 'ar' ? 'active' : ''}
                   onClick={() => setOutputLanguage('ar')}
                 >
-                  <span>العربية (RTL)</span>
+                  <span>Arabic (RTL)</span>
                   {outputLanguage === 'ar' && <Check size={14} />}
                 </button>
               </div>

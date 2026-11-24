@@ -190,7 +190,7 @@ try {
     assert.ok(mobileFits, 'Step template mobile preview has zero horizontal overflow');
 
     // Switch preview language to Arabic (RTL) & verify Western digits + clean form (zero legacy FitZone copy)
-    await previewTab.locator('.template-preview-devices button').filter({ hasText: 'العربية' }).click();
+    await previewTab.locator('.template-preview-devices button').filter({ hasText: 'Arabic' }).click();
     await previewTab.waitForFunction(
       () => document.querySelector('.template-preview-page')?.getAttribute('dir') === 'rtl'
     );
@@ -439,7 +439,7 @@ try {
   await saPage.locator('.adm-template-gallery-card').getByRole('button', { name: 'Edit' }).first().click();
   const saEditor = saPage.getByRole('dialog');
   await saEditor.waitFor();
-  await saEditor.getByRole('button', { name: /العربية \(RTL\)/i }).click();
+  await saEditor.getByRole('button', { name: /Arabic \(RTL\)/i }).click();
   await saEditor.getByRole('button', { name: /English \(LTR\)/i }).click();
   await saEditor.getByRole('button', { name: 'Cancel', exact: true }).click();
   await saPage.getByRole('combobox', { name: 'Industry' }).selectOption('All');

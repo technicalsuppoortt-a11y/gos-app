@@ -1,10 +1,15 @@
-.lp-native-preview { position: relative; width: 100%; height: 346px; overflow: hidden; background: var(--lp-bg, #f8f9fc); isolation: isolate; }
+.lp-native-preview,
+.lp-wl-native-preview { position: relative; width: 100%; height: 346px; overflow: hidden; background: var(--lp-bg, #f8f9fc); isolation: isolate; }
 .lp-native-static { position:absolute;inset:0;display:block;overflow:hidden;pointer-events:none; }
-.lp-native-preview[data-preview-screen="dashboard"] { background: radial-gradient(ellipse at top right, color-mix(in srgb, var(--ws-accent, #7C3AED) 10%, transparent), transparent 65%), #f4f3fa; }
-.dark .lp-native-preview[data-preview-screen="dashboard"] { background: radial-gradient(ellipse at top right, color-mix(in srgb, var(--ws-accent, #7C3AED) 15%, transparent), transparent 65%), #101424; }
+.lp-native-preview[data-preview-screen="dashboard"],
+.lp-wl-native-preview[data-preview-screen="dashboard"] { background: radial-gradient(ellipse at top right, color-mix(in srgb, var(--ws-accent, #7C3AED) 10%, transparent), transparent 65%), #f4f3fa; }
+.dark .lp-native-preview[data-preview-screen="dashboard"],
+.dark .lp-wl-native-preview[data-preview-screen="dashboard"] { background: radial-gradient(ellipse at top right, color-mix(in srgb, var(--ws-accent, #7C3AED) 15%, transparent), transparent 65%), #101424; }
 .lp-mock__logo .lp-preview-logo { display:block;width:108px;max-width:100%;height:auto;object-fit:contain; }
 .lp-mock__logo .lp-preview-logo-light { display:none; }
 .dark .lp-mock__logo .lp-preview-logo-dark { display:none; }
 .dark .lp-mock__logo .lp-preview-logo-light { display:block; }
-.lp-native-demo-label { position: absolute; z-index: 2; inset-block-start: 3px; inset-inline-end: 6px; padding: 2px 5px; border: 1px solid var(--lp-border); border-radius: 4px; background: var(--lp-surface, #fff); color: var(--lp-muted); font-size: 6px; line-height: 1.2; }
+.lp-native-demo-label,
+.lp-wl-demo-label { position: absolute; z-index: 2; inset-block-start: 3px; inset-inline-end: 6px; padding: 2px 6px; border: 1px solid var(--lp-border); border-radius: 4px; background: var(--lp-surface, #fff); color: var(--lp-muted); font-size: 6.5px; font-weight: 700; line-height: 1.2; }
+.lp-wl-demo-label { border-color: color-mix(in srgb, var(--ws-accent, #EA580C) 32%, transparent); color: var(--ws-accent, #EA580C); }
 @media (max-width:520px) { .lp-mock__logo .lp-preview-logo { width:90px; } }

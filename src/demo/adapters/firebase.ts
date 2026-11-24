@@ -3,7 +3,7 @@ import { read, write, rows, entityMutation, spendCredits } from '../store';
 import { gatewayFields, type GatewayProvider } from '../../../functions/payment-gateway-model.js';
 import { normalizeTrackingConfig, trackingDefaults } from '../../../functions/marketing-tracking-model.js';
 import { evaluateQualification, publicScreeningQuestions, validQualificationQuestions } from '../../../functions/booking-qualification.js';
-import { demoBilling } from './billing';
+import { demoBilling, seedTrialAdminWorkspace } from './billing';
 export const auth = getAuth(), primaryAuth = auth;
 export const db = {}, primaryDb = db, firebaseApp = {}, firebaseConfig = {}, functions = {};
 export const primaryFunctions = functions;
@@ -175,6 +175,28 @@ async function demoRequest(name: string, data: any): Promise<any> {
     }
     case 'productAccess': return { name: 'Demo Product', files: [], message: 'Demo access updated.' };
     case 'activateUser': return { success: true };
+    case 'registerTrialAdmin': {
+      const id = 'demo-admin-' + crypto.randomUUID().slice(0, 8);
+      const tenantId = `agency-${id}`;
+      const seedPayload = {
+        id,
+        tenantId,
+        name: String(data.name || 'Admin').trim(),
+        workspaceName: String(data.workspaceName || 'Trial Brand').trim(),
+        email: String(data.email || '').trim().toLowerCase(),
+        phone: data.phone ? String(data.phone).trim() : undefined,
+        language: data.language === 'ar' ? 'ar' : 'en',
+        trialDays: 14,
+        credits: 1000,
+      };
+      try {
+        window.sessionStorage.setItem('gos.demo-admin-trial-session', JSON.stringify(seedPayload));
+      } catch {
+        /* ignore session storage errors */
+      }
+      await seedTrialAdminWorkspace(seedPayload);
+      return { id, tenantId, trialDays: 14, credits: 1000, status: 'trialing' };
+    }
     case 'billingService': return demoBilling(data);
     case 'domainProvider': {
       const demoPricing = read<any[]>('demo:domain_pricing', [

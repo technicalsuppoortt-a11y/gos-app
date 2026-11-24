@@ -1,11 +1,15 @@
 import {
+  addDays,
+  CHANNEL_IDS,
   executeBilling,
+  newCommunicationWallet,
   PLATFORM,
+  TOOL_IDS,
   type BillingActor,
   type BillingStore,
 } from "../../../functions/billing-engine.js";
 import { read, write, entries } from "../store";
-import { demoSession } from "./session";
+import { activeDemoSession, demoSession, type DemoAdminTrialSeed } from "./session";
 
 // The demo account is a USER whose provider is a simulated Admin. Requests are auto-approved by that
 // simulated Admin so the full plan → wallet → ledger flow can be explored without a second account.
@@ -197,9 +201,122 @@ async function seed() {
     await executeBilling("savePlan", { plan: plan(item) }, admin, store);
 }
 
+export async function seedTrialAdminWorkspace(trialSeed: DemoAdminTrialSeed) {
+  await seed();
+  const id = trialSeed.id;
+  if (read("doc:billingSubscriptions/" + id)) return;
+  const now = new Date().toISOString();
+  const days = Math.max(1, Number(trialSeed.trialDays) || 14);
+  const endsAt = addDays(now, days);
+  const aiCredits = Math.max(0, Number(trialSeed.credits) || 1000);
+  const emailCredits = 500;
+  const lang = trialSeed.language === "ar" ? "ar" : "en";
+
+  write("doc:users/" + id, {
+    id,
+    role: "ADMIN",
+    status: "Active",
+    accountType: "agency",
+    tenantId: trialSeed.tenantId,
+    tenantName: trialSeed.workspaceName,
+    name: trialSeed.name,
+    email: trialSeed.email,
+    ...(trialSeed.phone ? { phone: trialSeed.phone } : {}),
+    trialOrigin: "landing_start_now",
+    createdAt: now,
+    activatedAt: now,
+  });
+
+  write("doc:tenants/" + trialSeed.tenantId, {
+    id: trialSeed.tenantId,
+    name: trialSeed.workspaceName,
+    accountType: "agency",
+    ownerId: id,
+    ownerUid: id,
+    billingOwnerId: id,
+    status: "Active",
+    createdAt: now,
+  });
+
+  write("doc:dashboardBrands/" + id, {
+    values: {
+      name: trialSeed.workspaceName,
+      logoUrl: "",
+      theme: "violet",
+      language: lang,
+      currency: "USD",
+      mode: "system",
+      timezone: "UTC",
+    },
+    updatedBy: id,
+    updatedAt: now,
+  });
+
+  write("doc:billingSubscriptions/" + id, {
+    id,
+    subscriberId: id,
+    subscriberRole: "ADMIN",
+    subscriberName: trialSeed.name,
+    subscriberEmail: trialSeed.email,
+    providerId: PLATFORM,
+    planId: `${PLATFORM}__trial`,
+    planName: { en: "Admin Free Trial", ar: "التجربة المجانية لحساب المدير" },
+    kind: "trial",
+    billingType: "fixed",
+    durationDays: days,
+    status: "trialing",
+    price: 0,
+    currency: "USD",
+    credits: aiCredits,
+    aiCredits,
+    emailCredits,
+    tools: [...TOOL_IDS],
+    channels: [...CHANNEL_IDS],
+    limits: { seats: 3, clients: 10 },
+    addonTools: [],
+    addonSeats: 0,
+    startedAt: now,
+    currentPeriodStart: now,
+    currentPeriodEnd: endsAt,
+    specialCaseFlow: "landing_admin_trial",
+    updatedAt: now,
+  });
+
+  write("doc:billingWallets/" + id, {
+    id,
+    subscriberId: id,
+    subscriberRole: "ADMIN",
+    providerId: PLATFORM,
+    balance: aiCredits,
+    aiCredits,
+    emailCredits,
+    lifetimeGranted: aiCredits,
+    lifetimeConsumed: 0,
+    lifetimeEmailGranted: emailCredits,
+    lifetimeEmailConsumed: 0,
+    currency: "USD",
+    updatedAt: now,
+  });
+
+  write(
+    "doc:communicationWallets/" + id,
+    newCommunicationWallet(id, "ADMIN", PLATFORM, now),
+  );
+}
+
 export async function demoBilling(data: Record<string, any>) {
   await seed();
-  const result = await executeBilling(data.operation, data, user, store);
+  const current = activeDemoSession();
+  const activeActor: BillingActor =
+    current.role === "ADMIN"
+      ? {
+          uid: current.user.id,
+          role: "ADMIN",
+          name: current.user.name,
+          email: current.user.email,
+        }
+      : user;
+  const result = await executeBilling(data.operation, data, activeActor, store);
   // Auto-approve automated gateway payments in demo mode.
   // Manual transfers with uploaded receipts remain pending so they can be inspected in the requests panel.
   if (

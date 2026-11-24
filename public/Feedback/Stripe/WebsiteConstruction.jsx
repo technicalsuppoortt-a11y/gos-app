@@ -399,7 +399,7 @@ export default function WebsiteConstruction({ stepNumber }) {
   ];
 
   const languageOptions = [
-    { value: "ar", label: "العربية (Arabic)", icon: "🌐" },
+    { value: "ar", label: "Arabic", icon: "🌐" },
     { value: "en", label: "English (English)", icon: "🇺🇸" },
   ];
 
