@@ -83,6 +83,7 @@ export function normalizeConversation(row: ApiRecord, messages: ApiRecord[] = ro
   const rawPreview = row.last_message?.body || row.last_message_body || (typeof row.last_message === 'string' ? row.last_message : '') || messages.at(-1)?.body || '';
   return {
     id: row.id, name, initials: name.split(/\s+/).slice(0, 2).map((v: string) => v[0]).join(''),
+    ...(typeof row.avatar_url === 'string' && row.avatar_url.startsWith('https://') ? { avatar: row.avatar_url } : {}),
     channel: ['instagram', /* 'facebook', */ 'whatsapp', 'messenger', 'webchat', 'email'].includes(row.channel) ? row.channel : 'webchat',
     preview: stripLeakedActionJson(String(rawPreview)),
     time: row.updated_at || row.created_at || '', unread: row.unread_count ?? 0,
@@ -103,6 +104,9 @@ export function normalizeConversation(row: ApiRecord, messages: ApiRecord[] = ro
       citationsCount: Array.isArray(message.citations) ? message.citations.length : 0,
       action: normalizeAction(message.action),
       buttons: normalizeButtons(message.buttons),
+      ...(message.reactions && (message.reactions.customer || message.reactions.agent)
+        ? { reactions: { customer: typeof message.reactions.customer === 'string' ? message.reactions.customer : null, agent: typeof message.reactions.agent === 'string' ? message.reactions.agent : null } }
+        : {}),
       ...(message.delivery_status === 'failed'
         ? { status: 'failed' as const, error: message.delivery_error || 'Meta rejected this reply.' }
         : message.delivery_status === 'unknown'

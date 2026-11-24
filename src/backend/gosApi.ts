@@ -284,6 +284,9 @@ export const gosApi = {
       method: 'POST',
       body: buttons && buttons.length > 0 ? { body, buttons } : { body },
     }),
+  // The team's emoji on a customer's message (null takes it off), sent through Meta like a reply.
+  reactToMessage: (conversationId: string, messageId: string, emoji: string | null) =>
+    gosRequest<{ message: ApiRecord }>(`/inbox/conversations/${id(conversationId)}/messages/${id(messageId)}/reaction`, { method: 'PUT', body: { emoji } }),
   setConversationAi: (conversationId: string, ai_auto_reply: boolean) => gosRequest<{ conversation: ApiRecord }>(`/inbox/conversations/${id(conversationId)}/ai`, { method: 'PATCH', body: { ai_auto_reply } }),
   triggerConversationAiReply: (conversationId: string) => gosRequest<{ conversation: ApiRecord; message: ApiRecord | null; outcome: string }>(`/inbox/conversations/${id(conversationId)}/ai-reply`, { method: 'POST', body: {} }),
   deleteConversation: (conversationId: string) => gosRequest<{ deleted: boolean }>(`/inbox/conversations/${id(conversationId)}`, { method: 'DELETE' }),

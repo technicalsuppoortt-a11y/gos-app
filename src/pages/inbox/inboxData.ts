@@ -58,6 +58,8 @@ export type Message = {
   action?: InboxLiveAction | null;
   /** Interactive quick-reply / link buttons sent natively on WhatsApp, Messenger, Instagram, or Webchat. */
   buttons?: InboxMessageButton[];
+  /** Emoji reactions on this message: the customer's (on any message) and the team's (on customer messages). */
+  reactions?: { customer: string | null; agent: string | null };
 };
 
 export type Activity = { id: string; kind: ActivityKind; text: string; time: string };
