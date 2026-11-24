@@ -1,5 +1,7 @@
 import { read, write, rows, entityMutation, spendCredits } from '../store';
 import { makeLead, mainPipeline, parseCSV } from '../../pages/crm/model';
+import { buildAIFunnelAsset, synthesizeTailoredDraft, type AIFunnelBrief, type AIFunnelGoal, type AIFunnelTone } from '../../backend/aiFunnelArchitect';
+import type { CurrencyCode } from '../../utils/currency';
 export type ApiRecord = Record<string, any>;
 export type GosSource = { id: string; name: string; type: any; status: string; content?: string; chunk_count?: number; error?: string };
 export type GosAssistant = { live_enabled: boolean; channels: Record<string, boolean> };
@@ -309,13 +311,74 @@ export async function gosRequest<T>(input: string, options: { method?: string; b
           return { ok: true, kind, recordId: id, message: ar ? `تمت إضافة **${values.name}** إلى قاعدة المعرفة.` : `Added **${values.name}** to AI Knowledge Base.`, href: '/dashboard/follow-up', hrefLabel: ar ? 'فتح المتابعة الذكية' : 'Open AI Follow-Up' } as T;
         }
         if (kind === 'update_assistant') {
-          write('assistant', { live_enabled: values.live_enabled === 'true', channels: { whatsapp: values.whatsapp === 'true', instagram: values.instagram === 'true', messenger: values.messenger === 'true', webchat: values.webchat === 'true' } });
+          write('assistant', {
+            live_enabled: values.live_enabled === 'true',
+            tone: values.tone || 'Friendly',
+            use_emojis: values.use_emojis !== 'false',
+            channels: { whatsapp: values.whatsapp === 'true', instagram: values.instagram === 'true', messenger: values.messenger === 'true', webchat: values.webchat === 'true' },
+          });
           return { ok: true, kind, recordId: 'assistant', message: ar ? 'تم تحديث إعدادات المساعد الذكي بنجاح.' : 'Updated AI Assistant settings.', href: '/dashboard/follow-up', hrefLabel: ar ? 'فتح المتابعة الذكية' : 'Open AI Follow-Up' } as T;
         }
-        const resource = kind === 'landing' ? 'assets' : kind === 'campaign' ? 'templates' : kind === 'booking' ? 'calendars' : 'products';
-        const href = kind === 'landing' ? '/dashboard/funnels' : kind === 'campaign' ? '/dashboard/follow-up' : kind === 'booking' ? '/dashboard/booking' : '/dashboard/products';
+        if (kind === 'landing') {
+          const lang: 'ar' | 'en' = (values.language === 'ar' || values.language === 'en') ? values.language : (ar ? 'ar' : 'en');
+          const funnelGoal: AIFunnelGoal = values.funnelType === 'sale' ? 'sale' : values.funnelType === 'booking' ? 'booking' : 'audience';
+          const tone: AIFunnelTone = (['persuasive', 'executive', 'friendly', 'urgent'].includes(values.tone || '') ? values.tone : 'persuasive') as AIFunnelTone;
+          const brief: AIFunnelBrief = {
+            funnelName: values.name || (lang === 'ar' ? 'فانل احترافي' : 'High-Converting Funnel'),
+            businessName: values.businessName || values.name || 'UpKlick Workspace',
+            niche: values.niche || (lang === 'ar' ? 'الخدمات والاستشارات' : 'Digital Business'),
+            goal: funnelGoal,
+            audienceAndPainPoints: [values.targetAudience, values.painPoints].filter(Boolean).join(' — ') || (lang === 'ar' ? 'العملاء الباحثون عن نتائج واضحة' : 'Ideal customers seeking fast results'),
+            offer: values.offerSummary || values.content || values.name || 'Core Offer',
+            price: values.price || '0',
+            currency: ((values.currency || 'USD') as CurrencyCode),
+            language: lang,
+            tone,
+            accentColor: values.accentColor || '#7C3AED',
+          };
+          const draftCopy = synthesizeTailoredDraft(brief);
+          if (values.headline?.trim()) draftCopy.headline = values.headline.trim();
+          if (values.primaryCta?.trim()) {
+            draftCopy.cta = values.primaryCta.trim();
+            draftCopy.formCta = values.primaryCta.trim();
+          }
+          const builtAsset = buildAIFunnelAsset(brief, draftCopy);
+          builtAsset.id = id;
+          if (values.assetKind === 'website') builtAsset.kind = 'website';
+          entityMutation('assets', id, builtAsset);
+          write('gos.assets.workspace.v1', { assets: rows('assets'), domains: rows('domains') });
+          const pages = builtAsset.document.pages ?? [];
+          const totalSections = pages.reduce((sum, p) => sum + (p.sections?.length ?? 0), 0);
+          const summary = {
+            assetId: id,
+            name: builtAsset.name,
+            assetKind: builtAsset.kind,
+            funnelType: values.funnelType || funnelGoal,
+            language: lang,
+            accentColor: brief.accentColor || '#7C3AED',
+            headline: draftCopy.headline,
+            stepsCount: pages.length,
+            totalSections,
+            firstPageId: pages[0]?.id ?? '',
+            steps: pages.map(p => ({ id: p.id, name: p.name, category: p.stepCategory || 'Landing', sectionCount: p.sections?.length ?? 0 })),
+          };
+          const targetHref = `/${builtAsset.kind === 'website' ? 'dashboard/websites' : 'dashboard/funnels'}/${id}`;
+          return {
+            ok: true,
+            kind,
+            recordId: id,
+            message: lang === 'ar'
+              ? `تم تصميم وبناء الفانل **${builtAsset.name}** (${pages.length} خطوات · ${totalSections} قسماً).`
+              : `Built your AI funnel **${builtAsset.name}** (${pages.length} steps · ${totalSections} sections).`,
+            href: targetHref,
+            hrefLabel: lang === 'ar' ? 'فتح الفانل في المحرر' : 'Open Funnel Builder',
+            asset: builtAsset,
+            summary,
+          } as T;
+        }
+        const resource = kind === 'campaign' ? 'templates' : kind === 'booking' ? 'calendars' : 'products';
+        const href = kind === 'campaign' ? '/dashboard/follow-up' : kind === 'booking' ? '/dashboard/booking' : '/dashboard/products';
         entityMutation(resource, id, { ...(body.record ?? values), id, name: values.name });
-        if (resource === 'assets') write('gos.assets.workspace.v1', { assets: rows('assets'), domains: rows('domains') });
         return { ok: true, kind, recordId: id, message: ar ? `تم حفظ **${values.name}** بنجاح.` : `Saved **${values.name}** in your workspace.`, href, hrefLabel: ar ? 'فتح في مساحة العمل' : 'Open in Workspace' } as T;
       }
       spendCredits();
@@ -387,10 +450,11 @@ export async function gosRequest<T>(input: string, options: { method?: string; b
             /جهة\s+اتصال|\b(add|create)\s+(a\s+)?contact/i.test(rawPrompt) ? 'create_contact' :
             /احجز\s+(موعد|ميعاد)|\b(book|schedule)\s+(an?\s+)?(appointment|call)/i.test(rawPrompt) ? 'create_appointment' :
             /خدمة\s+حجز|نظام\s+حجز|booking\s+flow|booking\s+service/i.test(rawPrompt) ? 'booking' :
-            /(?:انشئ|أنشئ|اعمل|جهز|اطلق)\s+حملة|\b(create|launch|build|new)\s+(a\s+)?(whatsapp\s+|email\s+|marketing\s+)?campaign/i.test(rawPrompt) ? 'campaign' :
-            /(?:انشئ|أنشئ|اعمل|اضف|أضف|ضيف)\s+(?:منتج|كورس)|\b(create|build|add|new)\s+(a\s+)?(course|product)/i.test(rawPrompt) ? 'product' :
-            /(?:انشئ|أنشئ|اعمل|صمم)\s+(?:صفحة\s+هبوط|فانل)|\b(create|build|design|new)\s+(a\s+)?(landing\s+page|funnel)/i.test(rawPrompt) ? 'landing' :
-            /(?:اضف|أضف|ضيف|درب)\s+(?:معلومة|قاعدة\s+المعرفة)|\b(add|train)\s+.*knowledge/i.test(rawPrompt) ? 'create_knowledge' : null;
+            /(?:انشئ|أنشئ|اعمل|جهز|اطلق|افتح\s+نموذج\s+الحمل)\s*حمل|\b(create|launch|build|make|new|open)\s+(a\s+)?(tailored\s+|whatsapp\s+|email\s+|marketing\s+)?campaign/i.test(rawPrompt) ? 'campaign' :
+            /(?:انشئ|أنشئ|اعمل|اضف|أضف|ضيف|افتح\s+نموذج\s+إنشاء)\s*(?:ال)?(?:منتج|كورس)|\b(create|build|make|add|new|open)\s+(a\s+)?(course|product)/i.test(rawPrompt) ? 'product' :
+            /(?:افتح\s+نموذج|open.*brief|(?:انشئ|أنشئ|اعمل|ابني|صمم)\s*(?:لي\s+)?(?:صفحة\s+هبوط|فانل|موقع)|\b(create|build|design|make|new)\s+(a\s+)?(high-converting\s+|complete\s+)?(landing\s+page|funnel|website))/i.test(rawPrompt) ? 'landing' :
+            /(?:اضف|أضف|ضيف|درب)\s+(?:معلومة|قاعدة\s+المعرفة)|\b(add|train)\s+.*knowledge/i.test(rawPrompt) ? 'create_knowledge' :
+            /(?:فعل|شغل|اضبط|حدث)\s+(?:الرد\s+التلقائي|المساعد\s+الذكي)|\b(configure|update|enable)\s+(ai\s+)?(assistant|auto-reply)/i.test(rawPrompt) ? 'update_assistant' : null;
         if (formKind) {
           grounded = true;
           const tomorrow = new Date(Date.now() + 86_400_000).toISOString().slice(0, 10);
@@ -401,11 +465,12 @@ export async function gosRequest<T>(input: string, options: { method?: string; b
             update_lead_stage: { lead_id: meta.leads[0]?.id || '', pipeline_id: meta.pipelines[0]?.id || 'main', stage: 'QUALIFIED', notes: '' },
             create_contact: { name: nameMatch?.[1]?.trim() ?? '', phone: phoneMatch?.[0]?.trim() ?? '', email: '', company: '' },
             create_appointment: { customerName: nameMatch?.[1]?.trim() ?? '', serviceName: meta.calendars[0]?.name || (ar ? 'جلسة استشارية' : 'Strategy Session'), date: tomorrow, time: '11:00', duration: '45', location: 'Google Meet', whatsapp: phoneMatch?.[0]?.trim() ?? '', email: '' },
-            booking: { name: ar ? 'جلسة استشارية' : 'Strategy Session', duration: '45', price: '0', currency: 'USD', location: 'Google Meet', content: ar ? 'جلسة تشخيص وخطة عمل مخصصة.' : 'One-on-one strategy consultation.' },
-            campaign: { name: ar ? 'حملة متابعة واتساب' : 'WhatsApp Growth Campaign', channel: 'WhatsApp', audience: 'All Leads', content: ar ? 'أهلاً بك! حابين نساعدك تبدأ معانا خطوة بخطوة — تحب نحجز مكالمة سريعة؟' : 'Hi! Ready to take the next step? Reply here to claim your spot.' },
-            product: { name: ar ? 'البرنامج التدريبي المتكامل' : 'Signature Coaching Program', productType: 'Online Course', price: '199', currency: 'USD', billing: 'One-time', content: ar ? 'برنامج عملي متكامل لمضاعفة المبيعات.' : 'Step-by-step program to scale your revenue.' },
-            landing: { name: ar ? 'صفحة العرض الرئيسي' : 'High-Converting Offer Page', headline: ar ? 'ضاعف نتائج أعمالك بخطوات واضحة' : 'Grow Faster With a Proven System', goal: 'Capture Leads', content: ar ? 'صفحة هبوط احترافية مصممة لتحويل الزوار إلى عملاء.' : 'Conversion-focused landing page tailored to your audience.' },
+            booking: { name: ar ? 'جلسة استشارية' : 'Strategy Session', duration: '45', price: '0', currency: 'USD', location: 'Google Meet', schedulePreset: 'mon_fri_9_5', bufferTime: '15', bookingMode: '1on1', requireApproval: 'false', confirmationBody: '', content: ar ? 'جلسة تشخيص وخطة عمل مخصصة.' : 'One-on-one strategy consultation.' },
+            campaign: { name: ar ? 'حملة متابعة واتساب' : 'WhatsApp Growth Campaign', channel: 'WhatsApp', audience: 'All Leads', goal: '', stepsCount: '3', tone: String(body.replyStyle || 'friendly'), useEmojis: body.useEmojis === false ? 'false' : 'true', cta: '', content: ar ? 'أهلاً بك! حابين نساعدك تبدأ معانا خطوة بخطوة — تحب نحجز مكالمة سريعة؟' : 'Hi! Ready to take the next step? Reply here to claim your spot.' },
+            product: { name: ar ? 'البرنامج التدريبي المتكامل' : 'Signature Coaching Program', productType: 'Online Course', price: '199', currency: 'USD', billing: 'One-time', deliveryMethod: 'portal', targetAudience: '', guarantee: '', content: ar ? 'برنامج عملي متكامل لمضاعفة المبيعات.' : 'Step-by-step program to scale your revenue.' },
+            landing: { name: '', assetKind: 'funnel', funnelType: /حجز|استشار|book/i.test(rawPrompt) ? 'booking' : /بيع|كورس|sale|course/i.test(rawPrompt) ? 'sale' : 'audience', stepsCount: '3', businessName: '', niche: '', targetAudience: '', painPoints: '', offerSummary: '', uniqueValue: '', price: '0', currency: 'USD', headline: '', primaryCta: '', tone: 'persuasive', useEmojis: body.useEmojis === false ? 'false' : 'true', language: ar ? 'ar' : 'en', accentColor: '#7C3AED', goal: 'Capture Leads', content: '' },
             create_knowledge: { name: ar ? 'معلومات عن خدماتنا' : 'Business Overview', sourceType: 'text', url: '', content: '' },
+            update_assistant: { live_enabled: 'true', whatsapp: 'true', instagram: 'true', messenger: 'true', webchat: 'true', tone: 'Friendly', use_emojis: 'true', goal: ar ? 'الرد على العملاء وحجز المواعيد' : 'Answer customer questions and book calls' },
           };
           form = { id: `form-${crypto.randomUUID()}`, kind: formKind, status: 'pending', values: defaults[formKind] ?? {}, meta };
           text = ar
@@ -419,6 +484,11 @@ export async function gosRequest<T>(input: string, options: { method?: string; b
             ? ['اكتبلي صياغة عملية جاهزة للنشر', 'فصّل لي الخطوة الأولى بأمثلة', 'إزاي أطبق ده على مشروعي؟']
             : ['Write ready-to-use copy for this', 'Give me concrete examples', 'How do I apply this to my workspace?'];
         }
+      }
+      if (body.useEmojis === false) {
+        const stripEmoji = (s: string) => s.replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}\uFE0E\uFE0F\u200D]+/gu, '').replace(/[ \t]{2,}/g, ' ').trim();
+        text = stripEmoji(text);
+        followUps = followUps.map(stripEmoji).filter(Boolean);
       }
       const convId = body.conversationId || crypto.randomUUID();
       const userMsg = { id: body.requestId || crypto.randomUUID(), role: 'user', text: rawPrompt };
@@ -441,7 +511,21 @@ export async function gosRequest<T>(input: string, options: { method?: string; b
     if (parts[1] === 'conversations' && parts[2] && parts[3] === 'ai-reply' && method === 'POST') {
       const existing = rows('conversations').find(row => row.id === parts[2]);
       const now = new Date().toISOString();
-      const reply = { id: crypto.randomUUID(), conversation_id: parts[2], direction: 'outbound', actor: 'assistant', body: 'Hello! Thanks for reaching out — how can we help you today?', outcome: 'answered', citations: [{ source_id: 'demo', source_name: 'Knowledge Base' }], created_at: now };
+      const reply = {
+        id: crypto.randomUUID(),
+        conversation_id: parts[2],
+        direction: 'outbound',
+        actor: 'assistant',
+        body: 'Hello! Thanks for reaching out — how can we help you today?',
+        buttons: [
+          { id: 'ai_book', title: 'Book Appointment', kind: 'reply', url: null },
+          { id: 'ai_services', title: 'Services & Prices', kind: 'reply', url: null },
+          { id: 'ai_team', title: 'Talk to Team', kind: 'reply', url: null },
+        ],
+        outcome: 'answered',
+        citations: [{ source_id: 'demo', source_name: 'Knowledge Base' }],
+        created_at: now,
+      };
       const updated = { ...(existing ?? { id: parts[2] }), ai_paused: false, ai_state: 'answered', last_message: reply.body, updated_at: now, messages: [...(existing?.messages ?? []), reply] };
       entityMutation('conversations', parts[2], updated);
       return { conversation: updated, message: reply, outcome: 'answered' } as T;

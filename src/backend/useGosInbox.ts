@@ -1,8 +1,66 @@
 import { useCallback, useEffect, useState } from 'react';
 import { gosApi, type ApiRecord } from './gosApi';
-import type { Attachment, Conversation } from '../pages/inbox/inboxData';
+import type { Attachment, Conversation, InboxLiveAction, InboxMessageButton } from '../pages/inbox/inboxData';
 
 const MEDIA_LABEL = /^\[(Image|Video|Voice message|Document|Sticker|Media)\]$/;
+
+/** Strips any legacy leaked AI action JSON blobs so raw JSON is never shown in the Inbox UI. */
+export function stripLeakedActionJson(raw: string): string {
+  if (!raw || (!raw.includes('{') && !raw.includes('```'))) return raw;
+  const trimmed = raw.trim();
+  // Pure JSON object containing reply
+  if (trimmed.startsWith('{') && trimmed.endsWith('}')) {
+    try {
+      const parsed = JSON.parse(trimmed) as Record<string, unknown>;
+      if (parsed && typeof parsed.reply === 'string' && parsed.reply.trim()) {
+        return parsed.reply.trim();
+      }
+    } catch { /* fall through */ }
+  }
+  const cleaned = raw
+    .replace(/```(?:json)?\s*\{[\s\S]*?"(?:action|reply|slot|calendar_id|service_name)"[\s\S]*?\}\s*```/gi, '')
+    .replace(/\{[^{}]*"(?:action|reply|slot|calendar_id|service_name)"[^{}]*\}/gi, '')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
+  return cleaned || raw;
+}
+
+function normalizeAction(raw: unknown): InboxLiveAction | null {
+  if (!raw || typeof raw !== 'object') return null;
+  const a = raw as Record<string, unknown>;
+  if (typeof a.type !== 'string' || !a.type.trim()) return null;
+  return {
+    type: a.type,
+    label: typeof a.label === 'string' ? a.label : undefined,
+    detail: typeof a.detail === 'string' ? a.detail : null,
+    booking_id: typeof a.booking_id === 'string' ? a.booking_id : null,
+    booking_code: typeof a.booking_code === 'string' ? a.booking_code : null,
+    service_name: typeof a.service_name === 'string' ? a.service_name : null,
+    date: typeof a.date === 'string' ? a.date : null,
+    time: typeof a.time === 'string' ? a.time : null,
+    location: typeof a.location === 'string' ? a.location : null,
+    verified: Boolean(a.verified),
+    lead_id: typeof a.lead_id === 'string' ? a.lead_id : null,
+  };
+}
+
+function normalizeButtons(raw: unknown): InboxMessageButton[] {
+  if (!Array.isArray(raw)) return [];
+  const out: InboxMessageButton[] = [];
+  for (const item of raw.slice(0, 3)) {
+    if (!item || typeof item !== 'object') continue;
+    const b = item as Record<string, unknown>;
+    const title = typeof b.title === 'string' ? b.title.trim() : '';
+    if (!title) continue;
+    out.push({
+      id: typeof b.id === 'string' && b.id.trim() ? b.id.trim() : `btn-${out.length + 1}`,
+      title,
+      kind: b.kind === 'url' ? 'url' : 'reply',
+      url: typeof b.url === 'string' && b.url.trim() ? b.url.trim() : null,
+    });
+  }
+  return out;
+}
 
 function mediaAttachment(message: ApiRecord): Attachment {
   const mime = String(message.media.mime || '');
@@ -22,25 +80,29 @@ export function normalizeConversation(row: ApiRecord, messages: ApiRecord[] = ro
   const aiState = String(row.ai_state || row.status || 'paused');
   const aiPaused = Boolean(row.ai_paused) || aiState === 'human_takeover';
   const takenOver = aiPaused || aiState === 'handoff';
+  const rawPreview = row.last_message?.body || row.last_message_body || (typeof row.last_message === 'string' ? row.last_message : '') || messages.at(-1)?.body || '';
   return {
     id: row.id, name, initials: name.split(/\s+/).slice(0, 2).map((v: string) => v[0]).join(''),
     channel: ['instagram', /* 'facebook', */ 'whatsapp', 'messenger', 'webchat', 'email'].includes(row.channel) ? row.channel : 'webchat',
-    preview: row.last_message?.body || row.last_message_body || (typeof row.last_message === 'string' ? row.last_message : '') || messages.at(-1)?.body || '',
+    preview: stripLeakedActionJson(String(rawPreview)),
     time: row.updated_at || row.created_at || '', unread: row.unread_count ?? 0,
     tags: [], stage: row.stage || '', source: row.channel || '', phone: row.phone || '', email: row.email || '',
     location: '', assignee: row.assignee || '',
     aiState,
+    lastAction: normalizeAction(row.last_action),
     aiAutoReply: !aiPaused && aiState !== 'handoff' && aiState !== 'paused',
     takenOver,
     followUp: !aiPaused && aiState !== 'paused', followUpRules: [true, true, true], starred: false, activity: [],
     messages: messages.map(message => ({
       id: message.id,
       // A media label such as "[Image]" only stands in for the file; hide it once the file is there.
-      text: message.media?.url && MEDIA_LABEL.test(message.body || '') ? '' : message.body || '',
+      text: message.media?.url && MEDIA_LABEL.test(message.body || '') ? '' : stripLeakedActionJson(String(message.body || '')),
       ...(message.media?.url ? { attachments: [mediaAttachment(message)] } : {}),
       time: message.created_at || '',
-      sender: message.actor === 'agent' ? 'agent' : message.role === 'assistant' || ['ai', 'assistant'].includes(message.sender) || ['ai', 'assistant'].includes(message.sender_type) || message.direction === 'outbound' ? 'ai' : 'customer',
+      sender: ['agent', 'owner'].includes(String(message.actor || '')) ? 'agent' : message.role === 'assistant' || ['ai', 'assistant'].includes(message.sender) || ['ai', 'assistant'].includes(message.sender_type) || message.direction === 'outbound' ? 'ai' : 'customer',
       citationsCount: Array.isArray(message.citations) ? message.citations.length : 0,
+      action: normalizeAction(message.action),
+      buttons: normalizeButtons(message.buttons),
       ...(message.delivery_status === 'failed'
         ? { status: 'failed' as const, error: message.delivery_error || 'Meta rejected this reply.' }
         : message.delivery_status === 'unknown'

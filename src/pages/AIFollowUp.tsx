@@ -665,6 +665,12 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent, section = "f
   const [assistantLanguage, setAssistantLanguage] = React.useState(
     assistantProfile.language,
   );
+  const [assistantTone, setAssistantTone] = React.useState(
+    api.assistant.tone || "Friendly",
+  );
+  const [assistantUseEmojis, setAssistantUseEmojis] = React.useState(
+    api.assistant.use_emojis !== false,
+  );
   const [workflowFrom, setWorkflowFrom] = React.useState("NEW");
   const [workflowTo, setWorkflowTo] = React.useState("CONTACTED");
   const [workflowAction, setWorkflowAction] = React.useState("Email");
@@ -1241,7 +1247,17 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent, section = "f
       goal: assistantGoal,
     };
     if (!await agentConfig.save(next)) return;
-    if (!await api.updateAssistant({ live_enabled: true })) return;
+    if (!await api.updateAssistant({
+      name: next.name,
+      role: next.role,
+      language: next.language,
+      goal: next.goal,
+      tone: assistantTone,
+      use_emojis: assistantUseEmojis,
+    })) return;
+    if (!api.assistant.live_enabled) {
+      if (!await api.updateAssistant({ live_enabled: true })) return;
+    }
 
     setAssistantStep(1);
     setModal("");
@@ -1554,6 +1570,8 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent, section = "f
                 setAssistantRole(assistantProfile.role);
                 setAssistantLanguage(assistantProfile.language);
                 setAssistantGoal(assistantProfile.goal);
+                setAssistantTone(api.assistant.tone || "Friendly");
+                setAssistantUseEmojis(api.assistant.use_emojis !== false);
                 setAssistantStep(2);
                 setModal("edit-assistant");
               }}
@@ -2175,6 +2193,8 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent, section = "f
                 setAssistantRole(assistantProfile.role);
                 setAssistantLanguage(assistantProfile.language);
                 setAssistantGoal(assistantProfile.goal);
+                setAssistantTone(api.assistant.tone || "Friendly");
+                setAssistantUseEmojis(api.assistant.use_emojis !== false);
                 setAssistantStep(2);
                 setModal("edit-assistant");
               }}
@@ -2710,6 +2730,30 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent, section = "f
                       placeholder={translateText("e.g. Friendly fitness coach")}
                     />
                   </label>
+                  {modal === "edit-assistant" && (
+                    <>
+                      <label>{translateText("Reply style")}<MenuSelect
+                          value={assistantTone}
+                          onChange={setAssistantTone}
+                          options={[
+                            { value: "Friendly", label: "Friendly" },
+                            { value: "Serious", label: "Serious" },
+                            { value: "Funny", label: "Funny" },
+                            { value: "Friendly & Professional", label: "Friendly & Professional" },
+                          ]}
+                        />
+                      </label>
+                      <label>{translateText("Emojis")}<MenuSelect
+                          value={assistantUseEmojis ? "on" : "off"}
+                          onChange={(val) => setAssistantUseEmojis(val !== "off")}
+                          options={[
+                            { value: "on", label: "Emojis On" },
+                            { value: "off", label: "No Emojis" },
+                          ]}
+                        />
+                      </label>
+                    </>
+                  )}
                 </>
               ) : (
                 <>
@@ -2732,6 +2776,26 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent, section = "f
                         "Product support",
                         "Customer retention",
                       ].map((item) => ({ value: item, label: item }))}
+                    />
+                  </label>
+                  <label>{translateText("Reply style")}<MenuSelect
+                      value={assistantTone}
+                      onChange={setAssistantTone}
+                      options={[
+                        { value: "Friendly", label: "Friendly" },
+                        { value: "Serious", label: "Serious" },
+                        { value: "Funny", label: "Funny" },
+                        { value: "Friendly & Professional", label: "Friendly & Professional" },
+                      ]}
+                    />
+                  </label>
+                  <label>{translateText("Emojis")}<MenuSelect
+                      value={assistantUseEmojis ? "on" : "off"}
+                      onChange={(val) => setAssistantUseEmojis(val !== "off")}
+                      options={[
+                        { value: "on", label: "Emojis On" },
+                        { value: "off", label: "No Emojis" },
+                      ]}
                     />
                   </label>
                   <div className="af-safety-note">

@@ -1,11 +1,13 @@
 import { readSettings } from './settings/data';
 import { backendError } from '../backend/firebase';
-import { gosApi, type CopilotForm, type CopilotFormKind, type CopilotThinkingLevel } from '../backend/gosApi';
+import { gosApi, type CopilotAssetSummary, type CopilotForm, type CopilotFormKind, type CopilotReplyStyle, type CopilotThinkingLevel } from '../backend/gosApi';
 import { audioFormat, extractCopilotVoice, transcribeCopilotVoice } from '../backend/copilotVoice';
 import { MAX_VOICE_BYTES } from '../../functions/copilot-voice-model.js';
 import type { VoiceExtraction } from '../../functions/copilot-voice-model.js';
 import { refreshGosCRM } from '../backend/gosCRM';
 import { useEntities } from '../backend/workspace';
+import { useAssetWorkspace } from './asset-store';
+import type { Asset } from './asset-model';
 import { newProduct, defaultConfig, formatPrice } from './commerce/model';
 import { createBuilderDocument } from './BuilderWorkspace';
 import { useUILanguage, translateText, localizeNode } from '../i18n/display';
@@ -15,10 +17,12 @@ import {
   ArrowRight,
   ArrowUp,
   ArrowUpRight,
+  Ban,
   BarChart3,
   BookOpen,
   Bot,
   BrainCircuit,
+  Briefcase,
   CalendarDays,
   Check,
   CheckCircle2,
@@ -31,6 +35,8 @@ import {
   Globe2,
   GraduationCap,
   History,
+  Laugh,
+  Layers,
   LoaderCircle,
   Megaphone,
   MessageSquare,
@@ -42,12 +48,15 @@ import {
   RotateCcw,
   Search,
   ShieldCheck,
+  ShoppingCart,
   SlidersHorizontal,
+  Smile,
   Sparkles,
   ThumbsDown,
   ThumbsUp,
   UserPlus,
   Users,
+  Video,
   Volume2,
   VolumeX,
   WandSparkles,
@@ -98,19 +107,26 @@ type Draft = {
 };
 
 const THINKING_STORAGE_KEY = 'gos_copilot_thinking_level';
+const REPLY_STYLE_STORAGE_KEY = 'gos_copilot_reply_style';
+const USE_EMOJIS_STORAGE_KEY = 'gos_copilot_use_emojis';
 const THINKING_LEVEL_OPTIONS: ReadonlyArray<{ value: CopilotThinkingLevel; label: string; description: string; status: string; bars: 1 | 2 | 3 }> = [
   { value: 'low', label: 'Low', description: 'Fast & concise responses', status: 'Quickly reviewing your workspace…', bars: 1 },
   { value: 'medium', label: 'Medium', description: 'Balanced reasoning & speed', status: 'Reviewing your workspace…', bars: 2 },
   { value: 'high', label: 'High', description: 'Deep strategic analysis', status: 'Thinking deeply about your workspace…', bars: 3 },
 ];
+const REPLY_STYLE_OPTIONS: ReadonlyArray<{ value: CopilotReplyStyle; label: string; description: string }> = [
+  { value: 'friendly', label: 'Friendly', description: 'Warm, conversational & supportive' },
+  { value: 'serious', label: 'Serious', description: 'Formal, concise & executive' },
+  { value: 'funny', label: 'Funny', description: 'Witty, playful & lighthearted' },
+];
 
 const suggestions = [
-  { title: 'Create a landing page', description: 'Build a high-converting page for your offer', icon: FileText, color: 'violet', prompt: 'Create a landing page for my offer', arPrompt: 'أنشئ صفحة هبوط لعرضي' },
+  { title: 'Build a high-converting funnel', description: 'AI asks smart questions & generates a full multi-step funnel', icon: Layers, color: 'violet', prompt: 'Help me design and build a complete high-converting funnel for my business', arPrompt: 'ساعدني أصمم وأبني فانل احترافي متكامل لمشروعي' },
   { title: 'Show my hot leads', description: 'Find leads that need follow-up', icon: Users, color: 'green', prompt: 'Show my hot leads', arPrompt: 'اعرض العملاء المحتملين المهمين' },
-  { title: 'Create a campaign', description: 'Generate messages for WhatsApp, Email, or Instagram', icon: Megaphone, color: 'orange', prompt: 'Create a campaign', arPrompt: 'أنشئ حملة تسويقية عبر واتساب' },
-  { title: 'Set up a booking flow', description: 'Create services and available times', icon: CalendarDays, color: 'blue', prompt: 'Set up a booking flow', arPrompt: 'جهز خدمة حجز مواعيد جديدة' },
-  { title: 'Create a course or product', description: 'Build and sell your content', icon: GraduationCap, color: 'pink', prompt: 'Create a course or product', arPrompt: 'أنشئ منتج أو كورس جديد' },
-  { title: 'Analyze my performance', description: 'Get insights and recommendations', icon: BarChart3, color: 'purple', prompt: 'Analyze my performance', arPrompt: 'حلل أداء أعمالي وقدم توصيات عملية' },
+  { title: 'Create a campaign', description: 'Generate tailored messages for WhatsApp, Email, or Instagram', icon: Megaphone, color: 'orange', prompt: 'Create a tailored marketing campaign based on my business and leads', arPrompt: 'أنشئ حملة تسويقية مخصصة بناءً على نشاطي وعملائي' },
+  { title: 'Set up a booking flow', description: 'Create services and available times', icon: CalendarDays, color: 'blue', prompt: 'Set up a booking service for my workspace', arPrompt: 'جهز خدمة حجز مواعيد جديدة لنشاطي' },
+  { title: 'Create a course or product', description: 'Build and sell your content', icon: GraduationCap, color: 'pink', prompt: 'Create a new product or course for my workspace', arPrompt: 'أنشئ منتج أو كورس جديد في مساحة عملي' },
+  { title: 'Analyze my performance', description: 'Live insights from your CRM, bookings & revenue', icon: BarChart3, color: 'purple', prompt: 'Analyze my live workspace performance across leads, bookings, and funnels with concrete recommendations', arPrompt: 'حلل أداء مساحة عملي الحالية (العملاء، الحجوزات، الفانلز) وقدم توصيات عملية' },
 ];
 
 const STAGE_AR_LABELS: Record<string, string> = {
@@ -159,6 +175,7 @@ function normalizeIncomingForm(rawForm: unknown, rawDraft?: unknown): CopilotFor
       resultNote: f.resultNote,
       resultHref: f.resultHref,
       resultHrefLabel: f.resultHrefLabel,
+      resultSummary: f.resultSummary,
     };
   }
   if (rawDraft && typeof rawDraft === 'object') {
@@ -230,7 +247,9 @@ export const AICopilot: React.FC = () => {
   const navigate = useNavigate(), location = useLocation();
   const { tenant } = useSelector((state: RootState) => state.auth);
   const crmState = useSelector((state: RootState) => state.crm);
+  const [assetWorkspace, setAssetWorkspace] = useAssetWorkspace();
   const workspaceCalendars = useEntities<{ id: string; name: string; duration?: number; location?: string }>('calendars');
+  const workspaceProducts = useEntities<{ id: string; name: string }>('products');
   const starterHistory = useEntities<{ id: string; title: string; group: string; category: string; time: string; prompt: string; messages: Message[] }>('copilotConversations');
   const [apiHistory, setApiHistory] = useState<{ id: string; title: string; group: string; category: string; time: string; prompt: string; messages: Message[] }[]>([]);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -265,6 +284,24 @@ export const AICopilot: React.FC = () => {
   const [thinkingMenuOpen, setThinkingMenuOpen] = useState(false);
   const thinkingMenuRef = useRef<HTMLDivElement>(null);
   const activeThinking = THINKING_LEVEL_OPTIONS.find(opt => opt.value === thinkingLevel) ?? THINKING_LEVEL_OPTIONS[1];
+  const [replyStyle, setReplyStyle] = useState<CopilotReplyStyle>(() => {
+    try {
+      const saved = window.localStorage.getItem(REPLY_STYLE_STORAGE_KEY);
+      if (saved === 'friendly' || saved === 'serious' || saved === 'funny') return saved;
+    } catch { /* ignore storage errors */ }
+    return 'friendly';
+  });
+  const [styleMenuOpen, setStyleMenuOpen] = useState(false);
+  const styleMenuRef = useRef<HTMLDivElement>(null);
+  const activeReplyStyle = REPLY_STYLE_OPTIONS.find(opt => opt.value === replyStyle) ?? REPLY_STYLE_OPTIONS[0];
+  const [useEmojis, setUseEmojis] = useState<boolean>(() => {
+    try {
+      const saved = window.localStorage.getItem(USE_EMOJIS_STORAGE_KEY);
+      if (saved === 'false') return false;
+      if (saved === 'true') return true;
+    } catch { /* ignore storage errors */ }
+    return true;
+  });
   const [pendingMedia, setPendingMedia] = useState<MediaAttachment | null>(null);
   const [recording, setRecording] = useState(false);
   const [requestingMic, setRequestingMic] = useState(false);
@@ -339,12 +376,16 @@ export const AICopilot: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    if (!thinkingMenuOpen) return;
+    if (!thinkingMenuOpen && !styleMenuOpen) return;
     const onPointerDown = (event: PointerEvent) => {
-      if (!thinkingMenuRef.current?.contains(event.target as Node)) setThinkingMenuOpen(false);
+      if (thinkingMenuOpen && !thinkingMenuRef.current?.contains(event.target as Node)) setThinkingMenuOpen(false);
+      if (styleMenuOpen && !styleMenuRef.current?.contains(event.target as Node)) setStyleMenuOpen(false);
     };
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') setThinkingMenuOpen(false);
+      if (event.key === 'Escape') {
+        setThinkingMenuOpen(false);
+        setStyleMenuOpen(false);
+      }
     };
     document.addEventListener('pointerdown', onPointerDown);
     document.addEventListener('keydown', onKeyDown);
@@ -352,7 +393,7 @@ export const AICopilot: React.FC = () => {
       document.removeEventListener('pointerdown', onPointerDown);
       document.removeEventListener('keydown', onKeyDown);
     };
-  }, [thinkingMenuOpen]);
+  }, [thinkingMenuOpen, styleMenuOpen]);
 
   useEffect(() => { if (listRef.current) listRef.current.scrollTop = listRef.current.scrollHeight; }, [messages, busy]);
 
@@ -643,6 +684,8 @@ export const AICopilot: React.FC = () => {
         webSearch,
         deepResearch,
         thinkingLevel,
+        replyStyle,
+        useEmojis,
         uiLanguage,
         isNewConversation: priorMessages.length === 0,
         history: buildHistoryPayload(priorMessages),
@@ -719,6 +762,8 @@ export const AICopilot: React.FC = () => {
         const turn = await extractCopilotVoice(attachedFile, conversationId, attachedMedia.id, rawPrompt.trim(), {
           api: gosApi,
           thinkingLevel,
+          replyStyle,
+          useEmojis,
           uiLanguage,
           isNewConversation,
           history: buildHistoryPayload(messages),
@@ -808,6 +853,7 @@ export const AICopilot: React.FC = () => {
     pendingFileRef.current = null;
     setShowWelcome(false);
     setThinkingMenuOpen(false);
+    setStyleMenuOpen(false);
     setBusy(true);
     setStatusText(translateText(activeThinking.status));
     const userMsgId = crypto.randomUUID();
@@ -853,6 +899,8 @@ export const AICopilot: React.FC = () => {
         webSearch,
         deepResearch,
         thinkingLevel,
+        replyStyle,
+        useEmojis,
         uiLanguage,
         isNewConversation,
         history: priorHistory,
@@ -951,22 +999,8 @@ export const AICopilot: React.FC = () => {
       return { ...product };
     }
     if (form.kind === 'landing') {
-      const document = createBuilderDocument('funnel', v.name || 'Offer Page', '', 1);
-      document.funnel.status = 'Draft';
-      document.pages.forEach(page => { page.status = 'Draft'; });
-      return {
-        id: form.id,
-        name: v.name || 'Offer Page',
-        kind: 'funnel',
-        domain: '',
-        image: '',
-        updated: new Date().toISOString(),
-        document,
-        headline: v.headline || '',
-        goal: v.goal || '',
-        description: v.content || '',
-        settings: { seo: v.name || '', navigation: '', color: '#7C3AED' },
-      };
+      // Let the backend CopilotFunnelGenerator architect the complete multi-step AI BuilderDocument
+      return undefined;
     }
     if (form.kind === 'campaign') {
       return {
@@ -1021,8 +1055,10 @@ export const AICopilot: React.FC = () => {
       }
       if (!v.content?.trim()) errs.content = t('يرجى كتابة وصف مختصر للمنتج.', 'Please enter an offer description.');
     } else if (form.kind === 'landing') {
-      if (!v.name?.trim()) errs.name = t('يرجى إدخال اسم الصفحة.', 'Please enter a page name.');
-      if (!v.content?.trim()) errs.content = t('يرجى كتابة تفاصيل العرض.', 'Please enter the offer summary.');
+      if (!v.name?.trim()) errs.name = t('يرجى إدخال اسم الفانل أو الصفحة.', 'Please enter a funnel or page name.');
+      if (!(v.offerSummary?.trim() || v.content?.trim())) {
+        errs.offerSummary = t('يرجى كتابة تفاصيل العرض والقيمة المقدمة للعميل.', 'Please describe your core offer and value proposition.');
+      }
     } else if (form.kind === 'create_knowledge') {
       if (!v.name?.trim()) errs.name = t('يرجى إدخال عنوان المعلومة.', 'Please enter a title.');
       if ((v.sourceType || 'text') === 'url') {
@@ -1059,6 +1095,8 @@ export const AICopilot: React.FC = () => {
         record,
         requestId: form.id,
         uiLanguage: isArabicForm ? 'ar' : uiLanguage,
+        replyStyle,
+        useEmojis,
       });
 
       const completedForm: CopilotForm = {
@@ -1067,7 +1105,15 @@ export const AICopilot: React.FC = () => {
         resultNote: res.message,
         resultHref: res.href,
         resultHrefLabel: res.hrefLabel,
+        resultSummary: res.summary ?? undefined,
       };
+      if (form.kind === 'landing' && res.asset && typeof res.asset.id === 'string') {
+        const createdAsset = res.asset as unknown as Asset;
+        void setAssetWorkspace(current => ({
+          ...current,
+          assets: [createdAsset, ...current.assets.filter(a => a.id !== createdAsset.id)],
+        })).catch(() => {});
+      }
       setForms(prev => ({ ...prev, [formId]: completedForm }));
       setMessages(current =>
         current.map(m =>
@@ -1088,7 +1134,15 @@ export const AICopilot: React.FC = () => {
         const conv = res.conversation as any;
         setApiHistory(prev => [conv, ...prev.filter(item => item.id !== conv.id)]);
       }
-      showToast.success(isArabicForm ? 'تم حفظ وتنفيذ الطلب بنجاح' : translateText('Action completed'));
+      showToast.success(
+        form.kind === 'landing'
+          ? isArabicForm
+            ? 'تم تصميم وبناء الفانل الاحترافي بالذكاء الاصطناعي بنجاح'
+            : translateText('AI Funnel built and saved to workspace')
+          : isArabicForm
+            ? 'تم حفظ وتنفيذ الطلب بنجاح'
+            : translateText('Action completed'),
+      );
     } catch (error: any) {
       const details = error?.details ?? error?.errors;
       if (details && typeof details === 'object') {
@@ -1274,9 +1328,11 @@ export const AICopilot: React.FC = () => {
             <Sparkles size={14} />
             {translateText('Assistant templates')}
           </button>
-          <div>
+          <div className="ai-live-context-pill" title={translateText('Live workspace records connected to Copilot')}>
             <span className="ai-status-dot" />
-            {translateText(' Business context connected')}
+            {isUiArabic
+              ? `مساحة العمل متصلة · ${crmState.leads.length} عميل · ${assetWorkspace.assets.filter(a => !a.archived).length} فانل · ${workspaceProducts.length} منتج`
+              : `${translateText('Live workspace')} · ${crmState.leads.length} ${translateText('Leads')} · ${assetWorkspace.assets.filter(a => !a.archived).length} ${translateText('Funnels')} · ${workspaceProducts.length} ${translateText('Products')}`}
           </div>
           <button
             disabled={composerLocked}
@@ -1666,7 +1722,10 @@ export const AICopilot: React.FC = () => {
                     aria-haspopup="listbox"
                     aria-expanded={thinkingMenuOpen}
                     aria-label={translateText('Thinking level')}
-                    onClick={() => setThinkingMenuOpen(v => !v)}
+                    onClick={() => {
+                      setStyleMenuOpen(false);
+                      setThinkingMenuOpen(v => !v);
+                    }}
                   >
                     <BrainCircuit size={14} className="ai-thinking-icon" />
                     <span className="ai-thinking-label">
@@ -1740,6 +1799,114 @@ export const AICopilot: React.FC = () => {
                     )}
                   </AnimatePresence>
                 </div>
+                <div className="ai-thinking-selector ai-style-selector" ref={styleMenuRef}>
+                  <button
+                    type="button"
+                    className={`ai-thinking-trigger style-${replyStyle} ${styleMenuOpen ? 'open' : ''}`}
+                    disabled={composerLocked}
+                    aria-haspopup="listbox"
+                    aria-expanded={styleMenuOpen}
+                    aria-label={translateText('Reply style')}
+                    onClick={() => {
+                      setThinkingMenuOpen(false);
+                      setStyleMenuOpen(v => !v);
+                    }}
+                  >
+                    {replyStyle === 'serious' ? (
+                      <Briefcase size={14} className="ai-thinking-icon" />
+                    ) : replyStyle === 'funny' ? (
+                      <Laugh size={14} className="ai-thinking-icon" />
+                    ) : (
+                      <Smile size={14} className="ai-thinking-icon" />
+                    )}
+                    <span className="ai-thinking-label">
+                      {translateText('Style')}: <b>{translateText(activeReplyStyle.label)}</b>
+                    </span>
+                    <ChevronDown size={12} className="ai-thinking-chevron" />
+                  </button>
+                  <AnimatePresence>
+                    {styleMenuOpen && (
+                      <motion.div
+                        className="ai-thinking-popover ai-style-popover"
+                        role="listbox"
+                        aria-label={translateText('Reply style')}
+                        initial={{ opacity: 0, y: 6, scale: 0.97 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: 5, scale: 0.98 }}
+                        transition={{ duration: 0.15, ease: 'easeOut' }}
+                      >
+                        <div className="ai-thinking-popover-head">
+                          <div>
+                            <Smile size={13} />
+                            <b>{translateText('Reply style')}</b>
+                          </div>
+                          <small>{translateText('Choose how Copilot talks to you')}</small>
+                        </div>
+                        <div className="ai-thinking-options">
+                          {REPLY_STYLE_OPTIONS.map(option => {
+                            const isSelected = option.value === replyStyle;
+                            return (
+                              <button
+                                key={option.value}
+                                type="button"
+                                role="option"
+                                aria-selected={isSelected}
+                                className={`ai-thinking-option style-${option.value} ${isSelected ? 'selected' : ''}`}
+                                onClick={() => {
+                                  setReplyStyle(option.value);
+                                  try {
+                                    window.localStorage.setItem(REPLY_STYLE_STORAGE_KEY, option.value);
+                                  } catch {
+                                    /* ignore */
+                                  }
+                                  setStyleMenuOpen(false);
+                                }}
+                              >
+                                <span className="ai-thinking-option-badge">
+                                  {option.value === 'serious' ? (
+                                    <Briefcase size={13} />
+                                  ) : option.value === 'funny' ? (
+                                    <Laugh size={13} />
+                                  ) : (
+                                    <Smile size={13} />
+                                  )}
+                                </span>
+                                <span className="ai-thinking-option-copy">
+                                  <b>{translateText(option.label)}</b>
+                                  <small>{translateText(option.description)}</small>
+                                </span>
+                                <span className="ai-thinking-option-end">
+                                  {isSelected && <Check size={13} className="ai-thinking-check" />}
+                                </span>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+                <button
+                  type="button"
+                  className={`ai-tool-pill ai-emoji-toggle ${useEmojis ? 'selected' : 'is-off'}`}
+                  disabled={composerLocked}
+                  aria-pressed={useEmojis}
+                  title={translateText(useEmojis ? 'Emojis enabled in replies' : 'No emojis in replies')}
+                  onClick={() => {
+                    setUseEmojis(prev => {
+                      const next = !prev;
+                      try {
+                        window.localStorage.setItem(USE_EMOJIS_STORAGE_KEY, next ? 'true' : 'false');
+                      } catch {
+                        /* ignore */
+                      }
+                      return next;
+                    });
+                  }}
+                >
+                  {useEmojis ? <Sparkles size={13} /> : <Ban size={13} />}
+                  <span>{translateText(useEmojis ? 'Emojis On' : 'No Emojis')}</span>
+                </button>
               </div>
               <div className="ai-tool-actions">
                 <button
@@ -1765,7 +1932,8 @@ export const AICopilot: React.FC = () => {
             </div>
           </div>
           <div className="ai-composer-caption">
-            {translateText(`${activeThinking.label} thinking`)} · {webSearch && <>{translateText('Web search enabled')} · </>}
+            {translateText(`${activeThinking.label} thinking`)} · {translateText(activeReplyStyle.label)} ·{' '}
+            {translateText(useEmojis ? 'Emojis On' : 'No Emojis')} · {webSearch && <>{translateText('Web search enabled')} · </>}
             {deepResearch && <>{translateText('Deep research enabled')} · </>}
             {translateText('Copilot can make mistakes. Review drafts before confirming.')}
           </div>
@@ -2352,13 +2520,13 @@ function CopilotActionForm({
       ctaEn: 'Confirm & Create Product',
     },
     landing: {
-      icon: FileText,
-      titleAr: 'إنشاء صفحة هبوط (Funnel)',
-      titleEn: 'Create Landing Page',
-      subAr: 'راجع عنوان العرض والهدف لإنشاء صفحة هبوط جاهزة للتعديل والنشر',
-      subEn: 'Review your headline and offer summary to generate your funnel draft',
-      ctaAr: 'إنشاء صفحة الهبوط',
-      ctaEn: 'Create Landing Page',
+      icon: Layers,
+      titleAr: 'مهندس الفانلز والصفحات الذكي (AI Funnel Architect)',
+      titleEn: 'AI Funnel & Page Architect Brief',
+      subAr: 'أكمل تفاصيل مشروعك ليقوم الذكاء الاصطناعي ببناء فانل متكامل متعدد الخطوات بعناوين ومزايا ونماذج وشهادات وأسئلة شائعة جاهزة للنشر',
+      subEn: 'Complete your strategy brief — AI will architect a full multi-step funnel with tailored copy, forms, proof, pricing & FAQs',
+      ctaAr: 'بناء الفانل المتكامل بالذكاء الاصطناعي',
+      ctaEn: 'Build Complete AI Funnel',
     },
     create_knowledge: {
       icon: BookOpen,
@@ -2382,6 +2550,342 @@ function CopilotActionForm({
 
   const cfg = headerConfig[form.kind] ?? headerConfig.product;
   const HeaderIcon = cfg.icon;
+  const [buildPhaseIdx, setBuildPhaseIdx] = useState(0);
+
+  useEffect(() => {
+    if (form.kind !== 'landing' || form.status !== 'submitting') {
+      setBuildPhaseIdx(0);
+      return;
+    }
+    const timer = window.setInterval(() => {
+      setBuildPhaseIdx(prev => (prev + 1) % 3);
+    }, 2200);
+    return () => window.clearInterval(timer);
+  }, [form.kind, form.status]);
+
+  const funnelBuildPhases = arabic
+    ? [
+        'جارٍ تحليل الجمهور المستهدف والعرض وهندسة خطوات الفانل…',
+        'جارٍ صياغة العناوين ونقاط الألم والمزايا والشهادات والأسئلة الشائعة…',
+        'جارٍ بناء الصفحات المرتبطة ونماذج التسجيل وحفظ الفانل في مساحة العمل…',
+      ]
+    : [
+        'Analyzing target audience, offer stack & funnel architecture…',
+        'Writing persuasive headlines, benefits, social proof & objection FAQs…',
+        'Assembling linked funnel steps, lead forms & saving to workspace…',
+      ];
+
+  const funnelGoalOptions = [
+    {
+      id: 'audience',
+      icon: Users,
+      title: t('تجميع عملاء (Lead Magnet)', 'Lead Generation'),
+      flow: t('صفحة العرض ← صفحة الشكر', 'Opt-in → Thank You'),
+      defaultSteps: '2',
+      goalValue: 'Capture Leads',
+    },
+    {
+      id: 'sale',
+      icon: ShoppingCart,
+      title: t('بيع مباشر لمنتج أو كورس', 'Direct Product Sales'),
+      flow: t('صفحة المبيعات ← نموذج الطلب ← الشكر', 'Sales → Order → Thank You'),
+      defaultSteps: '3',
+      goalValue: 'Sell a Product',
+    },
+    {
+      id: 'booking',
+      icon: CalendarDays,
+      title: t('حجز استشارة أو مكالمة', 'Booking & Strategy Call'),
+      flow: t('صفحة الاستشارة ← التأهيل والحجز ← التأكيد', 'Offer → Schedule → Confirmed'),
+      defaultSteps: '3',
+      goalValue: 'Book a Call',
+    },
+    {
+      id: 'webinar',
+      icon: Video,
+      title: t('ورشة عمل أو ويبينار', 'Webinar / Masterclass'),
+      flow: t('صفحة التسجيل ← ترقية VIP ← تأكيد المقعد', 'Register → VIP Prep → Confirmed'),
+      defaultSteps: '3',
+      goalValue: 'Webinar Registration',
+    },
+  ];
+
+  const quickNiches = [
+    { en: 'E-Commerce & Online Store', ar: 'متجر إلكتروني وبراند (E-Commerce)' },
+    { en: 'Clinic & Healthcare', ar: 'عيادات ومراكز طبية' },
+    { en: 'Online Course & Coaching', ar: 'كورسات واستشارات تدريبية' },
+    { en: 'Real Estate & Property', ar: 'عقارات واستثمار عقاري' },
+    { en: 'Marketing & Growth Agency', ar: 'وكالة تسويق ونمو رقمي' },
+    { en: 'SaaS & B2B Software', ar: 'برمجيات وخدمات SaaS' },
+    { en: 'Fitness & Wellness', ar: 'لياقة وتغذية وتدريب' },
+  ];
+
+  const canAutoFill = ['landing', 'booking', 'campaign', 'product'].includes(form.kind) && form.status === 'pending';
+
+  const handleSmartAutoFill = () => {
+    const langAr = form.kind === 'landing' ? (v.language ? v.language === 'ar' : arabic) : arabic;
+    const cur = v.currency || 'USD';
+    const setBatch = (entries: Record<string, string>) => {
+      for (const [k, val] of Object.entries(entries)) {
+        onChange(k, val);
+      }
+    };
+
+    if (form.kind === 'landing') {
+      const nicheLower = `${v.niche || ''} ${v.name || ''}`.toLowerCase();
+      const isEcom = /ecom|store|shop|brand|fashion|متجر|براند/.test(nicheLower);
+      const isClinic = /clinic|dental|medical|health|عياد|طب|تجميل/.test(nicheLower);
+      const isRealEstate = /real\s*estate|property|عقار/.test(nicheLower);
+      if (isEcom) {
+        setBatch(
+          langAr
+            ? {
+                funnelType: 'sale',
+                stepsCount: v.stepsCount || '3',
+                name: v.name || 'فانل إطلاق المجموعة الجديدة',
+                businessName: v.businessName || 'متجرنا الرسمي',
+                niche: v.niche || 'متجر إلكتروني وبراند (E-Commerce)',
+                targetAudience: 'المتسوقون أونلاين الباحثون عن جودة عالية وشحن سريع',
+                painPoints: 'القلق من اختلاف الجودة عن الصور وتأخر الشحن وصعوبة الاستبدال',
+                offerSummary: 'باقة الأكثر مبيعاً مع خصم 25% لفترة محدودة + شحن مجاني + ضمان استبدال فوري خلال 14 يوم.',
+                content: 'باقة الأكثر مبيعاً مع خصم 25% لفترة محدودة + شحن مجاني + ضمان استبدال فوري خلال 14 يوم.',
+                uniqueValue: 'خامات أصلية 100% · شحن خلال 48 ساعة · الدفع عند الاستلام أو أونلاين',
+                price: v.price && v.price !== '0' ? v.price : '499',
+                currency: cur,
+                primaryCta: 'اطلب الآن بخصم 25%',
+                headline: 'احصل على إطلالتك المميزة بجودة مضمونة وتوصيل سريع لباب بيتك',
+              }
+            : {
+                funnelType: 'sale',
+                stepsCount: v.stepsCount || '3',
+                name: v.name || 'Bestseller Launch Sales Funnel',
+                businessName: v.businessName || 'Our Online Store',
+                niche: v.niche || 'E-Commerce & Online Store',
+                targetAudience: 'Online shoppers ages 20–40 looking for premium everyday essentials',
+                painPoints: 'Overpriced brands, slow delivery, and complicated return policies',
+                offerSummary: 'Limited-time Bestseller Bundle with 25% off, free express shipping, and hassle-free 30-day returns.',
+                content: 'Limited-time Bestseller Bundle with 25% off, free express shipping, and hassle-free 30-day returns.',
+                uniqueValue: '4.9/5 verified reviews · 48-hour shipping · 30-day money-back guarantee',
+                price: v.price && v.price !== '0' ? v.price : '59',
+                currency: cur,
+                primaryCta: 'Claim 25% Off Now',
+                headline: 'Upgrade Your Everyday Style — Delivered to Your Door in 48 Hours',
+              },
+        );
+      } else if (isClinic) {
+        setBatch(
+          langAr
+            ? {
+                funnelType: 'booking',
+                stepsCount: v.stepsCount || '3',
+                name: v.name || 'فانل حجز استشارة العيادة',
+                businessName: v.businessName || 'مركزنا الطبي التخصصي',
+                niche: v.niche || 'عيادات ومراكز طبية',
+                targetAudience: 'العملاء الباحثون عن رعاية طبية موثوقة ونتائج آمنة',
+                painPoints: 'التردد قبل الحجز والخوف من الألم أو التكاليف غير الواضحة',
+                offerSummary: 'جلسة تقييم وتشخيص أولية مع خطة علاج واضحة وأسعار شفافة بالكامل.',
+                content: 'جلسة تقييم وتشخيص أولية مع خطة علاج واضحة وأسعار شفافة بالكامل.',
+                uniqueValue: 'أطباء استشاريون معتمدون · أحدث الأجهزة · متابعة بعد الجلسة',
+                price: '0',
+                currency: cur,
+                primaryCta: 'احجز موعد الكشف الآن',
+                headline: 'احجز تقييمك الطبي اليوم واحصل على خطة علاج واضحة ومضمونة',
+              }
+            : {
+                funnelType: 'booking',
+                stepsCount: v.stepsCount || '3',
+                name: v.name || 'Clinic Consultation Booking Funnel',
+                businessName: v.businessName || 'Premier Care Clinic',
+                niche: v.niche || 'Clinic & Healthcare',
+                targetAudience: 'Patients seeking trusted specialist care and transparent pricing',
+                painPoints: 'Long wait times and uncertainty about treatment options or costs',
+                offerSummary: 'Personalized 30-minute consultation with full assessment and written care plan.',
+                content: 'Personalized 30-minute consultation with full assessment and written care plan.',
+                uniqueValue: 'Board-certified specialists · Modern equipment · Transparent pricing',
+                price: '0',
+                currency: cur,
+                primaryCta: 'Book My Consultation',
+                headline: 'Book Your Specialist Consultation Today — Zero Wait, Clear Plan',
+              },
+        );
+      } else if (isRealEstate) {
+        setBatch(
+          langAr
+            ? {
+                funnelType: 'audience',
+                stepsCount: v.stepsCount || '3',
+                name: v.name || 'فانل حجز معاينة العقارات',
+                businessName: v.businessName || 'مجموعتنا العقارية',
+                niche: v.niche || 'عقارات واستثمار عقاري',
+                targetAudience: 'المستثمرون والعائلات الباحثة عن وحدات بمقدم مرن وعائد مرتفع',
+                painPoints: 'كثرة العروض غير الموثوقة وصعوبة مقارنة خطط السداد',
+                offerSummary: 'كتالوج الوحدات الحصرية + جلسة استشارة عقارية مجانية لاختيار أفضل خطة سداد.',
+                content: 'كتالوج الوحدات الحصرية + جلسة استشارة عقارية مجانية لاختيار أفضل خطة سداد.',
+                uniqueValue: 'مشاريع معتمدة · تقسيط حتى 8 سنوات · استشارة مجانية بدون عمولة',
+                price: '0',
+                currency: cur,
+                primaryCta: 'احصل على الكتالوج والأسعار',
+                headline: 'امتلك وحدتك بأفضل عائد استثماري وبأطول فترة سداد مريحة',
+              }
+            : {
+                funnelType: 'audience',
+                stepsCount: v.stepsCount || '3',
+                name: v.name || 'Property Viewing & Brochure Funnel',
+                businessName: v.businessName || 'Prime Properties',
+                niche: v.niche || 'Real Estate & Property',
+                targetAudience: 'Homebuyers and property investors looking for high-ROI units',
+                painPoints: 'Unclear payment plans and unverified listings',
+                offerSummary: 'Instant brochure download with floor plans, prices, and private viewing booking.',
+                content: 'Instant brochure download with floor plans, prices, and private viewing booking.',
+                uniqueValue: 'Verified developers · Flexible 8-year plans · Zero buyer commission',
+                price: '0',
+                currency: cur,
+                primaryCta: 'Get Prices & Floor Plans',
+                headline: 'Own a High-Yield Property With Flexible Direct Payment Plans',
+              },
+        );
+      } else {
+        setBatch(
+          langAr
+            ? {
+                funnelType: v.funnelType || 'sale',
+                stepsCount: v.stepsCount || '3',
+                name: v.name || 'فانل مضاعفة المبيعات والعملاء',
+                businessName: v.businessName || 'علامتك التجارية',
+                niche: v.niche || 'كورسات واستشارات تدريبية',
+                targetAudience: 'أصحاب المشاريع والعملاء الباحثون عن نتائج عملية سريعة',
+                painPoints: 'إهدار الوقت والميزانية في طرق تقليدية بدون تحويل حقيقي',
+                offerSummary: 'عرض متكامل يشمل خطة تنفيذ خطوة بخطوة + متابعة مباشرة + بونص أدوات جاهزة.',
+                content: 'عرض متكامل يشمل خطة تنفيذ خطوة بخطوة + متابعة مباشرة + بونص أدوات جاهزة.',
+                uniqueValue: 'نتائج موثقة مع مئات العملاء · ضمان رضا لمدة 14 يوماً',
+                price: v.price && v.price !== '0' ? v.price : '199',
+                currency: cur,
+                primaryCta: 'ابدأ الآن واحجز مكانك',
+                headline: 'حقق نتائج ملموسة وضاعف نموك بخطة عملية مجربة خطوة بخطوة',
+              }
+            : {
+                funnelType: v.funnelType || 'sale',
+                stepsCount: v.stepsCount || '3',
+                name: v.name || 'High-Converting Growth Funnel',
+                businessName: v.businessName || 'Your Brand',
+                niche: v.niche || 'Online Course & Coaching',
+                targetAudience: 'Ambitious buyers and business owners seeking predictable results',
+                painPoints: 'Wasting time and ad budget without a repeatable conversion system',
+                offerSummary: 'Complete step-by-step system with live templates, action roadmap, and direct support.',
+                content: 'Complete step-by-step system with live templates, action roadmap, and direct support.',
+                uniqueValue: 'Proven with 300+ clients · 14-day no-questions-asked guarantee',
+                price: v.price && v.price !== '0' ? v.price : '199',
+                currency: cur,
+                primaryCta: 'Get Instant Access Now',
+                headline: 'Turn Cold Clicks Into Paying Customers With a Proven System',
+              },
+        );
+      }
+      return;
+    }
+
+    if (form.kind === 'booking') {
+      setBatch(
+        langAr
+          ? {
+              name: v.name || 'جلسة استشارية وتشخيصية',
+              duration: v.duration || '30',
+              price: v.price || '0',
+              currency: cur,
+              location: v.location || 'Google Meet',
+              schedulePreset: v.schedulePreset || 'sun_thu_10_6',
+              bufferTime: v.bufferTime || '15',
+              bookingMode: v.bookingMode || '1on1',
+              requireApproval: v.requireApproval || 'false',
+              confirmationBody: 'تم تأكيد موعدك بنجاح! سنرسل لك تذكيراً قبل الجلسة بساعة.',
+              content: 'جلسة مركزة لفهم احتياجك ووضع خطة عمل واضحة تناسب أهدافك.',
+            }
+          : {
+              name: v.name || 'Growth Strategy Consultation',
+              duration: v.duration || '30',
+              price: v.price || '0',
+              currency: cur,
+              location: v.location || 'Google Meet',
+              schedulePreset: v.schedulePreset || 'mon_fri_9_5',
+              bufferTime: v.bufferTime || '15',
+              bookingMode: v.bookingMode || '1on1',
+              requireApproval: v.requireApproval || 'false',
+              confirmationBody: 'Your session is confirmed! We will send a reminder 1 hour before we meet.',
+              content: 'A focused 1-on-1 discovery call to review your goals and build a clear action plan.',
+            },
+      );
+      return;
+    }
+
+    if (form.kind === 'campaign') {
+      const noEmoji = v.useEmojis === 'false';
+      setBatch(
+        langAr
+          ? {
+              name: v.name || 'حملة متابعة وعرض حصري للعملاء',
+              channel: v.channel || 'WhatsApp',
+              audience: v.audience || 'Hot Leads',
+              stepsCount: v.stepsCount || '3',
+              goal: 'تحويل العملاء المهتمين إلى حجوزات أو مبيعات خلال 48 ساعة',
+              cta: 'رد بكلمة "مهتم" لحجز عرضك الآن',
+              content: noEmoji
+                ? 'أهلاً بك! لدينا عرض خاص ومحدود هذا الأسبوع يناسب اهتمامك السابق معنا. رد بكلمة "مهتم" وسنرسل لك التفاصيل الكاملة ونحجز لك الأولوية فوراً.'
+                : 'أهلاً بك! ✨ لدينا عرض خاص ومحدود هذا الأسبوع يناسب اهتمامك السابق معنا. رد بكلمة "مهتم" وسنرسل لك التفاصيل الكاملة ونحجز لك الأولوية فوراً! 🚀',
+            }
+          : {
+              name: v.name || 'VIP Follow-Up & Offer Campaign',
+              channel: v.channel || 'WhatsApp',
+              audience: v.audience || 'Hot Leads',
+              stepsCount: v.stepsCount || '3',
+              goal: 'Convert warm leads into booked calls or purchases within 48 hours',
+              cta: 'Reply YES to claim your spot',
+              content: noEmoji
+                ? 'Hi there! We opened a limited-time VIP offer this week tailored to what you asked about. Reply YES and we will send full details and reserve your spot right away.'
+                : 'Hi there! ✨ We opened a limited-time VIP offer this week tailored to what you asked about. Reply YES and we will send full details and reserve your spot right away! 🚀',
+            },
+      );
+      return;
+    }
+
+    if (form.kind === 'product') {
+      setBatch(
+        langAr
+          ? {
+              name: v.name || 'البرنامج العملي المتكامل',
+              productType: v.productType || 'Online Course',
+              price: v.price || '199',
+              currency: cur,
+              billing: v.billing || 'One-time',
+              deliveryMethod: v.deliveryMethod || 'portal',
+              targetAudience: 'رواد الأعمال والمسوقون الراغبون في مضاعفة نتائجهم',
+              guarantee: 'ضمان استرجاع كامل خلال 14 يوماً بدون شروط',
+              content: 'برنامج تدريبي شامل يحتوي على فيديوهات تطبيقية، قوالب جاهزة، ودعم مباشر لتنفيذ كل خطوة.',
+            }
+          : {
+              name: v.name || 'Complete Mastery Program',
+              productType: v.productType || 'Online Course',
+              price: v.price || '199',
+              currency: cur,
+              billing: v.billing || 'One-time',
+              deliveryMethod: v.deliveryMethod || 'portal',
+              targetAudience: 'Founders, marketers, and creators ready to scale faster',
+              guarantee: '14-day 100% money-back guarantee',
+              content: 'Step-by-step video modules, plug-and-play templates, and practical checklists you can launch immediately.',
+            },
+      );
+    }
+  };
+
+  const accentSwatches = [
+    { hex: '#7C3AED', label: t('بنفسجي UpKlick', 'UpKlick Violet') },
+    { hex: '#4F46E5', label: t('نيلي احترافي', 'SaaS Indigo') },
+    { hex: '#059669', label: t('زمردي للنمو', 'Growth Emerald') },
+    { hex: '#0284C7', label: t('أزرق تنفيذي', 'Executive Blue') },
+    { hex: '#E11D48', label: t('قرمزي جريء', 'Bold Crimson') },
+    { hex: '#D97706', label: t('ذهبي فاخر', 'Luxury Amber') },
+  ];
+
+  const summary = form.resultSummary as CopilotAssetSummary | null | undefined;
 
   return (
     <div className={`ai-interactive-form ${form.status}`} dir={arabic ? 'rtl' : 'ltr'}>
@@ -2396,21 +2900,35 @@ function CopilotActionForm({
             <p>{t(cfg.subAr, cfg.subEn)}</p>
           </div>
         </div>
-        <span className={`ai-iform-badge ${form.status}`}>
-          {form.status === 'completed' ? (
-            <>
-              <CheckCircle2 size={13} />
-              {t('تم التأكيد', 'Confirmed')}
-            </>
-          ) : form.status === 'submitting' ? (
-            <>
-              <LoaderCircle size={13} className="ai-spinner" />
-              {t('جارٍ الحفظ…', 'Saving…')}
-            </>
-          ) : (
-            t('جاهز للمراجعة', 'Interactive Form')
+        <div className="ai-iform-header-actions">
+          {canAutoFill && (
+            <button
+              type="button"
+              className="ai-iform-autofill-btn"
+              disabled={locked}
+              onClick={handleSmartAutoFill}
+              title={t('تعبئة الحقول تلقائياً باقتراحات ذكية يمكنك تعديلها', 'Smartly pre-fill fields with tailored suggestions you can edit')}
+            >
+              <WandSparkles size={13} />
+              <span>{t('تعبئة ذكية بالـ AI', 'AI Auto-Fill')}</span>
+            </button>
           )}
-        </span>
+          <span className={`ai-iform-badge ${form.status}`}>
+            {form.status === 'completed' ? (
+              <>
+                <CheckCircle2 size={13} />
+                {t('تم التأكيد', 'Confirmed')}
+              </>
+            ) : form.status === 'submitting' ? (
+              <>
+                <LoaderCircle size={13} className="ai-spinner" />
+                {t('جارٍ الحفظ…', 'Saving…')}
+              </>
+            ) : (
+              t('جاهز للمراجعة', 'Interactive Form')
+            )}
+          </span>
+        </div>
       </header>
 
       <div className="ai-iform-body">
@@ -2679,8 +3197,63 @@ function CopilotActionForm({
         )}
 
         {form.kind === 'booking' && (
-          <>
-            <div className="ai-iform-grid">
+          <div className="ai-funnel-brief">
+            <div className="ai-funnel-section">
+              <div className="ai-funnel-section-head">
+                <span className="ai-funnel-step-num">1</span>
+                <strong>{t('نوع الخدمة وتفاصيل الجلسة', 'Service Type & Session Details')}</strong>
+              </div>
+              <div className="ai-funnel-goal-grid">
+                {(
+                  [
+                    {
+                      id: 'consult',
+                      title: t('استشارة مجانية', 'Free Consultation'),
+                      sub: t('30 دقيقة · Google Meet · مجاني', '30 min · Google Meet · Free'),
+                      preset: { name: t('جلسة استشارية مجانية', 'Free Discovery Call'), duration: '30', price: '0', location: 'Google Meet', bookingMode: '1on1', requireApproval: 'false' },
+                    },
+                    {
+                      id: 'coaching',
+                      title: t('جلسة كوتشينج مدفوعة', 'Paid Coaching Session'),
+                      sub: t('60 دقيقة · Zoom · فردي', '60 min · Zoom · 1-on-1'),
+                      preset: { name: t('جلسة استشارة وتوجيه خاصة', '1-on-1 Strategy & Coaching'), duration: '60', price: '100', location: 'Zoom', bookingMode: '1on1', requireApproval: 'false' },
+                    },
+                    {
+                      id: 'clinic',
+                      title: t('موعد عيادة / حضوري', 'Clinic / In-Person Visit'),
+                      sub: t('30 دقيقة · حضوري · تأكيد فوري', '30 min · In Person · Instant'),
+                      preset: { name: t('موعد كشف في العيادة', 'Clinic Appointment'), duration: '30', price: '0', location: 'In Person', bookingMode: '1on1', requireApproval: 'false' },
+                    },
+                    {
+                      id: 'workshop',
+                      title: t('جلسة جماعية / ديمو', 'Group Demo / Workshop'),
+                      sub: t('45 دقيقة · Zoom · جماعي', '45 min · Zoom · Group'),
+                      preset: { name: t('جلسة عرض تعريفي جماعية', 'Live Product Demo'), duration: '45', price: '0', location: 'Zoom', bookingMode: 'group', requireApproval: 'false' },
+                    },
+                  ] as const
+                ).map(item => {
+                  const active = (v.name || '') === item.preset.name;
+                  return (
+                    <button
+                      key={item.id}
+                      type="button"
+                      disabled={locked}
+                      className={`ai-funnel-goal-card ${active ? 'active' : ''}`}
+                      onClick={() => {
+                        for (const [pk, pv] of Object.entries(item.preset)) onChange(pk, pv);
+                      }}
+                    >
+                      <span className="ai-funnel-goal-icon">
+                        <CalendarDays size={15} />
+                      </span>
+                      <div>
+                        <b>{item.title}</b>
+                        <small>{item.sub}</small>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
               <FormField label={t('اسم خدمة الحجز', 'Service Name')} required arabic={arabic} error={errors.name}>
                 <input
                   type="text"
@@ -2690,94 +3263,407 @@ function CopilotActionForm({
                   placeholder={t('مثال: استشارة نمو الأعمال', 'e.g. Growth Strategy Consultation')}
                 />
               </FormField>
-              <FormField label={t('مكان الانعقاد', 'Location')} arabic={arabic}>
-                <select disabled={locked} value={v.location || 'Google Meet'} onChange={e => onChange('location', e.target.value)}>
-                  <option value="Google Meet">Google Meet</option>
-                  <option value="Zoom">Zoom</option>
-                  <option value="Phone Call">{t('مكالمة هاتفية', 'Phone Call')}</option>
-                  <option value="In Person">{t('حضوري', 'In Person')}</option>
-                </select>
+              <FormField label={t('مكان الانعقاد', 'Meeting Location')} arabic={arabic}>
+                <div className="ai-iform-pills">
+                  {(
+                    [
+                      ['Google Meet', 'Google Meet'],
+                      ['Zoom', 'Zoom'],
+                      ['WhatsApp Call', t('مكالمة واتساب', 'WhatsApp Call')],
+                      ['Phone Call', t('مكالمة هاتفية', 'Phone Call')],
+                      ['In Person', t('حضوري في المقر', 'In Person')],
+                    ] as const
+                  ).map(([val, label]) => {
+                    const active = (v.location || 'Google Meet') === val;
+                    return (
+                      <button key={val} type="button" disabled={locked} className={`ai-iform-pill ${active ? 'active' : ''}`} onClick={() => onChange('location', val)}>
+                        {active && <Check size={12} />}
+                        <span>{label}</span>
+                      </button>
+                    );
+                  })}
+                </div>
               </FormField>
             </div>
-            <div className="ai-iform-grid three">
-              <FormField label={t('مدة الجلسة (دقيقة)', 'Duration (min)')} required arabic={arabic} error={errors.duration}>
-                <input type="number" min="5" max="480" dir="ltr" disabled={locked} value={v.duration ?? '45'} onChange={e => onChange('duration', e.target.value)} />
-              </FormField>
-              <FormField label={t('السعر (0 = مجاناً)', 'Price (0 = Free)')} arabic={arabic}>
-                <input type="number" min="0" step="any" dir="ltr" disabled={locked} value={v.price ?? '0'} onChange={e => onChange('price', e.target.value)} />
-              </FormField>
-              <FormField label={t('العملة', 'Currency')} arabic={arabic}>
-                <select disabled={locked} value={v.currency || 'USD'} onChange={e => onChange('currency', e.target.value)}>
-                  {['USD', 'EGP', 'SAR', 'AED', 'EUR'].map(c => (
-                    <option key={c} value={c}>
-                      {c}
-                    </option>
-                  ))}
-                </select>
-              </FormField>
-            </div>
-            <FormField label={t('وصف الخدمة للعملاء', 'Service Description')} arabic={arabic}>
-              <textarea
-                rows={3}
-                disabled={locked}
-                value={v.content ?? ''}
-                onChange={e => onChange('content', e.target.value)}
-                placeholder={t('اشرح ما سيحصل عليه العميل خلال الجلسة…', 'Describe what clients get in this session…')}
-              />
-            </FormField>
-          </>
-        )}
 
-        {form.kind === 'campaign' && (
-          <>
-            <div className="ai-iform-grid">
-              <FormField label={t('اسم الحملة', 'Campaign Name')} required arabic={arabic} error={errors.name}>
+            <div className="ai-funnel-section">
+              <div className="ai-funnel-section-head">
+                <span className="ai-funnel-step-num">2</span>
+                <strong>{t('مدة الجلسة وأيام وساعات العمل', 'Duration & Working Schedule')}</strong>
+              </div>
+              <FormField label={t('مدة الجلسة (بالدقائق)', 'Session Duration')} required arabic={arabic} error={errors.duration}>
+                <div className="ai-iform-pills">
+                  {(['15', '30', '45', '60', '90'] as const).map(dur => {
+                    const active = (v.duration || '45') === dur;
+                    return (
+                      <button key={dur} type="button" disabled={locked} className={`ai-iform-pill ${active ? 'active' : ''}`} onClick={() => onChange('duration', dur)}>
+                        {active && <Check size={12} />}
+                        <span>
+                          {dur} {t('دقيقة', 'min')}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </FormField>
+              <FormField label={t('أيام وساعات العمل المتاحة', 'Working Schedule')} arabic={arabic}>
+                <div className="ai-funnel-goal-grid">
+                  {(
+                    [
+                      ['mon_fri_9_5', t('الاثنين – الجمعة', 'Mon – Fri'), '09:00 – 17:00'],
+                      ['sun_thu_10_6', t('الأحد – الخميس', 'Sun – Thu'), '10:00 – 18:00'],
+                      ['sat_thu_9_9', t('السبت – الخميس', 'Sat – Thu'), '09:00 – 21:00'],
+                      ['daily_10_10', t('يومياً طوال الأسبوع', 'Daily (7 Days)'), '10:00 – 22:00'],
+                    ] as const
+                  ).map(([id, title, hours]) => {
+                    const active = (v.schedulePreset || 'mon_fri_9_5') === id;
+                    return (
+                      <button key={id} type="button" disabled={locked} className={`ai-funnel-goal-card ${active ? 'active' : ''}`} onClick={() => onChange('schedulePreset', id)}>
+                        <span className="ai-funnel-goal-icon">
+                          <Check size={14} />
+                        </span>
+                        <div>
+                          <b>{title}</b>
+                          <small dir="ltr">{hours}</small>
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              </FormField>
+              <FormField label={t('وقت الراحة بين المواعيد (Buffer)', 'Buffer Time Between Sessions')} arabic={arabic}>
+                <div className="ai-iform-pills compact">
+                  {(
+                    [
+                      ['0', t('بدون فاصل (0 د)', 'No buffer')],
+                      ['15', t('15 دقيقة', '15 min')],
+                      ['30', t('30 دقيقة', '30 min')],
+                    ] as const
+                  ).map(([val, label]) => {
+                    const active = (v.bufferTime || '15') === val;
+                    return (
+                      <button key={val} type="button" disabled={locked} className={`ai-iform-pill ${active ? 'active' : ''}`} onClick={() => onChange('bufferTime', val)}>
+                        {active && <Check size={11} />}
+                        <span>{label}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </FormField>
+            </div>
+
+            <div className="ai-funnel-section">
+              <div className="ai-funnel-section-head">
+                <span className="ai-funnel-step-num">3</span>
+                <strong>{t('التسعير وقواعد التأكيد', 'Pricing, Mode & Confirmation')}</strong>
+              </div>
+              <div className="ai-iform-grid">
+                <FormField label={t('السعر (0 = مجاناً)', 'Price (0 = Free)')} arabic={arabic}>
+                  <input type="number" min="0" step="any" dir="ltr" disabled={locked} value={v.price ?? '0'} onChange={e => onChange('price', e.target.value)} />
+                </FormField>
+                <FormField label={t('العملة', 'Currency')} arabic={arabic}>
+                  <select disabled={locked} value={v.currency || 'USD'} onChange={e => onChange('currency', e.target.value)}>
+                    {['USD', 'EGP', 'SAR', 'AED', 'EUR'].map(c => (
+                      <option key={c} value={c}>
+                        {c}
+                      </option>
+                    ))}
+                  </select>
+                </FormField>
+              </div>
+              <div className="ai-iform-grid">
+                <FormField label={t('نمط الجلسة', 'Session Mode')} arabic={arabic}>
+                  <div className="ai-iform-pills compact">
+                    {(
+                      [
+                        ['1on1', t('فردي (1-on-1)', '1-on-1 Session')],
+                        ['group', t('جماعي (Group)', 'Group Session')],
+                      ] as const
+                    ).map(([id, label]) => {
+                      const active = (v.bookingMode || '1on1') === id;
+                      return (
+                        <button key={id} type="button" disabled={locked} className={`ai-iform-pill ${active ? 'active' : ''}`} onClick={() => onChange('bookingMode', id)}>
+                          {active && <Check size={11} />}
+                          <span>{label}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </FormField>
+                <FormField label={t('طريقة تأكيد الحجز', 'Booking Confirmation')} arabic={arabic}>
+                  <div className="ai-iform-pills compact">
+                    {(
+                      [
+                        ['false', t('تأكيد فوري', 'Instant Confirm')],
+                        ['true', t('بموافقة يدوية', 'Manual Approval')],
+                      ] as const
+                    ).map(([id, label]) => {
+                      const active = (v.requireApproval || 'false') === id;
+                      return (
+                        <button key={id} type="button" disabled={locked} className={`ai-iform-pill ${active ? 'active' : ''}`} onClick={() => onChange('requireApproval', id)}>
+                          {active && <Check size={11} />}
+                          <span>{label}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </FormField>
+              </div>
+              <FormField label={t('رسالة التأكيد بعد الحجز (اختياري)', 'After-Booking Confirmation Message (Optional)')} arabic={arabic}>
                 <input
                   type="text"
                   disabled={locked}
-                  value={v.name ?? ''}
-                  onChange={e => onChange('name', e.target.value)}
-                  placeholder={t('مثال: حملة عروض نهاية الأسبوع', 'e.g. October VIP Launch')}
+                  value={v.confirmationBody ?? ''}
+                  onChange={e => onChange('confirmationBody', e.target.value)}
+                  placeholder={t('مثال: تم تأكيد موعدك بنجاح، في انتظارك!', 'e.g. Your session is confirmed — see you soon!')}
                 />
               </FormField>
-              <FormField label={t('الجمهور المستهدف', 'Target Audience')} arabic={arabic}>
-                <select disabled={locked} value={v.audience || 'All Leads'} onChange={e => onChange('audience', e.target.value)}>
-                  <option value="All Leads">{t('كل العملاء المحتملين', 'All Leads')}</option>
-                  <option value="Hot Leads">{t('العملاء المؤهلين والمهتمين', 'Hot & Qualified Leads')}</option>
-                  <option value="New Leads">{t('العملاء الجدد', 'New Leads')}</option>
-                  <option value="Past Customers">{t('العملاء الحاليين', 'Existing Customers')}</option>
-                </select>
+              <FormField label={t('وصف الخدمة للعملاء', 'Service Description')} arabic={arabic}>
+                <textarea
+                  rows={2}
+                  disabled={locked}
+                  value={v.content ?? ''}
+                  onChange={e => onChange('content', e.target.value)}
+                  placeholder={t('اشرح ما سيحصل عليه العميل خلال الجلسة…', 'Describe what clients get in this session…')}
+                />
               </FormField>
             </div>
-            <FormField label={t('قناة الإرسال', 'Channel')} required arabic={arabic}>
-              <div className="ai-iform-pills">
-                {(['WhatsApp', 'Instagram', 'Email'] as const).map(ch => {
-                  const active = (v.channel || 'WhatsApp') === ch;
-                  const label = ch === 'WhatsApp' ? t('واتساب (WhatsApp)', 'WhatsApp') : ch === 'Instagram' ? t('إنستجرام (Instagram)', 'Instagram') : t('البريد الإلكتروني (Email)', 'Email');
+          </div>
+        )}
+
+        {form.kind === 'campaign' && (
+          <div className="ai-funnel-brief">
+            <div className="ai-funnel-section">
+              <div className="ai-funnel-section-head">
+                <span className="ai-funnel-step-num">1</span>
+                <strong>{t('القناة وعدد الخطوات والجمهور', 'Channel, Sequence Steps & Audience')}</strong>
+              </div>
+              <FormField label={t('قناة الإرسال', 'Channel')} required arabic={arabic}>
+                <div className="ai-funnel-steps-picker">
+                  {(
+                    [
+                      ['WhatsApp', t('واتساب', 'WhatsApp'), t('رسائل مباشرة سريعة', 'High open-rate DM')],
+                      ['Instagram', t('إنستجرام', 'Instagram'), t('رسائل DM تفاعلية', 'Interactive IG DM')],
+                      ['Email', t('البريد الإلكتروني', 'Email'), t('حملات وتسلسل احترافي', 'Rich email broadcast')],
+                    ] as const
+                  ).map(([ch, title, sub]) => {
+                    const active = (v.channel || 'WhatsApp') === ch;
+                    return (
+                      <button key={ch} type="button" disabled={locked} className={`ai-funnel-step-option ${active ? 'active' : ''}`} onClick={() => onChange('channel', ch)}>
+                        <span className="ai-funnel-step-badge">
+                          <Megaphone size={13} />
+                        </span>
+                        <div>
+                          <b>{title}</b>
+                          <small>{sub}</small>
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              </FormField>
+              <FormField label={t('كام رسالة في الحملة؟ (عدد الخطوات)', 'How many steps in this campaign?')} arabic={arabic}>
+                <div className="ai-funnel-steps-picker">
+                  {(
+                    [
+                      ['1', t('رسالة واحدة', '1 Message'), t('إرسال سريع ومباشر', 'Single broadcast')],
+                      ['3', t('3 خطوات (موصى به)', '3-Step Sequence'), t('عرض + تذكير + إغلاق', 'Offer + Nudge + Close')],
+                      ['5', t('5 خطوات كاملة', '5-Step Sequence'), t('متابعة شاملة للتحويل', 'Full nurture drip')],
+                    ] as const
+                  ).map(([cnt, title, sub]) => {
+                    const active = (v.stepsCount || '3') === cnt;
+                    return (
+                      <button key={cnt} type="button" disabled={locked} className={`ai-funnel-step-option ${active ? 'active' : ''}`} onClick={() => onChange('stepsCount', cnt)}>
+                        <span className="ai-funnel-step-badge">{cnt}</span>
+                        <div>
+                          <b>{title}</b>
+                          <small>{sub}</small>
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              </FormField>
+              <FormField label={t('الجمهور المستهدف', 'Target Audience')} arabic={arabic}>
+                <div className="ai-iform-pills">
+                  {(
+                    [
+                      ['All Leads', t('كل العملاء المحتملين', 'All Leads')],
+                      ['Hot Leads', t('العملاء المؤهلين والمهتمين', 'Hot & Qualified Leads')],
+                      ['New Leads', t('العملاء الجدد', 'New Leads')],
+                      ['Past Customers', t('العملاء الحاليين', 'Existing Customers')],
+                    ] as const
+                  ).map(([aud, label]) => {
+                    const active = (v.audience || 'All Leads') === aud;
+                    return (
+                      <button key={aud} type="button" disabled={locked} className={`ai-iform-pill ${active ? 'active' : ''}`} onClick={() => onChange('audience', aud)}>
+                        {active && <Check size={12} />}
+                        <span>{label}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </FormField>
+            </div>
+
+            <div className="ai-funnel-section">
+              <div className="ai-funnel-section-head">
+                <span className="ai-funnel-step-num">2</span>
+                <strong>{t('أسلوب الكتابة والإيموجيز ومحتوى الحملة', 'Style, Emojis & Campaign Copy')}</strong>
+              </div>
+              <div className="ai-iform-grid">
+                <FormField label={t('أسلوب كتابة الحملة', 'Writing Style')} arabic={arabic}>
+                  <div className="ai-iform-pills compact">
+                    {(
+                      [
+                        ['friendly', t('ودود (Friendly)', 'Friendly')],
+                        ['serious', t('جاد (Serious)', 'Serious')],
+                        ['funny', t('مرح (Funny)', 'Funny')],
+                        ['persuasive', t('إقناعي', 'Persuasive')],
+                      ] as const
+                    ).map(([id, label]) => {
+                      const active = (v.tone || 'friendly') === id;
+                      return (
+                        <button key={id} type="button" disabled={locked} className={`ai-iform-pill ${active ? 'active' : ''}`} onClick={() => onChange('tone', id)}>
+                          {active && <Check size={11} />}
+                          <span>{label}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </FormField>
+                <FormField label={t('استخدام الإيموجيز', 'Emojis')} arabic={arabic}>
+                  <div className="ai-iform-pills compact">
+                    {(
+                      [
+                        ['true', t('مع إيموجيز', 'With Emojis')],
+                        ['false', t('بدون إيموجيز', 'No Emojis')],
+                      ] as const
+                    ).map(([id, label]) => {
+                      const active = (v.useEmojis || 'true') === id;
+                      return (
+                        <button key={id} type="button" disabled={locked} className={`ai-iform-pill ${active ? 'active' : ''}`} onClick={() => onChange('useEmojis', id)}>
+                          {active && <Check size={11} />}
+                          <span>{label}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </FormField>
+              </div>
+              <div className="ai-iform-grid">
+                <FormField label={t('اسم الحملة', 'Campaign Name')} required arabic={arabic} error={errors.name}>
+                  <input
+                    type="text"
+                    disabled={locked}
+                    value={v.name ?? ''}
+                    onChange={e => onChange('name', e.target.value)}
+                    placeholder={t('مثال: حملة عروض نهاية الأسبوع', 'e.g. October VIP Launch')}
+                  />
+                </FormField>
+                <FormField label={t('هدف الحملة', 'Campaign Goal')} arabic={arabic}>
+                  <input
+                    type="text"
+                    disabled={locked}
+                    value={v.goal ?? ''}
+                    onChange={e => onChange('goal', e.target.value)}
+                    placeholder={t('مثال: حجز استشارات أو عرض خصم 20%', 'e.g. Drive bookings or launch 20% offer')}
+                  />
+                </FormField>
+              </div>
+              <FormField label={t('الدعوة لاتخاذ إجراء (CTA)', 'Call to Action (CTA)')} arabic={arabic}>
+                <input
+                  type="text"
+                  disabled={locked}
+                  value={v.cta ?? ''}
+                  onChange={e => onChange('cta', e.target.value)}
+                  placeholder={t('مثال: رد بكلمة مهتم أو احجز موعدك', 'e.g. Reply YES to claim your spot')}
+                />
+              </FormField>
+              <FormField label={t('نص رسالة الحملة', 'Campaign Message Copy')} required arabic={arabic} error={errors.content}>
+                <textarea
+                  rows={4}
+                  disabled={locked}
+                  value={v.content ?? ''}
+                  onChange={e => onChange('content', e.target.value)}
+                  placeholder={t('اكتب وراجع نص الرسالة التي ستُرسل للعملاء…', 'Write and review your persuasive campaign message…')}
+                />
+              </FormField>
+            </div>
+          </div>
+        )}
+
+        {form.kind === 'product' && (
+          <div className="ai-funnel-brief">
+            <div className="ai-funnel-section">
+              <div className="ai-funnel-section-head">
+                <span className="ai-funnel-step-num">1</span>
+                <strong>{t('نوع المنتج وطريقة التسليم', 'Offer Type & Delivery Method')}</strong>
+              </div>
+              <div className="ai-funnel-goal-grid">
+                {(
+                  [
+                    ['Online Course', GraduationCap, t('كورس تدريبي أونلاين', 'Online Course'), t('دروس فيديو ومنصة طلاب', 'Video lessons & portal')],
+                    ['Digital Product', Download, t('منتج رقمي', 'Digital Product'), t('ملفات، قوالب أو كتاب إلكتروني', 'Templates, files or ebook')],
+                    ['Service', Briefcase, t('خدمة / استشارات', 'Coaching / Service'), t('جلسات تنفيذية أو استشارية', '1-on-1 or done-for-you')],
+                    ['Membership', Users, t('عضوية شهرية', 'Monthly Membership'), t('اشتراك متجدد ومحتوى مستمر', 'Recurring access & community')],
+                  ] as const
+                ).map(([typeId, IconComp, title, sub]) => {
+                  const active = (v.productType || 'Digital Product') === typeId;
                   return (
-                    <button key={ch} type="button" disabled={locked} className={`ai-iform-pill ${active ? 'active' : ''}`} onClick={() => onChange('channel', ch)}>
-                      {active && <Check size={12} />}
-                      <span>{label}</span>
+                    <button
+                      key={typeId}
+                      type="button"
+                      disabled={locked}
+                      className={`ai-funnel-goal-card ${active ? 'active' : ''}`}
+                      onClick={() => {
+                        onChange('productType', typeId);
+                        if (typeId === 'Membership') onChange('billing', 'Monthly');
+                        if (typeId === 'Online Course') onChange('deliveryMethod', 'portal');
+                      }}
+                    >
+                      <span className="ai-funnel-goal-icon">
+                        <IconComp size={15} />
+                      </span>
+                      <div>
+                        <b>{title}</b>
+                        <small>{sub}</small>
+                      </div>
                     </button>
                   );
                 })}
               </div>
-            </FormField>
-            <FormField label={t('نص رسالة الحملة', 'Campaign Message Copy')} required arabic={arabic} error={errors.content}>
-              <textarea
-                rows={4}
-                disabled={locked}
-                value={v.content ?? ''}
-                onChange={e => onChange('content', e.target.value)}
-                placeholder={t('اكتب وراجع نص الرسالة التي ستُرسل للعملاء…', 'Write and review your persuasive campaign message…')}
-              />
-            </FormField>
-          </>
-        )}
+              <FormField label={t('طريقة تسليم المنتج للعميل', 'Delivery Method')} arabic={arabic}>
+                <div className="ai-funnel-steps-picker">
+                  {(
+                    [
+                      ['instant', t('تحميل فوري', 'Instant Download'), t('ملف يصله فوراً بعد الدفع', 'Immediate file access')],
+                      ['portal', t('منصة كورس', 'Course Portal'), t('دخول لمنصة الدروس', 'Student learning hub')],
+                      ['live', t('جلسات مباشرة', 'Live Sessions'), t('تقديم مباشر أونلاين', 'Live Zoom / Meet')],
+                    ] as const
+                  ).map(([id, title, sub]) => {
+                    const active = (v.deliveryMethod || 'instant') === id;
+                    return (
+                      <button key={id} type="button" disabled={locked} className={`ai-funnel-step-option ${active ? 'active' : ''}`} onClick={() => onChange('deliveryMethod', id)}>
+                        <span className="ai-funnel-step-badge">
+                          <Check size={13} />
+                        </span>
+                        <div>
+                          <b>{title}</b>
+                          <small>{sub}</small>
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              </FormField>
+            </div>
 
-        {form.kind === 'product' && (
-          <>
-            <div className="ai-iform-grid">
+            <div className="ai-funnel-section">
+              <div className="ai-funnel-section-head">
+                <span className="ai-funnel-step-num">2</span>
+                <strong>{t('التفاصيل والتسعير والضمان', 'Details, Pricing & Guarantee')}</strong>
+              </div>
               <FormField label={t('اسم المنتج أو الكورس', 'Product / Course Name')} required arabic={arabic} error={errors.name}>
                 <input
                   type="text"
@@ -2787,87 +3673,432 @@ function CopilotActionForm({
                   placeholder={t('مثال: كورس التسويق الاحترافي', 'e.g. AI Sales Mastery Course')}
                 />
               </FormField>
-              <FormField label={t('نوع المنتج', 'Offer Type')} arabic={arabic}>
-                <select disabled={locked} value={v.productType || 'Digital Product'} onChange={e => onChange('productType', e.target.value)}>
-                  <option value="Digital Product">{t('منتج رقمي', 'Digital Product')}</option>
-                  <option value="Online Course">{t('كورس تدريبي', 'Online Course')}</option>
-                  <option value="Service">{t('خدمة / استشارات', 'Coaching / Service')}</option>
-                  <option value="Membership">{t('عضوية شهرية', 'Membership')}</option>
-                </select>
+              <div className="ai-iform-grid three">
+                <FormField label={t('السعر', 'Price')} required arabic={arabic} error={errors.price}>
+                  <input type="number" min="0" step="any" dir="ltr" disabled={locked} value={v.price ?? ''} onChange={e => onChange('price', e.target.value)} placeholder="99" />
+                </FormField>
+                <FormField label={t('العملة', 'Currency')} arabic={arabic}>
+                  <select disabled={locked} value={v.currency || 'USD'} onChange={e => onChange('currency', e.target.value)}>
+                    {['USD', 'EGP', 'SAR', 'AED', 'EUR'].map(c => (
+                      <option key={c} value={c}>
+                        {c}
+                      </option>
+                    ))}
+                  </select>
+                </FormField>
+                <FormField label={t('نظام الدفع', 'Billing')} arabic={arabic}>
+                  <div className="ai-iform-pills compact">
+                    {(
+                      [
+                        ['One-time', t('دفعة واحدة', 'One-time')],
+                        ['Monthly', t('شهري', 'Monthly')],
+                      ] as const
+                    ).map(([id, label]) => {
+                      const active = (v.billing || 'One-time') === id;
+                      return (
+                        <button key={id} type="button" disabled={locked} className={`ai-iform-pill ${active ? 'active' : ''}`} onClick={() => onChange('billing', id)}>
+                          {active && <Check size={11} />}
+                          <span>{label}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </FormField>
+              </div>
+              <div className="ai-iform-grid">
+                <FormField label={t('الجمهور المستهدف', 'Target Audience')} arabic={arabic}>
+                  <input
+                    type="text"
+                    disabled={locked}
+                    value={v.targetAudience ?? ''}
+                    onChange={e => onChange('targetAudience', e.target.value)}
+                    placeholder={t('مثال: أصحاب المتاجر والمسوقين', 'e.g. Agency owners & freelancers')}
+                  />
+                </FormField>
+                <FormField label={t('الضمان أو سياسة الاسترجاع', 'Guarantee / Refund Policy')} arabic={arabic}>
+                  <input
+                    type="text"
+                    disabled={locked}
+                    value={v.guarantee ?? ''}
+                    onChange={e => onChange('guarantee', e.target.value)}
+                    placeholder={t('مثال: ضمان استرجاع كامل خلال 14 يوم', 'e.g. 14-day money-back guarantee')}
+                  />
+                </FormField>
+              </div>
+              <FormField label={t('وصف المنتج ومميزاته', 'Offer Description')} required arabic={arabic} error={errors.content}>
+                <textarea
+                  rows={3}
+                  disabled={locked}
+                  value={v.content ?? ''}
+                  onChange={e => onChange('content', e.target.value)}
+                  placeholder={t('اكتب أبرز فوائد ومحتويات المنتج أو الكورس…', 'Highlight key outcomes, modules, or deliverables…')}
+                />
               </FormField>
             </div>
-            <div className="ai-iform-grid three">
-              <FormField label={t('السعر', 'Price')} required arabic={arabic} error={errors.price}>
-                <input type="number" min="0" step="any" dir="ltr" disabled={locked} value={v.price ?? ''} onChange={e => onChange('price', e.target.value)} placeholder="99" />
-              </FormField>
-              <FormField label={t('العملة', 'Currency')} arabic={arabic}>
-                <select disabled={locked} value={v.currency || 'USD'} onChange={e => onChange('currency', e.target.value)}>
-                  {['USD', 'EGP', 'SAR', 'AED', 'EUR'].map(c => (
-                    <option key={c} value={c}>
-                      {c}
-                    </option>
-                  ))}
-                </select>
-              </FormField>
-              <FormField label={t('نظام الدفع', 'Billing')} arabic={arabic}>
-                <select disabled={locked} value={v.billing || 'One-time'} onChange={e => onChange('billing', e.target.value)}>
-                  <option value="One-time">{t('دفعة واحدة', 'One-time')}</option>
-                  <option value="Monthly">{t('اشتراك شهري', 'Monthly')}</option>
-                </select>
-              </FormField>
-            </div>
-            <FormField label={t('وصف المنتج ومميزاته', 'Offer Description')} required arabic={arabic} error={errors.content}>
-              <textarea
-                rows={3}
-                disabled={locked}
-                value={v.content ?? ''}
-                onChange={e => onChange('content', e.target.value)}
-                placeholder={t('اكتب أبرز فوائد ومحتويات المنتج أو الكورس…', 'Highlight key outcomes, modules, or deliverables…')}
-              />
-            </FormField>
-          </>
+          </div>
         )}
 
         {form.kind === 'landing' && (
-          <>
-            <div className="ai-iform-grid">
-              <FormField label={t('اسم صفحة الهبوط', 'Page / Funnel Name')} required arabic={arabic} error={errors.name}>
+          <div className="ai-funnel-brief">
+            {/* Step 1: Architecture & Business Identity */}
+            <div className="ai-funnel-section">
+              <div className="ai-funnel-section-head">
+                <span className="ai-funnel-step-num">1</span>
+                <strong>{t('هيكلة الفانل وهوية النشاط', 'Funnel Architecture & Business Identity')}</strong>
+              </div>
+
+              <div className="ai-funnel-goal-grid" role="radiogroup" aria-label={t('نوع الفانل', 'Funnel Type')}>
+                {funnelGoalOptions.map(opt => {
+                  const OptIcon = opt.icon;
+                  const active = (v.funnelType || 'audience') === opt.id;
+                  return (
+                    <button
+                      key={opt.id}
+                      type="button"
+                      role="radio"
+                      aria-checked={active}
+                      disabled={locked}
+                      className={`ai-funnel-goal-card ${active ? 'active' : ''}`}
+                      onClick={() => {
+                        onChange('funnelType', opt.id);
+                        onChange('goal', opt.goalValue);
+                        if (!v.stepsCount) onChange('stepsCount', opt.defaultSteps);
+                      }}
+                    >
+                      <span className="ai-funnel-goal-icon">
+                        <OptIcon size={15} />
+                      </span>
+                      <div>
+                        <b>{opt.title}</b>
+                        <small>{opt.flow}</small>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+
+              <FormField label={t('كام خطوة عاوز الفانل؟ (اختر عدد الخطوات)', 'How many steps do you want in this funnel?')} arabic={arabic}>
+                <div className="ai-funnel-steps-picker" role="radiogroup" aria-label={t('عدد خطوات الفانل', 'Funnel Steps')}>
+                  {(
+                    [
+                      ['2', t('خطوتان (2 Steps)', '2 Steps'), t('صفحة رئيسية + شكر', 'Landing + Thank You')],
+                      ['3', t('3 خطوات (موصى به)', '3 Steps (Recommended)'), t('عرض + حجز/طلب + شكر', 'Offer + Action + Thank You')],
+                      ['4', t('4 خطوات (+ VIP)', '4 Steps (+ VIP Upsell)'), t('عرض + طلب + ترقية + شكر', 'Sales + Order + Upsell + Thank You')],
+                    ] as const
+                  ).map(([cnt, title, sub]) => {
+                    const active = (v.stepsCount || '3') === cnt;
+                    return (
+                      <button
+                        key={cnt}
+                        type="button"
+                        role="radio"
+                        aria-checked={active}
+                        disabled={locked}
+                        className={`ai-funnel-step-option ${active ? 'active' : ''}`}
+                        onClick={() => onChange('stepsCount', cnt)}
+                      >
+                        <span className="ai-funnel-step-badge">{cnt}</span>
+                        <div>
+                          <b>{title}</b>
+                          <small>{sub}</small>
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              </FormField>
+
+              <div className="ai-iform-grid">
+                <FormField label={t('نوع المشروع', 'Asset Type')} arabic={arabic}>
+                  <div className="ai-iform-pills compact">
+                    <button
+                      type="button"
+                      disabled={locked}
+                      className={`ai-iform-pill ${(v.assetKind || 'funnel') === 'funnel' ? 'active' : ''}`}
+                      onClick={() => onChange('assetKind', 'funnel')}
+                    >
+                      {(v.assetKind || 'funnel') === 'funnel' && <Check size={11} />}
+                      <span>{t('فانل متعدد الخطوات', 'Multi-Step Funnel')}</span>
+                    </button>
+                    <button
+                      type="button"
+                      disabled={locked}
+                      className={`ai-iform-pill ${(v.assetKind || 'funnel') === 'website' ? 'active' : ''}`}
+                      onClick={() => onChange('assetKind', 'website')}
+                    >
+                      {(v.assetKind || 'funnel') === 'website' && <Check size={11} />}
+                      <span>{t('موقع إلكتروني', 'Website')}</span>
+                    </button>
+                  </div>
+                </FormField>
+                <FormField label={t('لغة محتوى الفانل', 'Funnel Copy Language')} arabic={arabic}>
+                  <div className="ai-iform-pills compact">
+                    <button
+                      type="button"
+                      disabled={locked}
+                      className={`ai-iform-pill ${(v.language || (arabic ? 'ar' : 'en')) === 'ar' ? 'active' : ''}`}
+                      onClick={() => onChange('language', 'ar')}
+                    >
+                      {(v.language || (arabic ? 'ar' : 'en')) === 'ar' && <Check size={11} />}
+                      <span>العربية (RTL)</span>
+                    </button>
+                    <button
+                      type="button"
+                      disabled={locked}
+                      className={`ai-iform-pill ${(v.language || (arabic ? 'ar' : 'en')) === 'en' ? 'active' : ''}`}
+                      onClick={() => onChange('language', 'en')}
+                    >
+                      {(v.language || (arabic ? 'ar' : 'en')) === 'en' && <Check size={11} />}
+                      <span>English (LTR)</span>
+                    </button>
+                  </div>
+                </FormField>
+              </div>
+
+              <div className="ai-iform-grid">
+                <FormField label={t('اسم الفانل أو المشروع', 'Funnel / Project Name')} required arabic={arabic} error={errors.name}>
+                  <input
+                    type="text"
+                    disabled={locked}
+                    value={v.name ?? ''}
+                    onChange={e => onChange('name', e.target.value)}
+                    placeholder={t('مثال: فانل حجز استشارة ابتسامة هوليوود', 'e.g. Q4 Growth Strategy Funnel')}
+                  />
+                </FormField>
+                <FormField label={t('اسم البراند أو الشركة', 'Business / Brand Name')} arabic={arabic}>
+                  <input
+                    type="text"
+                    disabled={locked}
+                    value={v.businessName ?? ''}
+                    onChange={e => onChange('businessName', e.target.value)}
+                    placeholder={t('مثال: عيادة النيل لطب الأسنان', 'e.g. ScaleFlow Academy')}
+                  />
+                </FormField>
+              </div>
+
+              <FormField label={t('المجال أو التخصص (Niche)', 'Industry / Niche')} arabic={arabic}>
                 <input
                   type="text"
                   disabled={locked}
-                  value={v.name ?? ''}
-                  onChange={e => onChange('name', e.target.value)}
-                  placeholder={t('مثال: صفحة عرض الاستشارة المجانية', 'e.g. Free Strategy Session Funnel')}
+                  value={v.niche ?? ''}
+                  onChange={e => onChange('niche', e.target.value)}
+                  placeholder={t('مثال: طب الأسنان التجميلي، تسويق عقاري، كورسات أونلاين…', 'e.g. B2B SaaS, Dental Clinic, Executive Coaching…')}
                 />
-              </FormField>
-              <FormField label={t('الهدف الأساسي (CTA)', 'Primary Goal')} arabic={arabic}>
-                <select disabled={locked} value={v.goal || 'Capture Leads'} onChange={e => onChange('goal', e.target.value)}>
-                  <option value="Capture Leads">{t('تجميع بيانات العملاء (Leads)', 'Capture Leads')}</option>
-                  <option value="Book a Call">{t('حجز موعد أو مكالمة', 'Book a Strategy Call')}</option>
-                  <option value="Sell a Product">{t('بيع منتج أو كورس مباشر', 'Direct Product Sale')}</option>
-                  <option value="WhatsApp Inquiry">{t('بدء محادثة واتساب', 'Start WhatsApp Chat')}</option>
-                </select>
+                <div className="ai-funnel-quick-chips">
+                  {quickNiches.map(item => {
+                    const label = arabic ? item.ar : item.en;
+                    return (
+                      <button
+                        key={item.en}
+                        type="button"
+                        disabled={locked}
+                        className={`ai-funnel-chip ${v.niche === label ? 'active' : ''}`}
+                        onClick={() => onChange('niche', label)}
+                      >
+                        {label}
+                      </button>
+                    );
+                  })}
+                </div>
               </FormField>
             </div>
-            <FormField label={t('العنوان الرئيسي الجذاب (Hero Headline)', 'Hero Headline')} arabic={arabic}>
-              <input
-                type="text"
-                disabled={locked}
-                value={v.headline ?? ''}
-                onChange={e => onChange('headline', e.target.value)}
-                placeholder={t('مثال: ضاعف مبيعاتك خلال 90 يوماً بخطة عملية مجربة', 'e.g. Scale Your Qualified Leads in 30 Days')}
-              />
-            </FormField>
-            <FormField label={t('تفاصيل العرض ومحتوى الصفحة', 'Offer Summary & Key Benefits')} required arabic={arabic} error={errors.content}>
-              <textarea
-                rows={3}
-                disabled={locked}
-                value={v.content ?? ''}
-                onChange={e => onChange('content', e.target.value)}
-                placeholder={t('اشرح العرض والنتائج التي سيحصل عليها الزائر…', 'Describe your core offer, social proof, and call-to-action…')}
-              />
-            </FormField>
-          </>
+
+            {/* Step 2: Audience, Pain Points & Core Offer */}
+            <div className="ai-funnel-section">
+              <div className="ai-funnel-section-head">
+                <span className="ai-funnel-step-num">2</span>
+                <strong>{t('الجمهور ونقاط الألم وتفاصيل العرض', 'Audience, Pain Points & Core Offer')}</strong>
+              </div>
+
+              <div className="ai-iform-grid">
+                <FormField label={t('الجمهور المستهدف (العميل المثالي)', 'Target Audience')} arabic={arabic}>
+                  <input
+                    type="text"
+                    disabled={locked}
+                    value={v.targetAudience ?? ''}
+                    onChange={e => onChange('targetAudience', e.target.value)}
+                    placeholder={t('مثال: أصحاب المتاجر الإلكترونية في مصر والخليج', 'e.g. SaaS founders doing $10k–$50k MRR')}
+                  />
+                </FormField>
+                <FormField label={t('أهم نقاط الألم والاعتراضات', 'Customer Pain Points & Objections')} arabic={arabic}>
+                  <input
+                    type="text"
+                    disabled={locked}
+                    value={v.painPoints ?? ''}
+                    onChange={e => onChange('painPoints', e.target.value)}
+                    placeholder={t('مثال: إهدار ميزانية الإعلانات بدون مبيعات ثابتة', 'e.g. High ad spend with low booking conversion')}
+                  />
+                </FormField>
+              </div>
+
+              <FormField
+                label={t('تفاصيل العرض الرئيسي وما سيحصل عليه العميل', 'Core Offer, Promise & Deliverables')}
+                required
+                arabic={arabic}
+                error={errors.offerSummary || errors.content}
+              >
+                <textarea
+                  rows={3}
+                  disabled={locked}
+                  value={v.offerSummary ?? v.content ?? ''}
+                  onChange={e => {
+                    onChange('offerSummary', e.target.value);
+                    onChange('content', e.target.value);
+                  }}
+                  placeholder={t(
+                    'اشرح العرض بوضوح: ماذا تقدم؟ ما النتيجة الملموسة؟ هل يوجد بونص أو جلسة مجانية؟',
+                    'Describe your core offer, key deliverables, bonuses, and the concrete outcome buyers get…',
+                  )}
+                />
+              </FormField>
+
+              <FormField label={t('الميزة التنافسية والإثبات أو الضمان (USP)', 'Unique Value, Proof & Guarantee')} arabic={arabic}>
+                <input
+                  type="text"
+                  disabled={locked}
+                  value={v.uniqueValue ?? ''}
+                  onChange={e => onChange('uniqueValue', e.target.value)}
+                  placeholder={t('مثال: ضمان استرجاع خلال 30 يوم + أكثر من 400 عميل ناجح', 'e.g. 30-day money-back guarantee · 500+ verified clients')}
+                />
+              </FormField>
+
+              <div className="ai-iform-grid three">
+                <FormField label={t('السعر (0 = مجاني)', 'Price (0 = Free)')} arabic={arabic}>
+                  <input
+                    type="number"
+                    min="0"
+                    step="any"
+                    dir="ltr"
+                    disabled={locked}
+                    value={v.price ?? '0'}
+                    onChange={e => onChange('price', e.target.value)}
+                    placeholder="0"
+                  />
+                </FormField>
+                <FormField label={t('العملة', 'Currency')} arabic={arabic}>
+                  <select disabled={locked} value={v.currency || 'USD'} onChange={e => onChange('currency', e.target.value)}>
+                    {['USD', 'EGP', 'SAR', 'AED', 'EUR'].map(c => (
+                      <option key={c} value={c}>
+                        {c}
+                      </option>
+                    ))}
+                  </select>
+                </FormField>
+                <FormField label={t('نص الزر الرئيسي (CTA)', 'Primary CTA Button')} arabic={arabic}>
+                  <input
+                    type="text"
+                    disabled={locked}
+                    value={v.primaryCta ?? ''}
+                    onChange={e => onChange('primaryCta', e.target.value)}
+                    placeholder={t('مثال: احجز استشارتك الآن', 'e.g. Book My Free Audit')}
+                  />
+                </FormField>
+              </div>
+
+              <FormField label={t('عنوان Hero مقترح (اختياري — اتركه فارغاً ليبتكره الذكاء الاصطناعي)', 'Custom Hero Headline (Optional — leave blank for AI to craft)')} arabic={arabic}>
+                <input
+                  type="text"
+                  disabled={locked}
+                  value={v.headline ?? ''}
+                  onChange={e => onChange('headline', e.target.value)}
+                  placeholder={t('مثال: ضاعف مبيعاتك خلال 90 يوماً بخطة مجربة', 'e.g. Turn Cold Clicks Into Booked Strategy Calls')}
+                />
+              </FormField>
+            </div>
+
+            {/* Step 3: Tone & Brand Style */}
+            <div className="ai-funnel-section">
+              <div className="ai-funnel-section-head">
+                <span className="ai-funnel-step-num">3</span>
+                <strong>{t('نبرة المحتوى والهوية اللونية', 'Tone of Voice & Brand Accent')}</strong>
+              </div>
+
+              <FormField label={t('نبرة الإقناع (Tone)', 'Copywriting Tone')} arabic={arabic}>
+                <div className="ai-iform-pills">
+                  {(
+                    [
+                      ['persuasive', t('إقناعي وعالي التحويل', 'Persuasive & ROI')],
+                      ['friendly', t('ودود (Friendly)', 'Friendly')],
+                      ['serious', t('جاد واحترافي (Serious)', 'Serious & Formal')],
+                      ['funny', t('مرح وخفيف (Funny)', 'Funny & Witty')],
+                      ['executive', t('تنفيذي B2B', 'Executive B2B')],
+                      ['urgent', t('حماسي لعرض محدود', 'Urgent & Launch')],
+                    ] as const
+                  ).map(([id, label]) => {
+                    const active = (v.tone || 'persuasive') === id;
+                    return (
+                      <button
+                        key={id}
+                        type="button"
+                        disabled={locked}
+                        className={`ai-iform-pill ${active ? 'active' : ''}`}
+                        onClick={() => onChange('tone', id)}
+                      >
+                        {active && <Check size={12} />}
+                        <span>{label}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </FormField>
+
+              <FormField label={t('الإيموجيز في نصوص الفانل', 'Emojis in Funnel Copy')} arabic={arabic}>
+                <div className="ai-iform-pills compact">
+                  {(
+                    [
+                      ['true', t('مع إيموجيز', 'With Emojis')],
+                      ['false', t('بدون إيموجيز', 'No Emojis')],
+                    ] as const
+                  ).map(([id, label]) => {
+                    const active = (v.useEmojis || 'true') === id;
+                    return (
+                      <button
+                        key={id}
+                        type="button"
+                        disabled={locked}
+                        className={`ai-iform-pill ${active ? 'active' : ''}`}
+                        onClick={() => onChange('useEmojis', id)}
+                      >
+                        {active && <Check size={11} />}
+                        <span>{label}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </FormField>
+
+              <FormField label={t('اللون الأساسي للفانل', 'Brand Accent Color')} arabic={arabic}>
+                <div className="ai-funnel-swatches">
+                  {accentSwatches.map(sw => {
+                    const active = (v.accentColor || '#7C3AED').toUpperCase() === sw.hex.toUpperCase();
+                    return (
+                      <button
+                        key={sw.hex}
+                        type="button"
+                        disabled={locked}
+                        className={`ai-funnel-swatch ${active ? 'active' : ''}`}
+                        onClick={() => onChange('accentColor', sw.hex)}
+                        title={sw.label}
+                      >
+                        <i style={{ backgroundColor: sw.hex }} />
+                        <span>{sw.label}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </FormField>
+            </div>
+
+            {form.status === 'submitting' && (
+              <div className="ai-funnel-progress" role="status">
+                <LoaderCircle size={16} className="ai-spinner" />
+                <div>
+                  <strong>{t('جارٍ بناء الفانل الاحترافي بالذكاء الاصطناعي…', 'Building your AI Funnel…')}</strong>
+                  <small>{funnelBuildPhases[buildPhaseIdx]}</small>
+                </div>
+              </div>
+            )}
+          </div>
         )}
 
         {form.kind === 'create_knowledge' && (
@@ -2917,57 +4148,101 @@ function CopilotActionForm({
         )}
 
         {form.kind === 'update_assistant' && (
-          <>
-            <div className="ai-iform-toggle-banner">
-              <div>
-                <strong>{t('تفعيل الرد التلقائي المباشر (Live Auto-Reply)', 'Live AI Auto-Reply')}</strong>
-                <small>{t('يرد المساعد الذكي تلقائياً على رسائل العملاء بالاعتماد على قاعدة المعرفة', 'Automatically reply to incoming customer messages using your Knowledge Base')}</small>
+          <div className="ai-funnel-brief">
+            <div className="ai-funnel-section">
+              <div className="ai-funnel-section-head">
+                <span className="ai-funnel-step-num">1</span>
+                <strong>{t('تفعيل الرد التلقائي والقنوات', 'Live Auto-Reply & Active Channels')}</strong>
               </div>
-              <button
-                type="button"
-                disabled={locked}
-                role="switch"
-                aria-checked={v.live_enabled === 'true'}
-                className={`ai-iform-switch ${v.live_enabled === 'true' ? 'on' : ''}`}
-                onClick={() => onChange('live_enabled', v.live_enabled === 'true' ? 'false' : 'true')}
-              >
-                <span />
-              </button>
-            </div>
-            <FormField label={t('القنوات المفعّلة', 'Active Channels')} arabic={arabic}>
-              <div className="ai-iform-pills">
-                {(
-                  [
-                    ['whatsapp', 'WhatsApp'],
-                    ['instagram', 'Instagram'],
-                    ['messenger', 'Messenger'],
-                    ['webchat', t('شات الموقع', 'Webchat')],
-                  ] as const
-                ).map(([key, label]) => {
-                  const active = v[key] === 'true';
-                  return (
-                    <button
-                      key={key}
-                      type="button"
-                      disabled={locked}
-                      className={`ai-iform-pill ${active ? 'active' : ''}`}
-                      onClick={() => onChange(key, active ? 'false' : 'true')}
-                    >
-                      {active && <Check size={12} />}
-                      <span>{label}</span>
-                    </button>
-                  );
-                })}
+              <div className="ai-iform-toggle-banner">
+                <div>
+                  <strong>{t('تفعيل الرد التلقائي المباشر (Live Auto-Reply)', 'Live AI Auto-Reply')}</strong>
+                  <small>{t('يرد المساعد الذكي تلقائياً على رسائل العملاء بالاعتماد على قاعدة المعرفة', 'Automatically reply to incoming customer messages using your Knowledge Base')}</small>
+                </div>
+                <button
+                  type="button"
+                  disabled={locked}
+                  role="switch"
+                  aria-checked={v.live_enabled === 'true'}
+                  className={`ai-iform-switch ${v.live_enabled === 'true' ? 'on' : ''}`}
+                  onClick={() => onChange('live_enabled', v.live_enabled === 'true' ? 'false' : 'true')}
+                >
+                  <span />
+                </button>
               </div>
-            </FormField>
-            <div className="ai-iform-grid">
-              <FormField label={t('نبرة الصوت (Tone)', 'Reply Tone')} arabic={arabic}>
-                <select disabled={locked} value={v.tone || 'Friendly & Professional'} onChange={e => onChange('tone', e.target.value)}>
-                  <option value="Friendly & Professional">{t('ودود واحترافي', 'Friendly & Professional')}</option>
-                  <option value="Consultative & Persuasive">{t('استشاري ومقنع بيعياً', 'Consultative & Persuasive')}</option>
-                  <option value="Concise & Direct">{t('مختصر ومباشر', 'Concise & Direct')}</option>
-                </select>
+              <FormField label={t('القنوات المفعّلة', 'Active Channels')} arabic={arabic}>
+                <div className="ai-iform-pills">
+                  {(
+                    [
+                      ['whatsapp', 'WhatsApp'],
+                      ['instagram', 'Instagram'],
+                      ['messenger', 'Messenger'],
+                      ['webchat', t('شات الموقع', 'Webchat')],
+                    ] as const
+                  ).map(([key, label]) => {
+                    const active = v[key] === 'true';
+                    return (
+                      <button
+                        key={key}
+                        type="button"
+                        disabled={locked}
+                        className={`ai-iform-pill ${active ? 'active' : ''}`}
+                        onClick={() => onChange(key, active ? 'false' : 'true')}
+                      >
+                        {active && <Check size={12} />}
+                        <span>{label}</span>
+                      </button>
+                    );
+                  })}
+                </div>
               </FormField>
+            </div>
+
+            <div className="ai-funnel-section">
+              <div className="ai-funnel-section-head">
+                <span className="ai-funnel-step-num">2</span>
+                <strong>{t('أسلوب الرد والإيموجيز والهدف', 'Reply Style, Emojis & Primary Goal')}</strong>
+              </div>
+              <FormField label={t('أسلوب ونبرة الرد (Tone)', 'Reply Style & Tone')} arabic={arabic}>
+                <div className="ai-funnel-steps-picker">
+                  {(
+                    [
+                      ['Friendly', Smile, t('ودود (Friendly)', 'Friendly'), t('دافئ وطبيعي وقريب للعميل', 'Warm & conversational')],
+                      ['Serious', Briefcase, t('جاد (Serious)', 'Serious'), t('رسمي ومباشر واحترافي', 'Formal & executive')],
+                      ['Funny', Laugh, t('مرح (Funny)', 'Funny'), t('خفيف الظل بروح ذكية', 'Witty & lighthearted')],
+                    ] as const
+                  ).map(([toneVal, ToneIcon, title, sub]) => {
+                    const active = (v.tone || 'Friendly').toLowerCase().startsWith(toneVal.toLowerCase());
+                    return (
+                      <button key={toneVal} type="button" disabled={locked} className={`ai-funnel-step-option ${active ? 'active' : ''}`} onClick={() => onChange('tone', toneVal)}>
+                        <span className="ai-funnel-step-badge">
+                          <ToneIcon size={13} />
+                        </span>
+                        <div>
+                          <b>{title}</b>
+                          <small>{sub}</small>
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              </FormField>
+              <div className="ai-iform-toggle-banner">
+                <div>
+                  <strong>{t('استخدام الإيموجيز في ردود العملاء', 'Use Emojis in Customer Replies')}</strong>
+                  <small>{t('اختر ما إذا كان المساعد الذكي يضيف إيموجيز في رسائل الـ Inbox أم يكتب نصوصاً بدون إيموجيز', 'Choose whether AI auto-replies include emojis or stay strictly emoji-free')}</small>
+                </div>
+                <button
+                  type="button"
+                  disabled={locked}
+                  role="switch"
+                  aria-checked={(v.use_emojis ?? 'true') !== 'false'}
+                  className={`ai-iform-switch ${(v.use_emojis ?? 'true') !== 'false' ? 'on' : ''}`}
+                  onClick={() => onChange('use_emojis', (v.use_emojis ?? 'true') === 'false' ? 'true' : 'false')}
+                >
+                  <span />
+                </button>
+              </div>
               <FormField label={t('هدف المساعد الأساسي', 'Primary Goal')} arabic={arabic}>
                 <input
                   type="text"
@@ -2978,11 +4253,60 @@ function CopilotActionForm({
                 />
               </FormField>
             </div>
-          </>
+          </div>
         )}
       </div>
 
-      {form.status === 'completed' && form.resultNote && (
+      {form.status === 'completed' && summary && form.kind === 'landing' && (
+        <div className="ai-funnel-blueprint-card" role="status">
+          <div className="ai-funnel-blueprint-top">
+            <div className="ai-funnel-blueprint-title">
+              <span className="ai-funnel-color-dot" style={{ backgroundColor: summary.accentColor || '#7C3AED' }} />
+              <div>
+                <strong>{summary.name}</strong>
+                <small>{summary.headline}</small>
+              </div>
+            </div>
+            <div className="ai-funnel-blueprint-stats">
+              <span>{summary.stepsCount} {t('خطوات', 'Steps')}</span>
+              <span>{summary.totalSections} {t('قسم', 'Sections')}</span>
+              <span>{summary.language === 'ar' ? 'RTL العربية' : 'LTR English'}</span>
+            </div>
+          </div>
+          {Array.isArray(summary.steps) && summary.steps.length > 0 && (
+            <div className="ai-funnel-step-chain">
+              {summary.steps.map((st, idx) => (
+                <div key={st.id || idx} className="ai-funnel-step-chip">
+                  <em>0{idx + 1}</em>
+                  <b>{st.name}</b>
+                  <small>{st.sectionCount} {t('أقسام', 'sections')}</small>
+                </div>
+              ))}
+            </div>
+          )}
+          <div className="ai-funnel-blueprint-actions">
+            {summary.firstPageId && form.resultHref && (
+              <button
+                type="button"
+                className="ai-iform-submit"
+                onClick={() => onOpenHref(`${form.resultHref}/edit/${summary.firstPageId}`)}
+              >
+                <WandSparkles size={14} />
+                <span>{t('فتح في محرر الفانل الآن', 'Open in Funnel Editor')}</span>
+                <ArrowUpRight size={14} />
+              </button>
+            )}
+            {form.resultHref && (
+              <button type="button" className="ai-iform-open-btn" onClick={() => onOpenHref(form.resultHref!)}>
+                <span>{t('عرض كل خطوات الفانل', 'View All Funnel Steps')}</span>
+                <ArrowUpRight size={14} />
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+
+      {form.status === 'completed' && form.resultNote && !(summary && form.kind === 'landing') && (
         <div className="ai-iform-success" role="status">
           <CheckCircle2 size={16} />
           <div className="ai-iform-success-text">{renderInlineRich(form.resultNote)}</div>

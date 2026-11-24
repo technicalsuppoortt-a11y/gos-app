@@ -19,6 +19,27 @@ export type ActivityKind = "ai" | "customer" | "tag" | "created" | "agent" | "no
 export type Attachment = { id: string; name: string; size: number; url: string; isImage: boolean; remote?: string; mime?: string };
 export type VoiceNote = { url: string; duration: number };
 
+export type InboxLiveAction = {
+  type: 'book' | 'order' | 'qualify' | 'handoff' | string;
+  label?: string;
+  detail?: string | null;
+  booking_id?: string | null;
+  booking_code?: string | null;
+  service_name?: string | null;
+  date?: string | null;
+  time?: string | null;
+  location?: string | null;
+  verified?: boolean;
+  lead_id?: string | null;
+};
+
+export type InboxMessageButton = {
+  id: string;
+  title: string;
+  kind?: 'reply' | 'url';
+  url?: string | null;
+};
+
 export type Message = {
   id: string;
   sender: Sender;
@@ -33,6 +54,10 @@ export type Message = {
   error?: string;
   /** Number of Knowledge Base citations used to generate an AI reply. */
   citationsCount?: number;
+  /** Structured verified action executed by the AI Follow-Up backend (e.g. saved booking or handoff). */
+  action?: InboxLiveAction | null;
+  /** Interactive quick-reply / link buttons sent natively on WhatsApp, Messenger, Instagram, or Webchat. */
+  buttons?: InboxMessageButton[];
 };
 
 export type Activity = { id: string; kind: ActivityKind; text: string; time: string };
@@ -55,6 +80,7 @@ export type Conversation = {
   assignee: string;
   aiAutoReply: boolean;
   aiState?: string;
+  lastAction?: InboxLiveAction | null;
   takenOver: boolean;
   followUp: boolean;
   followUpRules: boolean[];

@@ -1,5 +1,5 @@
 import { callBackend } from './firebase';
-import { gosApi, type CopilotForm, type CopilotHistoryMessage, type CopilotThinkingLevel } from './gosApi';
+import { gosApi, type CopilotForm, type CopilotHistoryMessage, type CopilotReplyStyle, type CopilotThinkingLevel } from './gosApi';
 import { GosApiError, type GosStreamHandlers } from './gosTransport';
 import { MAX_VOICE_BYTES, VOICE_FORMATS } from '../../functions/copilot-voice-model.js';
 import type { VoiceTurn } from '../../functions/copilot-voice-model.js';
@@ -22,6 +22,8 @@ type GosVoiceApi = {
     requestId?: string;
     focus?: string;
     thinkingLevel?: CopilotThinkingLevel;
+    replyStyle?: CopilotReplyStyle;
+    useEmojis?: boolean;
     uiLanguage?: string;
     language?: string;
     isNewConversation?: boolean;
@@ -119,6 +121,8 @@ export async function extractCopilotVoice(
   options?: {
     api?: GosVoiceApi;
     thinkingLevel?: CopilotThinkingLevel;
+    replyStyle?: CopilotReplyStyle;
+    useEmojis?: boolean;
     uiLanguage?: string;
     language?: string;
     isNewConversation?: boolean;
@@ -135,6 +139,8 @@ export async function extractCopilotVoice(
     requestId,
     focus,
     thinkingLevel: options?.thinkingLevel,
+    replyStyle: options?.replyStyle,
+    useEmojis: options?.useEmojis,
     uiLanguage: options?.uiLanguage,
     language: options?.language,
     isNewConversation: options?.isNewConversation,

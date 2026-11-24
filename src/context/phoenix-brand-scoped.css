@@ -1587,6 +1587,10 @@
   border-color: color-mix(in srgb, var(--ws-accent, var(--gp-primary, #7C3AED)) 45%, transparent) !important;
 }
 
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .hover\:border-purple-400:hover{
+  border-color: var(--ws-hover, var(--gp-primary, #A78BFA)) !important;
+}
+
 :scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .hover\:border-rose-200:hover{
   border-color: color-mix(in srgb, var(--gp-border, rgb(254 205 211 / var(--tw-border-opacity, 1))) calc(var(--tw-border-opacity, 1) * 100%), transparent) !important;
 }
@@ -1776,6 +1780,10 @@
   color: var(--ws-hover, var(--gp-accent-text, var(--gp-primary, #6D28D9))) !important;
 }
 
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .hover\:text-purple-900:hover{
+  color: color-mix(in srgb, var(--gp-text, rgb(15 23 42 / var(--tw-text-opacity, 1))) calc(var(--tw-text-opacity, 1) * 100%), transparent) !important;
+}
+
 :scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .hover\:text-slate-600:hover{
   color: color-mix(in srgb, var(--gp-text, rgb(71 85 105 / var(--tw-text-opacity, 1))) calc(var(--tw-text-opacity, 1) * 100%), transparent) !important;
 }
@@ -1798,6 +1806,10 @@
 
 :scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .focus\:border-indigo-500:focus{
   border-color: var(--ws-accent, var(--gp-primary, #7C3AED)) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .focus\:border-purple-400:focus{
+  border-color: var(--ws-hover, var(--gp-primary, #A78BFA)) !important;
 }
 
 :scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .focus\:border-purple-500:focus{
@@ -2243,6 +2255,10 @@
 
 :scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .dark\:bg-slate-900\/60:is(.dark *){
   background-color: color-mix(in srgb, var(--gp-surface, rgb(15 23 42 / 0.6)) 60%, transparent) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .dark\:bg-slate-900\/70:is(.dark *){
+  background-color: color-mix(in srgb, var(--gp-surface, rgb(15 23 42 / 0.7)) 70%, transparent) !important;
 }
 
 :scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .dark\:bg-slate-900\/80:is(.dark *){
@@ -4231,6 +4247,249 @@
 :scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand].dark .ai-followup-chip:hover:not(:disabled) {
   border-color: var(--gp-primary, #a78bfa) !important;
   background: color-mix(in srgb, var(--gp-action-bg, var(--gp-primary, rgba(124, 58, 237, 0.26))) 26%, transparent) !important;
+  color: var(--gp-on-action, #ffffff) !important;
+}
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .ai-live-context-pill {
+  color: var(--gp-text, #4f5675) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .ai-funnel-section {
+  border: 1px solid var(--gp-border, #ebe8f7) !important;
+  background: color-mix(in srgb, var(--gp-surface, rgba(250, 249, 255, 0.72)) 72%, transparent) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .ai-funnel-section-head {
+  color: var(--gp-text, #1f2340) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .ai-funnel-step-num {
+  background: linear-gradient(135deg, var(--gp-action-bg, var(--gp-primary, #7c3aed)), var(--gp-action-bg, var(--gp-primary, #6d28d9))) !important;
+  color: var(--gp-on-action, #ffffff) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .ai-funnel-goal-card {
+  border: 1px solid var(--gp-border, #e4e7f2) !important;
+  background: var(--gp-surface, #ffffff) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .ai-funnel-goal-card:hover:not(:disabled) {
+  border-color: var(--gp-border, #c4b5fd) !important;
+  background: var(--gp-surface, #faf8ff) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .ai-funnel-goal-card.active {
+  border-color: var(--gp-primary, #7c3aed) !important;
+  background: linear-gradient(135deg, var(--gp-surface, #f5f1ff) 0%, var(--gp-soft, color-mix(in srgb, var(--gp-primary) 10%, var(--gp-surface))) 100%) !important;
+  box-shadow: 0 3px 12px color-mix(in srgb, var(--gp-primary, rgba(124, 58, 237, 0.14)) 14%, transparent) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .ai-funnel-goal-icon {
+  background: var(--gp-surface, #f3efff) !important;
+  color: var(--gp-accent-text, var(--gp-primary, #7c3aed)) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .ai-funnel-goal-card.active .ai-funnel-goal-icon {
+  background: var(--gp-action-bg, var(--gp-primary, #7c3aed)) !important;
+  color: var(--gp-on-action, #ffffff) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .ai-funnel-goal-card b {
+  color: var(--gp-text, #1f2440) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .ai-funnel-goal-card small {
+  color: var(--gp-text, #6b7280) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .ai-funnel-chip {
+  border: 1px solid var(--gp-border, #e4e7f2) !important;
+  background: var(--gp-surface, #ffffff) !important;
+  color: var(--gp-text, #525978) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .ai-funnel-chip:hover:not(:disabled) {
+  border-color: var(--gp-border, #c4b5fd) !important;
+  color: var(--gp-accent-text, var(--gp-primary, #6d28d9)) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .ai-funnel-chip.active {
+  border-color: var(--gp-primary, #7c3aed) !important;
+  background: var(--gp-surface, #f3efff) !important;
+  color: var(--gp-accent-text, var(--gp-primary, #6d28d9)) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .ai-funnel-swatch {
+  border: 1px solid var(--gp-border, #e4e7f2) !important;
+  background: var(--gp-surface, #ffffff) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .ai-funnel-swatch.active {
+  border-color: var(--gp-primary, #7c3aed) !important;
+  background: var(--gp-surface, #f5f1ff) !important;
+  color: var(--gp-accent-text, var(--gp-primary, #5b21b6)) !important;
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--gp-primary, rgba(124, 58, 237, 0.14)) 14%, transparent) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .ai-funnel-progress {
+  border: 1px solid var(--gp-border, #ddd6fe) !important;
+  background: linear-gradient(135deg, var(--gp-surface, #f5f3ff) 0%, var(--gp-surface, #eef2ff) 100%) !important;
+  color: var(--gp-accent-text, var(--gp-primary, #4c1d95)) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .ai-funnel-progress small {
+  color: var(--gp-accent-text, var(--gp-primary, #6d28d9)) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .ai-funnel-blueprint-card {
+  border-top: 1px solid var(--gp-border, #d1fae5) !important;
+  background: linear-gradient(180deg, var(--gp-surface, #ecfdf5) 0%, var(--gp-surface, #f8fafc) 100%) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .ai-funnel-color-dot {
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--gp-primary, rgba(124, 58, 237, 0.16)) 16%, transparent) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .ai-funnel-blueprint-stats span {
+  background: var(--gp-surface, #ffffff) !important;
+  border: 1px solid var(--gp-border, #a7f3d0) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .ai-funnel-step-chip {
+  border: 1px solid var(--gp-border, #d1fae5) !important;
+  background: var(--gp-surface, #ffffff) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .ai-funnel-step-chip b {
+  color: var(--gp-text, #1f2440) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .ai-funnel-step-chip small {
+  color: var(--gp-text, #6b7280) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand].dark .ai-funnel-section {
+  background: color-mix(in srgb, var(--gp-surface, rgba(14, 18, 37, 0.58)) 58%, transparent) !important;
+  border-color: color-mix(in srgb, var(--gp-primary, rgba(167, 139, 250, 0.18)) 18%, transparent) !important;
+}
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand].dark .ai-funnel-goal-card,
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand].dark .ai-funnel-chip,
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand].dark .ai-funnel-swatch {
+  background: var(--gp-surface, #0e1225) !important;
+  border-color: color-mix(in srgb, var(--gp-primary, rgba(167, 139, 250, 0.22)) 22%, transparent) !important;
+}
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand].dark .ai-funnel-goal-card small {
+  color: var(--gp-muted-text, #9ba7cb) !important;
+}
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand].dark .ai-funnel-goal-card.active,
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand].dark .ai-funnel-chip.active,
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand].dark .ai-funnel-swatch.active {
+  background: color-mix(in srgb, var(--gp-action-bg, var(--gp-primary, rgba(124, 58, 237, 0.26))) 26%, transparent) !important;
+  border-color: var(--gp-primary, #a78bfa) !important;
+}
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand].dark .ai-funnel-progress {
+  background: color-mix(in srgb, var(--gp-action-bg, var(--gp-primary, rgba(124, 58, 237, 0.2))) 20%, transparent) !important;
+  border-color: color-mix(in srgb, var(--gp-primary, rgba(167, 139, 250, 0.32)) 32%, transparent) !important;
+}
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand].dark .ai-funnel-progress small {
+  color: var(--gp-accent-text, var(--gp-primary, #c4b5fd)) !important;
+}
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand].dark .ai-funnel-blueprint-card {
+  background: linear-gradient(180deg, rgba(16, 185, 129, 0.14) 0%, color-mix(in srgb, var(--gp-surface, rgba(15, 23, 42, 0.72)) 72%, transparent) 100%) !important;
+}
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand].dark .ai-funnel-blueprint-stats span,
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand].dark .ai-funnel-step-chip {
+  background: color-mix(in srgb, var(--gp-surface, rgba(15, 23, 42, 0.85)) 85%, transparent) !important;
+}
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand].dark .ai-funnel-step-chip small {
+  color: var(--gp-muted-text, #9ba7cb) !important;
+}
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .ai-emoji-toggle.is-off {
+  border-color: color-mix(in srgb, var(--gp-border, rgba(148, 163, 184, 0.45)) 45%, transparent) !important;
+  color: var(--gp-muted-text, #64748b) !important;
+  background: color-mix(in srgb, var(--gp-background, rgba(148, 163, 184, 0.08)) 8%, transparent) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .ai-funnel-step-option {
+  border: 1.5px solid var(--gp-border, #e4e7f2) !important;
+  background: var(--gp-surface, #ffffff) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .ai-funnel-step-option:hover:not(:disabled) {
+  border-color: var(--gp-border, #c4b5fd) !important;
+  background: var(--gp-surface, #faf8ff) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .ai-funnel-step-option.active {
+  border-color: var(--gp-primary, #7c3aed) !important;
+  background: linear-gradient(135deg, var(--gp-surface, #f5f3ff) 0%, var(--gp-surface, #eef2ff) 100%) !important;
+  box-shadow: 0 3px 10px color-mix(in srgb, var(--gp-primary, rgba(124, 58, 237, 0.14)) 14%, transparent) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .ai-funnel-step-badge {
+  background: var(--gp-background, #f1f5f9) !important;
+  color: var(--gp-text, #475569) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .ai-funnel-step-option.active .ai-funnel-step-badge {
+  background: linear-gradient(135deg, var(--gp-action-bg, var(--gp-primary, #7c3aed)), var(--gp-action-bg, var(--gp-primary, #6d28d9))) !important;
+  color: var(--gp-on-action, #ffffff) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .ai-funnel-step-option b {
+  color: var(--gp-text, #1f2440) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .ai-funnel-step-option small {
+  color: var(--gp-text, #6b7280) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand].dark .ai-emoji-toggle.is-off {
+  border-color: color-mix(in srgb, var(--gp-border, rgba(148, 163, 184, 0.28)) 28%, transparent) !important;
+  color: var(--gp-muted-text, #94a3b8) !important;
+  background: color-mix(in srgb, var(--gp-surface, rgba(30, 41, 59, 0.55)) 55%, transparent) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand].dark .ai-funnel-step-option {
+  background: var(--gp-surface, #0e1225) !important;
+  border-color: color-mix(in srgb, var(--gp-primary, rgba(167, 139, 250, 0.22)) 22%, transparent) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand].dark .ai-funnel-step-option.active {
+  background: color-mix(in srgb, var(--gp-action-bg, var(--gp-primary, rgba(124, 58, 237, 0.24))) 24%, transparent) !important;
+  border-color: var(--gp-primary, #a78bfa) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand].dark .ai-funnel-step-badge {
+  background: color-mix(in srgb, var(--gp-background, rgba(148, 163, 184, 0.14)) 14%, transparent) !important;
+  color: var(--gp-muted-text, #cbd5e1) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand].dark .ai-funnel-step-option small {
+  color: var(--gp-muted-text, #9ba7cb) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .ai-iform-autofill-btn {
+  border: 1px solid color-mix(in srgb, var(--gp-primary, rgba(124, 58, 237, 0.35)) 35%, transparent) !important;
+  background: linear-gradient(135deg, color-mix(in srgb, var(--gp-action-bg, var(--gp-primary, rgba(124, 58, 237, 0.1))) 10%, transparent) 0%, color-mix(in srgb, var(--gp-action-bg, var(--gp-primary, rgba(168, 85, 247, 0.06))) 6%, transparent) 100%) !important;
+  color: var(--gp-accent-text, var(--gp-primary, #6d28d9)) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .ai-iform-autofill-btn:hover:not(:disabled) {
+  border-color: var(--gp-primary, #7c3aed) !important;
+  background: linear-gradient(135deg, var(--gp-action-bg, var(--gp-primary, #7c3aed)) 0%, var(--gp-action-bg, var(--gp-primary, #6d28d9)) 100%) !important;
+  color: var(--gp-on-action, #ffffff) !important;
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--gp-primary, rgba(124, 58, 237, 0.25)) 25%, transparent) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand].dark .ai-iform-autofill-btn {
+  border-color: color-mix(in srgb, var(--gp-primary, rgba(167, 139, 250, 0.4)) 40%, transparent) !important;
+  background: color-mix(in srgb, var(--gp-action-bg, var(--gp-primary, rgba(124, 58, 237, 0.22))) 22%, transparent) !important;
+  color: var(--gp-accent-text, var(--gp-primary, #ddd6fe)) !important;
+}
+
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand].dark .ai-iform-autofill-btn:hover:not(:disabled) {
+  border-color: var(--gp-primary, #a78bfa) !important;
+  background: linear-gradient(135deg, var(--gp-action-bg, var(--gp-primary, #7c3aed)) 0%, var(--gp-action-bg, var(--gp-primary, #8b5cf6)) 100%) !important;
   color: var(--gp-on-action, #ffffff) !important;
 }
 }

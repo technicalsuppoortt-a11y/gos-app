@@ -4,7 +4,7 @@
   "correctedVariables": 12,
   "referenceSurface": "#ffffff",
   "minimumRatio": 4.5,
-  "utilityOccurrences": 269,
+  "utilityOccurrences": 271,
   "utilities": [
     {
       "file": "src/components/common/PagePlaceholder.tsx",
@@ -1078,87 +1078,97 @@
     },
     {
       "file": "src/pages/Inbox.tsx",
-      "line": 110,
+      "line": 114,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/Inbox.tsx",
-      "line": 111,
+      "line": 115,
       "utility": "text-slate-400"
     },
     {
       "file": "src/pages/Inbox.tsx",
-      "line": 113,
+      "line": 117,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/Inbox.tsx",
-      "line": 1122,
+      "line": 1143,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/Inbox.tsx",
-      "line": 1267,
+      "line": 1288,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/Inbox.tsx",
-      "line": 1331,
+      "line": 1352,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/Inbox.tsx",
-      "line": 1472,
+      "line": 1517,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/Inbox.tsx",
-      "line": 1549,
+      "line": 1647,
       "utility": "text-slate-400"
     },
     {
       "file": "src/pages/Inbox.tsx",
-      "line": 1567,
+      "line": 1665,
       "utility": "text-slate-400"
     },
     {
       "file": "src/pages/Inbox.tsx",
-      "line": 1724,
+      "line": 1929,
       "utility": "text-slate-400"
     },
     {
       "file": "src/pages/Inbox.tsx",
-      "line": 1755,
+      "line": 1934,
       "utility": "text-slate-400"
     },
     {
       "file": "src/pages/Inbox.tsx",
-      "line": 1787,
+      "line": 1971,
       "utility": "text-slate-400"
     },
     {
       "file": "src/pages/Inbox.tsx",
-      "line": 1866,
+      "line": 2002,
       "utility": "text-slate-400"
     },
     {
       "file": "src/pages/Inbox.tsx",
-      "line": 2018,
+      "line": 2034,
+      "utility": "text-slate-400"
+    },
+    {
+      "file": "src/pages/Inbox.tsx",
+      "line": 2113,
+      "utility": "text-slate-400"
+    },
+    {
+      "file": "src/pages/Inbox.tsx",
+      "line": 2265,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/Inbox.tsx",
-      "line": 2047,
+      "line": 2294,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/Inbox.tsx",
-      "line": 2095,
+      "line": 2342,
       "utility": "text-slate-300"
     },
     {
       "file": "src/pages/Inbox.tsx",
-      "line": 2107,
+      "line": 2354,
       "utility": "text-slate-400"
     },
     {
@@ -5058,7 +5068,7 @@
     {
       "file": "src/pages/booking/booking-editor-reference.css",
       "line": 83,
-      "selector": ".bk-configurator-heading svg:first-child,\n.bk-reference-editor .bk-configurator-heading svg:first-child",
+      "selector": ".bk-configurator-heading svg:first-child,\r\n.bk-reference-editor .bk-configurator-heading svg:first-child",
       "before": "#979bb0",
       "after": "#334155",
       "contrastOnWhite": 2.75
@@ -5218,7 +5228,7 @@
     {
       "file": "src/pages/commerce/checkout-requests.css",
       "line": 409,
-      "selector": ".cr-ref-code,\n.cr-ref-tag",
+      "selector": ".cr-ref-code,\r\n.cr-ref-tag",
       "before": "#94a3b8",
       "after": "#334155",
       "contrastOnWhite": 2.56
@@ -5386,7 +5396,7 @@
     {
       "file": "src/pages/commerce/customer-portal.css",
       "line": 1904,
-      "selector": ".cportal-password-input-wrap button.cportal-password-toggle,\n.cportal-password-toggle",
+      "selector": ".cportal-password-input-wrap button.cportal-password-toggle,\r\n.cportal-password-toggle",
       "before": "#94a3b8",
       "after": "#334155",
       "contrastOnWhite": 2.56
