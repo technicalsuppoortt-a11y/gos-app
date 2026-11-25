@@ -1,3 +1,4 @@
+import { NodeIcon, PALETTE_GROUPS } from './nodeIcon'
 import { translateText, useUILanguage } from '../../i18n/display';
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import {
@@ -119,8 +120,13 @@ function Builder({ flowId, onBack }: { flowId: string; onBack: () => void }) {
 
   const addStep = (type: NodeType) => {
     const id = uid()
-    const center = screenToFlowPosition({ x: window.innerWidth / 2, y: window.innerHeight / 2 })
-    setNodes(ns => [...ns, { id, type: 'step', position: center, data: { node: newNode(type) } satisfies StepData }])
+    // Place the new step to the right of the selected step (or the last one) so it never covers another card.
+    setNodes(ns => {
+      const anchor = ns.find(n => n.id === selected) ?? ns[ns.length - 1]
+      let position = anchor ? { x: anchor.position.x + 320, y: anchor.position.y } : screenToFlowPosition({ x: window.innerWidth / 2, y: window.innerHeight / 2 })
+      while (ns.some(n => Math.abs(n.position.x - position.x) < 280 && Math.abs(n.position.y - position.y) < 160)) position = { x: position.x, y: position.y + 180 }
+      return [...ns, { id, type: 'step', position, data: { node: newNode(type) } satisfies StepData }]
+    })
     setSelected(id)
     touch()
   }
@@ -128,7 +134,7 @@ function Builder({ flowId, onBack }: { flowId: string; onBack: () => void }) {
   const updateNode = (id: string, node: FlowNode) => {
     setNodes(ns => ns.map(n => n.id === id ? { ...n, data: { ...n.data, node } } : n))
     // Drop links from buttons that no longer exist.
-    const handles = new Set(['next', 'true', 'false', 'done', 'handoff', ...(node.buttons ?? []).filter(b => b.type === 'node').map(b => `btn:${b.id}`)])
+    const handles = new Set(['next', 'true', 'false', 'done', 'handoff', 'passed', ...(node.buttons ?? []).filter(b => b.type === 'node').map(b => `btn:${b.id}`)])
     setEdges(es => es.filter(e => e.source !== id || handles.has(e.sourceHandle ?? 'next')))
     touch()
   }
@@ -191,12 +197,12 @@ function Builder({ flowId, onBack }: { flowId: string; onBack: () => void }) {
         <div className="fb-work">
           <nav className="fb-palette" aria-label={translateText("Add a step")}>
             <p className="fb-eyebrow">{translateText("Add step")}</p>
-            {(Object.keys(NODE_META) as NodeType[]).map(t => (
+            {PALETTE_GROUPS.map(g => <div key={g.label} className="fb-palette-group"><p className="fb-palette-label">{translateText(g.label)}</p>{g.types.map(t => (
               <button key={t} type="button" className="fb-palette-item" onClick={() => addStep(t)}>
-                <span className={`fb-dot tone-${NODE_META[t].tone}`} aria-hidden="true" />
+                <NodeIcon type={t} size={32} />
                 <span><strong>{translateText(NODE_META[t].label)}</strong><small>{translateText(NODE_META[t].hint)}</small></span>
               </button>
-            ))}
+            ))}</div>)}
           </nav>
 
           <div className="fb-canvas" dir="ltr">
@@ -217,6 +223,9 @@ function Builder({ flowId, onBack }: { flowId: string; onBack: () => void }) {
                 'edge.a11yDescription.default': translateText('Press enter or space to select an edge. You can then press delete to remove it or escape to cancel.'),
               }}
               fitView
+              fitViewOptions={{ maxZoom: 1, padding: 0.3 }}
+              minZoom={0.3}
+              maxZoom={1.5}
               proOptions={{ hideAttribution: true }}
             >
               <Background gap={22} size={1.2} />
@@ -230,8 +239,9 @@ function Builder({ flowId, onBack }: { flowId: string; onBack: () => void }) {
               <aside className="fb-inspector" aria-label={translateText("Step settings")}>
                 {!sel && <p className="fb-muted">{translateText("Select a step to edit it, or drag from a step’s right dot to link it to the next one.")}</p>}
                 {sel?.id === START && (
-                  <Inspector kind="start" triggers={(sel.data as StartData).triggers}
-                    onTriggers={t => { setNodes(ns => ns.map(n => n.id === START ? { ...n, data: { triggers: t } } : n)); touch() }} />
+                  <Inspector kind="start" triggers={(sel.data as StartData).triggers} limits={(sel.data as StartData).limits ?? null}
+                    onTriggers={t => { setNodes(ns => ns.map(n => n.id === START ? { ...n, data: { ...n.data, triggers: t } } : n)); touch() }}
+                    onLimits={l => { setNodes(ns => ns.map(n => n.id === START ? { ...n, data: { ...n.data, limits: l } } : n)); touch() }} />
                 )}
                 {sel && sel.id !== START && (
                   <Inspector key={sel.id} kind="step" id={sel.id} node={(sel.data as StepData).node}

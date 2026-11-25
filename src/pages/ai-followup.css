@@ -1867,3 +1867,20 @@ html.dark .af-empty-bot-icon {
     gap: 6px;
   }
 }
+/* Automation & Campaign: centered tab bar with icon boxes */
+.af-tabs-row:has(.af-tabs-grid){justify-content:center}
+.af-tabs.af-tabs-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px;width:100%;max-width:1100px;margin:0 auto;padding:8px;border:1px solid #EDECF3;border-radius:16px;background:#fff;box-shadow:0 2px 8px #15132c0d}
+.af-tabs.af-tabs-grid button{display:flex;align-items:center;justify-content:center;height:56px;padding:0 12px;border:1px solid transparent;border-radius:12px;color:#3F3E55;font-weight:600;white-space:nowrap}
+.af-tabs.af-tabs-grid button:hover{background:#FBFAFF;color:#6D28D9}
+.af-tabs.af-tabs-grid button.active{background:#F5F3FF;border-color:#C4B5FD;color:#6D28D9;font-weight:700}
+.af-tabs.af-tabs-grid button.active:after{display:none}
+.af-tabs.af-tabs-grid button:focus-visible{outline:3px solid #A78BFA;outline-offset:2px}
+.af-tabs.af-tabs-grid .af-tab-icon{display:grid;place-items:center;flex:none;width:34px;height:34px;border-radius:10px;background:var(--tab-bg);color:var(--tab-fg)}
+.af-tabs.af-tabs-grid .af-tab-icon svg{color:inherit}
+.af-tabs.af-tabs-grid button.active .af-tab-icon{background:#7C3AED;color:#fff;box-shadow:0 4px 10px #7C3AED40}
+.af-tabs.af-tabs-grid button > span{gap:8px!important}
+.af-tabs-row:has(.af-tabs-grid){flex-direction:column;align-items:stretch;gap:12px}
+.af-tabs-row:has(.af-tabs-grid)>.af-date-filter{align-self:flex-end}
+/* Open flow editor takes the whole page: hide section header, tabs and date filter */
+.af-page:has(.fb-root-builder)>.af-page-title,.af-page:has(.fb-root-builder) .af-tabs-row{display:none!important}
+.af-page:has(.fb-root-builder) .fb-root-builder{height:calc(100vh - 110px);min-height:560px}
