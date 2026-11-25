@@ -1079,6 +1079,66 @@ export const LiveMobileAiDemo: React.FC<{
    REQ 7 · Compare Section (Image 4 Style inside How It Works Atmosphere)
    ========================================================= */
 
+function CompareBrandGlyph({ id, short }: { id?: string; short: string }) {
+  if (id === 'claude') {
+    return (
+      <svg viewBox="0 0 16 16" width="11" height="11" aria-hidden="true">
+        <path
+          d="M8 1.6v12.8M1.6 8h12.8M3.4 3.4l9.2 9.2M12.6 3.4l-9.2 9.2M5.5 2.1l5 11.8M10.5 2.1l-5 11.8"
+          stroke="#fff"
+          strokeWidth="1.45"
+          strokeLinecap="round"
+        />
+      </svg>
+    );
+  }
+  if (id === 'canva') {
+    return (
+      <svg viewBox="0 0 16 16" width="11" height="11" aria-hidden="true">
+        <path
+          d="M11.3 5.2a3.7 3.7 0 1 0 .2 5.4"
+          fill="none"
+          stroke="#fff"
+          strokeWidth="2.1"
+          strokeLinecap="round"
+        />
+      </svg>
+    );
+  }
+  if (id === 'salla') {
+    return (
+      <svg viewBox="0 0 16 16" width="11" height="11" aria-hidden="true">
+        <path
+          d="M5.4 6V5a2.6 2.6 0 0 1 5.2 0v1h1.5l.7 6.8a1 1 0 0 1-1 1.1H4.2a1 1 0 0 1-1-1.1L3.9 6h1.5Zm1.3 0h2.6V5a1.3 1.3 0 0 0-2.6 0v1Z"
+          fill="#fff"
+        />
+      </svg>
+    );
+  }
+  if (id === 'chatgpt') {
+    return (
+      <svg viewBox="0 0 16 16" width="11" height="11" aria-hidden="true">
+        <circle cx="8" cy="8" r="4.6" fill="none" stroke="#fff" strokeWidth="1.5" strokeDasharray="3.2 1.6" />
+        <circle cx="8" cy="8" r="1.6" fill="#fff" />
+      </svg>
+    );
+  }
+  if (id === 'shopify') {
+    return (
+      <svg viewBox="0 0 16 16" width="11" height="11" aria-hidden="true">
+        <path
+          d="M11.8 4.4 10.6 4a2.2 2.2 0 0 0-4.2-.2L4.2 4.5 3.3 13l7.3 1.2 2.1-.9-.9-8.9Z"
+          fill="none"
+          stroke="#fff"
+          strokeWidth="1.45"
+          strokeLinejoin="round"
+        />
+      </svg>
+    );
+  }
+  return <>{short}</>;
+}
+
 export const CompareToolsSection: React.FC<{
   compareCopy: WhiteLabelCopy['compareSection'];
   brandName?: string;
@@ -1125,11 +1185,14 @@ export const CompareToolsSection: React.FC<{
                       <ul className="lp-cmp-badges" aria-label={row.replaces.map(r => r.name).join(', ')}>
                         {row.replaces.map(item => (
                           <li
-                            key={item.name}
+                            key={item.id ?? item.name}
+                            data-brand-id={item.id}
                             title={item.name}
                             style={{ '--brand-c': item.color } as React.CSSProperties}
                           >
-                            <i dir="ltr">{item.short}</i>
+                            <i dir="ltr">
+                              <CompareBrandGlyph id={item.id} short={item.short} />
+                            </i>
                             <span>{item.name}</span>
                           </li>
                         ))}

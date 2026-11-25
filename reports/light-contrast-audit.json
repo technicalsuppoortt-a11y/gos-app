@@ -4,7 +4,7 @@
   "correctedVariables": 12,
   "referenceSurface": "#ffffff",
   "minimumRatio": 4.5,
-  "utilityOccurrences": 271,
+  "utilityOccurrences": 272,
   "utilities": [
     {
       "file": "src/components/common/PagePlaceholder.tsx",
@@ -1078,97 +1078,102 @@
     },
     {
       "file": "src/pages/Inbox.tsx",
-      "line": 114,
-      "utility": "text-slate-500"
-    },
-    {
-      "file": "src/pages/Inbox.tsx",
       "line": 115,
-      "utility": "text-slate-400"
-    },
-    {
-      "file": "src/pages/Inbox.tsx",
-      "line": 117,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/Inbox.tsx",
-      "line": 1143,
+      "line": 116,
+      "utility": "text-slate-400"
+    },
+    {
+      "file": "src/pages/Inbox.tsx",
+      "line": 118,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/Inbox.tsx",
-      "line": 1288,
+      "line": 1167,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/Inbox.tsx",
-      "line": 1352,
+      "line": 1312,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/Inbox.tsx",
-      "line": 1517,
+      "line": 1376,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/Inbox.tsx",
-      "line": 1647,
-      "utility": "text-slate-400"
-    },
-    {
-      "file": "src/pages/Inbox.tsx",
-      "line": 1665,
-      "utility": "text-slate-400"
-    },
-    {
-      "file": "src/pages/Inbox.tsx",
-      "line": 1929,
-      "utility": "text-slate-400"
-    },
-    {
-      "file": "src/pages/Inbox.tsx",
-      "line": 1934,
-      "utility": "text-slate-400"
-    },
-    {
-      "file": "src/pages/Inbox.tsx",
-      "line": 1971,
-      "utility": "text-slate-400"
-    },
-    {
-      "file": "src/pages/Inbox.tsx",
-      "line": 2002,
-      "utility": "text-slate-400"
-    },
-    {
-      "file": "src/pages/Inbox.tsx",
-      "line": 2034,
-      "utility": "text-slate-400"
-    },
-    {
-      "file": "src/pages/Inbox.tsx",
-      "line": 2113,
-      "utility": "text-slate-400"
-    },
-    {
-      "file": "src/pages/Inbox.tsx",
-      "line": 2265,
+      "line": 1541,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/Inbox.tsx",
-      "line": 2294,
+      "line": 1671,
+      "utility": "text-slate-400"
+    },
+    {
+      "file": "src/pages/Inbox.tsx",
+      "line": 1706,
+      "utility": "text-slate-400"
+    },
+    {
+      "file": "src/pages/Inbox.tsx",
+      "line": 1739,
+      "utility": "text-slate-400"
+    },
+    {
+      "file": "src/pages/Inbox.tsx",
+      "line": 2003,
+      "utility": "text-slate-400"
+    },
+    {
+      "file": "src/pages/Inbox.tsx",
+      "line": 2008,
+      "utility": "text-slate-400"
+    },
+    {
+      "file": "src/pages/Inbox.tsx",
+      "line": 2045,
+      "utility": "text-slate-400"
+    },
+    {
+      "file": "src/pages/Inbox.tsx",
+      "line": 2076,
+      "utility": "text-slate-400"
+    },
+    {
+      "file": "src/pages/Inbox.tsx",
+      "line": 2108,
+      "utility": "text-slate-400"
+    },
+    {
+      "file": "src/pages/Inbox.tsx",
+      "line": 2187,
+      "utility": "text-slate-400"
+    },
+    {
+      "file": "src/pages/Inbox.tsx",
+      "line": 2339,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/Inbox.tsx",
-      "line": 2342,
+      "line": 2368,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/Inbox.tsx",
+      "line": 2416,
       "utility": "text-slate-300"
     },
     {
       "file": "src/pages/Inbox.tsx",
-      "line": 2354,
+      "line": 2428,
       "utility": "text-slate-400"
     },
     {
