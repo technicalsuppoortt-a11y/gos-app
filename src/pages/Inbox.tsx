@@ -4,6 +4,7 @@ import { gosApi } from '../backend/gosApi';
 import { useGosAI } from '../backend/useGosAI';
 import { useGosInbox } from '../backend/useGosInbox';
 import { api as channelsApi } from './flow-builder/api';
+import { ConversationFields } from './flow-builder/ConversationFields';
 import { localDemoEnabled, useDemoState } from '../backend/localDemo';
 import { useSupportRouting } from '../backend/supportRouting';
 import { isSupportMemberRole } from '../pages/settings/localState';
@@ -2220,6 +2221,9 @@ export const Inbox: React.FC<Props> = ({ aiMode, setAiMode, setSent }) => {
               ))}
             </ul>
           </div>
+
+          {/* labels and fields that automations read (fires "Conversation updated" flows) */}
+          {!localDemoEnabled && <ConversationFields conversationId={active.id} cardClass={CARD} />}
 
           {/* lead details */}
           <div className={`${CARD} shrink-0 p-3.5`}>
