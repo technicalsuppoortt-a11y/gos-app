@@ -52,6 +52,7 @@ import {
   Search,
   Send,
   SlidersHorizontal,
+  SmilePlus,
   Sparkles,
   Star,
   StickyNote,
@@ -259,14 +260,18 @@ function Avatar({
 }) {
   useUILanguage();
   const badge = Math.max(14, Math.round(size * 0.42));
+  // Meta's profile picture links expire; fall back to initials when one stops loading.
+  const [broken, setBroken] = useState<string | null>(null);
   return (
     <span className="relative inline-flex shrink-0" style={{ width: size, height: size }}>
-      {localizeNode(person.avatar ? (
+      {localizeNode(person.avatar && broken !== person.avatar ? (
         <img
           src={person.avatar}
           alt={translateText(person.name)}
           className="h-full w-full rounded-full object-cover ring-2 ring-white dark:ring-[#111522]"
           draggable={false}
+          referrerPolicy="no-referrer"
+          onError={() => setBroken(person.avatar ?? null)}
         />
       ) : (
         <span
@@ -900,6 +905,25 @@ export const Inbox: React.FC<Props> = ({ aiMode, setAiMode, setSent }) => {
   };
   const dismissFailedReply = (conversationId: string, messageId: string) =>
     setPendingReplies(prev => ({ ...prev, [conversationId]: (prev[conversationId] || []).filter(m => m.id !== messageId) }));
+
+  // The team's reactions show at once; the next inbox refresh brings the saved value.
+  const [myReactions, setMyReactions] = useState<Record<string, string | null>>({});
+  const [reactionPicker, setReactionPicker] = useState<string | null>(null);
+  const [reactingId, setReactingId] = useState<string | null>(null);
+  const reactTo = async (conversationId: string, message: Message, emoji: string | null) => {
+    setReactionPicker(null);
+    setReactingId(message.id);
+    const previous = message.id in myReactions ? myReactions[message.id] : (message.reactions?.agent ?? null);
+    setMyReactions(prev => ({ ...prev, [message.id]: emoji }));
+    // Demo conversations have no server: the reaction only shows here.
+    if (demoInbox) { setReactingId(null); return; }
+    try {
+      await gosApi.reactToMessage(conversationId, message.id, emoji);
+    } catch (error) {
+      setMyReactions(prev => ({ ...prev, [message.id]: previous }));
+      showToast.error(backendError(error));
+    } finally { setReactingId(null); }
+  };
 
   const send = async () => {
     if (!canSend) return;
@@ -1648,7 +1672,57 @@ export const Inbox: React.FC<Props> = ({ aiMode, setAiMode, setSent }) => {
                             </button>
                           ))}
                         </div>
+                        {(() => {
+                          const agentEmoji = m.id in myReactions ? myReactions[m.id] : (m.reactions?.agent ?? null);
+                          const customerEmoji = m.reactions?.customer ?? null;
+                          if (!agentEmoji && !customerEmoji) return null;
+                          return (
+                            <div className={`-mt-2 flex gap-1 px-2 ${incoming ? "justify-start" : "justify-end"}`}>
+                              {customerEmoji && (
+                                <span title={translateText("Customer reaction")} className="rounded-full border border-slate-200 bg-white px-1.5 py-0.5 text-[13px] leading-none shadow-sm dark:border-white/10 dark:bg-[#1b2030]">{customerEmoji}</span>
+                              )}
+                              {agentEmoji && (
+                                <button
+                                  type="button"
+                                  title={translateText("Your reaction · click to remove")}
+                                  aria-label={translateText("Remove your reaction")}
+                                  disabled={reactingId === m.id}
+                                  onClick={() => void reactTo(active.id, m, null)}
+                                  className="rounded-full border border-purple-200 bg-purple-50 px-1.5 py-0.5 text-[13px] leading-none shadow-sm disabled:opacity-60 dark:border-purple-400/30 dark:bg-purple-500/15"
+                                >{agentEmoji}</button>
+                              )}
+                            </div>
+                          );
+                        })()}
                         <span className={`mt-1 flex items-center gap-1 px-1 text-[10.5px] ${SUBTLE}`}>
+                          {incoming && (
+                            <span className="relative order-last">
+                              <button
+                                type="button"
+                                aria-label={translateText("React to this message")}
+                                aria-expanded={reactionPicker === m.id}
+                                disabled={reactingId === m.id}
+                                onClick={() => setReactionPicker(open => (open === m.id ? null : m.id))}
+                                className="grid h-6 w-6 place-items-center rounded-full text-slate-400 transition hover:bg-slate-100 hover:text-purple-600 disabled:opacity-50 dark:hover:bg-white/10"
+                              >
+                                <SmilePlus size={14} />
+                              </button>
+                              {reactionPicker === m.id && (
+                                <span role="menu" className="absolute bottom-7 start-0 z-20 flex gap-0.5 rounded-full border border-slate-200 bg-white p-1 shadow-lg dark:border-white/10 dark:bg-[#1b2030]">
+                                  {['👍', '❤️', '😂', '😮', '😢', '🙏'].map(emoji => (
+                                    <button
+                                      key={emoji}
+                                      type="button"
+                                      role="menuitem"
+                                      aria-label={emoji}
+                                      onClick={() => void reactTo(active.id, m, emoji)}
+                                      className="grid h-8 w-8 place-items-center rounded-full text-[17px] transition hover:scale-110 hover:bg-slate-100 dark:hover:bg-white/10"
+                                    >{emoji}</button>
+                                  ))}
+                                </span>
+                              )}
+                            </span>
+                          )}
                           {localizeNode(m.sender === "ai" && (
                             <>
                               <Sparkles size={10} className="text-purple-400" fill="currentColor" />{translateText(" AI Assistant ·")}
