@@ -1178,127 +1178,127 @@
     },
     {
       "file": "src/pages/LeadTrackingPanel.tsx",
-      "line": 465,
+      "line": 507,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/LeadTrackingPanel.tsx",
-      "line": 523,
+      "line": 565,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/LeadTrackingPanel.tsx",
-      "line": 614,
+      "line": 656,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/LeadTrackingPanel.tsx",
-      "line": 624,
+      "line": 666,
       "utility": "text-slate-400"
     },
     {
       "file": "src/pages/LeadTrackingPanel.tsx",
-      "line": 784,
+      "line": 826,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/LeadTrackingPanel.tsx",
-      "line": 817,
+      "line": 859,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/LeadTrackingPanel.tsx",
-      "line": 861,
+      "line": 903,
       "utility": "text-slate-400"
     },
     {
       "file": "src/pages/LeadTrackingPanel.tsx",
-      "line": 877,
+      "line": 919,
       "utility": "text-slate-400"
     },
     {
       "file": "src/pages/LeadTrackingPanel.tsx",
-      "line": 906,
+      "line": 948,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/LeadTrackingPanel.tsx",
-      "line": 916,
+      "line": 958,
       "utility": "text-slate-400"
     },
     {
       "file": "src/pages/LeadTrackingPanel.tsx",
-      "line": 976,
+      "line": 1018,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/LeadTrackingPanel.tsx",
-      "line": 986,
-      "utility": "text-slate-500"
-    },
-    {
-      "file": "src/pages/LeadTrackingPanel.tsx",
-      "line": 1016,
+      "line": 1028,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/LeadTrackingPanel.tsx",
       "line": 1058,
-      "utility": "text-slate-400"
-    },
-    {
-      "file": "src/pages/LeadTrackingPanel.tsx",
-      "line": 1076,
-      "utility": "text-slate-400"
-    },
-    {
-      "file": "src/pages/LeadTrackingPanel.tsx",
-      "line": 1095,
-      "utility": "text-slate-400"
-    },
-    {
-      "file": "src/pages/LeadTrackingPanel.tsx",
-      "line": 1128,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/LeadTrackingPanel.tsx",
-      "line": 1184,
-      "utility": "text-slate-500"
-    },
-    {
-      "file": "src/pages/LeadTrackingPanel.tsx",
-      "line": 1194,
+      "line": 1100,
       "utility": "text-slate-400"
     },
     {
       "file": "src/pages/LeadTrackingPanel.tsx",
-      "line": 1333,
-      "utility": "text-slate-500"
-    },
-    {
-      "file": "src/pages/LeadTrackingPanel.tsx",
-      "line": 1343,
+      "line": 1118,
       "utility": "text-slate-400"
     },
     {
       "file": "src/pages/LeadTrackingPanel.tsx",
-      "line": 1405,
-      "utility": "text-slate-500"
-    },
-    {
-      "file": "src/pages/LeadTrackingPanel.tsx",
-      "line": 1412,
+      "line": 1137,
       "utility": "text-slate-400"
     },
     {
       "file": "src/pages/LeadTrackingPanel.tsx",
-      "line": 1420,
+      "line": 1170,
       "utility": "text-slate-500"
     },
     {
       "file": "src/pages/LeadTrackingPanel.tsx",
-      "line": 1433,
+      "line": 1226,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/LeadTrackingPanel.tsx",
+      "line": 1236,
+      "utility": "text-slate-400"
+    },
+    {
+      "file": "src/pages/LeadTrackingPanel.tsx",
+      "line": 1375,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/LeadTrackingPanel.tsx",
+      "line": 1385,
+      "utility": "text-slate-400"
+    },
+    {
+      "file": "src/pages/LeadTrackingPanel.tsx",
+      "line": 1447,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/LeadTrackingPanel.tsx",
+      "line": 1454,
+      "utility": "text-slate-400"
+    },
+    {
+      "file": "src/pages/LeadTrackingPanel.tsx",
+      "line": 1462,
+      "utility": "text-slate-500"
+    },
+    {
+      "file": "src/pages/LeadTrackingPanel.tsx",
+      "line": 1475,
       "utility": "text-slate-400"
     },
     {
@@ -5073,7 +5073,7 @@
     {
       "file": "src/pages/booking/booking-editor-reference.css",
       "line": 83,
-      "selector": ".bk-configurator-heading svg:first-child,\n.bk-reference-editor .bk-configurator-heading svg:first-child",
+      "selector": ".bk-configurator-heading svg:first-child,\r\n.bk-reference-editor .bk-configurator-heading svg:first-child",
       "before": "#979bb0",
       "after": "#334155",
       "contrastOnWhite": 2.75
@@ -5233,7 +5233,7 @@
     {
       "file": "src/pages/commerce/checkout-requests.css",
       "line": 409,
-      "selector": ".cr-ref-code,\n.cr-ref-tag",
+      "selector": ".cr-ref-code,\r\n.cr-ref-tag",
       "before": "#94a3b8",
       "after": "#334155",
       "contrastOnWhite": 2.56
@@ -5401,7 +5401,7 @@
     {
       "file": "src/pages/commerce/customer-portal.css",
       "line": 1904,
-      "selector": ".cportal-password-input-wrap button.cportal-password-toggle,\n.cportal-password-toggle",
+      "selector": ".cportal-password-input-wrap button.cportal-password-toggle,\r\n.cportal-password-toggle",
       "before": "#94a3b8",
       "after": "#334155",
       "contrastOnWhite": 2.56
