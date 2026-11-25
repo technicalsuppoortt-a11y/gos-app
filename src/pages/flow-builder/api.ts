@@ -1,6 +1,6 @@
 import { gosRequest } from '../../backend/gosApi'
 import { GosApiError } from '../../backend/gosTransport'
-import type { Flow, Graph } from './types'
+import type { Flow, Graph, LibraryFile } from './types'
 import type { MetaConfig } from './metaSdk'
 
 /** Flow Builder calls go to the same Laravel API (ai-follow-up) as the rest of AI Follow-Up, signed in with Firebase. */
@@ -22,10 +22,12 @@ async function call<T>(method: string, path: string, body?: unknown): Promise<T>
 }
 
 export type SimState = {
-  messages: { text: string; buttons?: { id?: string; title: string; type: string; url?: string }[] }[]
+  messages: { text?: string; buttons?: { id?: string; title: string; type: string; url?: string }[]; file?: { kind: string; name: string; url: string; caption?: string } }[]
   run: { state: string; node_id: string | null; waiting_for: string | null; wake_at: string | null } | null
   contact: { tags: string[]; fields: Record<string, string> } | null
 }
+
+export type ConversationContact = { id: string; first_name: string; tags: string[]; fields: Record<string, string> }
 
 export type ChannelPage = { id: string; external_id: string; name: string | null }
 export type Channel = { channel: string; status: 'connected' | 'idle'; enabled: boolean; external_id: string | null; name: string | null; method: string; pages?: ChannelPage[] }
@@ -63,4 +65,14 @@ export const api = {
   stats: (id: string) => call<Record<string, { sent: number; clicked: number; completed: number }>>('GET', `/flows/${encodeURIComponent(id)}/stats`),
   simulate: (id: string, session: string, text: string) => call<SimState>('POST', `/flows/${encodeURIComponent(id)}/simulator/messages`, { session, text }),
   skipDelay: (id: string, session: string) => call<SimState>('POST', `/flows/${encodeURIComponent(id)}/simulator/skip-delay`, { session }),
+  /** Sets the test contact's labels/fields, as the inbox does, and fires "contact updated" triggers. */
+  simulateContact: (id: string, session: string, body: { tags?: string[]; fields?: Record<string, string> }) =>
+    call<SimState>('POST', `/flows/${encodeURIComponent(id)}/simulator/contact`, { session, ...body }),
+  files: () => call<LibraryFile[]>('GET', '/flow-files'),
+  uploadFile: (file: File) => { const form = new FormData(); form.append('file', file); return call<LibraryFile>('POST', '/flow-files', form) },
+  deleteFile: (id: string) => call<null>('DELETE', `/flow-files/${encodeURIComponent(id)}`),
+  /** Labels and fields of the contact behind an inbox conversation. Saving can start "contact updated" automations. */
+  conversationContact: (conversationId: string) => call<ConversationContact>('GET', `/inbox/conversations/${encodeURIComponent(conversationId)}/contact`),
+  saveConversationContact: (conversationId: string, body: { tags?: string[]; fields?: Record<string, string | null> }) =>
+    call<ConversationContact & { flows_started: string[] }>('PUT', `/inbox/conversations/${encodeURIComponent(conversationId)}/contact`, body),
 }

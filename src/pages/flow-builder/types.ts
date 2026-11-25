@@ -1,4 +1,4 @@
-export type NodeType = 'send_message' | 'question' | 'actions' | 'condition' | 'smart_delay' | 'ai_agent' | 'comment'
+export type NodeType = 'send_message' | 'question' | 'actions' | 'condition' | 'smart_delay' | 'wait_until' | 'send_file' | 'ai_agent' | 'comment'
 
 export type Button = { id: string; title: string; type: 'node' | 'url'; url?: string; targetId?: string | null }
 export type ActionItem = { type: 'add_tag' | 'remove_tag' | 'set_field' | 'notify_admin' | 'webhook'; tag?: string; field?: string; value?: string; text?: string; url?: string }
@@ -16,6 +16,13 @@ export type FlowNode = {
   rules?: Rule[]
   value?: number
   unit?: 'minutes' | 'hours' | 'days'
+  /** wait_until: before/after the date in `field`; ifPassed when that time is already gone (or the field is empty). */
+  direction?: 'before' | 'after'
+  ifPassed?: 'skip' | 'now'
+  pastId?: string | null
+  /** send_file: a file from the library. */
+  fileId?: string
+  caption?: string
   endpoint?: string
   agentId?: string
   instructions?: string
@@ -26,13 +33,22 @@ export type FlowNode = {
   exits?: { done?: string | null; handoff?: string | null }
 }
 
-export type Trigger = { type: 'keyword'; match: 'equals' | 'contains' | 'any_message'; keywords: string[] }
+/** Rules on a trigger are checked before the flow starts (labels, fields). */
+export type Trigger =
+  | { type: 'keyword'; match: 'equals' | 'contains' | 'any_message'; keywords: string[]; rules?: Rule[]; ruleMatch?: 'all' | 'any' }
+  | { type: 'contact_updated'; rules?: Rule[]; ruleMatch?: 'all' | 'any' }
+
+/** Per contact: at most maxRuns runs, and at least minIntervalHours between two runs. */
+export type Limits = { maxRuns?: number; minIntervalHours?: number }
+
+export type LibraryFile = { id: string; name: string; kind: 'video' | 'document' | 'image' | 'audio'; size: number }
 
 export type Graph = {
   triggers: Trigger[]
   rootId: string | null
   nodes: Record<string, FlowNode>
   coordinates: Record<string, { x: number; y: number }>
+  limits?: Limits | null
 }
 
 export type Flow = {
@@ -51,6 +67,8 @@ export const NODE_META: Record<NodeType, { label: string; hint: string; tone: st
   actions: { label: 'Actions', hint: 'Tags, fields, notify, webhook', tone: 'amber' },
   condition: { label: 'Condition', hint: 'Split by tag or field', tone: 'orange' },
   smart_delay: { label: 'Smart delay', hint: 'Wait before the next step', tone: 'slate' },
+  wait_until: { label: 'Wait until date', hint: 'Wait until a time before or after a date field', tone: 'slate' },
+  send_file: { label: 'Send file', hint: 'Video, PDF or image from the file library', tone: 'blue' },
   ai_agent: { label: 'AI agent', hint: 'Hand the chat to the AI agent', tone: 'violet' },
   comment: { label: 'Comment', hint: 'Note on the canvas', tone: 'note' },
 }
