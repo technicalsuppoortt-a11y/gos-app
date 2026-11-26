@@ -35,8 +35,12 @@ import {
   type TrackedLead,
   type TrackId,
 } from '../backend/gosApi';
+import { auth } from '../backend/firebase';
 import { uiDirection, useUILanguage, translateText } from '../i18n/display';
 import { showToast } from '../utils/toast';
+
+// UID-scoped stale-while-revalidate cache so returning to Track Leads renders instantaneously (0ms).
+const cachedOverviewByUid = new Map<string, { data: LeadTrackingOverview; fetchedAt: number }>();
 
 type Props = {
   onConnectChannel?: (channel: 'whatsapp' | 'instagram' | 'messenger') => void;
@@ -123,9 +127,12 @@ export const LeadTrackingPanel: React.FC<Props> = ({ onConnectChannel }) => {
   const navigate = useNavigate();
   const t = React.useCallback((en: string, ar: string) => (isAr ? ar : translateText(en)), [isAr, lang]);
 
-  const [overview, setOverview] = React.useState<LeadTrackingOverview | null>(null);
-  const [draftSettings, setDraftSettings] = React.useState<LeadTrackingSettings | null>(null);
-  const [loading, setLoading] = React.useState(true);
+  const cacheKey = auth.currentUser?.uid || 'anon';
+  const initialCache = cachedOverviewByUid.get(cacheKey)?.data ?? null;
+
+  const [overview, setOverview] = React.useState<LeadTrackingOverview | null>(initialCache);
+  const [draftSettings, setDraftSettings] = React.useState<LeadTrackingSettings | null>(initialCache?.settings ?? null);
+  const [loading, setLoading] = React.useState(!initialCache);
   const [syncing, setSyncing] = React.useState(false);
   const [savingSettings, setSavingSettings] = React.useState(false);
   const [busyLeadId, setBusyLeadId] = React.useState<string | null>(null);
@@ -156,30 +163,66 @@ export const LeadTrackingPanel: React.FC<Props> = ({ onConnectChannel }) => {
   // Lead History Modal
   const [historyLead, setHistoryLead] = React.useState<TrackedLead | null>(null);
 
-  const loadOverview = React.useCallback(async (sync = true) => {
-    setError(null);
-    try {
-      const data = await gosApi.leadTracking(sync);
-      setOverview(data);
-      setDraftSettings(data.settings);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : t('Could not load lead tracking data.', 'تعذّر تحميل بيانات تتبع العملاء.'));
-    } finally {
-      setLoading(false);
-      setSyncing(false);
-    }
-  }, [t]);
+  const applyOverview = React.useCallback((data: LeadTrackingOverview) => {
+    const uid = auth.currentUser?.uid || 'anon';
+    cachedOverviewByUid.set(uid, { data, fetchedAt: Date.now() });
+    setOverview(data);
+    setDraftSettings(data.settings);
+  }, []);
 
   React.useEffect(() => {
-    void loadOverview(true);
-  }, [loadOverview]);
+    const controller = new AbortController();
+    const uid = auth.currentUser?.uid || 'anon';
+    const cached = cachedOverviewByUid.get(uid);
+    if (cached) {
+      setOverview(cached.data);
+      setDraftSettings(cached.data.settings);
+      setLoading(false);
+    }
+
+    const loadFast = async () => {
+      setError(null);
+      try {
+        // Phase 1: Instant read (?sync=0, ~200ms) so KPIs & leads paint immediately without waiting on full sync.
+        const fastData = await gosApi.leadTracking(false, controller.signal);
+        if (controller.signal.aborted) return;
+        applyOverview(fastData);
+        setLoading(false);
+
+        // Phase 2: Quietly sync fresh workspace captures in the background only if empty or stale (>60s).
+        const isStale = !cached || Date.now() - cached.fetchedAt > 60_000 || fastData.leads.length === 0;
+        if (isStale) {
+          setSyncing(true);
+          try {
+            const freshData = await gosApi.leadTracking(true, controller.signal);
+            if (!controller.signal.aborted) {
+              applyOverview(freshData);
+            }
+          } catch {
+            // Non-blocking background refresh; keep already-rendered fast data intact.
+          } finally {
+            if (!controller.signal.aborted) setSyncing(false);
+          }
+        }
+      } catch (err) {
+        if (controller.signal.aborted) return;
+        if (!cached) {
+          setError(err instanceof Error ? err.message : t('Could not load lead tracking data.', 'تعذّر تحميل بيانات تتبع العملاء.'));
+        }
+        setLoading(false);
+        setSyncing(false);
+      }
+    };
+
+    void loadFast();
+    return () => controller.abort();
+  }, [applyOverview, t]);
 
   const persistSettings = async (patch: Record<string, any>, toastMsg?: string) => {
     setSavingSettings(true);
     try {
       const updated = await gosApi.updateLeadTrackingSettings(patch);
-      setOverview(updated);
-      setDraftSettings(updated.settings);
+      applyOverview(updated);
       if (toastMsg) showToast.success(toastMsg);
     } catch (err) {
       showToast.error(err instanceof Error ? err.message : t('Could not save settings.', 'تعذّر حفظ الإعدادات.'));
@@ -241,10 +284,11 @@ export const LeadTrackingPanel: React.FC<Props> = ({ onConnectChannel }) => {
 
   const handleSyncNow = async () => {
     setSyncing(true);
+    setError(null);
     try {
       const data = await gosApi.syncLeadTracking();
-      setOverview(data);
-      setDraftSettings(data.settings);
+      applyOverview(data);
+      setLoading(false);
       showToast.success(t('All workspace lead sources synchronized.', 'تمت مزامنة جميع مصادر العملاء بنجاح.'));
     } catch (err) {
       showToast.error(err instanceof Error ? err.message : t('Sync failed.', 'فشلت المزامنة.'));
@@ -262,8 +306,7 @@ export const LeadTrackingPanel: React.FC<Props> = ({ onConnectChannel }) => {
           : action === 'pause'
             ? await gosApi.pauseTrackedLead(lead.id)
             : await gosApi.resumeTrackedLead(lead.id);
-      setOverview(res.overview);
-      setDraftSettings(res.overview.settings);
+      applyOverview(res.overview);
       if (action === 'send') {
         if (res.lead?.last_error) {
           showToast.error(res.lead.last_error);
@@ -298,8 +341,7 @@ export const LeadTrackingPanel: React.FC<Props> = ({ onConnectChannel }) => {
     setEnrollBusy(true);
     try {
       const res = await gosApi.enrollTrackedLead(enrollForm);
-      setOverview(res.overview);
-      setDraftSettings(res.overview.settings);
+      applyOverview(res.overview);
       setEnrollOpen(false);
       setEnrollForm({ name: '', phone: '', email: '', source: 'WhatsApp', interest: '', send_now: true });
       if (res.lead?.last_error && enrollForm.send_now) {
@@ -440,7 +482,7 @@ export const LeadTrackingPanel: React.FC<Props> = ({ onConnectChannel }) => {
           <span>{error}</span>
           <button
             type="button"
-            onClick={() => void loadOverview(true)}
+            onClick={() => void handleSyncNow()}
             className="rounded-lg bg-rose-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-rose-700"
           >
             {t('Retry', 'إعادة المحاولة')}

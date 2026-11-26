@@ -2313,7 +2313,7 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent, section = "f
       </div>
       {!isAutomation && <div className="af-channel-row">{localizeNode(renderChannelCards())}</div>}
       <div className="af-tabs-row">
-        <nav className="af-tabs" aria-label={translateText("AI Follow-Up sections")}>
+        <nav className={`af-tabs${isAutomation ? " af-tabs-grid" : ""}`} aria-label={translateText("AI Follow-Up sections")}>
           {localizeNode((isAutomation ? automationTabs : tabs).map((item) => {
             const meta = isAutomation ? automationTabMeta[item] : undefined;
             const Icon = meta ? null : tabIcons[item];
@@ -2323,7 +2323,7 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent, section = "f
                 className={`relative ${tab === item ? "active" : ""}`}
                 onClick={() => setTab(item)}
               >
-                {localizeNode(tab === item && (
+                {localizeNode(!isAutomation && tab === item && (
                   <motion.div
                     layoutId="activeAIFollowUpTab"
                     className="absolute bottom-0 left-2 right-2 h-[2px] bg-[#7C3AED] rounded-full"
@@ -2331,7 +2331,7 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent, section = "f
                   />
                 ))}
                 <span className="relative z-10 flex items-center gap-[6px]">
-                  {localizeNode(meta && <span aria-hidden="true" style={{ width: 28, height: 28, borderRadius: 8, display: "grid", placeItems: "center", background: meta.bg, color: meta.fg }}><meta.icon size={16} strokeWidth={2} /></span>)}
+                  {localizeNode(meta && <span aria-hidden="true" className="af-tab-icon" style={{ "--tab-bg": meta.bg, "--tab-fg": meta.fg } as React.CSSProperties}><meta.icon size={18} strokeWidth={2} /></span>)}
                   {localizeNode(Icon && <Icon size={16} strokeWidth={1.75} />)}
                   {localizeNode(meta ? meta.label : item)}
                 </span>

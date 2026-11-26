@@ -4,6 +4,7 @@ import { Link, Navigate, useLocation } from 'react-router-dom';
 import PlanAccessGuard from '../components/PlanAccessGuard';
 import JoeAcademyLogo from '../components/ui/JoeAcademyLogo';
 import JoeAcademyLoader from '../components/ui/JoeAcademyLoader';
+import ServiceCountdown from '../features/access/ServiceCountdown';
 import { ROUTE_ACCESS } from '../shared/billing/access';
 import { useStore } from '../store/useStore';
 import { isStaffRole } from '../shared/permissions';
@@ -36,6 +37,7 @@ export default function LaunchBrandPage() {
         <span dir="auto">{isAr ? 'الرجوع للوحة التحكم' : 'Back to Dashboard'}</span>
       </Link>
       <div className="launch-brand-toolbar-slot" ref={setHeaderTarget} />
+      {canLaunchBrand && <ServiceCountdown />}
       <div className="launch-brand-identity"><JoeAcademyLogo className="h-9 w-9" /><span dir="auto">{isAr ? 'جو أكاديمي' : 'Joe Academy'}</span></div>
     </header>
     <div className="launch-brand-content">

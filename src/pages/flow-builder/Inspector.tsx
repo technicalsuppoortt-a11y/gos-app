@@ -1,14 +1,17 @@
+import { MessageSquare, Tag } from 'lucide-react'
 import { translateText } from '../../i18n/display';
-import type { ActionItem, FlowNode, Rule, Trigger } from './types'
+import { useRef, useState } from 'react'
+import type { ActionItem, FlowNode, Limits, Rule, Trigger } from './types'
+import { formatSize, uploadToLibrary, useLibraryFiles } from './files'
 import { NODE_META } from './types'
 import { uid } from './graph'
 
 type Props =
-  | { kind: 'start'; triggers: Trigger[]; onTriggers: (t: Trigger[]) => void }
+  | { kind: 'start'; triggers: Trigger[]; onTriggers: (t: Trigger[]) => void; limits: Limits | null; onLimits: (l: Limits | null) => void }
   | { kind: 'step'; id: string; node: FlowNode; onChange: (n: FlowNode) => void; onDelete: () => void }
 
 export function Inspector(props: Props) {
-  if (props.kind === 'start') return <TriggerEditor triggers={props.triggers} onChange={props.onTriggers} />
+  if (props.kind === 'start') return <TriggerEditor triggers={props.triggers} onChange={props.onTriggers} limits={props.limits} onLimits={props.onLimits} />
   const { node, onChange, onDelete, id } = props
   const set = (patch: Partial<FlowNode>) => onChange({ ...node, ...patch })
 
@@ -20,7 +23,7 @@ export function Inspector(props: Props) {
       {(node.type === 'send_message' || node.type === 'question' || node.type === 'comment') && (
         <Field label={node.type === 'comment' ? translateText("Note") : translateText("Message")} id={`${id}-text`}>
           <textarea id={`${id}-text`} dir="auto" rows={4} value={node.text ?? ''} onChange={e => set({ text: e.target.value })} />
-          {node.type !== 'comment' && <small className="fb-muted">{translateText("Use ")}{'{{first_name}}'} or {'{{fields.phone}}'}</small>}
+          {node.type !== 'comment' && <small className="fb-muted">{translateText("Use ")}{'{{first_name}}'}, {'{{fields.phone}}'}{translateText(" or a date field as time: ")}{'{{fields.booking_at|time}}'}</small>}
         </Field>
       )}
 
@@ -92,6 +95,36 @@ export function Inspector(props: Props) {
         </div>
       )}
 
+      {node.type === 'wait_until' && (
+        <>
+          <Field label={translateText("Date field")} id={`${id}-wf`}>
+            <input id={`${id}-wf`} placeholder="booking_at" value={node.field ?? ''} onChange={e => set({ field: e.target.value.trim() })} />
+            <small className="fb-muted">{translateText("Any contact field that holds a date and time, e.g. 2026-11-25 20:30.")}</small>
+          </Field>
+          <div className="fb-inline">
+            <Field label={translateText("Amount")} id={`${id}-wv`}><input id={`${id}-wv`} type="number" min={0} value={node.value ?? 0} onChange={e => set({ value: Math.max(0, Number(e.target.value)) })} /></Field>
+            <Field label={translateText("Unit")} id={`${id}-wu`}>
+              <select id={`${id}-wu`} value={node.unit} onChange={e => set({ unit: e.target.value as FlowNode['unit'] })}>
+                <option value="minutes">{translateText("Minutes")}</option><option value="hours">{translateText("Hours")}</option><option value="days">{translateText("Days")}</option>
+              </select>
+            </Field>
+            <Field label={translateText("When")} id={`${id}-wd`}>
+              <select id={`${id}-wd`} value={node.direction} onChange={e => set({ direction: e.target.value as 'before' | 'after' })}>
+                <option value="before">{translateText("Before the date")}</option><option value="after">{translateText("After the date")}</option>
+              </select>
+            </Field>
+          </div>
+          <Field label={translateText("If that time has already passed")} id={`${id}-wp`}>
+            <select id={`${id}-wp`} value={node.ifPassed ?? 'skip'} onChange={e => set({ ifPassed: e.target.value as 'skip' | 'now' })}>
+              <option value="skip">{translateText("Skip: go to “Time passed”")}</option><option value="now">{translateText("Continue now")}</option>
+            </select>
+          </Field>
+          <p className="fb-muted">{translateText("If the date changes while waiting, the wait moves with it. An empty field goes to “Time passed”.")}</p>
+        </>
+      )}
+
+      {node.type === 'send_file' && <FilePicker id={id} node={node} set={set} />}
+
       {node.type === 'ai_agent' && (
         <>
           <Field label={translateText("Agent endpoint (https)")} id={`${id}-ep`}>
@@ -113,27 +146,103 @@ export function Inspector(props: Props) {
   )
 }
 
-function TriggerEditor({ triggers, onChange }: { triggers: Trigger[]; onChange: (t: Trigger[]) => void }) {
-  const set = (i: number, patch: Partial<Trigger>) => onChange(triggers.map((t, j) => j === i ? { ...t, ...patch } : t))
+function TriggerEditor({ triggers, onChange, limits, onLimits }: { triggers: Trigger[]; onChange: (t: Trigger[]) => void; limits: Limits | null; onLimits: (l: Limits | null) => void }) {
+  const replace = (i: number, t: Trigger) => onChange(triggers.map((x, j) => j === i ? t : x))
+  const setLimit = (key: keyof Limits, raw: string) => {
+    const next: Limits = { ...(limits ?? {}) }
+    if (raw === '' || Number(raw) <= 0) delete next[key]; else next[key] = Math.floor(Number(raw))
+    onLimits(Object.keys(next).length ? next : null)
+  }
   return (
     <div className="fb-inspector-body">
       <p className="fb-eyebrow">{translateText("Trigger")}</p>
-      <p className="fb-muted">{translateText("Start this flow when a message matches.")}</p>
+      <p className="fb-muted">{translateText("Start this flow when a message matches, or when a conversation’s labels or fields change.")}</p>
       {triggers.map((t, i) => (
-        <div key={i} className="fb-row-card">
-          <label className="fb-field" htmlFor={`tr-${i}-m`}>{translateText("Rule")}<select id={`tr-${i}-m`} value={t.match} onChange={e => set(i, { match: e.target.value as Trigger['match'] })}>
-              <option value="contains">{translateText("Message contains")}</option><option value="equals">{translateText("Message is exactly")}</option><option value="any_message">{translateText("Any message")}</option>
-            </select>
-          </label>
-          {t.match !== 'any_message' && (
-            <label className="fb-field" htmlFor={`tr-${i}-k`}>{translateText("Keywords, comma separated")}<input id={`tr-${i}-k`} dir="auto" defaultValue={t.keywords.join('، ')} onBlur={e => set(i, { keywords: e.target.value.split(/[,،]/).map(s => s.trim()).filter(Boolean) })} />
-            </label>
+        <div key={i} className="fb-row-card fb-trigger-card">
+          <div className="fb-trigger-top"><strong>{translateText("Trigger")} {i + 1}</strong><button type="button" className="fb-link-danger" onClick={() => onChange(triggers.filter((_, j) => j !== i))}>{translateText("Remove")}</button></div>
+          <div className="fb-choice" role="radiogroup" aria-label={translateText("Start when")}>
+            <button type="button" role="radio" aria-checked={t.type === 'keyword'} className={t.type === 'keyword' ? 'on' : ''}
+              onClick={() => t.type !== 'keyword' && replace(i, { type: 'keyword', match: 'contains', keywords: [], rules: t.rules, ruleMatch: t.ruleMatch })}>
+              <MessageSquare size={18} /><span><b>{translateText("A message arrives")}</b><small>{translateText("Keyword or any message")}</small></span>
+            </button>
+            <button type="button" role="radio" aria-checked={t.type === 'contact_updated'} className={t.type === 'contact_updated' ? 'on' : ''}
+              onClick={() => t.type !== 'contact_updated' && replace(i, { type: 'contact_updated', rules: t.rules?.length ? t.rules : [{ op: 'has_tag', key: '' }], ruleMatch: t.ruleMatch })}>
+              <Tag size={18} /><span><b>{translateText("Conversation updated")}</b><small>{translateText("A label or field changes")}</small></span>
+            </button>
+          </div>
+          {t.type === 'keyword' && (
+            <div className="fb-seg" role="radiogroup" aria-label={translateText("Match")}>
+              {([['contains', 'Contains'], ['equals', 'Is exactly'], ['any_message', 'Any message']] as const).map(([v, l]) => (
+                <button key={v} type="button" role="radio" aria-checked={t.match === v} className={t.match === v ? 'on' : ''} onClick={() => replace(i, { ...t, match: v })}>{translateText(l)}</button>
+              ))}
+            </div>
           )}
-          <button type="button" className="fb-link-danger" onClick={() => onChange(triggers.filter((_, j) => j !== i))}>{translateText("Remove")}</button>
+          {t.type === 'keyword' && t.match !== 'any_message' && (
+            <div className="fb-field">{translateText("Keywords")}
+              <div className="fb-chip-input">
+                {t.keywords.map(k => <span key={k} className="fb-chip" dir="auto">{k}<button type="button" aria-label={translateText("Remove") + ' ' + k} onClick={() => replace(i, { ...t, keywords: t.keywords.filter(x => x !== k) })}>×</button></span>)}
+                <input dir="auto" aria-label={translateText("Add keyword")} placeholder={translateText("Type a word and press Enter")}
+                  onKeyDown={e => { const v = e.currentTarget.value.trim(); if ((e.key === 'Enter' || e.key === ',' || e.key === '،') && v) { e.preventDefault(); if (!t.keywords.includes(v)) replace(i, { ...t, keywords: [...t.keywords, v] }); e.currentTarget.value = '' } }}
+                  onBlur={e => { const v = e.target.value.trim(); if (v && !t.keywords.includes(v)) replace(i, { ...t, keywords: [...t.keywords, v] }); e.target.value = '' }} />
+              </div>
+            </div>
+          )}
+          <fieldset className="fb-group">
+            <legend>{translateText(t.type === 'contact_updated' ? "Start when these match" : "Only if (optional)")}</legend>
+            {(t.rules ?? []).length > 1 && (
+              <select aria-label={translateText("Match")} value={t.ruleMatch ?? 'all'} onChange={e => replace(i, { ...t, ruleMatch: e.target.value as 'all' | 'any' })}>
+                <option value="all">{translateText("All rules")}</option><option value="any">{translateText("Any rule")}</option>
+              </select>
+            )}
+            {(t.rules ?? []).map((r, k) => <RuleRow key={k} rule={r} onChange={v => replace(i, { ...t, rules: t.rules!.map((x, j) => j === k ? v : x) })} onRemove={() => replace(i, { ...t, rules: t.rules!.filter((_, j) => j !== k) })} />)}
+            <button type="button" className="fb-btn fb-btn-soft" onClick={() => replace(i, { ...t, rules: [...(t.rules ?? []), { op: 'has_tag', key: '' }] })}>{translateText("Add rule")}</button>
+          </fieldset>
         </div>
       ))}
-      <button type="button" className="fb-btn fb-btn-soft" onClick={() => onChange([...triggers, { type: 'keyword', match: 'contains', keywords: [] }])}>{translateText("Add trigger")}</button>
+      <button type="button" className="fb-btn fb-btn-soft" onClick={() => onChange([...triggers, { type: 'keyword', match: 'contains', keywords: [] }])}>+ {translateText(triggers.length ? "Add another trigger" : "Add trigger")}</button>
+
+      <fieldset className="fb-group">
+        <legend>{translateText("Repeat protection (per contact)")}</legend>
+        <div className="fb-inline">
+          <Field label={translateText("Max runs")} id="lim-max"><input id="lim-max" type="number" min={1} placeholder={translateText("No limit")} value={limits?.maxRuns ?? ''} onChange={e => setLimit('maxRuns', e.target.value)} /></Field>
+          <Field label={translateText("Min hours between runs")} id="lim-int"><input id="lim-int" type="number" min={1} placeholder={translateText("None")} value={limits?.minIntervalHours ?? ''} onChange={e => setLimit('minIntervalHours', e.target.value)} /></Field>
+        </div>
+      </fieldset>
     </div>
+  )
+}
+
+function FilePicker({ id, node, set }: { id: string; node: FlowNode; set: (patch: Partial<FlowNode>) => void }) {
+  const { files, error } = useLibraryFiles()
+  const [busy, setBusy] = useState(false)
+  const [uploadError, setUploadError] = useState<string | null>(null)
+  const input = useRef<HTMLInputElement>(null)
+  const upload = async (file: File | undefined) => {
+    if (!file) return
+    setBusy(true); setUploadError(null)
+    try { set({ fileId: (await uploadToLibrary(file)).id }) } catch (e) { setUploadError((e as Error).message) } finally {
+      setBusy(false)
+      if (input.current) input.current.value = ''
+    }
+  }
+  return (
+    <>
+      <Field label={translateText("File")} id={`${id}-file`}>
+        <select id={`${id}-file`} value={node.fileId ?? ''} onChange={e => set({ fileId: e.target.value })}>
+          <option value="">{files === null ? translateText("Loading…") : translateText("Choose a file")}</option>
+          {files?.map(f => <option key={f.id} value={f.id}>{f.name} · {translateText(f.kind)} · {formatSize(f.size)}</option>)}
+        </select>
+      </Field>
+      <div className="fb-inline">
+        <button type="button" className="fb-btn fb-btn-soft" disabled={busy} onClick={() => input.current?.click()}>{busy ? translateText("Uploading…") : translateText("Upload new file")}</button>
+        <input ref={input} type="file" hidden accept=".mp4,.3gp,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.jpg,.jpeg,.png,.mp3,.m4a,.ogg,.aac,.amr" onChange={e => upload(e.target.files?.[0])} />
+      </div>
+      <small className="fb-muted">{translateText("WhatsApp limits: video and audio 16 MB, images 5 MB, documents 100 MB.")}</small>
+      {(error || uploadError) && <p className="fb-error" role="alert">{uploadError ?? error}</p>}
+      <Field label={translateText("Caption (optional)")} id={`${id}-cap`}>
+        <input id={`${id}-cap`} dir="auto" value={node.caption ?? ''} onChange={e => set({ caption: e.target.value })} />
+      </Field>
+    </>
   )
 }
 
@@ -161,11 +270,11 @@ function RuleRow({ rule, onChange, onRemove }: { rule: Rule; onChange: (r: Rule)
   return (
     <div className="fb-row-card">
       <select aria-label={translateText("Operator")} value={rule.op} onChange={e => onChange({ ...rule, op: e.target.value as Rule['op'] })}>
-        <option value="has_tag">{translateText("Has tag")}</option><option value="not_has_tag">{translateText("Does not have tag")}</option>
+        <option value="has_tag">{translateText("Has label")}</option><option value="not_has_tag">{translateText("Has no label")}</option>
         <option value="is_set">{translateText("Field is set")}</option><option value="not_set">{translateText("Field is empty")}</option>
         <option value="equals">{translateText("Field equals")}</option><option value="not_equals">{translateText("Field is not")}</option><option value="contains">{translateText("Field contains")}</option>
       </select>
-      <input aria-label={translateText("Tag or field")} placeholder={rule.op.includes('tag') ? translateText("tag") : translateText("field")} value={rule.key} onChange={e => onChange({ ...rule, key: e.target.value })} />
+      <input aria-label={translateText("Tag or field")} dir="auto" placeholder={rule.op.includes('tag') ? translateText("tag") : translateText("field")} value={rule.key} onChange={e => onChange({ ...rule, key: e.target.value })} />
       {needsValue && <input aria-label={translateText("Value")} dir="auto" value={rule.value ?? ''} onChange={e => onChange({ ...rule, value: e.target.value })} />}
       <button type="button" className="fb-link-danger" onClick={onRemove}>{translateText("Remove")}</button>
     </div>

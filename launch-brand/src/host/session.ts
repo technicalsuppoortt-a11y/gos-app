@@ -5,6 +5,7 @@ import { useStore } from '../store/useStore';
 import { normalizeRole } from '../shared/permissions';
 import { PLATFORM_ENDPOINT } from './config';
 import { requestGosPlatform } from '../services/gosPlatform';
+import { serviceEntitlementFromClaims } from '../features/access/servicePeriod';
 
 // Launch Brand opens only from Joe Academy's "Build brand" button. Joe Academy
 // asks gos-app for a one-time ticket (60 seconds, single use) and opens
@@ -50,6 +51,8 @@ function accountUser(user: User, claims: Record<string, unknown>, profile: Recor
     emailVerified: claims.sourceEmailVerified === true,
     displayName: profile?.displayName || profile?.name || (claims.sourceName as string | undefined) || '',
     photoURL: profile?.photoURL || profile?.avatar || null,
+    // Signed claims from the Joe Academy ticket; the profile copy is only a record.
+    serviceEntitlement: serviceEntitlementFromClaims(claims),
     getIdToken: (forceRefresh?: boolean) => user.getIdToken(forceRefresh),
   };
 }

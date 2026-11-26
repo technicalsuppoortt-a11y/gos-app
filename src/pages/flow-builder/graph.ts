@@ -1,10 +1,10 @@
 import type { Edge, Node } from '@xyflow/react'
-import type { FlowNode, Graph, Trigger } from './types'
+import type { FlowNode, Graph, Limits, Trigger } from './types'
 
 export const START = '__start'
 
 export type StepData = { node: FlowNode; stats?: { sent: number; clicked: number } }
-export type StartData = { triggers: Trigger[] }
+export type StartData = { triggers: Trigger[]; limits?: Limits | null }
 
 /** Handles each step exposes; the edge's sourceHandle says which link it is. */
 export function outputs(n: FlowNode): { id: string; label: string; authored?: boolean }[] {
@@ -15,6 +15,7 @@ export function outputs(n: FlowNode): { id: string; label: string; authored?: bo
     }
     case 'condition': return [{ id: 'true', label: 'Matches' }, { id: 'false', label: 'Otherwise' }]
     case 'ai_agent': return [{ id: 'done', label: 'Done' }, { id: 'handoff', label: 'Handoff' }]
+    case 'wait_until': return [{ id: 'next', label: 'On time' }, { id: 'passed', label: 'Time passed / no date' }]
     case 'comment': return []
     default: return [{ id: 'next', label: 'Next step' }]
   }
@@ -23,7 +24,7 @@ export function outputs(n: FlowNode): { id: string; label: string; authored?: bo
 export function toCanvas(graph: Graph): { nodes: Node[]; edges: Edge[] } {
   const pos = (id: string, i: number) => graph.coordinates?.[id] ?? { x: 320 + i * 300, y: 80 }
   const nodes: Node[] = [
-    { id: START, type: 'start', position: graph.coordinates?.[START] ?? { x: 0, y: 80 }, data: { triggers: graph.triggers ?? [] } satisfies StartData, deletable: false },
+    { id: START, type: 'start', position: graph.coordinates?.[START] ?? { x: 0, y: 80 }, data: { triggers: graph.triggers ?? [], limits: graph.limits ?? null } satisfies StartData, deletable: false },
     ...Object.entries(graph.nodes ?? {}).map(([id, node], i) => ({ id, type: 'step', position: pos(id, i), data: { node } satisfies StepData })),
   ]
 
@@ -39,6 +40,7 @@ export function toCanvas(graph: Graph): { nodes: Node[]; edges: Edge[] } {
     link(id, 'false', n.falseId)
     link(id, 'done', n.exits?.done)
     link(id, 'handoff', n.exits?.handoff)
+    link(id, 'passed', n.pastId)
   }
   return { nodes, edges }
 }
@@ -47,6 +49,7 @@ export function toGraph(nodes: Node[], edges: Edge[]): Graph {
   const start = nodes.find(n => n.id === START)
   const graph: Graph = {
     triggers: (start?.data as StartData | undefined)?.triggers ?? [],
+    limits: (start?.data as StartData | undefined)?.limits ?? null,
     rootId: null,
     nodes: {},
     coordinates: {},
@@ -55,7 +58,7 @@ export function toGraph(nodes: Node[], edges: Edge[]): Graph {
     graph.coordinates[n.id] = { x: Math.round(n.position.x), y: Math.round(n.position.y) }
     if (n.id === START) continue
     const node: FlowNode = structuredClone((n.data as StepData).node)
-    delete node.targetId; delete node.trueId; delete node.falseId
+    delete node.targetId; delete node.trueId; delete node.falseId; delete node.pastId
     if (node.exits) node.exits = {}
     node.buttons = node.buttons?.map(b => ({ ...b, targetId: null }))
     if (node.buttons?.length === 0) delete node.buttons
@@ -70,6 +73,7 @@ export function toGraph(nodes: Node[], edges: Edge[]): Graph {
     if (h === 'next') node.targetId = target
     else if (h === 'true') node.trueId = target
     else if (h === 'false') node.falseId = target
+    else if (h === 'passed') node.pastId = target
     else if (h === 'done' || h === 'handoff') node.exits = { ...node.exits, [h]: target }
     else if (h.startsWith('btn:')) {
       const b = node.buttons?.find(b => `btn:${b.id}` === h)
@@ -86,6 +90,8 @@ export function newNode(type: FlowNode['type']): FlowNode {
     case 'actions': return { type, items: [{ type: 'add_tag', tag: 'lead' }] }
     case 'condition': return { type, match: 'all', rules: [{ op: 'has_tag', key: 'lead' }] }
     case 'smart_delay': return { type, value: 1, unit: 'hours' }
+    case 'wait_until': return { type, field: '', value: 8, unit: 'hours', direction: 'before', ifPassed: 'skip' }
+    case 'send_file': return { type, fileId: '', caption: '' }
     case 'ai_agent': return { type, endpoint: '', instructions: '', maxTurns: 10, exits: {} }
     case 'comment': return { type, text: 'Note' }
   }
