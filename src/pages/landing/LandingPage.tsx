@@ -5,21 +5,14 @@ import { useSelector } from 'react-redux';
 import {
   ArrowRight,
   ArrowUp,
-  Bell,
   Bot,
   BriefcaseBusiness,
   Building2,
-  CalendarCheck,
   CalendarDays,
   Check,
-  ChevronDown,
-  Crown,
-  Download,
-  Globe,
   GraduationCap,
   House,
   Menu,
-  MessageCircle,
   MessageSquare,
   Pause,
   Play,
@@ -27,12 +20,10 @@ import {
   Search,
   ShieldCheck,
   ShoppingCart,
-  Stethoscope,
   Store,
-  TrendingUp,
+  Stethoscope,
   UserRound,
   Users,
-  Workflow,
   X,
   Zap,
 } from 'lucide-react';
@@ -50,15 +41,14 @@ import {
   MergedProblemSection,
   RealResultsSection,
 } from './LandingUpgradeSections';
-import { HERO_DEFAULT_TAB, heroNavItems } from './hero-nav-items';
 import { AdminTrialSignupModal } from './AdminTrialSignupModal';
-import { cmsEvent, readCMS } from './cms';
+import { readCMS, subscribeCMS } from './cms';
 import { isDefaultBrandLogo, useWorkspacePreferences } from '../../backend/workspacePreferences';
-import { usePhoenixBrand, type PhoenixConfiguration } from '../../backend/phoenixBrand';
-import { isLaunchBrandPreview } from '../../branding/launchBrandPreview';
+import { restorePhoenixBrand, usePhoenixBrand, type PhoenixBrand, type PhoenixConfiguration } from '../../backend/phoenixBrand';
+import { getSubdomainBrandSlug, isLandingBrandContext, isLaunchBrandPreview } from '../../branding/launchBrandPreview';
+import { isDemoSessionActive } from '../../demo/mode';
 import { ThemeToggle } from '../../components/ui/ThemeToggle';
 import { LanguageSwitcher } from '../../components/ui/LanguageSwitcher';
-import { NativeDashboardPreview } from './NativeDashboardPreview';
 import './landing.css';
 import './launch-brand-preview.css';
 import './landing-sections-polish.css';
@@ -312,135 +302,6 @@ function Header({
   );
 }
 
-/* ---------- Single Tenant Branded Mockup (Used only when Launch Brand tenant preview is active) ---------- */
-
-function TenantHeroMock({ copy, brand, language }: { copy: LandingCopy; brand: PreviewBrand; language: Language }) {
-  const [activeTab, setActiveTab] = useState(HERO_DEFAULT_TAB);
-  const tabRefs = useRef<(HTMLButtonElement | null)[]>([]);
-  const ar = language === 'ar' || /[\u0600-\u06ff]/.test(copy.mock.title);
-  const lang = ar ? 'ar' : language;
-  const navItems = heroNavItems.map(item => ({ ...item, label: translateTextForLanguage(item.name, lang) }));
-  const supportLabel = translateTextForLanguage('Support', lang);
-  const tabCount = navItems.length;
-
-  const selectTab = (index: number, focus = false) => {
-    const next = (index + tabCount) % tabCount;
-    setActiveTab(next);
-    if (focus) tabRefs.current[next]?.focus();
-  };
-
-  const onTabKeyDown = (event: React.KeyboardEvent<HTMLButtonElement>, index: number) => {
-    const keys: Record<string, number> = { ArrowDown: index + 1, ArrowUp: index - 1, Home: 0, End: tabCount - 1 };
-    if (event.key in keys) {
-      event.preventDefault();
-      selectTab(keys[event.key], true);
-    }
-  };
-
-  return (
-    <div className="lp-hero__visual">
-      <div className="lp-hero__glow" aria-hidden="true" />
-      <span className="lp-float-icon lp-float-icon--a" aria-hidden="true">
-        <MessageCircle size={16} />
-      </span>
-      <span className="lp-float-icon lp-float-icon--b" aria-hidden="true">
-        <CalendarCheck size={16} />
-      </span>
-      <span className="lp-float-icon lp-float-icon--c" aria-hidden="true">
-        <Zap size={15} />
-      </span>
-
-      <div className="lp-mock lp-mock-replica" role="group" aria-label={copy.mock.title} data-live="false">
-        <aside className="lp-mock__side">
-          <div className="lp-mock__logo lp-mock__logo--current" role="img" aria-label={brand.brand.name}>
-            <PreviewBrandMark brand={brand} />
-          </div>
-          <ul role="tablist" aria-orientation="vertical" aria-label={brand.brand.name}>
-            {navItems.map(({ label: item, Icon, dividerBefore }, index) => {
-              const selected = activeTab === index;
-              return (
-                <li key={item} role="presentation" className={dividerBefore ? 'lp-mock__divider' : undefined}>
-                  <button
-                    ref={node => {
-                      tabRefs.current[index] = node;
-                    }}
-                    id={`lp-mock-tab-${index}`}
-                    type="button"
-                    role="tab"
-                    aria-selected={selected}
-                    aria-controls="lp-mock-panel"
-                    tabIndex={selected ? 0 : -1}
-                    className={selected ? 'is-active' : ''}
-                    onClick={() => selectTab(index)}
-                    onKeyDown={event => onTabKeyDown(event, index)}
-                  >
-                    <Icon size={12} strokeWidth={2.2} aria-hidden="true" />
-                    <span>{item}</span>
-                  </button>
-                </li>
-              );
-            })}
-          </ul>
-          <div className="lp-mock__support" aria-hidden="true">
-            <MessageCircle size={12} strokeWidth={2.2} />
-            <span>{supportLabel}</span>
-          </div>
-          <div className="lp-mock__profile" aria-hidden="true">
-            <em>MJ</em>
-            <span>
-              <b>{translateTextForLanguage('Mohamed Joe', lang)}</b>
-              <small>{translateTextForLanguage('Business Owner', lang)}</small>
-            </span>
-            <i>
-              <Crown size={7} />
-              {translateTextForLanguage(' Pro', lang)}
-            </i>
-          </div>
-        </aside>
-        <div className="lp-mock__main" id="lp-mock-panel" role="tabpanel" aria-labelledby={`lp-mock-tab-${activeTab}`}>
-          <div className="lp-replica-topbar lp-replica-topbar--current">
-            <span className="lp-replica-topbar__crumb">
-              <Menu size={10} /> {translateTextForLanguage('Workspace', lang)} <i>/</i>{' '}
-              <b>{navItems[activeTab].label}</b>
-            </span>
-            <span className="lp-replica-topbar__search" aria-hidden="true">
-              <Search size={8} />
-              {translateTextForLanguage('Search...', lang)}
-              <kbd>⌘ K</kbd>
-            </span>
-            <span className="lp-replica-topbar__tools" aria-hidden="true">
-              <Globe size={10} />
-              <Download size={10} />
-              <Bell size={10} />
-              <em>MJ</em>
-            </span>
-          </div>
-          <NativeDashboardPreview tab={activeTab} ar={ar} language={lang} title={navItems[activeTab].label} />
-        </div>
-      </div>
-
-      <div className="lp-float-badge lp-float-badge--a">
-        <span className="lp-float-badge__icon">
-          <Workflow size={15} strokeWidth={2.3} />
-        </span>
-        <span>
-          <b>{copy.mock.badgeA.title}</b>
-          <small>{copy.mock.badgeA.text}</small>
-        </span>
-      </div>
-      <div className="lp-float-badge lp-float-badge--b">
-        <span className="lp-float-badge__icon is-green">
-          <TrendingUp size={15} strokeWidth={2.3} />
-        </span>
-        <span>
-          <b>{copy.mock.badgeB.title}</b>
-          <small>{copy.mock.badgeB.text}</small>
-        </span>
-      </div>
-    </div>
-  );
-}
-
 function BusinessStrip({ copy }: { copy: LandingCopy }) {
   const [ref, inView] = useInView<HTMLDivElement>(0.25);
   const [active, setActive] = useState(0);
@@ -494,46 +355,11 @@ function Hero({
   onStartNow,
 }: {
   copy: LandingCopy;
-  whiteLabel: WhiteLabelCopy | null;
+  whiteLabel: WhiteLabelCopy;
   brand: PreviewBrand | null;
   language: Language;
   onStartNow: () => void;
 }) {
-  if (brand || !whiteLabel) {
-    return (
-      <section className="lp-hero" id="top" aria-labelledby="lp-hero-title">
-        <div className="lp-container lp-hero__grid">
-          <div className="lp-hero__copy lp-reveal">
-            <SectionBadge>{copy.hero.badge}</SectionBadge>
-            <h1 id="lp-hero-title" className="lp-hero__title">
-              {copy.hero.titleA} <span className="lp-gradient-text">{copy.hero.titleB}</span>
-            </h1>
-            <p className="lp-hero__lead">{copy.hero.lead}</p>
-            <ul className="lp-checks">
-              {copy.hero.checks.map(item => (
-                <li key={item}>
-                  <span aria-hidden="true">
-                    <Check size={11} strokeWidth={3.2} />
-                  </span>
-                  {item}
-                </li>
-              ))}
-            </ul>
-            <div className="lp-hero__ctas">
-              <StartButton id="lp-hero-book" label={copy.hero.primary} size="lg" onClick={onStartNow} />
-            </div>
-            <p className="lp-hero__note">
-              <ShieldCheck size={13} aria-hidden="true" />
-              {copy.hero.note}
-            </p>
-          </div>
-          {brand && <TenantHeroMock copy={copy} brand={brand} language={language} />}
-        </div>
-        <BusinessStrip copy={copy} />
-      </section>
-    );
-  }
-
   return (
     <section className="lp-hero lp-hero--merged" id="top" aria-labelledby="lp-hero-title">
       <div className="lp-container lp-hero-merged-head">
@@ -575,7 +401,7 @@ function Hero({
       </div>
 
       {/* Two-Dashboard Transformation Showcase (Upklick -> Your Brand) */}
-      <HeroBrandTransformShowcase copy={copy} wlCopy={whiteLabel.heroTransform} language={language} />
+      <HeroBrandTransformShowcase copy={copy} wlCopy={whiteLabel.heroTransform} language={language} brand={brand} />
 
       <BusinessStrip copy={copy} />
     </section>
@@ -712,45 +538,6 @@ function Solution({ copy }: { copy: LandingCopy }) {
         </div>
         <div className="lp-reveal">
           <EngineDiagram copy={copy} />
-        </div>
-      </div>
-    </section>
-  );
-}
-
-/* ---------- Tenant Branded Fallback FAQ (when Launch Brand tenant preview hides White-Label reseller plan) ---------- */
-
-function TenantFaqSection({ copy }: { copy: LandingCopy }) {
-  const [open, setOpen] = useState<number | null>(0);
-  return (
-    <section className="lp-section lp-plan-faq" id="plan-faq" aria-labelledby="lp-tenant-faq-title">
-      <div className="lp-container">
-        <div className="lp-plan-faq__head lp-reveal">
-          <SectionBadge>{copy.faq.badge}</SectionBadge>
-          <h2 id="lp-tenant-faq-title" className="lp-h2">
-            {copy.faq.title}
-          </h2>
-          <p className="lp-lead">{copy.faq.text}</p>
-        </div>
-        <div className="wl-faq lp-tenant-faq lp-reveal">
-          {copy.faq.items.slice(0, 6).map((item, idx) => {
-            const isOpen = open === idx;
-            return (
-              <div key={idx} className={`wl-faq__item${isOpen ? ' is-open' : ''}`}>
-                <button
-                  type="button"
-                  aria-expanded={isOpen}
-                  onClick={() => setOpen(isOpen ? null : idx)}
-                >
-                  <span>{item.q}</span>
-                  <ChevronDown size={16} strokeWidth={2.4} aria-hidden="true" />
-                </button>
-                <div className="wl-faq__answer" hidden={!isOpen}>
-                  <p>{item.a}</p>
-                </div>
-              </div>
-            );
-          })}
         </div>
       </div>
     </section>
@@ -1055,21 +842,53 @@ function LandingFooter({
 
 export const LandingPage: React.FC = () => {
   const phoenix = usePhoenixBrand();
-  const brand = isLaunchBrandPreview() ? phoenix : null;
+  const brand = isLandingBrandContext() ? phoenix : null;
   const brandName = brand?.brand.name;
   const language = useSelector((state: RootState) => state.ui.language);
   const preview = new URLSearchParams(window.location.search).get('cms-preview') === '1';
   const [cms, setCMS] = useState(() => readCMS(preview));
 
+  useEffect(() => subscribeCMS(preview, setCMS), [preview]);
+
   useEffect(() => {
-    const refresh = () => setCMS(readCMS(preview));
-    window.addEventListener(cmsEvent, refresh);
-    window.addEventListener('storage', refresh);
+    if (isLaunchBrandPreview() || isDemoSessionActive()) return;
+    const subdomainSlug = getSubdomainBrandSlug();
+    if (!subdomainSlug) return;
+    let active = true;
+    let unsubscribe: (() => void) | null = null;
+    void (async () => {
+      try {
+        const [{ doc, onSnapshot }, firebaseMod] = await Promise.all([
+          import('firebase/firestore'),
+          import('../../backend/firebase'),
+        ]);
+        const targetDb = firebaseMod.primaryDb ?? firebaseMod.db;
+        if (!active || !targetDb) return;
+        unsubscribe = onSnapshot(
+          doc(targetDb, 'publicTenantBrands', subdomainSlug),
+          snapshot => {
+            if (!active || !snapshot.exists()) return;
+            const data = snapshot.data();
+            if (!data?.brand?.name) return;
+            restorePhoenixBrand({
+              uid: String(data.ownerUid || subdomainSlug),
+              brand: data.brand as PhoenixBrand,
+              logo: typeof data.logo === 'string' ? data.logo : '',
+              logoHasWordmark: Boolean(data.logoHasWordmark),
+              pages: {},
+            });
+          },
+          () => {},
+        );
+      } catch {
+        /* Keep platform landing defaults if public brand lookup is unavailable. */
+      }
+    })();
     return () => {
-      window.removeEventListener(cmsEvent, refresh);
-      window.removeEventListener('storage', refresh);
+      active = false;
+      unsubscribe?.();
     };
-  }, [preview]);
+  }, []);
 
   const copy = useMemo(() => {
     const original = language === 'en' || language === 'ar' ? cms[language] : landingContent[language] ?? cms.en;
@@ -1121,25 +940,29 @@ export const LandingPage: React.FC = () => {
     };
   }, [cms, language, brandName, brand?.brand.description]);
 
-  const wlBundle = whiteLabelContent[language] ?? whiteLabelContent.en;
-  // White-label reseller modules are Upklick's own pitch — hidden on a tenant's branded preview.
-  const whiteLabel = brand ? null : wlBundle;
+  const wlBundle = useMemo(() => {
+    const base = whiteLabelContent[language] ?? whiteLabelContent.en;
+    if (!brandName) return base;
+    return JSON.parse(JSON.stringify(base), (key, value) =>
+      typeof value === 'string' && key !== 'id' && !/^(?:https?:|\/)/i.test(value)
+        ? value.replace(/\bUpklick\b/gi, () => brandName)
+        : value,
+    ) as WhiteLabelCopy;
+  }, [language, brandName]);
+  const whiteLabel = wlBundle;
 
   const navLinks = useMemo(() => {
     const h = wlBundle.headerNav;
-    const base = [
+    return [
       { id: 'problem', label: h.problem },
       { id: 'solution', label: h.solution },
       { id: 'ai-demo', label: h.aiDemo },
       { id: 'compare', label: h.compare },
+      { id: 'white-label', label: h.whiteLabel },
+      { id: 'plan-faq', label: h.planFaq },
+      { id: 'results', label: h.results },
     ];
-    if (whiteLabel) {
-      base.push({ id: 'white-label', label: h.whiteLabel });
-    }
-    base.push({ id: 'plan-faq', label: h.planFaq });
-    base.push({ id: 'results', label: h.results });
-    return base;
-  }, [wlBundle, whiteLabel]);
+  }, [wlBundle]);
 
   const dir = language === 'ar' ? 'rtl' : 'ltr';
   const rootRef = useRef<HTMLDivElement | null>(null);
@@ -1190,7 +1013,7 @@ export const LandingPage: React.FC = () => {
     const nodes = new Set<HTMLElement>(entriesWithDelay.keys());
     const motion = window.matchMedia('(prefers-reduced-motion: reduce)');
     const revealAll = () => nodes.forEach(node => node.classList.add('is-drawn'));
-    if (typeof IntersectionObserver === 'undefined' || motion.matches) {
+    if (typeof IntersectionObserver === 'undefined' || motion.matches || isLaunchBrandPreview()) {
       revealAll();
       return;
     }
@@ -1289,14 +1112,10 @@ export const LandingPage: React.FC = () => {
         <CompareToolsSection compareCopy={wlBundle.compareSection} brandName={brandName} onStartNow={openTrialModal} />
 
         {/* 6 · Consolidated Horizontal Bars Section (5 White-Label Pillars + Authentic Payment Brands) */}
-        {whiteLabel && <ConsolidatedHorizontalBars copy={whiteLabel} />}
+        <ConsolidatedHorizontalBars copy={whiteLabel} />
 
         {/* 7 · Second-to-Last Section: The Plan & FAQ */}
-        {whiteLabel ? (
-          <PlanAndFaqSection copy={whiteLabel.s9} onStartNow={openTrialModal} />
-        ) : (
-          <TenantFaqSection copy={copy} />
-        )}
+        <PlanAndFaqSection copy={whiteLabel.s9} onStartNow={openTrialModal} />
 
         {/* 8 · Final Section: Elevated Real Results */}
         <RealResultsSection copy={copy} upgrade={wlBundle.resultsUpgrade} onStartNow={openTrialModal} />

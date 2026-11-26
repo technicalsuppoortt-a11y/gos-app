@@ -98,6 +98,70 @@ html[data-theme] body .lp[data-launch-brand][dir] .lp-cms-footer {
   color: var(--gp-footer-text);
 }
 
+/* Keep the upgraded Merged Hero, Two-Dashboard Showcase, and AI Engine faithful to the active brand palette in both Light and Dark modes. */
+html[data-theme] body .lp[data-launch-brand][dir] .lp-hero--merged {
+  background:
+    radial-gradient(65% 75% at 50% 0%, color-mix(in srgb, var(--lp-primary) 16%, transparent), transparent 68%),
+    radial-gradient(45% 55% at var(--lp-hero-end) 12%, color-mix(in srgb, var(--lp-secondary) 11%, transparent), transparent 72%),
+    var(--lp-bg) !important;
+}
+
+html[data-theme] body .lp[data-launch-brand][dir] .wl-badge__tag {
+  background: var(--lp-primary) !important;
+  color: var(--gp-on-primary, #ffffff) !important;
+}
+
+html[data-theme] body .lp[data-launch-brand][dir] .lp-solution {
+  background: color-mix(in srgb, var(--lp-surface) 60%, var(--lp-bg)) !important;
+  border-top-color: var(--lp-border) !important;
+}
+
+html[data-theme] body .lp[data-launch-brand][dir] .lp-quote {
+  background: var(--lp-surface) !important;
+  border-color: var(--lp-border) !important;
+}
+
+html[data-theme] body .lp[data-launch-brand][dir] .lp-pod__shape path {
+  fill: var(--lp-surface) !important;
+  stroke: color-mix(in srgb, var(--lp-primary) 34%, var(--lp-border)) !important;
+}
+
+html[data-theme] body .lp[data-launch-brand][dir] .lp-pod__icon {
+  background: var(--lp-primary-50) !important;
+  color: var(--lp-primary) !important;
+  border-color: color-mix(in srgb, var(--lp-primary) 35%, var(--lp-border)) !important;
+}
+
+html[data-theme] body .lp[data-launch-brand][dir] .lp-engine__core {
+  background: radial-gradient(circle, var(--lp-surface) 0%, var(--lp-bg) 75%) !important;
+  border-color: color-mix(in srgb, var(--lp-primary) 42%, var(--lp-border)) !important;
+}
+
+html[data-theme] body .lp[data-launch-brand][dir] .lp-engine__core b,
+html[data-theme] body .lp[data-launch-brand][dir] .lp-pod b,
+html[data-theme] body .lp[data-launch-brand][dir] .lp-quote b {
+  color: var(--lp-ink) !important;
+}
+
+html[data-theme] body .lp[data-launch-brand][dir] .lp-engine__core small {
+  color: var(--lp-primary) !important;
+}
+
+html[data-theme] body .lp[data-launch-brand][dir] .lp-engine__strip {
+  background: var(--lp-surface) !important;
+  border-color: var(--lp-border) !important;
+}
+
+html[data-theme] body .lp[data-launch-brand][dir] .lp-engine__strip button > span {
+  background: var(--lp-primary-50) !important;
+  color: var(--lp-primary) !important;
+}
+
+html[data-theme] body .lp[data-launch-brand][dir] .lp-engine__strip button.is-active > span {
+  background: var(--lp-primary) !important;
+  color: var(--gp-on-primary, #ffffff) !important;
+}
+
 .lp[data-launch-brand] .lp-native-preview {
   --ws-accent: var(--lp-primary);
   --ws-hover: var(--lp-secondary);

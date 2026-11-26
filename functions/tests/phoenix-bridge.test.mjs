@@ -8,7 +8,7 @@ const source = new Map();
 const sourceReads = [];
 let tokenClaims = {};
 let validToken = true, verified = false, disabled = false, failWrite = false;
-let accounts = new Map(), signCount = 0, created = 0;
+let accounts = new Map(), signCount = 0, created = 0, lastCustomTokenClaims = null;
 let syncedPasswords = 0, sourcePasswordUid = 'owner', passwordValid = true;
 let serverTime = Date.parse('2026-10-18T00:01:00Z');
 const firestore = {
@@ -27,7 +27,7 @@ const gosAuth = {
   getUser: async uid => { if (!accounts.has(uid)) throw notFound(); return { ...accounts.get(uid), disabled }; },
   getUserByEmail: async email => { const user = [...accounts.values()].find(user => user.email === email); if (!user) throw notFound(); return user; },
   createUser: async data => { created++; accounts.set(data.uid, data); return data; },
-  createCustomToken: async uid => { signCount++; return `signed-${uid}`; },
+  createCustomToken: async (uid, claims) => { signCount++; lastCustomTokenClaims = claims ?? null; return `signed-${uid}`; },
 };
 mock.module('firebase-admin/app', { namedExports: { initializeApp: (_, name) => ({ name }) } });
 mock.module('firebase-admin/auth', { namedExports: { getAuth: app => app.name === 'phoenix' ? {
@@ -330,4 +330,104 @@ test('deploy stores the token claims entitlement, never the request body', async
     assert.equal(stored.serviceDays, 30);
     assert.equal(stored.serviceExpiresAt.getTime(), 1798675200000);
   }
+});
+
+test('Scenario 3 starts countdown only upon deploy and grants 50% AI credits to low_ticket vs 100% to high_ticket', async () => {
+  // 1. Entering '/launch-brand' before deployment must NOT create an Admin subscription or start the countdown
+  reset();
+  const preDeployTicket = 'pre_deploy_launch_brand_ticket'.padEnd(43, '_');
+  const preDeployTicketPath = `launchBrandTickets/${createHash('sha256').update(preDeployTicket).digest('hex')}`;
+  documents.set(preDeployTicketPath, {
+    uid: 'owner',
+    email: 'owner@example.com',
+    emailVerified: true,
+    name: 'Owner',
+    profile: { role: 'user', status: 'active', ticketType: 'low_ticket', serviceDays: 90, serviceStartsAt: '2026-10-01T00:00:00.000Z', serviceExpiresAt: '2026-12-30T00:00:00.000Z' },
+    entitlement: { ticketType: 'low_ticket', serviceDays: 90, serviceExpiresAt: 1798675200000 },
+    expiresAt: { toMillis: () => Date.now() + 60000 },
+  });
+  const exchangeRes = await request('launch-brand-exchange', { ticket: preDeployTicket });
+  assert.equal(exchangeRes.statusCode, 200);
+  assert.equal(documents.has('billingSubscriptions/phoenix_owner'), false);
+  assert.equal(lastCustomTokenClaims.phoenixTicket, 'low_ticket');
+  assert.equal(lastCustomTokenClaims.phoenixServiceDays, 90);
+  assert.equal(lastCustomTokenClaims.phoenixServiceExpiresAt, null);
+  assert.equal(documents.get('users/owner').serviceStartsAt, undefined);
+  assert.equal(documents.get('users/owner').serviceExpiresAt, undefined);
+
+  // Pre-deployment Launch Brand session cannot call 'open' to activate Admin before 'deploy'
+  tokenClaims = { launchBrand: true, phoenixTicket: 'low_ticket', phoenixServiceDays: 90, phoenixServiceExpiresAt: null };
+  assert.equal((await request('open')).statusCode, 409);
+  assert.equal(documents.has('billingSubscriptions/phoenix_owner'), false);
+
+  // 2. High Ticket deploy: receives 100% of Super Admin Free trial settings AI credits and anchors countdown to deploy time
+  reset();
+  documents.set('billingPlans/platform__trial', {
+    id: 'platform__trial',
+    status: 'active',
+    enabled: false,
+    durationDays: 14,
+    aiCredits: 2000,
+    emailCredits: 0,
+    limits: { seats: 400, clients: 1000 },
+    name: { en: 'Free trial', ar: 'تجربة مجانية' },
+  });
+  tokenClaims = { phoenixTicket: 'high_ticket', phoenixServiceDays: 90, phoenixServiceExpiresAt: null };
+  assert.equal((await request('deploy')).statusCode, 200);
+
+  const expectedDeployIso = new Date(serverTime).toISOString();
+  const highSub = documents.get('billingSubscriptions/phoenix_owner');
+  const highWallet = documents.get('billingWallets/phoenix_owner');
+  const highUser = documents.get('users/phoenix_owner');
+  assert.equal(highSub.status, 'trialing');
+  assert.equal(highSub.specialCaseFlow, 'phoenix_service_period');
+  assert.equal(highSub.phoenixTicketType, 'high_ticket');
+  assert.equal(highSub.phoenixServiceDays, 90);
+  assert.equal(highSub.plan.durationDays, 90);
+  assert.equal(highSub.plan.aiCredits, 2000);
+  assert.equal(highSub.trialStartedAt, expectedDeployIso);
+  assert.equal(highSub.serviceStartedAt, expectedDeployIso);
+  assert.equal(highSub.currentPeriodStart, expectedDeployIso);
+  assert.equal(highUser.serviceStartedAt, expectedDeployIso);
+  assert.equal(highUser.serviceExpiresAt, highSub.currentPeriodEnd);
+  assert.equal(Math.round((Date.parse(highSub.currentPeriodEnd) - Date.parse(highSub.currentPeriodStart)) / 86400000), 90);
+  assert.equal(highWallet.balance, 2000);
+  assert.equal(highWallet.aiCredits, 2000);
+
+  // Staff updates serviceDays in Phoenix from 90 -> 60 and switches to low_ticket: open syncs duration & caps AI credits to 50% (1000)
+  const initialStart = highSub.currentPeriodStart;
+  tokenClaims = { phoenixTicket: 'low_ticket', phoenixServiceDays: 60, phoenixServiceExpiresAt: null };
+  assert.equal((await request('open')).statusCode, 200);
+  const updatedSub = documents.get('billingSubscriptions/phoenix_owner');
+  const updatedWallet = documents.get('billingWallets/phoenix_owner');
+  assert.equal(updatedSub.currentPeriodStart, initialStart);
+  assert.equal(updatedSub.phoenixServiceDays, 60);
+  assert.equal(updatedSub.phoenixTicketType, 'low_ticket');
+  assert.equal(Math.round((Date.parse(updatedSub.currentPeriodEnd) - Date.parse(updatedSub.currentPeriodStart)) / 86400000), 60);
+  assert.equal(updatedSub.plan.aiCredits, 1000);
+  assert.equal(updatedWallet.balance, 1000);
+  assert.equal(updatedWallet.aiCredits, 1000);
+
+  // 3. Fresh Low Ticket student gets 50% (Math.floor(1501 * 0.5) = 750) AI credits upon deployment
+  reset();
+  documents.set('billingPlans/platform__trial', {
+    id: 'platform__trial',
+    status: 'active',
+    enabled: true,
+    durationDays: 90,
+    aiCredits: 1501,
+    emailCredits: 0,
+    channels: ['whatsapp'],
+    name: { en: 'Free trial', ar: 'تجربة مجانية' },
+  });
+  tokenClaims = { phoenixTicket: 'low_ticket', phoenixServiceDays: 45, phoenixServiceExpiresAt: null };
+  assert.equal((await request('deploy')).statusCode, 200);
+  const lowSub = documents.get('billingSubscriptions/phoenix_owner');
+  const lowWallet = documents.get('billingWallets/phoenix_owner');
+  assert.equal(lowSub.status, 'trialing');
+  assert.equal(lowSub.phoenixServiceDays, 45);
+  assert.equal(lowSub.plan.aiCredits, 750);
+  assert.deepEqual(lowSub.plan.channels, ['ai', 'whatsapp']);
+  assert.equal(lowWallet.balance, 750);
+  assert.equal(lowWallet.aiCredits, 750);
 });

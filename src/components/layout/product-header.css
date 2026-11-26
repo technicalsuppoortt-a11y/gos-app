@@ -504,3 +504,100 @@ html.dark .layout-header .layout-header-user b {
 
 .layout-plan-cta:hover { filter: brightness(1.1); transform: translateY(-0.5px); }
 .layout-plan-cta:focus-visible { outline: 2px solid #A78BFA; outline-offset: 2px; }
+
+/* Admin Free / Service Trial Countdown Badge */
+.layout-admin-trial-badge {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 6px;
+  height: 32px;
+  padding: 0 11px;
+  border-radius: 999px;
+  border: 1px solid #ddd6fe;
+  background: #f5f3ff;
+  color: #5b21b6;
+  font: inherit;
+  font-size: 11.5px;
+  font-weight: 650;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease, transform 0.15s ease;
+}
+
+.layout-admin-trial-badge:hover {
+  background: #ede9fe;
+  border-color: #c4b5fd;
+  transform: translateY(-0.5px);
+}
+
+.layout-admin-trial-badge:focus-visible {
+  outline: 2px solid #a78bfa;
+  outline-offset: 2px;
+}
+
+html.dark .layout-admin-trial-badge {
+  background: rgba(139, 92, 246, 0.16);
+  border-color: rgba(167, 139, 250, 0.32);
+  color: #ddd6fe;
+}
+
+html.dark .layout-admin-trial-badge:hover {
+  background: rgba(139, 92, 246, 0.24);
+  border-color: rgba(167, 139, 250, 0.46);
+}
+
+.layout-admin-trial-badge.is-ending-soon {
+  background: #fffbeb;
+  border-color: #fde68a;
+  color: #92400e;
+}
+
+.layout-admin-trial-badge.is-ending-soon:hover {
+  background: #fef3c7;
+  border-color: #fcd34d;
+}
+
+html.dark .layout-admin-trial-badge.is-ending-soon {
+  background: rgba(245, 158, 11, 0.16);
+  border-color: rgba(251, 191, 36, 0.34);
+  color: #fde68a;
+}
+
+html.dark .layout-admin-trial-badge.is-ending-soon:hover {
+  background: rgba(245, 158, 11, 0.24);
+  border-color: rgba(251, 191, 36, 0.48);
+}
+
+.layout-admin-trial-badge__icon {
+  flex-shrink: 0;
+}
+
+.layout-admin-trial-badge__compact {
+  display: none;
+}
+
+@media (max-width: 1180px) {
+  .layout-admin-trial-badge {
+    padding: 0 9px;
+    gap: 5px;
+    font-size: 11px;
+  }
+  .layout-admin-trial-badge__full {
+    display: none;
+  }
+  .layout-admin-trial-badge__compact {
+    display: inline;
+  }
+}
+
+@media (max-width: 767px) {
+  .layout-admin-trial-badge {
+    height: 30px;
+    padding: 0 8px;
+    gap: 4px;
+    font-size: 10.5px;
+  }
+}

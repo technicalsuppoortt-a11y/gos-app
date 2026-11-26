@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type PropsWithChildren } from 'react';
+import React, { Suspense, useEffect, useRef, useState, type PropsWithChildren } from 'react';
 import { useSelector } from 'react-redux';
 import { useSearchParams } from 'react-router-dom';
 import { primaryAuth } from '../../backend/firebase';
@@ -6,19 +6,27 @@ import { useUILanguage, translateText } from '../../i18n/display';
 import type { RootState } from '../../store';
 import './launch-brand-settings.css';
 
+const LazyLandingEditor = React.lazy(() =>
+  import('../admin/LandingEditor').then(mod => ({ default: mod.LandingEditor })),
+);
+
 export function SystemSettingsSections({ children }: PropsWithChildren) {
   const ar = useUILanguage().startsWith('ar');
   const role = useSelector((state: RootState) => state.auth.role);
   const [params, setParams] = useSearchParams();
   if (role !== 'SUPER_ADMIN') return <>{children}</>;
 
-  const launchBrand = params.get('section') === 'launch-brand';
+  const section = params.get('section');
+  const launchBrand = section === 'launch-brand';
+  const landingPage = section === 'landing-page';
+  const general = !launchBrand && !landingPage;
   return <>
     <nav className="saw-actions" aria-label={ar ? 'أقسام إعدادات النظام' : translateText('System Settings sections')}>
-      <button type="button" aria-pressed={!launchBrand} className={!launchBrand ? 'saw-primary' : undefined} onClick={() => setParams({})}>{ar ? 'عام' : translateText('General')}</button>
+      <button type="button" aria-pressed={general} className={general ? 'saw-primary' : undefined} onClick={() => setParams({})}>{ar ? 'عام' : translateText('General')}</button>
       <button type="button" aria-pressed={launchBrand} className={launchBrand ? 'saw-primary' : undefined} onClick={() => setParams({ section: 'launch-brand' })}>{ar ? 'إعدادات لانش براند' : translateText('Launch Brand Settings')}</button>
+      <button type="button" aria-pressed={landingPage} className={landingPage ? 'saw-primary' : undefined} onClick={() => setParams({ section: 'landing-page' })}>{ar ? 'صفحة الهبوط' : translateText('Landing Page')}</button>
     </nav>
-    {launchBrand ? <LaunchBrandSettings/> : children}
+    {launchBrand ? <LaunchBrandSettings/> : landingPage ? <Suspense fallback={null}><LazyLandingEditor/></Suspense> : children}
   </>;
 }
 

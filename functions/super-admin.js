@@ -2,7 +2,16 @@ import { createHash, randomUUID } from 'node:crypto';
 import { FieldValue } from 'firebase-admin/firestore';
 import { HttpsError } from 'firebase-functions/v2/https';
 import { agencyLandingWrites } from './agency-workspace.js';
-import { newCommunicationWallet, PLATFORM } from './billing-engine.js';
+import {
+  addDays,
+  CHANNEL_IDS,
+  cycleEndFrom,
+  DEFAULT_TRIAL,
+  newCommunicationWallet,
+  planSnapshot,
+  PLATFORM,
+  TOOL_IDS,
+} from './billing-engine.js';
 
 const teamRoles = ['SUPER_ADMIN', 'PLATFORM_SUPPORT', 'PLATFORM_FINANCE'];
 const validTabs = ['overview', 'all_admins', 'plans_billing', 'templates', 'usage_revenue', 'meta_wallet', 'team_management', 'system_settings', 'integrations', 'domains', 'payments', 'logs_monitoring', 'support'];
@@ -79,6 +88,37 @@ async function provisionAccount(db, auth, user, input, role) {
         await auth.setCustomUserClaims(agencyId, { role: 'USER', tenantId: `workspace-${agencyId}`, accountType: 'agency' });
       }
       const now = new Date().toISOString();
+      const trialSnap = agencyId ? await db.doc(`billingPlans/${PLATFORM}__trial`).get() : null;
+      const configuredTrial = trialSnap?.exists ? trialSnap.data() : null;
+      const activeTrial = configuredTrial && configuredTrial.status === 'active' && configuredTrial.enabled !== false
+        ? (() => {
+            const durationDays = Math.max(1, Math.min(365, Math.trunc(Number(configuredTrial.durationDays) || DEFAULT_TRIAL.admin.days)));
+            const aiCredits = Math.max(0, Math.trunc(Number(configuredTrial.aiCredits ?? configuredTrial.credits ?? DEFAULT_TRIAL.admin.credits)));
+            const emailCredits = Math.max(0, Math.trunc(Number(configuredTrial.emailCredits ?? 0)));
+            const rawChannels = Array.isArray(configuredTrial.channels)
+              ? configuredTrial.channels.filter(ch => CHANNEL_IDS.includes(ch))
+              : [];
+            const channels = rawChannels.length > 0 && aiCredits > 0 && !rawChannels.includes('ai')
+              ? ['ai', ...rawChannels]
+              : rawChannels;
+            return {
+              ...configuredTrial,
+              id: configuredTrial.id || `${PLATFORM}__trial`,
+              kind: 'trial',
+              billingType: 'fixed',
+              durationDays,
+              price: 0,
+              currency: configuredTrial.currency || 'USD',
+              credits: aiCredits,
+              aiCredits,
+              emailCredits,
+              tools: Array.isArray(configuredTrial.tools) && configuredTrial.tools.length ? configuredTrial.tools : [...TOOL_IDS],
+              channels,
+              limits: configuredTrial.limits || { seats: 1, clients: 3 },
+              name: configuredTrial.name?.en ? configuredTrial.name : { en: 'Free trial', ar: 'تجربة مجانية' },
+            };
+          })()
+        : null;
       const batch = db.batch();
       const base = { name, status: 'Active', created: now, activatedAt: now, createdBy: user.uid };
       batch.create(ref, { ...base, id, email, role, tenantId, ...(agencyId ? { defaultAgencyUserId: agencyId, supportParentId: user.uid } : { platformTeamOwnerId: user.uid, ...(allowedTabs ? { allowedTabs } : {}) }) });
@@ -89,7 +129,68 @@ async function provisionAccount(db, auth, user, input, role) {
         const root = db.doc(`tenants/${agencyTenantId}`);
         createWorkspace(batch, db.doc(`tenants/${tenantId}`), id, name, email, `${name}'s workspace`);
         createWorkspace(batch, root, agencyId, name, email, tenantName, { accountType: 'agency', billingOwnerId: id, agencyLandingSeeded: true });
-        batch.create(db.doc(`billingWallets/${id}`), { id, ownerId: id, role, providerId: PLATFORM, balance: 0, createdAt: now, updatedAt: now });
+        if (activeTrial) {
+          const periodEnd = addDays(now, activeTrial.durationDays);
+          const cycleEnd = cycleEndFrom(now, periodEnd);
+          batch.create(db.doc(`billingWallets/${id}`), {
+            id,
+            ownerId: id,
+            role,
+            providerId: PLATFORM,
+            balance: activeTrial.aiCredits,
+            aiCredits: activeTrial.aiCredits,
+            emailCredits: activeTrial.emailCredits,
+            lifetimeGranted: activeTrial.aiCredits,
+            lifetimeConsumed: 0,
+            createdAt: now,
+            updatedAt: now,
+          });
+          batch.create(db.doc(`billingSubscriptions/${id}`), {
+            id,
+            subscriberId: id,
+            subscriberRole: role,
+            subscriberName: name,
+            subscriberEmail: email,
+            providerId: PLATFORM,
+            planId: activeTrial.id,
+            plan: planSnapshot(activeTrial),
+            status: 'trialing',
+            startedAt: now,
+            currentPeriodStart: now,
+            currentPeriodEnd: periodEnd,
+            creditCycleStart: now,
+            creditCycleEnd: cycleEnd,
+            trialUsedAt: now,
+            specialCaseFlow: 'super_admin_trial',
+            autoRenew: false,
+            extraSeats: 0,
+            extraTools: [],
+            renewals: 0,
+            creditBlocked: false,
+            createdAt: now,
+          });
+          if (activeTrial.aiCredits > 0 || activeTrial.emailCredits > 0) {
+            const ledgerRef = db.collection('billingLedger').doc();
+            batch.create(ledgerRef, {
+              id: ledgerRef.id,
+              walletId: id,
+              providerId: PLATFORM,
+              type: 'grant',
+              bucket: 'ai',
+              amount: activeTrial.aiCredits,
+              balanceAfter: activeTrial.aiCredits,
+              emailAmount: activeTrial.emailCredits,
+              emailBalanceAfter: activeTrial.emailCredits,
+              description: `Free trial credits · ${activeTrial.name.en}`,
+              refType: 'trial',
+              refId: activeTrial.id,
+              actorId: user.uid,
+              createdAt: now,
+            });
+          }
+        } else {
+          batch.create(db.doc(`billingWallets/${id}`), { id, ownerId: id, role, providerId: PLATFORM, balance: 0, createdAt: now, updatedAt: now });
+        }
         batch.create(db.doc(`communicationWallets/${id}`), newCommunicationWallet(id, role, PLATFORM, now));
         for (const [asset, value] of agencyLandingWrites(root, id, now, input.language)) batch.create(asset, value);
       }

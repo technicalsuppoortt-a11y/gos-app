@@ -21,10 +21,14 @@ function isPageStyledAndReady(
   doc: Document,
   path: string,
   expectedMode: "light" | "dark",
+  allowInteractiveTheme = false,
 ): boolean {
   // An iframe can briefly expose an empty document while navigating. Resize
   // checks must keep waiting until its root exists instead of stopping on an error.
-  if (doc.documentElement?.dataset.theme !== expectedMode) return false;
+  const currentTheme = doc.documentElement?.dataset.theme;
+  if (currentTheme !== expectedMode && !(allowInteractiveTheme && (currentTheme === "light" || currentTheme === "dark"))) {
+    return false;
+  }
   if (doc.querySelector(".workspace-loading")) return false;
   const links = doc.querySelectorAll<HTMLLinkElement>('link[rel="stylesheet"]');
   for (const link of Array.from(links)) {
@@ -73,7 +77,7 @@ export function GosLiveFrame({
   const box = useRef<HTMLDivElement>(null);
   const [size, setSize] = useState({ width: width ?? 0, height: height ?? 0 });
   const [status, setStatus] = useState<"loading" | "slow" | "error" | "ready">("loading");
-  const [frameLoaded, setFrameLoaded] = useState(false);
+  const readyRef = useRef(false);
   const [attempt, setAttempt] = useState(0);
   const message = JSON.stringify(configuration);
   const config = previewConfigHash(message);
@@ -117,11 +121,11 @@ export function GosLiveFrame({
   const isAr = configuration.brand.language === "ar";
 
   useSyncExternalStore(subscribePreviewSnapshots, previewSnapshotVersion);
-  const snapshot = layoutWidth && layoutHeight ? readPreviewSnapshot(path, layoutWidth, layoutHeight) : null;
+  const snapshot = layoutWidth && layoutHeight ? readPreviewSnapshot(path, layoutWidth, layoutHeight, config) : null;
 
   useLayoutEffect(() => {
+    readyRef.current = false;
     setStatus("loading");
-    setFrameLoaded(false);
     const timeout = window.setTimeout(() => {
       setStatus(current => current === "loading" ? "slow" : current);
     }, 20000);
@@ -148,15 +152,16 @@ export function GosLiveFrame({
       if (disposed) return;
       let doc: Document;
       try { doc = target.document; } catch { return; }
-      if (!isPageStyledAndReady(target, doc, path, configuration.brand.mode)) {
+      if (!isPageStyledAndReady(target, doc, path, configuration.brand.mode, readyRef.current)) {
         timer = window.setTimeout(waitForContent, 50);
         return;
       }
       painted(() => {
+        readyRef.current = true;
         setStatus("ready");
         window.clearTimeout(saveTimer);
         saveTimer = window.setTimeout(() => {
-          if (disposed || !isPageStyledAndReady(target, doc, path, configuration.brand.mode)) return;
+          if (disposed || !isPageStyledAndReady(target, doc, path, configuration.brand.mode, true)) return;
           const current = capture.current;
           savePreviewSnapshot(current.path, current.layoutWidth, current.layoutHeight, current.config, doc);
         }, 500);
@@ -180,10 +185,8 @@ export function GosLiveFrame({
 
   const snapshotScale = snapshot && layoutWidth ? (layoutWidth / snapshot.width) * scale : scale;
   const snapshotHeight = snapshot && layoutWidth ? Math.round(layoutHeight * snapshot.width / layoutWidth) : 0;
-  // A saved snapshot is only a fast placeholder. Once the live Demo Account
-  // document loads, always show that document so older captured page content
-  // cannot remain in front of the current landing page.
-  const showSnapshot = Boolean(snapshot) && status !== "ready" && !frameLoaded;
+  // Keep the matching snapshot or shimmer visible until the live Demo Account React tree has styled & painted.
+  const showSnapshot = Boolean(snapshot) && status !== "ready";
 
   return (
     <div
@@ -197,10 +200,29 @@ export function GosLiveFrame({
         name={GOS_DEMO_WINDOW}
         title={title}
         src={source}
-        onLoad={() => { setFrameLoaded(true); sendBrand(frame.current?.contentWindow); }}
+        onLoad={() => { sendBrand(frame.current?.contentWindow); }}
         onError={() => setStatus("error")}
-        style={{ border: 0, display: "block", width: frameWidth, height: frameHeight, transform: scale === 1 ? undefined : `scale(${scale})`, transformOrigin: isAr ? "top right" : "top left", position: scale === 1 ? undefined : "absolute", top: 0, [isAr ? "right" : "left"]: 0, opacity: status === "ready" || frameLoaded ? 1 : 0 }}
+        style={{ border: 0, display: "block", width: frameWidth, height: frameHeight, transform: scale === 1 ? undefined : `scale(${scale})`, transformOrigin: isAr ? "top right" : "top left", position: scale === 1 ? undefined : "absolute", top: 0, [isAr ? "right" : "left"]: 0, opacity: status === "ready" ? 1 : 0 }}
       />
+      {status === "loading" && !snapshot && (
+        <div
+          aria-hidden="true"
+          style={{
+            position: "absolute",
+            inset: 0,
+            background: configuration.brand.mode === "dark" ? "#0f172a" : "#f8fafc",
+            display: "flex",
+            flexDirection: "column",
+            gap: 12,
+            padding: 18,
+            pointerEvents: "none",
+          }}
+        >
+          <div style={{ height: 28, borderRadius: 999, background: configuration.brand.mode === "dark" ? "rgba(148,163,184,0.12)" : "rgba(15,23,42,0.06)" }} />
+          <div style={{ height: 84, width: "68%", margin: "12px auto 0", borderRadius: 14, background: configuration.brand.mode === "dark" ? "rgba(148,163,184,0.1)" : "rgba(15,23,42,0.05)" }} />
+          <div style={{ flex: 1, borderRadius: 16, background: configuration.brand.mode === "dark" ? "rgba(148,163,184,0.08)" : "rgba(15,23,42,0.04)" }} />
+        </div>
+      )}
       {showSnapshot && snapshot && <iframe title={`${title} snapshot`} srcDoc={snapshot.html}
         sandbox="allow-same-origin" aria-hidden="true" tabIndex={-1}
         style={{ border: 0, display: "block", width: snapshot.width, height: snapshotHeight, transform: `scale(${snapshotScale})`, transformOrigin: isAr ? "top right" : "top left", position: "absolute", top: 0, [isAr ? "right" : "left"]: 0, pointerEvents: "none" }} />}

@@ -13,7 +13,7 @@ import type { RootState } from '../../store';
 import { Header } from './Header';
 import { SubAccountSwitcher } from './SubAccountSwitcher';
 import { PlatformAccountSwitcher } from './PlatformAccountSwitcher';
-import { useSubscription, isLive } from '../../backend/billing';
+import { useSubscription, useBillingRefresh, isLive } from '../../backend/billing';
 
 import { modules } from '../../pages/admin/catalog';
 import '../../pages/admin/admin-workspace.css';
@@ -27,6 +27,7 @@ export function AdminLayout() {
  const hasFallbackWorkspaceLogo = Boolean(workspaceBrand?.logoUrl && !isDefaultBrandLogo(workspaceBrand.logoUrl));
  const language=useUILanguage(); const ar=language.startsWith('ar'); const location=useLocation(); const navigate=useNavigate(); const [open,setOpen]=useState(false);
  const user=useSelector((s:RootState)=>s.auth.user); const role=useSelector((s:RootState)=>s.auth.role);
+ useBillingRefresh(role === 'ADMIN' && !!user?.id);
  const { data: sub, loading: subLoading } = useSubscription(user?.id ?? null);
  const live = isLive(sub);
  const isLocked = role === 'ADMIN' && !subLoading && !live;

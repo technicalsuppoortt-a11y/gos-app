@@ -186,5 +186,8 @@
   "Manage {{0}}": "{{0}} verwalten",
   "Enable {{0}}": "{{0}} aktivieren",
   "Disable {{0}}": "{{0}} deaktivieren",
-  "Configure {{0}}": "{{0}} konfigurieren"
+  "Configure {{0}}": "{{0}} konfigurieren",
+  "{{0}} days left in free trial": "Noch {{0}} Tage im kostenlosen Testzeitraum",
+  "{{0}}d left": "Noch {{0}}T",
+  "Free trial ends {{0}}": "Kostenloser Testzeitraum endet am {{0}}"
 }

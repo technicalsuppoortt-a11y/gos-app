@@ -1,3 +1,4 @@
+import { AutomationLoading } from '../AutomationLoading'
 import React from 'react'
 import { AlertCircle, ArrowLeft, Copy, ExternalLink, Info, LayoutGrid, Link2, Phone, Plus, RefreshCw, Search, Trash2, X } from 'lucide-react'
 import { useUILanguage, translateText as t } from '../../i18n/display'
@@ -39,7 +40,7 @@ export function WaTemplatesTab() {
     channelApi.channels().then(list => setChannel(list.find(c => c.channel === 'whatsapp' && c.status === 'connected') ?? null)).catch(() => setChannel(null))
   }, [])
 
-  if (channel === undefined) return <div className="cp-root"><p className="cp-muted">{t('Loading…')}</p></div>
+  if (channel === undefined) return <div className="cp-root"><AutomationLoading label={t('Loading…')} /></div>
   if (!channel) return (
     <div className="cp-root"><div className="cp-card wt-empty">
       <span className="wt-empty-icon"><Link2 size={22} aria-hidden="true" /></span>
@@ -114,7 +115,7 @@ function TemplateList({ channel, onNew }: { channel: Channel; onNew: (from?: WaT
 
       {error && <p className="cp-error" role="alert">{error}</p>}
 
-      {items === null ? <p className="cp-muted">{t('Loading templates…')}</p>
+      {items === null ? <AutomationLoading label={t('Loading templates…')} />
         : all.length === 0 && !error ? (
           <div className="cp-card wt-empty">
             <span className="wt-empty-icon"><LayoutGrid size={22} aria-hidden="true" /></span>

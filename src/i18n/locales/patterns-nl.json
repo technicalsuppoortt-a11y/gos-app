@@ -186,5 +186,8 @@
   "Manage {{0}}": "{{0}} beheren",
   "Enable {{0}}": "{{0}} inschakelen",
   "Disable {{0}}": "{{0}} uitschakelen",
-  "Configure {{0}}": "{{0}} configureren"
+  "Configure {{0}}": "{{0}} configureren",
+  "{{0}} days left in free trial": "Nog {{0}} dagen in gratis proefperiode",
+  "{{0}}d left": "Nog {{0}}d",
+  "Free trial ends {{0}}": "Gratis proefperiode eindigt op {{0}}"
 }

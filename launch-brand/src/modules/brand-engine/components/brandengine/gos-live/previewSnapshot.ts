@@ -13,9 +13,9 @@ export type PreviewSnapshot = {
   saved: number;
 };
 
-const OLD_DB_NAME = "launch-brand-preview";
+const OLD_DB_NAMES = ["launch-brand-preview", "launch-brand-preview-v2"];
 const OLD_SESSION_PREFIX = "launch-brand:preview-snapshot:";
-const DB_NAME = "launch-brand-preview-v2";
+const DB_NAME = "launch-brand-preview-v3";
 const STORE = "snapshots";
 const LIFETIME = 14 * 24 * 60 * 60 * 1000;
 const MAX_SNAPSHOTS = 8;
@@ -52,7 +52,9 @@ const fresh = (snapshot: PreviewSnapshot) => Date.now() - snapshot.saved < LIFET
 
 function purgeLegacySnapshots() {
   try {
-    if (typeof indexedDB !== "undefined") indexedDB.deleteDatabase(OLD_DB_NAME);
+    if (typeof indexedDB !== "undefined") {
+      for (const legacyDb of OLD_DB_NAMES) indexedDB.deleteDatabase(legacyDb);
+    }
   } catch { /* ignored */ }
   try {
     if (typeof sessionStorage !== "undefined") {
@@ -118,17 +120,24 @@ function prune(): string[] {
  * of the same page (the frame scales it to fit). Any brand is acceptable: the
  * live page replaces it with the current brand as soon as it has painted.
  */
-export function readPreviewSnapshot(path: string, width: number, height: number): PreviewSnapshot | null {
+export function readPreviewSnapshot(path: string, width: number, height: number, config?: string): PreviewSnapshot | null {
   const exact = memory.get(keyOf(path, width, height));
-  if (exact && fresh(exact)) return exact;
-  let best: PreviewSnapshot | null = null;
+  if (exact && fresh(exact) && (!config || exact.config === config)) return exact;
+  let bestMatching: PreviewSnapshot | null = null;
+  let bestFallback: PreviewSnapshot | null = null;
   for (const snapshot of memory.values()) {
     if (snapshot.path !== path || !fresh(snapshot)) continue;
-    if (!best) { best = snapshot; continue; }
-    const difference = Math.abs(snapshot.width - width) - Math.abs(best.width - width);
-    if (difference < 0 || (difference === 0 && snapshot.saved > best.saved)) best = snapshot;
+    if (config && snapshot.config === config) {
+      if (!bestMatching) { bestMatching = snapshot; continue; }
+      const diff = Math.abs(snapshot.width - width) - Math.abs(bestMatching.width - width);
+      if (diff < 0 || (diff === 0 && snapshot.saved > bestMatching.saved)) bestMatching = snapshot;
+    } else if (!config) {
+      if (!bestFallback) { bestFallback = snapshot; continue; }
+      const diff = Math.abs(snapshot.width - width) - Math.abs(bestFallback.width - width);
+      if (diff < 0 || (diff === 0 && snapshot.saved > bestFallback.saved)) bestFallback = snapshot;
+    }
   }
-  return best;
+  return bestMatching ?? bestFallback;
 }
 
 /** Copy the rendered Demo Account document with all stylesheets inlined so srcDoc paints styled on frame 0. */

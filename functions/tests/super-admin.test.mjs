@@ -126,3 +126,46 @@ test('platform team members can execute operations permitted by their allowedTab
   assert.equal(profiles.get(`users/${id}`).name, 'Edited By Support');
   await assert.rejects(callAsSupport({ operation: 'createMember', role: 'PLATFORM_FINANCE', name: 'Fin', email: 'fin@example.com', password: 'test-password-123', requestId: 'fin-1' }), { code: 'permission-denied' });
 });
+
+test('Scenario 1 createAdmin follows Super Admin Free Trial Settings when enabled and skips when disabled', async () => {
+  const { call, profiles } = fixture();
+  profiles.set('billingPlans/platform__trial', {
+    id: 'platform__trial',
+    status: 'active',
+    enabled: true,
+    durationDays: 90,
+    aiCredits: 2000,
+    emailCredits: 0,
+    limits: { seats: 400, clients: 1000 },
+    name: { en: 'Free trial', ar: 'تجربة مجانية' },
+  });
+
+  const enabledAdmin = await call({
+    operation: 'createAdmin',
+    name: 'Trial Enabled Admin',
+    email: 'enabled-admin@example.com',
+    password: 'test-password-123',
+    requestId: 'req-enabled-1',
+  });
+  const sub = profiles.get(`billingSubscriptions/${enabledAdmin.id}`);
+  const wallet = profiles.get(`billingWallets/${enabledAdmin.id}`);
+  assert.equal(sub.status, 'trialing');
+  assert.equal(sub.plan.durationDays, 90);
+  assert.equal(sub.plan.aiCredits, 2000);
+  assert.deepEqual(sub.plan.limits, { seats: 400, clients: 1000 });
+  assert.equal(wallet.balance, 2000);
+
+  profiles.set('billingPlans/platform__trial', {
+    ...profiles.get('billingPlans/platform__trial'),
+    enabled: false,
+  });
+  const disabledAdmin = await call({
+    operation: 'createAdmin',
+    name: 'Trial Disabled Admin',
+    email: 'disabled-admin@example.com',
+    password: 'test-password-123',
+    requestId: 'req-disabled-1',
+  });
+  assert.equal(profiles.has(`billingSubscriptions/${disabledAdmin.id}`), false);
+  assert.equal(profiles.get(`billingWallets/${disabledAdmin.id}`).balance, 0);
+});

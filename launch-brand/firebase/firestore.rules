@@ -177,7 +177,7 @@ service cloud.firestore {
       // Update: user can only update their own profile-safe subset
       allow update: if isOwner(uid)
         && !request.resource.data.diff(resource.data).affectedKeys()
-             .hasAny(['role', 'userTier', 'purchasedCourses', 'brandLaunched', 'coachId', 'coachAssignedAt', 'coachAssignedBy', 'salespersonId', 'salespersonAssignedAt', 'salespersonAssignedBy', 'createdBy', 'accountStatus', 'accessCode', 'launchEntitlement', 'launchBrandOpenedAt']);
+             .hasAny(['role', 'userTier', 'tier', 'ticketType', 'serviceDays', 'serviceStartsAt', 'serviceExpiresAt', 'serviceRenewalDays', 'serviceRenewalStartsAt', 'trialEnforced', 'purchasedCourses', 'brandLaunched', 'coachId', 'coachAssignedAt', 'coachAssignedBy', 'salespersonId', 'salespersonAssignedAt', 'salespersonAssignedBy', 'createdBy', 'accountStatus', 'accessCode', 'launchEntitlement', 'launchBrandOpenedAt']);
 
       // Admins may write any field (needed for tier assignment, course unlock, etc.)
       allow write: if isAdmin();

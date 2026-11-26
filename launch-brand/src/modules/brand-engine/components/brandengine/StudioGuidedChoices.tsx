@@ -1,6 +1,6 @@
 import { useRef, useState, type ReactNode, type KeyboardEvent } from "react";
 import * as RadixDialog from "@radix-ui/react-dialog";
-import { ArrowLeft, ArrowRight, Check, Globe, Palette, ShieldCheck, Type, X } from "lucide-react";
+import { ArrowLeft, ArrowRight, Check, Globe, Moon, Palette, ShieldCheck, Sun, Type, X } from "lucide-react";
 import { defaultBrandFont } from "@/modules/brand-engine/data/brandFonts";
 import { StudioSelect } from "./StudioSelect";
 import { AIGenerateMark } from "./AIGenerateMark";
@@ -392,6 +392,40 @@ export function StudioGuidedChoices({
                 {t("WCAG AA · Light & Dark Adaptive", "تباين قياسي · متوافق مع الفاتح والداكن")}
               </small>
             </span>
+            <div
+              role="group"
+              aria-label={t("Default surface mode", "وضع السطح الافتراضي")}
+              style={{ display: "inline-flex", alignItems: "center", gap: 4, marginInlineStart: "auto", padding: 3, borderRadius: 999, border: "1px solid var(--lb-card-border, rgba(148,163,184,0.28))" }}
+            >
+              {(["light", "dark"] as const).map((surfaceMode) => {
+                const activeMode = resolveBrandMode(state) === surfaceMode;
+                return (
+                  <button
+                    key={surfaceMode}
+                    type="button"
+                    aria-pressed={activeMode}
+                    disabled={busy}
+                    onClick={() => dispatch(actions.setPageParameter({ pageId: "branding", key: "brandMode", value: surfaceMode }))}
+                    style={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: 4,
+                      padding: "4px 9px",
+                      borderRadius: 999,
+                      border: 0,
+                      fontSize: 11.5,
+                      fontWeight: 600,
+                      cursor: busy ? "not-allowed" : "pointer",
+                      background: activeMode ? colors.primary : "transparent",
+                      color: activeMode ? "#ffffff" : "inherit",
+                    }}
+                  >
+                    {surfaceMode === "light" ? <Sun size={12} aria-hidden="true" /> : <Moon size={12} aria-hidden="true" />}
+                    <span>{surfaceMode === "light" ? t("Light", "فاتح") : t("Dark", "داكن")}</span>
+                  </button>
+                );
+              })}
+            </div>
           </div>
 
           <div className="studio-color-presets" aria-label={t("Ready-made color templates", "قوالب الألوان الجاهزة")}>

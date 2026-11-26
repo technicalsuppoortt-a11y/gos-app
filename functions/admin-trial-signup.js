@@ -5,6 +5,7 @@ import { agencyLandingWrites } from './agency-workspace.js';
 import {
   addDays,
   CHANNEL_IDS,
+  cycleEndFrom,
   DEFAULT_TRIAL,
   newCommunicationWallet,
   planSnapshot,
@@ -77,7 +78,9 @@ function resolveAdminTrialPlan(configuredTrial, opsSettings) {
       aiCredits,
       emailCredits,
       tools: Array.isArray(configuredTrial.tools) && configuredTrial.tools.length ? configuredTrial.tools : [...TOOL_IDS],
-      channels: Array.isArray(configuredTrial.channels) && configuredTrial.channels.length ? configuredTrial.channels : [...CHANNEL_IDS],
+      channels: Array.isArray(configuredTrial.channels) && configuredTrial.channels.length
+        ? (aiCredits > 0 && !configuredTrial.channels.includes('ai') ? ['ai', ...configuredTrial.channels] : configuredTrial.channels)
+        : [...CHANNEL_IDS],
       limits: configuredTrial.limits || { seats: 3, clients: 10 },
     };
   }
@@ -199,7 +202,7 @@ export async function registerTrialAdminRequest(request, { db, auth }) {
 
       const now = new Date().toISOString();
       const periodEnd = addDays(now, trialPlan.durationDays);
-      const cycleEnd = addDays(now, Math.min(30, trialPlan.durationDays));
+      const cycleEnd = cycleEndFrom(now, periodEnd);
       const ledgerId = db.collection('billingLedger').doc().id;
       const batch = db.batch();
 

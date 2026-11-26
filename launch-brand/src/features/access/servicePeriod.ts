@@ -1,6 +1,6 @@
 // The student's service period, from the signed claims of the Launch Brand
-// session token (set by the server from Joe Academy's verified token). The
-// countdown starts the first time the student opens Launch Brand.
+// session token. Before deployment ('Start Deployment'), serviceExpiresAt stays
+// null so configuring/previewing in Launch Brand never starts the countdown.
 
 const DAY = 86_400_000;
 const MAX_SERVICE_DAYS = 3650;

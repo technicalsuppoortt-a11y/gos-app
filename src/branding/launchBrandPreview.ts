@@ -13,6 +13,24 @@ export function isLaunchBrandPreview() {
   return active;
 }
 
+export function getSubdomainBrandSlug(
+  hostname = typeof window !== 'undefined' ? window.location.hostname : '',
+): string {
+  const clean = String(hostname || '').trim().toLowerCase().replace(/:\d+$/, '');
+  const match = clean.match(/^([a-z0-9-]+)\.upklick\.(?:net|com)$/);
+  if (!match) return '';
+  const slug = match[1]!;
+  if (['www', 'app', 'api', 'admin', 'mail', 'auth', 'dashboard', 'launch-brand'].includes(slug)) return '';
+  return slug;
+}
+
+export function isLandingBrandContext(): boolean {
+  if (active) return true;
+  if (typeof window === 'undefined') return false;
+  if (new URLSearchParams(window.location.search).get('brand-preview') === '1') return true;
+  return Boolean(getSubdomainBrandSlug());
+}
+
 export function canReturnToLaunchBrandWorkspace() {
   return workspaceBack;
 }

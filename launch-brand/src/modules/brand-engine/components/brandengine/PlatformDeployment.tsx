@@ -5,8 +5,7 @@ import { auth, db } from "@/lib/firebase";
 import { preparePhoenixConfiguration } from "@/modules/brand-engine/services/brandDraft";
 import { fingerprintBrandPages } from "@/modules/brand-engine/data/brandPages";
 import { confirmedDeploymentSteps } from "@/modules/brand-engine/data/deploymentProgress";
-import { useEffect, useMemo, useRef, useState } from "react";
-import { configureStore } from "@reduxjs/toolkit";
+import { useEffect, useState } from "react";
 import {
   ArrowRight,
   Check,
@@ -21,14 +20,12 @@ import {
   Globe,
 } from "lucide-react";
 import { motion, useReducedMotion } from "framer-motion";
-import { Provider } from "react-redux";
 import { LandingPreviewBridge } from "@/modules/brand-engine/components/brandengine/landing-preview/LandingPreviewBridge";
 import { DashboardBrandLogo } from "@/modules/brand-engine/components/brandengine/DashboardBrandLogo";
 import { useDashboardBrand } from "@/modules/brand-engine/components/brandengine/useDashboardBrand";
 import { Button } from "@/modules/brand-engine/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/modules/brand-engine/components/ui/dialog";
-import type { Device } from "@/modules/brand-engine/data/types";
-import brandReducer, { actions } from "@/modules/brand-engine/store/brandSlice";
+import { actions } from "@/modules/brand-engine/store/brandSlice";
 import { useAppDispatch, useAppSelector } from "@/modules/brand-engine/store/hooks";
 import styles from "./PlatformDeployment.module.css";
 import { activeReadySaas } from "@/modules/brand-engine/data/readySaas";
@@ -175,8 +172,6 @@ export function PlatformDeployment({ number = "04" }: { number?: string }) {
   const language = brand.language;
   const text = copy[language];
   const reduceMotion = useReducedMotion();
-  const miniSiteViewportRef = useRef<HTMLSpanElement>(null);
-  const [miniSite, setMiniSite] = useState({ scale: 0.13, height: 780 });
   const [outcomeOpen, setOutcomeOpen] = useState(false);
   const [deploymentAttempted, setDeploymentAttempted] = useState(false);
   const [syncingGos, setSyncingGos] = useState(false);
@@ -253,30 +248,6 @@ export function PlatformDeployment({ number = "04" }: { number?: string }) {
     : launching
       ? Math.max(12, Math.round((completedDeploymentSteps / text.steps.length) * 100))
       : 100;
-
-  const previewStore = useMemo(
-    () =>
-      configureStore({
-        reducer: { brand: brandReducer },
-        preloadedState: { brand: { ...brand, device: "desktop" as Device } },
-      }),
-    [brand],
-  );
-
-  useEffect(() => {
-    const viewport = miniSiteViewportRef.current;
-    if (!viewport) return;
-    const updatePreviewSize = () => {
-      const scale = viewport.clientWidth / 1280;
-      if (scale > 0 && viewport.clientHeight > 0) {
-        setMiniSite({ scale, height: Math.ceil(viewport.clientHeight / scale) });
-      }
-    };
-    updatePreviewSize();
-    const observer = new ResizeObserver(updatePreviewSize);
-    observer.observe(viewport);
-    return () => observer.disconnect();
-  }, []);
 
   const openDashboard = () => window.location.assign("/dashboard");
 
@@ -693,15 +664,8 @@ export function PlatformDeployment({ number = "04" }: { number?: string }) {
                     <i />
                     <small dir="ltr">app.upklick.net</small>
                   </span>
-                  <span ref={miniSiteViewportRef} className={styles["miniSiteViewport"]} aria-hidden="true" inert>
-                    <span
-                      className={styles["miniSiteCanvas"]}
-                      style={{ height: miniSite.height, transform: `scale(${miniSite.scale})` }}
-                    >
-                      <Provider store={previewStore}>
-                        <LandingPreviewBridge />
-                      </Provider>
-                    </span>
+                  <span className={styles["miniSiteViewport"]} aria-hidden="true" inert>
+                    <LandingPreviewBridge viewport={{ width: 1280, height: 850 }} />
                   </span>
                   <button
                     type="button"

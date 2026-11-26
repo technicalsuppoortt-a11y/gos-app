@@ -59,6 +59,12 @@ export interface BillingSubscription {
   creditCycleStart: string;
   creditCycleEnd: string | null;
   trialUsedAt: string | null;
+  trialStartedAt?: string | null;
+  serviceStartedAt?: string | null;
+  expiresAt?: string | null;
+  specialCaseFlow?: string;
+  phoenixTicketType?: 'low_ticket' | 'high_ticket';
+  phoenixServiceDays?: number;
   extraSeats: number;
   extraTools: string[];
   renewals: number;

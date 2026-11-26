@@ -19,6 +19,7 @@ import { GetAppButton } from './GetAppButton';
 import { CreditBadge } from './CreditBadge';
 import { WalletBadge } from './WalletBadge';
 import { DemoAccountControl } from './DemoAccountControl';
+import { AdminTrialCountdownBadge } from './AdminTrialCountdownBadge';
 import { isLive, useSubscription } from '../../backend/billing';
 import { canReturnToLaunchBrandWorkspace, returnToLaunchBrandWorkspace } from '../../branding/launchBrandPreview';
 import { useModuleAccess, moduleForPath } from '../../pages/settings/useModuleAccess';
@@ -399,6 +400,7 @@ export const Header: React.FC<HeaderProps> = ({ title, onMenu }) => {
         </div>
       ))}
 
+      <AdminTrialCountdownBadge/>
       <GetAppButton/>
       <div className="layout-preference-controls"><CurrencySelector/><LanguageSwitcher/><ThemeToggle/></div>
       <DemoAccountControl/>

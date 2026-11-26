@@ -1,4 +1,6 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useSelector } from 'react-redux';
+import type { RootState } from '../../store';
 import {
   ArrowRight,
   Award,
@@ -66,7 +68,7 @@ const prefersReducedMotion = () =>
 
 /* ---------- Sample White-Label Brand Presets ---------- */
 type BrandPreset = {
-  id: 'orbit' | 'nova' | 'peak';
+  id: 'live-brand' | 'orbit' | 'nova' | 'peak';
   name: string;
   tagline: string;
   domain: string;
@@ -177,17 +179,34 @@ const WL_BRAND_PRESETS: BrandPreset[] = [
    ("Before: Upklick" ──► "After: Your Brand" with identical UI polish)
    ========================================================= */
 
+export type HeroShowcaseBrand = {
+  brand: {
+    name: string;
+    tagline?: string;
+    description: string;
+    mode?: 'light' | 'dark';
+    theme?: {
+      light?: Record<string, string>;
+      dark?: Record<string, string>;
+    };
+  };
+  logo: string;
+  logoHasWordmark: boolean;
+};
+
 export const HeroBrandTransformShowcase: React.FC<{
   copy: LandingCopy;
   wlCopy: WhiteLabelCopy['heroTransform'];
   language: Language;
-}> = ({ copy, wlCopy, language }) => {
+  brand?: HeroShowcaseBrand | null;
+}> = ({ copy, wlCopy, language, brand }) => {
   const [activeTab, setActiveTab] = useState(HERO_DEFAULT_TAB);
   const [presetIndex, setPresetIndex] = useState(0);
   const [morphing, setMorphing] = useState(false);
-  const [autoCycle, setAutoCycle] = useState(() => !prefersReducedMotion());
+  const [autoCycle, setAutoCycle] = useState(() => !prefersReducedMotion() && !brand);
   const [hovered, setHovered] = useState(false);
   const [stageInView, setStageInView] = useState(() => typeof IntersectionObserver === 'undefined');
+  const currentThemeMode = useSelector((state: RootState) => state.ui.theme);
 
   const stageRef = useRef<HTMLDivElement | null>(null);
   const morphTimerRef = useRef<number | null>(null);
@@ -202,10 +221,77 @@ export const HeroBrandTransformShowcase: React.FC<{
   }));
   const supportLabel = translateTextForLanguage('Support', lang);
   const tabCount = navItems.length;
-  const preset = WL_BRAND_PRESETS[presetIndex];
+
+  const presets = useMemo<BrandPreset[]>(() => {
+    const customName = brand?.brand.name?.trim();
+    if (!brand || !customName) return WL_BRAND_PRESETS;
+    const modeColors = (currentThemeMode === 'dark' ? brand.brand.theme?.dark : brand.brand.theme?.light)
+      ?? brand.brand.theme?.light
+      ?? {};
+    const accent = modeColors.primary || '#7C3AED';
+    const hover = modeColors.secondary || modeColors.buttonBackground || accent;
+    const slug = customName
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '')
+      .slice(0, 20) || 'brand';
+    const initials = customName
+      .split(/\s+/)
+      .filter(Boolean)
+      .slice(0, 2)
+      .map(part => part[0]?.toUpperCase() || '')
+      .join('') || customName.slice(0, 2).toUpperCase();
+    const CustomMark = () =>
+      brand.logo ? (
+        <img src={brand.logo} alt="" style={{ width: 22, height: 22, objectFit: 'contain', borderRadius: 6 }} />
+      ) : (
+        <span
+          style={{
+            display: 'inline-grid',
+            placeItems: 'center',
+            width: 22,
+            height: 22,
+            borderRadius: 6,
+            background: accent,
+            color: '#fff',
+            fontSize: 10,
+            fontWeight: 800,
+          }}
+        >
+          {initials.slice(0, 1)}
+        </span>
+      );
+    const livePreset: BrandPreset = {
+      id: 'live-brand',
+      name: customName,
+      tagline: brand.brand.tagline?.trim() || wlCopy.afterSub,
+      domain: `${slug}.upklick.net`,
+      initials,
+      palette: {
+        accent,
+        hover,
+        soft: `color-mix(in srgb, ${accent} 12%, #ffffff)`,
+        darkSoft: `color-mix(in srgb, ${accent} 22%, transparent)`,
+        hueRotate: '0deg',
+        brandName: customName,
+      },
+      Mark: CustomMark,
+    };
+    return [livePreset, ...WL_BRAND_PRESETS];
+  }, [brand, currentThemeMode, wlCopy.afterSub]);
+
+  useEffect(() => {
+    if (brand) {
+      setPresetIndex(0);
+      setAutoCycle(false);
+    }
+  }, [brand?.brand.name, brand?.logo, brand]);
+
+  const safePresetIndex = presetIndex < presets.length ? presetIndex : 0;
+  const preset = presets[safePresetIndex]!;
 
   const triggerBrandMorph = useCallback((nextIdx: number, manual = false) => {
-    const normalized = (nextIdx + WL_BRAND_PRESETS.length) % WL_BRAND_PRESETS.length;
+    const normalized = (nextIdx + presets.length) % presets.length;
     if (manual) setAutoCycle(false);
     setPresetIndex(normalized);
     if (prefersReducedMotion()) {
@@ -217,7 +303,7 @@ export const HeroBrandTransformShowcase: React.FC<{
     morphTimerRef.current = window.setTimeout(() => {
       setMorphing(false);
     }, 1450);
-  }, []);
+  }, [presets.length]);
 
   useEffect(() => {
     return () => {
@@ -292,17 +378,17 @@ export const HeroBrandTransformShowcase: React.FC<{
 
         <div className="lp-transform-picker" role="group" aria-label={wlCopy.pickBrand}>
           <span className="lp-transform-picker__label">{wlCopy.pickBrand}</span>
-          {WL_BRAND_PRESETS.map((item, idx) => (
+          {presets.map((item, idx) => (
             <button
               key={item.id}
               type="button"
-              className={`lp-transform-swatch${idx === presetIndex ? ' is-active' : ''}`}
-              aria-pressed={idx === presetIndex}
+              className={`lp-transform-swatch${idx === safePresetIndex ? ' is-active' : ''}`}
+              aria-pressed={idx === safePresetIndex}
               onClick={() => triggerBrandMorph(idx, true)}
               style={{ '--swatch': item.palette.accent } as React.CSSProperties}
             >
               <i aria-hidden="true" />
-              <span dir="ltr">{item.name}</span>
+              <span dir="auto">{item.name}</span>
             </button>
           ))}
           <button
@@ -333,12 +419,21 @@ export const HeroBrandTransformShowcase: React.FC<{
             <div className="lp-hero__glow" aria-hidden="true" />
             <div className="lp-mock lp-mock-replica" role="group" aria-label={copy.mock.title} data-live="false">
               <aside className="lp-mock__side">
-                <div className="lp-mock__logo lp-mock__logo--current" role="img" aria-label="Upklick">
-                  <img className="lp-mock__brand-icon" src="/upclick-mark.svg" width="22" height="23" alt="" />
-                  <span className="lp-mock__brand-copy">
-                    <b>Upklick</b>
-                    <small>{translateTextForLanguage('Ideas to impact', lang)}</small>
-                  </span>
+                <div className="lp-mock__logo lp-mock__logo--current" role="img" aria-label={brand?.brand.name || 'Upklick'}>
+                  {brand ? (
+                    <div className="lp-preview-brand-mark">
+                      {brand.logo && <img src={brand.logo} alt={brand.logoHasWordmark ? brand.brand.name : ''} />}
+                      {(!brand.logo || !brand.logoHasWordmark) && <bdi>{brand.brand.name}</bdi>}
+                    </div>
+                  ) : (
+                    <>
+                      <img className="lp-mock__brand-icon" src="/upclick-mark.svg" width="22" height="23" alt="" />
+                      <span className="lp-mock__brand-copy">
+                        <b>Upklick</b>
+                        <small>{translateTextForLanguage('Ideas to impact', lang)}</small>
+                      </span>
+                    </>
+                  )}
                 </div>
                 <ul role="tablist" aria-orientation="vertical" aria-label="Upklick">
                   {navItems.map(({ label: item, Icon, dividerBefore }, index) => {
@@ -431,8 +526,8 @@ export const HeroBrandTransformShowcase: React.FC<{
               <span dir="ltr">upklick.com</span>
               <ArrowRight size={9} strokeWidth={2.6} className="lp-flip lp-transform-bridge__url-arrow" />
               <strong className="lp-url-morph-stack" dir="ltr">
-                {WL_BRAND_PRESETS.map((item, idx) => (
-                  <span key={item.id} className={idx === presetIndex ? 'is-on' : ''}>
+                {presets.map((item, idx) => (
+                  <span key={item.id} className={idx === safePresetIndex ? 'is-on' : ''}>
                     {item.domain.replace(/^app\./, '')}
                   </span>
                 ))}
@@ -450,9 +545,9 @@ export const HeroBrandTransformShowcase: React.FC<{
             <span className="lp-transform-tag is-branded">{wlCopy.afterBadge}</span>
             <b className="lp-brand-title-morph">
               <span>{wlCopy.afterLabel} · </span>
-              <span className="lp-url-morph-stack" dir="ltr">
-                {WL_BRAND_PRESETS.map((item, idx) => (
-                  <span key={item.id} className={idx === presetIndex ? 'is-on' : ''}>
+              <span className="lp-url-morph-stack" dir="auto">
+                {presets.map((item, idx) => (
+                  <span key={item.id} className={idx === safePresetIndex ? 'is-on' : ''}>
                     {item.name}
                   </span>
                 ))}
@@ -461,8 +556,8 @@ export const HeroBrandTransformShowcase: React.FC<{
             <span className="lp-transform-domain is-branded" dir="ltr">
               <Lock size={10} strokeWidth={2.5} aria-hidden="true" className="lp-domain-lock" />
               <span className="lp-url-morph-stack">
-                {WL_BRAND_PRESETS.map((item, idx) => (
-                  <span key={item.id} className={idx === presetIndex ? 'is-on' : ''}>
+                {presets.map((item, idx) => (
+                  <span key={item.id} className={idx === safePresetIndex ? 'is-on' : ''}>
                     {item.domain}
                   </span>
                 ))}
@@ -482,17 +577,17 @@ export const HeroBrandTransformShowcase: React.FC<{
               <aside className="lp-mock__side">
                 <div className="lp-wl-brand-head lp-mock__logo--current" role="img" aria-label={preset.name}>
                   <span className="lp-brand-mark-stack">
-                    {WL_BRAND_PRESETS.map((item, idx) => (
-                      <span key={item.id} className={idx === presetIndex ? 'is-on' : ''}>
+                    {presets.map((item, idx) => (
+                      <span key={item.id} className={idx === safePresetIndex ? 'is-on' : ''}>
                         <item.Mark />
                       </span>
                     ))}
                   </span>
                   <span className="lp-mock__brand-copy lp-brand-copy-stack">
-                    {WL_BRAND_PRESETS.map((item, idx) => (
-                      <span key={item.id} className={idx === presetIndex ? 'is-on' : ''}>
-                        <b dir="ltr">{item.name}</b>
-                        <small dir="ltr">{item.tagline}</small>
+                    {presets.map((item, idx) => (
+                      <span key={item.id} className={idx === safePresetIndex ? 'is-on' : ''}>
+                        <b dir="auto">{item.name}</b>
+                        <small dir="auto">{item.tagline}</small>
                       </span>
                     ))}
                   </span>
@@ -552,8 +647,8 @@ export const HeroBrandTransformShowcase: React.FC<{
                   <span className="lp-wl-topbar-url" dir="ltr" aria-hidden="true">
                     <Lock size={8} strokeWidth={2.5} className="lp-domain-lock" />
                     <span className="lp-url-morph-stack">
-                      {WL_BRAND_PRESETS.map((item, idx) => (
-                        <span key={item.id} className={idx === presetIndex ? 'is-on' : ''}>
+                      {presets.map((item, idx) => (
+                        <span key={item.id} className={idx === safePresetIndex ? 'is-on' : ''}>
                           {item.domain}
                         </span>
                       ))}

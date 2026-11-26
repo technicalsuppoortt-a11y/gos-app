@@ -12,7 +12,7 @@ import fontCatalog from '../branding/brandFontCatalog.json';
 import { useWorkspacePreferences } from '../backend/workspacePreferences';
 import { workspaceTheme } from '../branding/workspaceTheme';
 import { WorkspaceCustomization } from './WorkspaceCustomization';
-import { isLaunchBrandPreview } from '../branding/launchBrandPreview';
+import { isLandingBrandContext, isLaunchBrandPreview } from '../branding/launchBrandPreview';
 
 interface ThemeProviderProps {
   children: React.ReactNode;
@@ -20,10 +20,10 @@ interface ThemeProviderProps {
 }
 
 export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children, publicPage }) => (
-  <WorkspaceCustomization publicPage={publicPage}><ThemeRuntime>{children}</ThemeRuntime></WorkspaceCustomization>
+  <WorkspaceCustomization publicPage={publicPage}><ThemeRuntime publicPage={publicPage}>{children}</ThemeRuntime></WorkspaceCustomization>
 );
 
-const ThemeRuntime: React.FC<ThemeProviderProps> = ({ children }) => {
+const ThemeRuntime: React.FC<ThemeProviderProps> = ({ children, publicPage }) => {
   useUILanguage();
   const theme = useSelector((state: RootState) => state.ui.theme);
   const language = useSelector((state: RootState) => state.ui.language);
@@ -33,7 +33,8 @@ const ThemeRuntime: React.FC<ThemeProviderProps> = ({ children }) => {
   useLayoutEffect(() => {
     const root = document.documentElement;
     const workspace = workspaceTheme(palette);
-    const design = (isLaunchBrandPreview() || !hasWorkspaceTheme) && phoenixTheme ? phoenixTheme : workspace;
+    const allowPhoenix = publicPage ? isLandingBrandContext() : !hasWorkspaceTheme;
+    const design = (isLaunchBrandPreview() || allowPhoenix) && phoenixTheme ? phoenixTheme : workspace;
     const set = (key: string, value: string) => {
       const property = key.replace(/[A-Z]/g, letter => '-' + letter.toLowerCase());
       root.style.setProperty('--gp-' + property, value);
@@ -139,7 +140,7 @@ const ThemeRuntime: React.FC<ThemeProviderProps> = ({ children }) => {
       delete root.dataset.gpButtons;
       for (const key of Array.from(root.style)) if (key.startsWith('--gp-')) root.style.removeProperty(key);
     };
-  }, [hasWorkspaceTheme, palette, phoenixTheme, theme, language, themePreview]);
+  }, [hasWorkspaceTheme, palette, phoenixTheme, publicPage, theme, language, themePreview]);
 
   useLayoutEffect(() => {
     document.documentElement.classList.toggle('dark', theme === 'dark');

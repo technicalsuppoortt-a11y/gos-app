@@ -1,3 +1,4 @@
+import { AutomationLoading } from './AutomationLoading'
 import { useCloudState, useEntities } from '../backend/workspace';
 import { useBusinessMetrics } from '../backend/metrics';
 import { callBackend, backendError } from '../backend/firebase';
@@ -2216,7 +2217,7 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent, section = "f
     // Automation & Campaign: Templates holds WhatsApp (Meta) templates; the AI response templates live under Follow Up.
     if (tab === "Templates" && isAutomation)
       return (
-        <React.Suspense fallback={<p className="af-muted">{translateText("Loading templates…")}</p>}>
+        <React.Suspense fallback={<AutomationLoading label={translateText("Loading templates…")} />}>
           <WaTemplatesTab />
         </React.Suspense>
       );
@@ -2225,14 +2226,14 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent, section = "f
     if (tab === "Automations") return renderAutomationTab();
     if (tab === "Flow Builder")
       return (
-        <React.Suspense fallback={<p className="af-muted">{translateText("Loading Flow Builder…")}</p>}>
+        <React.Suspense fallback={<AutomationLoading label={translateText("Loading Flow Builder…")} />}>
           <FlowBuilderTab />
         </React.Suspense>
       );
     if (tab === "Settings") return renderSettingsTab();
     if (tab === "Campaign")
       return (
-        <React.Suspense fallback={<p className="af-muted">{translateText("Loading campaigns…")}</p>}>
+        <React.Suspense fallback={<AutomationLoading label={translateText("Loading campaigns…")} />}>
           <CampaignsTab startInEditor={startCampaign.current} onEditorOpened={() => { startCampaign.current = false; }} />
         </React.Suspense>
       );
@@ -2278,7 +2279,7 @@ export const AIFollowUp: React.FC<Props> = ({ notify: notifyParent, section = "f
   };
 
   return (
-    <main className={`af-page flex w-full min-w-0 flex-1 flex-col ${tab === 'Knowledge' || tab === 'Track Leads' ? 'af-page-knowledge min-h-full h-auto overflow-visible' : 'h-full min-h-0 overflow-hidden'}`}>
+    <main className={`af-page ${isAutomation ? 'af-automation-page' : ''} flex w-full min-w-0 flex-1 flex-col ${tab === 'Knowledge' || tab === 'Track Leads' ? 'af-page-knowledge min-h-full h-auto overflow-visible' : 'h-full min-h-0 overflow-hidden'}`}>
       {api.error && <div className="af-safety-note" role="alert">{api.error}<button className="af-button-secondary" onClick={api.retry}>{translateText("Retry")}</button></div>}
       {agentConfig.error && <div className="af-safety-note" role="alert">{agentConfig.error}<button className="af-button-secondary" onClick={agentConfig.retry}>{translateText("Retry assistant settings")}</button></div>}
       <div className="af-page-title">

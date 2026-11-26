@@ -84,6 +84,18 @@ service cloud.firestore {
         && request.resource.data.values.keys().hasOnly(['name', 'logoUrl', 'theme', 'language', 'currency', 'mode', 'timezone'])
         && validDashboardBrand();
     }
+    match /settings/landingContent {
+      allow get: if true;
+      allow create, update: if platformSuperadmin();
+      allow delete: if false;
+    }
+    match /settings/landingContentDraft {
+      allow read, write: if platformSuperadmin();
+    }
+    match /publicTenantBrands/{slug} {
+      allow get: if true;
+      allow write: if false;
+    }
     // Public-to-linked-clients preference projection; contains no account or SMTP data.
     match /dashboardBrands/{providerId} {
       allow read: if signedIn() && (request.auth.uid == providerId || (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && profile().get('supportParentId', '') == providerId));

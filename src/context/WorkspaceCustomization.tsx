@@ -23,7 +23,7 @@ import { useSessionReady } from '../backend/sessionState';
 import i18n from '../i18n/i18n';
 import { showToast } from '../utils/toast';
 import './workspace-customization.css';
-import { isLaunchBrandPreview } from '../branding/launchBrandPreview';
+import { isLandingBrandContext, isLaunchBrandPreview } from '../branding/launchBrandPreview';
 import { useCurrencyPreference } from '../backend/currencyPreference';
 import { isCurrencyCode } from '../utils/currency';
 import { CurrencyProvider } from './CurrencyContext';
@@ -79,7 +79,8 @@ export function WorkspaceCustomization({ children, publicPage }: { children: Rea
   const previewValues = draft?.scope === scope ? draft.patch : null;
   // Launch Brand's live preview always shows the brand being designed, while allowing interactive dark/light and language toggles inside Demo Account.
   const launchBrandPreview = isLaunchBrandPreview() && !!phoenix;
-  const usePhoenixDefaults = launchBrandPreview || (!publicPage && Boolean(uid) && !hasSavedWorkspace && Boolean(phoenix));
+  const landingBrandActive = publicPage ? (isLandingBrandContext() && !!phoenix) : launchBrandPreview;
+  const usePhoenixDefaults = landingBrandActive || (!publicPage && Boolean(uid) && !hasSavedWorkspace && Boolean(phoenix));
   // Deployed Launch Brand owners (both Admin and linked Agency User) get their
   // deployed brand merged into default appearance slots without touching the global site.
   const phoenixFill = !publicPage && !launchBrandPreview && uid && phoenix ? phoenix : null;
@@ -105,7 +106,7 @@ export function WorkspaceCustomization({ children, publicPage }: { children: Rea
   const isResolvingRemotePreferences = !launchBrandPreview && (!sessionReady || state.loading);
   const hasExplicitRemoteSource = Boolean(values || usePhoenixDefaults || hadRemoteValues);
   const hasUserPersistedLang = Boolean(initialPersistedLang || readPersistedLocale());
-  const resolvedLanguage = launchBrandPreview
+  const resolvedLanguage = landingBrandActive
     ? (previewPersonal.language ?? workspace.language)
     : isResolvingRemotePreferences
     ? currentUiLang
@@ -120,7 +121,7 @@ export function WorkspaceCustomization({ children, publicPage }: { children: Rea
     ...workspace,
     language: resolvedLanguage,
     currency: displayCurrency ?? workspace.currency,
-    mode: launchBrandPreview
+    mode: landingBrandActive
       ? (previewPersonal.mode ?? workspace.mode)
       : isResolvingRemotePreferences
       ? currentUiTheme
@@ -217,7 +218,7 @@ export function WorkspaceCustomization({ children, publicPage }: { children: Rea
     }
   }, [publicPage, canPublish, phoenix, tenantId, state.loading, state.publicValues, effective, workspace.currency, previewValues]);
 
-  const setPreference = (uid || launchBrandPreview) && !publicPage ? (patch: PersonalPreferences) => {
+  const setPreference = (landingBrandActive || (uid && !publicPage)) ? (patch: PersonalPreferences) => {
     setLastTopbarChange({ scope, patch });
     setLocalPersonal(prev => ({ scope, patch: { ...(prev.scope === scope ? prev.patch : {}), ...patch } }));
     if (patch.mode === 'light' || patch.mode === 'dark') dispatch(setTheme(patch.mode));
@@ -225,11 +226,11 @@ export function WorkspaceCustomization({ children, publicPage }: { children: Rea
       void i18n.changeLanguage(patch.language);
       dispatch(setLanguage(patch.language));
     }
-    if (launchBrandPreview) {
+    if (landingBrandActive) {
       setPreviewPersonal(current => ({ ...current, ...patch }));
       if (patch.mode === 'light' || patch.mode === 'dark') dispatch(setTheme(patch.mode));
       if (isSupportedLocale(patch.language)) dispatch(setLanguage(patch.language));
-      if (!uid) return;
+      if (!uid || publicPage) return;
     }
     const { currency, ...appearance } = patch;
     if (currency === null || isCurrencyCode(currency)) currencyPreference.setCurrencyPreference(currency);

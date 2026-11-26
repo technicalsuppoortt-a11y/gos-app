@@ -92,7 +92,7 @@ export function periodEndFor(plan, start) {
   if (plan.billingType === 'fixed') return addDays(start, plan.durationDays);
   return null; // lifetime
 }
-function cycleEndFrom(start, periodEnd) { const end = addMonths(start, 1); return periodEnd && end > periodEnd ? periodEnd : end; }
+export function cycleEndFrom(start, periodEnd) { const end = addMonths(start, 1); return periodEnd && end > periodEnd ? periodEnd : end; }
 
 // ───────────────────────── status helpers ─────────────────────────
 export function effectiveStatus(sub, now = new Date().toISOString()) {
@@ -767,10 +767,78 @@ export async function executeBilling(operation, data, actor, base, now = new Dat
 
   /** Apply lazy lifecycle transitions: period expiry, wallet auto-renewal, monthly credit cycles, and low-balance auto-recharge. */
   async function freshen(uid) {
-    const sub = await store.get(`billingSubscriptions/${uid}`);
+    let sub = await store.get(`billingSubscriptions/${uid}`);
     let wallet = await store.get(`billingWallets/${uid}`);
     if (wallet) wallet.balance = wallet.balance ?? wallet.aiCredits ?? 0;
-    if (!sub) return { sub, wallet };
+    if (!sub) {
+      const account = await store.get(`users/${uid}`);
+      if (account?.role === 'ADMIN' && account.phoenixUid && account.accountType !== 'agency' && !account.deletedAt) {
+        const configuredTrial = await store.get(`billingPlans/${PLATFORM}__trial`);
+        const ent = account.launchEntitlement;
+        const ticketType = ent?.ticketType === 'low_ticket' ? 'low_ticket' : 'high_ticket';
+        const durationDays = Number.isInteger(ent?.serviceDays) && ent.serviceDays >= 1 && ent.serviceDays <= 3650
+          ? ent.serviceDays
+          : DEFAULT_TRIAL.admin.days;
+        const highTicketCredits = Math.max(0, Math.trunc(Number(configuredTrial?.aiCredits ?? configuredTrial?.credits ?? DEFAULT_TRIAL.admin.credits)));
+        const aiCredits = ticketType === 'low_ticket' ? Math.floor(highTicketCredits * 0.5) : highTicketCredits;
+        const emailCredits = Math.max(0, Math.trunc(Number(configuredTrial?.emailCredits ?? 0)));
+        const rawChannels = Array.isArray(configuredTrial?.channels) ? configuredTrial.channels.filter(ch => CHANNEL_IDS.includes(ch)) : [];
+        const channels = rawChannels.length > 0 && aiCredits > 0 && !rawChannels.includes('ai') ? ['ai', ...rawChannels] : rawChannels;
+        const plan = {
+          id: configuredTrial?.id || `${PLATFORM}__trial`,
+          kind: 'trial',
+          name: configuredTrial?.name?.en ? configuredTrial.name : { en: 'Free trial', ar: 'تجربة مجانية' },
+          billingType: 'fixed',
+          durationDays,
+          price: 0,
+          currency: configuredTrial?.currency || 'USD',
+          credits: aiCredits,
+          aiCredits,
+          emailCredits,
+          tools: Array.isArray(configuredTrial?.tools) && configuredTrial.tools.length ? configuredTrial.tools : [...TOOL_IDS],
+          channels,
+          limits: configuredTrial?.limits || { seats: 1, clients: 3 },
+        };
+        const rawAnchor = account.serviceStartedAt || account.trialStartedAt || account.activatedAt;
+        const anchorStart = typeof rawAnchor === 'string' && !Number.isNaN(Date.parse(rawAnchor)) ? new Date(rawAnchor).toISOString() : now;
+        const end = addDays(anchorStart, durationDays);
+        wallet = wallet ?? newWallet(uid, 'ADMIN', PLATFORM);
+        wallet.providerId = PLATFORM;
+        await transfer(wallet, PLATFORM, aiCredits, 'grant', `Phoenix service credits · ${plan.name.en}`, { refType: 'phoenix_service', refId: uid }, emailCredits);
+        sub = {
+          id: uid,
+          subscriberId: uid,
+          subscriberRole: 'ADMIN',
+          subscriberName: account.name ?? '',
+          subscriberEmail: account.email ?? '',
+          providerId: PLATFORM,
+          planId: plan.id,
+          plan: planSnapshot(plan),
+          status: 'trialing',
+          startedAt: anchorStart,
+          trialStartedAt: anchorStart,
+          serviceStartedAt: anchorStart,
+          currentPeriodStart: anchorStart,
+          currentPeriodEnd: end,
+          expiresAt: end,
+          creditCycleStart: anchorStart,
+          creditCycleEnd: cycleEndFrom(anchorStart, end),
+          trialUsedAt: anchorStart,
+          specialCaseFlow: 'phoenix_service_period',
+          phoenixTicketType: ticketType,
+          phoenixServiceDays: durationDays,
+          autoRenew: false,
+          extraSeats: 0,
+          extraTools: [],
+          renewals: 0,
+          creditBlocked: false,
+          createdAt: anchorStart,
+        };
+        saveWallet(wallet);
+        saveSub(sub);
+      }
+      if (!sub) return { sub, wallet };
+    }
     if (['active', 'trialing'].includes(sub.status) && sub.currentPeriodEnd && sub.currentPeriodEnd <= now) {
       const cw = await store.get(`communicationWallets/${uid}`);
       const wantsAutoRenew = Boolean(sub.autoRenew ?? cw?.autoRenew);
@@ -853,8 +921,23 @@ export async function executeBilling(operation, data, actor, base, now = new Dat
       while (cycleEndFrom(start, sub.currentPeriodEnd) <= now) start = cycleEndFrom(start, sub.currentPeriodEnd);
       sub.creditCycleStart = start;
       sub.creditCycleEnd = cycleEndFrom(start, sub.currentPeriodEnd);
+      let cycleAiCredits = sub.plan?.aiCredits ?? sub.plan?.credits ?? 0;
+      let cycleEmailCredits = sub.plan?.emailCredits ?? 0;
+      if (sub.specialCaseFlow === 'phoenix_service_period') {
+        const configuredTrial = await store.get(`billingPlans/${PLATFORM}__trial`);
+        if (configuredTrial && configuredTrial.status === 'active') {
+          const highTicketCredits = Math.max(0, Math.trunc(Number(configuredTrial.aiCredits ?? configuredTrial.credits ?? DEFAULT_TRIAL.admin.credits)));
+          cycleAiCredits = sub.phoenixTicketType === 'low_ticket' ? Math.floor(highTicketCredits * 0.5) : highTicketCredits;
+          cycleEmailCredits = Math.max(0, Math.trunc(Number(configuredTrial.emailCredits ?? cycleEmailCredits)));
+          const rawCh = Array.isArray(configuredTrial.channels) ? configuredTrial.channels.filter(ch => CHANNEL_IDS.includes(ch)) : (sub.plan?.channels ?? []);
+          const nextChannels = rawCh.length > 0 && cycleAiCredits > 0 && !rawCh.includes('ai') ? ['ai', ...rawCh] : rawCh;
+          sub.plan = { ...sub.plan, credits: cycleAiCredits, aiCredits: cycleAiCredits, emailCredits: cycleEmailCredits, channels: nextChannels };
+        } else if (sub.phoenixTicketType === 'low_ticket') {
+          cycleAiCredits = sub.plan?.aiCredits ?? Math.floor(DEFAULT_TRIAL.admin.credits * 0.5);
+        }
+      }
       try {
-        await transfer(wallet, sub.providerId, sub.plan?.aiCredits ?? sub.plan?.credits ?? 0, 'grant', `Monthly credits · ${sub.plan?.name?.en ?? 'Plan'}`, { refType: 'cycle', refId: sub.creditCycleStart }, sub.plan?.emailCredits ?? 0);
+        await transfer(wallet, sub.providerId, cycleAiCredits, 'grant', `Monthly credits · ${sub.plan?.name?.en ?? 'Plan'}`, { refType: 'cycle', refId: sub.creditCycleStart }, cycleEmailCredits);
         sub.creditBlocked = false;
       } catch (error) {
         if (!(error instanceof BillingError)) throw error;

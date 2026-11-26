@@ -1,3 +1,4 @@
+import { AutomationLoading } from '../AutomationLoading'
 import { NodeIcon, PALETTE_GROUPS } from './nodeIcon'
 import { translateText, useUILanguage } from '../../i18n/display';
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
@@ -73,6 +74,7 @@ function FlowList({ onOpen }: { onOpen: (id: string) => void }) {
           <button type="submit" className="fb-btn fb-btn-primary">{translateText("Create")}</button>
         </form>
         {error && <p className="fb-error" role="alert">{translateText("Could not load automations: ")}{error}</p>}
+        {flows === null && !error && <AutomationLoading label={translateText("Loading…")} />}
         {flows?.length === 0 && <p className="fb-muted">{translateText("No automations yet. Create the first one above.")}</p>}
         <ul className="fb-flow-list">
           {flows?.map(f => (
@@ -170,7 +172,7 @@ function Builder({ flowId, onBack }: { flowId: string; onBack: () => void }) {
 
   const sel = useMemo(() => nodes.find(n => n.id === selected) ?? null, [nodes, selected])
 
-  if (!flow) return <div className="fb-shell"><main className="fb-list-page">{notice ? <p className="fb-error">{translateText(notice.text)}</p> : <p className="fb-muted">{translateText("Loading…")}</p>}</main></div>
+  if (!flow) return <div className="fb-shell"><main className="fb-list-page">{notice ? <p className="fb-error">{translateText(notice.text)}</p> : <AutomationLoading label={translateText("Loading…")} />}</main></div>
 
   return (
     <div className="fb-shell">

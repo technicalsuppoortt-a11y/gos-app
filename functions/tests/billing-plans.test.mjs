@@ -198,4 +198,61 @@ test('email-only add-ons are provider-funded and require approval despite a clie
   assert.equal(rows.get('billingWallets/agency').emailCredits, 80);
 });
 
+test('Phoenix service period self-heals on refresh and grants 50% monthly AI credits to low_ticket vs 100% to high_ticket', async () => {
+  const { rows, call } = await fixture();
+  await call('savePlan', {
+    plan: { kind: 'trial', enabled: false, durationDays: 14, aiCredits: 2000, emailCredits: 0, name: { en: 'Free trial', ar: 'تجربة مجانية' } },
+  }, platform);
+
+  const phxLow = {
+    uid: 'phoenix_low',
+    role: 'ADMIN',
+    name: 'Low Student',
+    email: 'low@phoenix.io',
+    phoenixUid: 'low',
+    serviceStartedAt: now,
+    launchEntitlement: { ticketType: 'low_ticket', serviceDays: 90 },
+  };
+  const phxHigh = {
+    uid: 'phoenix_high',
+    role: 'ADMIN',
+    name: 'High Student',
+    email: 'high@phoenix.io',
+    phoenixUid: 'high',
+    serviceStartedAt: now,
+    launchEntitlement: { ticketType: 'high_ticket', serviceDays: 90 },
+  };
+  rows.set('users/phoenix_low', phxLow);
+  rows.set('users/phoenix_high', phxHigh);
+
+  const lowInitial = await call('refresh', {}, phxLow);
+  assert.equal(lowInitial.subscription.status, 'trialing');
+  assert.equal(lowInitial.subscription.plan.durationDays, 90);
+  assert.equal(lowInitial.wallet.balance, 1000);
+
+  const highInitial = await call('refresh', {}, phxHigh);
+  assert.equal(highInitial.subscription.status, 'trialing');
+  assert.equal(highInitial.subscription.plan.durationDays, 90);
+  assert.equal(highInitial.wallet.balance, 2000);
+
+  // Advance 35 days into Month 2 of the 90-day Phoenix service period
+  const month2 = new Date(Date.parse(now) + 35 * 86400000).toISOString();
+  const storeAdapter = {
+    get: async path => structuredClone(rows.get(path)),
+    query: async (collection, field, value) => [...rows.entries()].filter(([path, row]) => path.startsWith(collection + '/') && row[field] === value).map(([, row]) => structuredClone(row)),
+    id: () => `m2-${Math.random().toString(36).slice(2, 8)}`,
+    commit: writes => { for (const [path, row] of writes) rows.set(path, structuredClone(row)); },
+  };
+  rows.set('billingWallets/phoenix_low', { ...rows.get('billingWallets/phoenix_low'), balance: 120, aiCredits: 120 });
+  rows.set('billingWallets/phoenix_high', { ...rows.get('billingWallets/phoenix_high'), balance: 400, aiCredits: 400 });
+
+  const lowMonth2 = await executeBilling('refresh', {}, phxLow, storeAdapter, month2);
+  assert.equal(lowMonth2.subscription.status, 'trialing');
+  assert.equal(lowMonth2.wallet.balance, 1000);
+
+  const highMonth2 = await executeBilling('refresh', {}, phxHigh, storeAdapter, month2);
+  assert.equal(highMonth2.subscription.status, 'trialing');
+  assert.equal(highMonth2.wallet.balance, 2000);
+});
+
 

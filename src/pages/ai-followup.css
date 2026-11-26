@@ -1884,3 +1884,8 @@ html.dark .af-empty-bot-icon {
 /* Open flow editor takes the whole page: hide section header, tabs and date filter */
 .af-page:has(.fb-root-builder)>.af-page-title,.af-page:has(.fb-root-builder) .af-tabs-row{display:none!important}
 .af-page:has(.fb-root-builder) .fb-root-builder{height:calc(100vh - 110px);min-height:560px}
+
+/* Automation filled controls: keep labels and icons white. */
+.af-automation-page :is(.af-button-primary,.fb-btn-primary,.cp-btn-primary),
+.af-automation-page :is(.af-button-primary,.fb-btn-primary,.cp-btn-primary) :is(span,svg),
+.af-automation-page .af-tabs.af-tabs-grid button.active .af-tab-icon svg{color:#fff!important}

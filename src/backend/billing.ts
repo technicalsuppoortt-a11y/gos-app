@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { collection, doc, onSnapshot, query, where } from 'firebase/firestore';
-import { auth, backendError, callBackend, db } from './firebase';
+import { auth, backendError, callBackend, db, primaryDb } from './firebase';
 import { isDemoAccount } from './demoContext';
 import { store, type RootState } from '../store';
 import { isPlatformTeamRole } from '../router/platformAccess';
@@ -22,13 +22,13 @@ export async function billing<T = Record<string, unknown>>(operation: string, da
   }
 }
 
-function useDoc<T>(path: string | null): Live<T | null> {
+function useDoc<T>(path: string | null, firestoreDb = db): Live<T | null> {
   const [state, setState] = useState<Live<T | null> & { path: string | null }>({ data: null, loading: true, error: '', path });
   useEffect(() => {
     if (!path) { setState({ data: null, loading: false, error: '', path }); return; }
     setState(s => ({ ...s, loading: true, path }));
     const [col, id] = path.split('/');
-    return onSnapshot(doc(db, col, id), snapshot => {
+    return onSnapshot(doc(firestoreDb, col, id), snapshot => {
       const value = snapshot.exists() ? snapshot.data() as T : null;
       setState({ data: value ? { ...value, id } as T : null, loading: false, error: '', path });
     }, error => {
@@ -40,7 +40,7 @@ function useDoc<T>(path: string | null): Live<T | null> {
       }
       setState({ data: null, loading: false, error: backendError(error), path });
     });
-  }, [path]);
+  }, [path, firestoreDb]);
   return state.path === path ? state : { data: null, loading: true, error: '' };
 }
 
@@ -76,6 +76,7 @@ export function useBillingIdentity() {
 }
 
 export const useSubscription = (uid: string | null) => useDoc<BillingSubscription>(uid ? `billingSubscriptions/${uid}` : null);
+export const usePrimarySubscription = (uid: string | null) => useDoc<BillingSubscription>(uid ? `billingSubscriptions/${uid}` : null, primaryDb);
 export const useWallet = (uid: string | null) => useDoc<BillingWallet>(uid ? `billingWallets/${uid}` : null);
 
 type AgencyBillingSummary = { active: boolean; credits: number; emailCredits?: number; communicationBalance: number; currency: string };

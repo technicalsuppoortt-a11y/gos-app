@@ -1,3 +1,4 @@
+import { AutomationLoading } from '../AutomationLoading'
 import React from 'react'
 import { ArrowLeft, Check, Copy, Download, FileUp, Info, Megaphone, Plus, RefreshCw, Search, Send, X } from 'lucide-react'
 import { gosApi } from '../../backend/gosApi'
@@ -106,7 +107,7 @@ function CampaignList({ onNew, onOpen }: { onNew: () => void; onOpen: (c: Campai
           </label>
         </div>
         {error && <p className="cp-error cp-pad" role="alert">{error} <button type="button" className="cp-link" onClick={load}>{t('Retry')}</button></p>}
-        {campaigns === null && <p className="cp-muted cp-pad" role="status" aria-live="polite">{t('Loading…')}</p>}
+        {campaigns === null && <AutomationLoading label={t('Loading…')} />}
         {campaigns !== null && !error && shown.length === 0 && (
           <div className="cp-empty">
             <Megaphone size={28} aria-hidden="true" />
@@ -360,7 +361,7 @@ function CampaignWizard({ initial, onDone }: { initial?: Campaign; onDone: () =>
                     <RefreshCw size={15} className={refreshing ? 'cp-spin' : ''} aria-hidden="true" />{t('Refresh from Meta')}
                   </button>
                 </div>
-                {templates === null && <p className="cp-muted">{t('Loading templates…')}</p>}
+                {templates === null && <AutomationLoading label={t('Loading templates…')} />}
                 {templatesError && <p className="cp-error" role="alert">{templatesError}</p>}
                 {templates?.length === 0 && !templatesError && <p className="cp-muted">{t('No approved templates yet. Create one and wait for Meta to approve it.')}</p>}
                 <div className="cp-template-grid">
@@ -678,7 +679,7 @@ function CampaignReport({ id, onBack, onDuplicate }: { id: string; onBack: () =>
     URL.revokeObjectURL(url)
   }, 'Export ready')
 
-  if (!campaign) return <div className="cp-stack">{error ? <p className="cp-error" role="alert">{error}</p> : <p className="cp-muted">{t('Loading…')}</p>}</div>
+  if (!campaign) return <div className="cp-stack">{error ? <p className="cp-error" role="alert">{error}</p> : <AutomationLoading label={t('Loading…')} />}</div>
   const s = campaign.stats
   const funnel = [
     { label: 'Sent', value: s.sent }, { label: 'Delivered', value: s.delivered }, { label: 'Read', value: s.read }, { label: 'Replied', value: s.replied },
@@ -734,7 +735,7 @@ function CampaignReport({ id, onBack, onDuplicate }: { id: string; onBack: () =>
             ))}
           </div>
         </div>
-        {recipients === null ? <p className="cp-muted cp-pad">{t('Loading…')}</p> : recipients.length === 0 ? <p className="cp-muted cp-pad">{t('No recipients here')}</p> : (
+        {recipients === null ? <AutomationLoading label={t('Loading…')} /> : recipients.length === 0 ? <p className="cp-muted cp-pad">{t('No recipients here')}</p> : (
           <div className="cp-table-wrap">
             <table className="cp-table">
               <thead><tr><th scope="col">{t('Customer')}</th><th scope="col">{t('Number')}</th><th scope="col">{t('Status')}</th><th scope="col">{t('Last update')}</th><th scope="col"><span className="cp-sr-only">{t('Actions')}</span></th></tr></thead>
