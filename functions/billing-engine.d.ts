@@ -64,6 +64,8 @@ export interface BillingSubscription {
   expiresAt?: string | null;
   specialCaseFlow?: string;
   phoenixTicketType?: 'low_ticket' | 'high_ticket';
+  phoenixPackage?: 'low_ticket' | 'gold' | 'diamond' | 'vip';
+  phoenixHighTicketPackage?: 'gold' | 'diamond' | 'vip' | null;
   phoenixServiceDays?: number;
   extraSeats: number;
   extraTools: string[];
@@ -101,12 +103,26 @@ export interface ProviderBillingSettings {
   updatedAt?: string;
 }
 
-export interface BillingWallet { id: string; ownerId: string; role: 'ADMIN' | 'USER'; providerId: string; balance: number; aiCredits?: number; emailCredits?: number; updatedAt: string; lifetimeAllocated?: number; lifetimeSpent?: number; }
+export interface BillingWallet {
+  id: string;
+  ownerId: string;
+  role: 'ADMIN' | 'USER';
+  providerId: string;
+  balance: number;
+  aiCredits?: number;
+  emailCredits?: number;
+  lockedBalance?: number;
+  lockedEmailCredits?: number;
+  creditsLocked?: boolean;
+  updatedAt: string;
+  lifetimeAllocated?: number;
+  lifetimeSpent?: number;
+}
 
 export interface LedgerEntry {
   id: string; walletId: string; providerId: string;
-  type: 'grant' | 'topup' | 'transfer_out' | 'expire' | 'adjustment' | 'usage' | 'refund';
-  amount: number; balanceAfter: number; description: string; actorId: string; createdAt: string;
+  type: 'grant' | 'topup' | 'transfer_out' | 'expire' | 'lock' | 'unlock' | 'adjustment' | 'usage' | 'refund';
+  amount: number; balanceAfter: number; lockedBalanceAfter?: number; description: string; actorId: string; createdAt: string;
   bucket?: 'ai' | 'email';
   action?: import('./credit-actions.js').CreditAction;
   counterpartyId?: string; refType?: string; refId?: string;

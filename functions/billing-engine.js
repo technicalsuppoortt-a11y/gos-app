@@ -59,6 +59,19 @@ export const ADDON_TYPES = ['credits', 'seats', 'tool'];
 export const CURRENCIES = ['USD', 'EGP', 'SAR', 'AED', 'EUR'];
 export const TOOL_IDS = ['ai-copilot', 'funnel-builder', 'crm-pipeline', 'unified-inbox', 'booking-engine', 'products-payments', 'custom-domains', 'webhooks-api', 'ai-followup', 'email-sms', 'analytics-bi', 'client-portal'];
 export const DEFAULT_TRIAL = { admin: { days: 90, credits: 1000 }, user: { days: 14, credits: 100 } };
+export const PHOENIX_PACKAGE_CREDITS = { low_ticket: 500, gold: 1000, diamond: 1500, vip: 2000 };
+function resolvePhoenixPackage(ticketType, rawPackage) {
+  if (ticketType === 'low_ticket') return { packageTier: 'low_ticket', highTicketPackage: null };
+  const clean = typeof rawPackage === 'string' ? rawPackage.trim().toLowerCase() : '';
+  const highTicketPackage = ['gold', 'diamond', 'vip'].includes(clean) ? clean : 'gold';
+  return { packageTier: highTicketPackage, highTicketPackage };
+}
+function resolvePhoenixPackageCredits(ticketType, rawPackage, configuredTrial = null) {
+  const { packageTier } = resolvePhoenixPackage(ticketType, rawPackage);
+  const override = configuredTrial?.phoenixPackageCredits?.[packageTier];
+  if (Number.isInteger(override) && override >= 0) return override;
+  return PHOENIX_PACKAGE_CREDITS[packageTier] ?? PHOENIX_PACKAGE_CREDITS.gold;
+}
 export const DEFAULT_BILLING_SETTINGS = {
   providerId: '',
   addonMode: 'both',
@@ -495,13 +508,29 @@ export async function executeBilling(operation, data, actor, base, now = new Dat
 
   const creditField = bucket => bucket === 'email' ? 'emailCredits' : 'balance';
   const creditBalance = (wallet, bucket) => wallet?.[creditField(bucket)] ?? 0;
+  const lockedCreditField = bucket => bucket === 'email' ? 'lockedEmailCredits' : 'lockedBalance';
+  const lockedCreditBalance = (wallet, bucket) => wallet?.[lockedCreditField(bucket)] ?? 0;
+  const isRolloverAdmin = (sub, roleFallback = null) => {
+    const subRole = String(sub?.subscriberRole || roleFallback || '').toUpperCase();
+    return subRole === 'ADMIN' && (sub?.plan?.kind === 'plan' || sub?.specialCaseFlow === 'super_admin_trial');
+  };
   function entry(wallet, type, delta, description, extra = {}) {
     const id = extra.entryId ?? store.id();
     delete extra.entryId;
     store.set(`billingLedger/${id}`, { id, walletId: wallet.id, providerId: wallet.providerId, type, amount: delta, balanceAfter: creditBalance(wallet, extra.bucket), description, actorId: actor.uid, createdAt: now, ...extra });
   }
   const newWallet = (uid, accountRole, providerId) => ({ id: uid, ownerId: uid, role: accountRole, providerId, balance: 0, aiCredits: 0, emailCredits: 0, createdAt: now, updatedAt: now });
-  const saveWallet = wallet => store.set(`billingWallets/${wallet.id}`, { ...wallet, aiCredits: wallet.balance, emailCredits: wallet.emailCredits ?? 0, updatedAt: now });
+  const saveWallet = wallet => {
+    wallet.aiCredits = wallet.balance;
+    wallet.emailCredits = wallet.emailCredits ?? 0;
+    const hasLockState = wallet.lockedBalance !== undefined || wallet.lockedEmailCredits !== undefined || wallet.creditsLocked !== undefined;
+    if (hasLockState) {
+      wallet.lockedBalance = wallet.lockedBalance ?? 0;
+      wallet.lockedEmailCredits = wallet.lockedEmailCredits ?? 0;
+      wallet.creditsLocked = Boolean(wallet.lockedBalance > 0 || wallet.lockedEmailCredits > 0);
+    }
+    store.set(`billingWallets/${wallet.id}`, { ...wallet, updatedAt: now });
+  };
   const saveSub = sub => store.set(`billingSubscriptions/${sub.id}`, { ...sub, updatedAt: now });
 
   // ── Communication Wallet (separate bucket for external carrier costs) ──
@@ -668,6 +697,32 @@ export async function executeBilling(operation, data, actor, base, now = new Dat
     }
   }
 
+  function lockBalance(wallet, reason) {
+    let lockedAny = false;
+    for (const bucket of ['ai', 'email']) {
+      const leftover = creditBalance(wallet, bucket);
+      if (leftover <= 0) continue;
+      const lockedField = lockedCreditField(bucket);
+      const nextLocked = lockedCreditBalance(wallet, bucket) + leftover;
+      wallet[lockedField] = nextLocked;
+      wallet[creditField(bucket)] = 0;
+      lockedAny = true;
+      entry(wallet, 'lock', -leftover, reason, { bucket, lockedBalanceAfter: nextLocked });
+    }
+    wallet.creditsLocked = Boolean(lockedAny || lockedCreditBalance(wallet, 'ai') > 0 || lockedCreditBalance(wallet, 'email') > 0);
+  }
+
+  function unlockBalance(wallet, reason) {
+    for (const bucket of ['ai', 'email']) {
+      const locked = lockedCreditBalance(wallet, bucket);
+      if (locked <= 0) continue;
+      wallet[lockedCreditField(bucket)] = 0;
+      wallet[creditField(bucket)] = creditBalance(wallet, bucket) + locked;
+      entry(wallet, 'unlock', locked, reason, { bucket, lockedBalanceAfter: 0 });
+    }
+    wallet.creditsLocked = false;
+  }
+
   /** Move credits from the provider to the subscriber. The platform supply is unlimited. */
   async function transfer(wallet, providerId, credits, type, description, extra = {}, emailCredits = 0) {
     const amounts = [['ai', credits], ['email', emailCredits]].filter(([, value]) => value > 0);
@@ -775,12 +830,14 @@ export async function executeBilling(operation, data, actor, base, now = new Dat
       if (account?.role === 'ADMIN' && account.phoenixUid && account.accountType !== 'agency' && !account.deletedAt) {
         const configuredTrial = await store.get(`billingPlans/${PLATFORM}__trial`);
         const ent = account.launchEntitlement;
-        const ticketType = ent?.ticketType === 'low_ticket' ? 'low_ticket' : 'high_ticket';
-        const durationDays = Number.isInteger(ent?.serviceDays) && ent.serviceDays >= 1 && ent.serviceDays <= 3650
-          ? ent.serviceDays
+        const ticketType = (account.ticketType ?? ent?.ticketType) === 'low_ticket' ? 'low_ticket' : 'high_ticket';
+        const rawPkg = account.highTicketPackage ?? account.coachingPackage ?? account.packageTier ?? ent?.highTicketPackage ?? ent?.packageTier ?? null;
+        const { packageTier, highTicketPackage } = resolvePhoenixPackage(ticketType, rawPkg);
+        const rawDays = account.serviceDays ?? ent?.serviceDays;
+        const durationDays = Number.isInteger(rawDays) && rawDays >= 1 && rawDays <= 3650
+          ? rawDays
           : DEFAULT_TRIAL.admin.days;
-        const highTicketCredits = Math.max(0, Math.trunc(Number(configuredTrial?.aiCredits ?? configuredTrial?.credits ?? DEFAULT_TRIAL.admin.credits)));
-        const aiCredits = ticketType === 'low_ticket' ? Math.floor(highTicketCredits * 0.5) : highTicketCredits;
+        const aiCredits = resolvePhoenixPackageCredits(ticketType, highTicketPackage, configuredTrial);
         const emailCredits = Math.max(0, Math.trunc(Number(configuredTrial?.emailCredits ?? 0)));
         const rawChannels = Array.isArray(configuredTrial?.channels) ? configuredTrial.channels.filter(ch => CHANNEL_IDS.includes(ch)) : [];
         const channels = rawChannels.length > 0 && aiCredits > 0 && !rawChannels.includes('ai') ? ['ai', ...rawChannels] : rawChannels;
@@ -804,7 +861,7 @@ export async function executeBilling(operation, data, actor, base, now = new Dat
         const end = addDays(anchorStart, durationDays);
         wallet = wallet ?? newWallet(uid, 'ADMIN', PLATFORM);
         wallet.providerId = PLATFORM;
-        await transfer(wallet, PLATFORM, aiCredits, 'grant', `Phoenix service credits · ${plan.name.en}`, { refType: 'phoenix_service', refId: uid }, emailCredits);
+        await transfer(wallet, PLATFORM, aiCredits, 'grant', `Phoenix ${packageTier} package credits · ${plan.name.en}`, { refType: 'phoenix_service', refId: uid }, emailCredits);
         sub = {
           id: uid,
           subscriberId: uid,
@@ -826,6 +883,8 @@ export async function executeBilling(operation, data, actor, base, now = new Dat
           trialUsedAt: anchorStart,
           specialCaseFlow: 'phoenix_service_period',
           phoenixTicketType: ticketType,
+          phoenixPackage: packageTier,
+          phoenixHighTicketPackage: highTicketPackage,
           phoenixServiceDays: durationDays,
           autoRenew: false,
           extraSeats: 0,
@@ -850,7 +909,11 @@ export async function executeBilling(operation, data, actor, base, now = new Dat
         const availableFunds = cw ? round4((cw.balance ?? 0) - (cw.held ?? 0)) : 0;
         if (availableFunds >= walletCharge || walletCharge === 0) {
           const nextWallet = wallet ?? newWallet(uid, sub.subscriberRole, sub.providerId);
-          expireBalance(nextWallet, 'Subscription period ended · auto-renewing via Wallet');
+          if (isRolloverAdmin(sub, nextWallet.role)) {
+            unlockBalance(nextWallet, 'Auto-renewing via Wallet · locked credits unlocked');
+          } else {
+            expireBalance(nextWallet, 'Subscription period ended · auto-renewing via Wallet');
+          }
           const reqId = `autorenew_${uid}_${store.id()}`;
           let granted = false;
           try {
@@ -910,13 +973,24 @@ export async function executeBilling(operation, data, actor, base, now = new Dat
         }
       }
       sub.status = 'expired';
-      if (wallet) { expireBalance(wallet, 'Subscription period ended'); saveWallet(wallet); }
+      if (wallet) {
+        if (isRolloverAdmin(sub, wallet.role)) {
+          lockBalance(wallet, 'Subscription period ended · unused credits locked until renewal');
+        } else {
+          expireBalance(wallet, 'Subscription period ended');
+        }
+        saveWallet(wallet);
+      }
       saveSub(sub);
       return { sub, wallet };
     }
     if (isLive(sub, now) && sub.creditCycleEnd && sub.creditCycleEnd <= now) {
       wallet = wallet ?? newWallet(uid, sub.subscriberRole, sub.providerId);
-      expireBalance(wallet, 'Monthly credits expired (no rollover)');
+      if (sub.subscriberRole === 'ADMIN' && sub.plan?.kind === 'plan') {
+        unlockBalance(wallet, 'Monthly cycle renewed · locked credits unlocked');
+      } else {
+        expireBalance(wallet, 'Monthly credits expired (no rollover)');
+      }
       let start = sub.creditCycleEnd;
       while (cycleEndFrom(start, sub.currentPeriodEnd) <= now) start = cycleEndFrom(start, sub.currentPeriodEnd);
       sub.creditCycleStart = start;
@@ -925,15 +999,18 @@ export async function executeBilling(operation, data, actor, base, now = new Dat
       let cycleEmailCredits = sub.plan?.emailCredits ?? 0;
       if (sub.specialCaseFlow === 'phoenix_service_period') {
         const configuredTrial = await store.get(`billingPlans/${PLATFORM}__trial`);
+        cycleAiCredits = resolvePhoenixPackageCredits(
+          sub.phoenixTicketType,
+          sub.phoenixHighTicketPackage ?? sub.phoenixPackage,
+          configuredTrial && configuredTrial.status === 'active' ? configuredTrial : null,
+        );
         if (configuredTrial && configuredTrial.status === 'active') {
-          const highTicketCredits = Math.max(0, Math.trunc(Number(configuredTrial.aiCredits ?? configuredTrial.credits ?? DEFAULT_TRIAL.admin.credits)));
-          cycleAiCredits = sub.phoenixTicketType === 'low_ticket' ? Math.floor(highTicketCredits * 0.5) : highTicketCredits;
           cycleEmailCredits = Math.max(0, Math.trunc(Number(configuredTrial.emailCredits ?? cycleEmailCredits)));
           const rawCh = Array.isArray(configuredTrial.channels) ? configuredTrial.channels.filter(ch => CHANNEL_IDS.includes(ch)) : (sub.plan?.channels ?? []);
           const nextChannels = rawCh.length > 0 && cycleAiCredits > 0 && !rawCh.includes('ai') ? ['ai', ...rawCh] : rawCh;
           sub.plan = { ...sub.plan, credits: cycleAiCredits, aiCredits: cycleAiCredits, emailCredits: cycleEmailCredits, channels: nextChannels };
-        } else if (sub.phoenixTicketType === 'low_ticket') {
-          cycleAiCredits = sub.plan?.aiCredits ?? Math.floor(DEFAULT_TRIAL.admin.credits * 0.5);
+        } else {
+          sub.plan = { ...sub.plan, credits: cycleAiCredits, aiCredits: cycleAiCredits };
         }
       }
       try {
@@ -978,9 +1055,18 @@ export async function executeBilling(operation, data, actor, base, now = new Dat
     await enforceClientLimit(providerId, account.uid);
     const wallet = existingWallet ?? newWallet(account.uid, account.role, providerId);
     wallet.providerId = providerId;
-    expireBalance(wallet, 'Plan changed · previous credits expired');
+    const preserveAdminRollover = String(account.role || '').toUpperCase() === 'ADMIN' && kind === 'plan';
+    if (preserveAdminRollover) {
+      unlockBalance(wallet, 'Subscription renewed · locked credits unlocked');
+      if (previous && !isRolloverAdmin(previous, account.role)) {
+        expireBalance(wallet, 'Trial ended · starting paid plan');
+      }
+    } else {
+      expireBalance(wallet, 'Plan changed · previous credits expired');
+    }
     const end = periodEndFor(plan, now);
     const cw = await store.get(`communicationWallets/${account.uid}`);
+    const isExpiredSamePlanRenewal = Boolean(previous && !isLive(previous, now) && previous.planId === plan.id && kind === 'plan' && previous.plan?.kind === 'plan');
     const sub = {
       id: account.uid, subscriberId: account.uid, subscriberRole: account.role,
       subscriberName: account.name ?? '', subscriberEmail: account.email ?? '',
@@ -990,7 +1076,7 @@ export async function executeBilling(operation, data, actor, base, now = new Dat
       creditCycleStart: now, creditCycleEnd: cycleEndFrom(now, end),
       trialUsedAt: kind === 'trial' ? now : previous?.trialUsedAt ?? null,
       autoRenew: Boolean(previous?.autoRenew ?? cw?.autoRenew ?? false),
-      extraSeats: 0, extraTools: [], renewals: 0, creditBlocked: false, createdAt: previous?.createdAt ?? now,
+      extraSeats: 0, extraTools: [], renewals: isExpiredSamePlanRenewal ? (previous.renewals ?? 0) + 1 : 0, creditBlocked: false, createdAt: previous?.createdAt ?? now,
     };
     await transfer(wallet, providerId, plan.aiCredits ?? plan.credits ?? 0, 'grant', `${kind === 'trial' ? 'Free trial' : 'Plan'} credits · ${plan.name.en}`, ref, plan.emailCredits ?? 0);
     saveWallet(wallet); saveSub(sub);

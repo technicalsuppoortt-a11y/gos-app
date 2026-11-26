@@ -5,8 +5,11 @@
 const DAY = 86_400_000;
 const MAX_SERVICE_DAYS = 3650;
 
+export type PhoenixPackageTier = 'low_ticket' | 'gold' | 'diamond' | 'vip';
+
 export type ServiceEntitlement = {
   ticketType: 'low_ticket' | 'high_ticket';
+  packageTier?: PhoenixPackageTier | null;
   serviceDays: number | null;
   serviceExpiresAt: number | null;
 };
@@ -23,10 +26,15 @@ export type ServicePeriod = {
 export function serviceEntitlementFromClaims(claims: Record<string, unknown>): ServiceEntitlement | null {
   const ticketType = claims.phoenixTicket;
   if (ticketType !== 'low_ticket' && ticketType !== 'high_ticket') return null;
+  const rawPkg = typeof claims.phoenixPackage === 'string' ? claims.phoenixPackage.toLowerCase() : null;
+  const packageTier: PhoenixPackageTier | null = ticketType === 'low_ticket'
+    ? 'low_ticket'
+    : (rawPkg === 'gold' || rawPkg === 'diamond' || rawPkg === 'vip' ? rawPkg : null);
   const days = claims.phoenixServiceDays;
   const expires = claims.phoenixServiceExpiresAt;
   return {
     ticketType,
+    packageTier,
     serviceDays: typeof days === 'number' && Number.isInteger(days) && days > 0 && days <= MAX_SERVICE_DAYS ? days : null,
     serviceExpiresAt: typeof expires === 'number' && Number.isFinite(expires) && expires > 0 ? expires : null,
   };

@@ -37,7 +37,13 @@ const STAFF_ROLES = ['admin', 'superadmin', 'coach', 'support'];
 const ticketId = ticket => createHash('sha256').update(ticket).digest('hex');
 const MAX_SERVICE_DAYS = 3650;
 const DEFAULT_PHOENIX_SERVICE_DAYS = 90;
-const DEFAULT_ADMIN_TRIAL_AI_CREDITS = 1000;
+export const PHOENIX_HIGH_TICKET_PACKAGES = ['gold', 'diamond', 'vip'];
+export const PHOENIX_PACKAGE_AI_CREDITS = {
+  low_ticket: 500,
+  gold: 1000,
+  diamond: 1500,
+  vip: 2000,
+};
 const PHOENIX_TOOL_IDS = [
   'ai-copilot', 'funnel-builder', 'crm-pipeline', 'unified-inbox', 'booking-engine', 'products-payments',
   'custom-domains', 'webhooks-api', 'ai-followup', 'email-sms', 'analytics-bi', 'client-portal',
@@ -69,12 +75,37 @@ function toEpochMillis(value) {
   }
   return null;
 }
+function normalizeHighTicketPackage(value) {
+  const clean = typeof value === 'string' ? value.trim().toLowerCase() : '';
+  return PHOENIX_HIGH_TICKET_PACKAGES.includes(clean) ? clean : null;
+}
+export function normalizePhoenixPackageTier(ticketType, rawPackage = null) {
+  if (ticketType === 'low_ticket') {
+    return { tier: 'low_ticket', packageTier: 'low_ticket', highTicketPackage: null };
+  }
+  const highTicketPackage = normalizeHighTicketPackage(rawPackage) || 'gold';
+  return { tier: 'high_ticket', packageTier: highTicketPackage, highTicketPackage };
+}
 export function entitlementFromProfile(profile, fallback = null) {
   if (!profile || typeof profile !== 'object') return fallback;
   const rawTicket = ['low_ticket', 'high_ticket'].includes(profile.ticketType)
     ? profile.ticketType
-    : (['low_ticket', 'high_ticket'].includes(profile.launchEntitlement?.ticketType) ? profile.launchEntitlement.ticketType : fallback?.ticketType ?? null);
+    : (profile.tier === 'low_ticket'
+        ? 'low_ticket'
+        : (['low_ticket', 'high_ticket'].includes(profile.launchEntitlement?.ticketType) ? profile.launchEntitlement.ticketType : fallback?.ticketType ?? null));
   if (!rawTicket) return fallback;
+  const candidatePkg = [
+    profile.highTicketPackage,
+    profile.coachingPackage,
+    profile.packageTier,
+    profile.package,
+    profile.launchEntitlement?.highTicketPackage,
+    profile.launchEntitlement?.coachingPackage,
+    profile.launchEntitlement?.packageTier,
+    fallback?.highTicketPackage,
+    fallback?.packageTier,
+  ].map(normalizeHighTicketPackage).find(Boolean) ?? null;
+  const pkg = normalizePhoenixPackageTier(rawTicket, candidatePkg);
   const nowMs = Date.now();
   const renewalStart = toEpochMillis(profile.serviceRenewalStartsAt);
   const renewalDays = profile.serviceRenewalDays;
@@ -87,6 +118,9 @@ export function entitlementFromProfile(profile, fallback = null) {
     : (toEpochMillis(profile.serviceExpiresAt) ?? toEpochMillis(profile.launchEntitlement?.serviceExpiresAt) ?? fallback?.serviceExpiresAt ?? null);
   return {
     ticketType: rawTicket,
+    tier: pkg.tier,
+    packageTier: pkg.packageTier,
+    highTicketPackage: pkg.highTicketPackage,
     serviceDays: validDays,
     serviceExpiresAt: rawExpires && rawExpires > 0 ? rawExpires : null,
   };
@@ -101,39 +135,51 @@ function normalizeBrandSlug(name) {
   if (!slug || ['www', 'app', 'api', 'admin', 'mail', 'auth', 'dashboard', 'launch-brand'].includes(slug)) return '';
   return slug;
 }
-export function resolvePhoenixTrialAiCredits(configuredTrial, ticketType) {
-  const highTicketAiCredits = Math.max(
-    0,
-    Math.trunc(Number(configuredTrial?.aiCredits ?? configuredTrial?.credits ?? DEFAULT_ADMIN_TRIAL_AI_CREDITS)),
-  );
-  return ticketType === 'low_ticket' ? Math.floor(highTicketAiCredits * 0.5) : highTicketAiCredits;
+export function resolvePhoenixTrialAiCredits(configuredTrial, ticketType, rawPackage = null) {
+  const { packageTier } = normalizePhoenixPackageTier(ticketType, rawPackage);
+  const override = configuredTrial?.phoenixPackageCredits?.[packageTier];
+  if (Number.isInteger(override) && override >= 0) return override;
+  return PHOENIX_PACKAGE_AI_CREDITS[packageTier] ?? PHOENIX_PACKAGE_AI_CREDITS.gold;
 }
-// The student's ticket type and service period, read only from signed token
-// claims. Joe Academy sets them (launchEntitlement) when the student first opens
-// Launch Brand, and the Launch Brand session token copies them unchanged. The
-// request body is never trusted for these values.
+// The student's ticket type, package tier, and service period from signed token
+// claims, combined with synced Firestore profile records (never untrusted request bodies).
 export function verifiedServiceEntitlement(claims) {
   const ticketType = ['low_ticket', 'high_ticket'].includes(claims?.phoenixTicket) ? claims.phoenixTicket : null;
   if (!ticketType) return null;
+  const explicitHighPkg = ticketType === 'high_ticket' ? normalizeHighTicketPackage(claims?.phoenixPackage) : null;
+  const packageTier = ticketType === 'low_ticket' ? 'low_ticket' : explicitHighPkg;
   const days = claims.phoenixServiceDays;
   const expires = claims.phoenixServiceExpiresAt;
   return {
     ticketType,
+    tier: ticketType,
+    packageTier,
+    highTicketPackage: explicitHighPkg,
     serviceDays: Number.isInteger(days) && days > 0 && days <= MAX_SERVICE_DAYS ? days : null,
     serviceExpiresAt: Number.isFinite(expires) && expires > 0 ? Math.trunc(expires) : null,
   };
 }
 const entitlementClaims = entitlement => entitlement ? {
-  phoenixTicket: entitlement.ticketType, phoenixServiceDays: entitlement.serviceDays, phoenixServiceExpiresAt: entitlement.serviceExpiresAt,
+  phoenixTicket: entitlement.ticketType,
+  ...(entitlement.packageTier ? { phoenixPackage: entitlement.packageTier } : {}),
+  phoenixServiceDays: entitlement.serviceDays,
+  phoenixServiceExpiresAt: entitlement.serviceExpiresAt,
 } : {};
 // Stored form on the student's records (Firestore timestamp for the expiry).
-const entitlementRecord = entitlement => ({
-  ticketType: entitlement.ticketType,
-  serviceDays: entitlement.serviceDays,
-  serviceExpiresAt: entitlement.serviceExpiresAt === null ? null : new Date(entitlement.serviceExpiresAt),
-  source: 'phoenix-token-claims',
-  syncedAt: FieldValue.serverTimestamp(),
-});
+const entitlementRecord = (entitlement, source = 'phoenix-profile') => {
+  const pkg = normalizePhoenixPackageTier(entitlement.ticketType, entitlement.highTicketPackage ?? entitlement.packageTier);
+  return {
+    ticketType: entitlement.ticketType,
+    tier: pkg.tier,
+    packageTier: pkg.packageTier,
+    highTicketPackage: pkg.highTicketPackage,
+    aiCredits: PHOENIX_PACKAGE_AI_CREDITS[pkg.packageTier],
+    serviceDays: entitlement.serviceDays,
+    serviceExpiresAt: entitlement.serviceExpiresAt === null ? null : new Date(entitlement.serviceExpiresAt),
+    source,
+    syncedAt: FieldValue.serverTimestamp(),
+  };
+};
 const isSuspendedStatus = status => ['deactivated', 'inactive', 'suspended', 'deleted'].includes(String(status || '').toLowerCase());
 const allowedOrigins = [
   'https://academy.mohamedjoe.com',
@@ -204,7 +250,7 @@ export const phoenixPlatform = onRequest({ region: 'us-central1', serviceAccount
       const token = await getAuth(gos).verifyIdToken(bearer || '');
       if (token.launchBrand === true && token.phoenixUid === token.uid)
         identity = { uid: token.uid, email: token.sourceEmail, email_verified: token.sourceEmailVerified === true, name: token.sourceName, launchBrand: true,
-          phoenixTicket: token.phoenixTicket, phoenixServiceDays: token.phoenixServiceDays, phoenixServiceExpiresAt: token.phoenixServiceExpiresAt };
+          phoenixTicket: token.phoenixTicket, phoenixPackage: token.phoenixPackage, phoenixServiceDays: token.phoenixServiceDays, phoenixServiceExpiresAt: token.phoenixServiceExpiresAt };
     } catch { /* Reported below. */ }
     if (!identity) { res.status(401).json({ error: 'Sign in to Phoenix again.' }); return; }
   }
@@ -469,16 +515,26 @@ export const phoenixPlatform = onRequest({ region: 'us-central1', serviceAccount
     });
 
     const claimsEntitlement = verifiedServiceEntitlement(identity);
-    const lbProfile = identity.launchBrand
+    const lbProfile = migrated || identity.launchBrand
       ? (await launchBrandDb.doc(`users/${uid}`).get().catch(() => null))?.data() ?? null
       : null;
-    const resolvedEntitlement = claimsEntitlement
-      ? {
-          ticketType: claimsEntitlement.ticketType,
-          serviceDays: claimsEntitlement.serviceDays ?? entitlementFromProfile(lbProfile)?.serviceDays ?? null,
-          serviceExpiresAt: claimsEntitlement.serviceExpiresAt ?? entitlementFromProfile(lbProfile)?.serviceExpiresAt ?? null,
-        }
-      : entitlementFromProfile(lbProfile, entitlementFromProfile(preProfile?.launchEntitlement || link?.launchEntitlement));
+    const profileEntitlement = entitlementFromProfile(lbProfile, entitlementFromProfile(preProfile, entitlementFromProfile(link?.launchEntitlement)));
+    const resolvedEntitlement = (() => {
+      if (!claimsEntitlement) return profileEntitlement;
+      const ticketType = claimsEntitlement.ticketType;
+      const pkg = normalizePhoenixPackageTier(
+        ticketType,
+        claimsEntitlement.highTicketPackage ?? (profileEntitlement?.ticketType === ticketType ? profileEntitlement.highTicketPackage : null),
+      );
+      return {
+        ticketType,
+        tier: pkg.tier,
+        packageTier: pkg.packageTier,
+        highTicketPackage: pkg.highTicketPackage,
+        serviceDays: claimsEntitlement.serviceDays ?? profileEntitlement?.serviceDays ?? null,
+        serviceExpiresAt: claimsEntitlement.serviceExpiresAt ?? profileEntitlement?.serviceExpiresAt ?? null,
+      };
+    })();
 
     // Provision or repair the Admin profile, active Phoenix service subscription, wallets, owner membership, and linked default Agency User.
     await db.runTransaction(async transaction => {
@@ -509,7 +565,12 @@ export const phoenixPlatform = onRequest({ region: 'us-central1', serviceAccount
         || (typeof profile?.trialStartedAt === 'string' && !Number.isNaN(Date.parse(profile.trialStartedAt)) ? profile.trialStartedAt : null)
         || (deployedAtMs ? new Date(deployedAtMs).toISOString() : nowIso);
       const finalName = profile?.name || profile?.displayName || resolvedName;
-      const storedEntForProfile = resolvedEntitlement || entitlementFromProfile(profile?.launchEntitlement);
+      const storedEntForProfile = resolvedEntitlement || entitlementFromProfile(profile);
+      const resolvedTicketType = storedEntForProfile?.ticketType === 'low_ticket' ? 'low_ticket' : 'high_ticket';
+      const resolvedPkgInfo = normalizePhoenixPackageTier(
+        resolvedTicketType,
+        storedEntForProfile?.highTicketPackage ?? storedEntForProfile?.packageTier,
+      );
       const profileServiceDays = Number.isInteger(storedEntForProfile?.serviceDays) && storedEntForProfile.serviceDays >= 1 && storedEntForProfile.serviceDays <= MAX_SERVICE_DAYS
         ? storedEntForProfile.serviceDays
         : DEFAULT_PHOENIX_SERVICE_DAYS;
@@ -524,6 +585,10 @@ export const phoenixPlatform = onRequest({ region: 'us-central1', serviceAccount
         role: adminRole,
         tenantId: link.tenantId,
         phoenixUid: uid,
+        ticketType: resolvedTicketType,
+        tier: resolvedPkgInfo.tier,
+        packageTier: resolvedPkgInfo.packageTier,
+        highTicketPackage: resolvedPkgInfo.highTicketPackage,
         ...(adminRole === 'ADMIN' ? {
           defaultAgencyUserId: agencyUid,
           trialStartedAt: serviceStartIso,
@@ -549,11 +614,12 @@ export const phoenixPlatform = onRequest({ region: 'us-central1', serviceAccount
 
       const existingWallet = billingWalletSnap.data();
       if (adminRole === 'ADMIN') {
-        const storedEnt = storedEntForProfile;
-        const phoenixTicketType = storedEnt?.ticketType === 'low_ticket' ? 'low_ticket' : 'high_ticket';
+        const phoenixTicketType = resolvedTicketType;
+        const phoenixPackage = resolvedPkgInfo.packageTier;
+        const phoenixHighTicketPackage = resolvedPkgInfo.highTicketPackage;
         const phoenixServiceDays = profileServiceDays;
         const configuredTrial = trialPlanSnap.data();
-        const targetAiCredits = resolvePhoenixTrialAiCredits(configuredTrial, phoenixTicketType);
+        const targetAiCredits = resolvePhoenixTrialAiCredits(configuredTrial, phoenixTicketType, phoenixHighTicketPackage);
         const targetEmailCredits = Math.max(0, Math.trunc(Number(configuredTrial?.emailCredits ?? 0)));
         const planId = configuredTrial?.id || `${PLATFORM}__trial`;
         const planName = configuredTrial?.name?.en ? configuredTrial.name : { en: 'Free trial', ar: 'تجربة مجانية' };
@@ -623,6 +689,8 @@ export const phoenixPlatform = onRequest({ region: 'us-central1', serviceAccount
             trialUsedAt: serviceStartIso,
             specialCaseFlow: 'phoenix_service_period',
             phoenixTicketType,
+            phoenixPackage,
+            phoenixHighTicketPackage,
             phoenixServiceDays,
             autoRenew: false,
             extraSeats: 0,
@@ -632,6 +700,7 @@ export const phoenixPlatform = onRequest({ region: 'us-central1', serviceAccount
             createdAt: serviceStartIso,
           });
           if (targetAiCredits > 0 || targetEmailCredits > 0) {
+            const pkgLabel = phoenixTicketType === 'low_ticket' ? 'Low Ticket' : `High Ticket (${phoenixPackage.toUpperCase()})`;
             const ledgerId = `phx_grant_${link.gosUid}_${randomBytes(6).toString('hex')}`;
             transaction.set(db.doc(`billingLedger/${ledgerId}`), {
               id: ledgerId,
@@ -643,7 +712,7 @@ export const phoenixPlatform = onRequest({ region: 'us-central1', serviceAccount
               balanceAfter: targetAiCredits,
               emailAmount: targetEmailCredits,
               emailBalanceAfter: targetEmailCredits,
-              description: `Phoenix ${phoenixTicketType === 'low_ticket' ? 'Low Ticket (50%)' : 'High Ticket'} service credits · ${planName.en}`,
+              description: `Phoenix ${pkgLabel} package credits · ${planName.en}`,
               refType: 'phoenix_service',
               refId: link.gosUid,
               actorId: link.gosUid,
@@ -653,6 +722,7 @@ export const phoenixPlatform = onRequest({ region: 'us-central1', serviceAccount
         } else if (existingSub.specialCaseFlow === 'phoenix_service_period') {
           const daysChanged = phoenixServiceDays !== existingSub.phoenixServiceDays;
           const ticketChanged = phoenixTicketType !== existingSub.phoenixTicketType;
+          const packageChanged = phoenixPackage !== existingSub.phoenixPackage;
           const prevPlanCredits = existingSub.plan?.aiCredits ?? existingSub.plan?.credits ?? 0;
           const creditsChanged = prevPlanCredits !== targetAiCredits;
           const baseStart = existingSub.currentPeriodStart || existingSub.startedAt || serviceStartIso;
@@ -674,7 +744,7 @@ export const phoenixPlatform = onRequest({ region: 'us-central1', serviceAccount
             });
           } else {
             const currentAiBalance = existingWallet.balance ?? existingWallet.aiCredits ?? 0;
-            if (ticketChanged && phoenixTicketType === 'low_ticket' && currentAiBalance > targetAiCredits) {
+            if ((ticketChanged || packageChanged) && targetAiCredits < prevPlanCredits && currentAiBalance > targetAiCredits) {
               const reduction = currentAiBalance - targetAiCredits;
               transaction.set(billingWalletRef, {
                 ...existingWallet,
@@ -682,7 +752,7 @@ export const phoenixPlatform = onRequest({ region: 'us-central1', serviceAccount
                 aiCredits: targetAiCredits,
                 updatedAt: nowIso,
               });
-              const ledgerId = `phx_lowticket_${link.gosUid}_${randomBytes(6).toString('hex')}`;
+              const ledgerId = `phx_pkg_cap_${link.gosUid}_${randomBytes(6).toString('hex')}`;
               transaction.set(db.doc(`billingLedger/${ledgerId}`), {
                 id: ledgerId,
                 walletId: link.gosUid,
@@ -691,7 +761,7 @@ export const phoenixPlatform = onRequest({ region: 'us-central1', serviceAccount
                 bucket: 'ai',
                 amount: -reduction,
                 balanceAfter: targetAiCredits,
-                description: 'Low Ticket 50% AI credit allocation adjustment',
+                description: `Phoenix package credit adjustment (${phoenixPackage})`,
                 refType: 'phoenix_service',
                 refId: link.gosUid,
                 actorId: link.gosUid,
@@ -699,11 +769,12 @@ export const phoenixPlatform = onRequest({ region: 'us-central1', serviceAccount
               });
             } else if (
               periodLive &&
-              ((ticketChanged && phoenixTicketType === 'high_ticket' && targetAiCredits > prevPlanCredits) ||
-                (!ticketChanged && phoenixTicketType === 'low_ticket' && prevPlanCredits === 0 && targetAiCredits > 0 && currentAiBalance === 0 && (existingWallet.lifetimeConsumed ?? 0) === 0))
+              (((ticketChanged || packageChanged) && targetAiCredits > prevPlanCredits) ||
+                (!ticketChanged && prevPlanCredits === 0 && targetAiCredits > 0 && currentAiBalance === 0 && (existingWallet.lifetimeConsumed ?? 0) === 0))
             ) {
               const grantDelta = Math.min(Math.max(0, targetAiCredits - currentAiBalance), Math.max(0, targetAiCredits - prevPlanCredits));
               if (grantDelta > 0) {
+                const pkgLabel = phoenixTicketType === 'low_ticket' ? 'Low Ticket' : `High Ticket (${phoenixPackage.toUpperCase()})`;
                 const nextBalance = currentAiBalance + grantDelta;
                 transaction.set(billingWalletRef, {
                   ...existingWallet,
@@ -722,7 +793,7 @@ export const phoenixPlatform = onRequest({ region: 'us-central1', serviceAccount
                   bucket: 'ai',
                   amount: grantDelta,
                   balanceAfter: nextBalance,
-                  description: `Phoenix ${phoenixTicketType === 'low_ticket' ? 'Low Ticket (50%)' : 'High Ticket'} service credits · ${planName.en}`,
+                  description: `Phoenix ${pkgLabel} package credits · ${planName.en}`,
                   refType: 'phoenix_service',
                   refId: link.gosUid,
                   actorId: link.gosUid,
@@ -732,7 +803,7 @@ export const phoenixPlatform = onRequest({ region: 'us-central1', serviceAccount
             }
           }
 
-          if (daysChanged || ticketChanged || creditsChanged) {
+          if (daysChanged || ticketChanged || packageChanged || creditsChanged) {
             const nextPeriodEnd = candidateEnd;
             const nextStatus = existingSub.status === 'cancelled'
               ? 'cancelled'
@@ -752,6 +823,8 @@ export const phoenixPlatform = onRequest({ region: 'us-central1', serviceAccount
               expiresAt: nextPeriodEnd,
               creditCycleEnd: nextCycleEnd,
               phoenixTicketType,
+              phoenixPackage,
+              phoenixHighTicketPackage,
               phoenixServiceDays,
               updatedAt: nowIso,
             });
@@ -830,24 +903,36 @@ export const phoenixPlatform = onRequest({ region: 'us-central1', serviceAccount
       }
     });
 
-    // Keep the student's ticket type and post-deployment service period on their platform records.
+    // Keep the student's ticket type, package tier, and post-deployment service period on their platform records.
     const postDeploySub = (await db.doc(`billingSubscriptions/${link.gosUid}`).get()).data();
-    const entitlement = verifiedServiceEntitlement(identity) || (identity.launchBrand ? entitlementFromProfile(lbProfile) : null);
+    const entitlement = resolvedEntitlement;
     if (entitlement) {
       const postDeployEndMs = postDeploySub?.currentPeriodEnd ? Date.parse(postDeploySub.currentPeriodEnd) : NaN;
       const postDeployStartMs = postDeploySub?.currentPeriodStart ? Date.parse(postDeploySub.currentPeriodStart) : NaN;
       const effectiveExpiresAt = entitlement.serviceExpiresAt ?? (Number.isFinite(postDeployEndMs) ? Math.trunc(postDeployEndMs) : null);
+      const effectiveDays = entitlement.serviceDays ?? postDeploySub?.phoenixServiceDays ?? null;
+      const pkg = normalizePhoenixPackageTier(entitlement.ticketType, entitlement.highTicketPackage ?? entitlement.packageTier);
+      const recordSource = lbProfile ? 'phoenix-profile' : (claimsEntitlement ? 'phoenix-token-claims' : 'phoenix-profile');
       const launchEntitlement = {
-        ...entitlementRecord({ ...entitlement, serviceExpiresAt: effectiveExpiresAt }),
+        ...entitlementRecord({ ...entitlement, ...pkg, serviceDays: effectiveDays, serviceExpiresAt: effectiveExpiresAt }, recordSource),
         ...(Number.isFinite(postDeployStartMs) ? { serviceStartsAt: new Date(postDeployStartMs) } : {}),
       };
+      const packageFields = {
+        ticketType: entitlement.ticketType,
+        tier: pkg.tier,
+        packageTier: pkg.packageTier,
+        highTicketPackage: pkg.highTicketPackage,
+      };
       const postDeployWrites = [
-        linkRef.set({ launchEntitlement }, { merge: true }),
-        db.doc(`users/${link.gosUid}`).set({ launchEntitlement }, { merge: true }),
+        linkRef.set({ ...packageFields, launchEntitlement }, { merge: true }),
+        db.doc(`users/${link.gosUid}`).set({ ...packageFields, launchEntitlement }, { merge: true }),
       ];
       if (migrated || identity.launchBrand) {
         postDeployWrites.push(
           launchBrandDb.doc(`users/${uid}`).set({
+            ...packageFields,
+            ...(pkg.highTicketPackage ? { coachingPackage: pkg.highTicketPackage } : {}),
+            ...(Number.isInteger(effectiveDays) ? { serviceDays: effectiveDays } : {}),
             brandLaunched: true,
             launchEntitlement,
             ...(Number.isFinite(postDeployStartMs) ? { serviceStartsAt: new Date(postDeployStartMs) } : {}),
@@ -927,12 +1012,24 @@ async function exchangeLaunchBrandTicket(req, res, gos, db, launchBrandDb) {
     delete mirror.serviceExpiresAt;
     delete mirror.trialStartedAt;
     // Same profile document Launch Brand read on Joe Academy (role, plan, status).
-    // Re-check the stored value: only what verifiedServiceEntitlement accepts goes into the token, with serviceExpiresAt = null prior to deployment.
-    const rawEntitlement = claim.entitlement ? verifiedServiceEntitlement(entitlementClaims(claim.entitlement)) : null;
+    // Persist explicit ticketType, tier, and specific High Ticket package directly on the synced Launch Brand profile,
+    // with serviceExpiresAt = null prior to deployment so entering '/launch-brand' never starts the countdown.
+    const rawEntitlement = entitlementFromProfile(mirror, claim.entitlement ? verifiedServiceEntitlement(entitlementClaims(claim.entitlement)) : null);
     const entitlement = rawEntitlement ? { ...rawEntitlement, serviceExpiresAt: null } : null;
+    const syncedPkg = entitlement ? normalizePhoenixPackageTier(entitlement.ticketType, entitlement.highTicketPackage ?? entitlement.packageTier) : null;
     await profileRef.set({
-      ...mirror, uid: claim.uid, email: claim.email, launchBrandOpenedAt: FieldValue.serverTimestamp(),
-      ...(entitlement ? { launchEntitlement: entitlementRecord(entitlement) } : {}),
+      ...mirror,
+      uid: claim.uid,
+      email: claim.email,
+      ...(entitlement && syncedPkg ? {
+        ticketType: entitlement.ticketType,
+        tier: syncedPkg.tier,
+        packageTier: syncedPkg.packageTier,
+        highTicketPackage: syncedPkg.highTicketPackage,
+        ...(syncedPkg.highTicketPackage ? { coachingPackage: syncedPkg.highTicketPackage } : {}),
+        launchEntitlement: entitlementRecord(entitlement, 'phoenix-profile'),
+      } : {}),
+      launchBrandOpenedAt: FieldValue.serverTimestamp(),
     }, { merge: true });
     const customToken = await getAuth(gos).createCustomToken(claim.uid, {
       launchBrand: true, phoenixUid: claim.uid, sourceEmail: claim.email, sourceEmailVerified: claim.emailVerified === true,

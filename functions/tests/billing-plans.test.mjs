@@ -198,7 +198,7 @@ test('email-only add-ons are provider-funded and require approval despite a clie
   assert.equal(rows.get('billingWallets/agency').emailCredits, 80);
 });
 
-test('Phoenix service period self-heals on refresh and grants 50% monthly AI credits to low_ticket vs 100% to high_ticket', async () => {
+test('Phoenix service period self-heals from synced user package fields (Low=500, Gold=1000, Diamond=1500, VIP=2000)', async () => {
   const { rows, call } = await fixture();
   await call('savePlan', {
     plan: { kind: 'trial', enabled: false, durationDays: 14, aiCredits: 2000, emailCredits: 0, name: { en: 'Free trial', ar: 'تجربة مجانية' } },
@@ -210,49 +210,133 @@ test('Phoenix service period self-heals on refresh and grants 50% monthly AI cre
     name: 'Low Student',
     email: 'low@phoenix.io',
     phoenixUid: 'low',
+    ticketType: 'low_ticket',
+    tier: 'low_ticket',
+    packageTier: 'low_ticket',
+    serviceDays: 90,
     serviceStartedAt: now,
-    launchEntitlement: { ticketType: 'low_ticket', serviceDays: 90 },
   };
-  const phxHigh = {
-    uid: 'phoenix_high',
+  const phxGold = {
+    uid: 'phoenix_gold',
     role: 'ADMIN',
-    name: 'High Student',
-    email: 'high@phoenix.io',
-    phoenixUid: 'high',
+    name: 'Gold Student',
+    email: 'gold@phoenix.io',
+    phoenixUid: 'gold',
+    ticketType: 'high_ticket',
+    tier: 'high_ticket',
+    packageTier: 'gold',
+    highTicketPackage: 'gold',
+    serviceDays: 90,
     serviceStartedAt: now,
-    launchEntitlement: { ticketType: 'high_ticket', serviceDays: 90 },
   };
-  rows.set('users/phoenix_low', phxLow);
-  rows.set('users/phoenix_high', phxHigh);
+  const phxDiamond = {
+    uid: 'phoenix_diamond',
+    role: 'ADMIN',
+    name: 'Diamond Student',
+    email: 'diamond@phoenix.io',
+    phoenixUid: 'diamond',
+    ticketType: 'high_ticket',
+    tier: 'high_ticket',
+    packageTier: 'diamond',
+    highTicketPackage: 'diamond',
+    serviceDays: 90,
+    serviceStartedAt: now,
+  };
+  const phxVip = {
+    uid: 'phoenix_vip',
+    role: 'ADMIN',
+    name: 'VIP Student',
+    email: 'vip@phoenix.io',
+    phoenixUid: 'vip',
+    ticketType: 'high_ticket',
+    tier: 'high_ticket',
+    packageTier: 'vip',
+    highTicketPackage: 'vip',
+    serviceDays: 90,
+    serviceStartedAt: now,
+  };
+  for (const acc of [phxLow, phxGold, phxDiamond, phxVip]) rows.set(`users/${acc.uid}`, acc);
 
-  const lowInitial = await call('refresh', {}, phxLow);
-  assert.equal(lowInitial.subscription.status, 'trialing');
-  assert.equal(lowInitial.subscription.plan.durationDays, 90);
-  assert.equal(lowInitial.wallet.balance, 1000);
+  assert.equal((await call('refresh', {}, phxLow)).wallet.balance, 500);
+  assert.equal((await call('refresh', {}, phxGold)).wallet.balance, 1000);
+  assert.equal((await call('refresh', {}, phxDiamond)).wallet.balance, 1500);
+  assert.equal((await call('refresh', {}, phxVip)).wallet.balance, 2000);
+});
 
-  const highInitial = await call('refresh', {}, phxHigh);
-  assert.equal(highInitial.subscription.status, 'trialing');
-  assert.equal(highInitial.subscription.plan.durationDays, 90);
-  assert.equal(highInitial.wallet.balance, 2000);
-
-  // Advance 35 days into Month 2 of the 90-day Phoenix service period
-  const month2 = new Date(Date.parse(now) + 35 * 86400000).toISOString();
+test('Admin subscription credits lock on expiry (unspendable) and cumulatively roll over on renewal, while Regular User credits expire', async () => {
+  const { rows } = await fixture();
+  let serial = 100;
   const storeAdapter = {
     get: async path => structuredClone(rows.get(path)),
     query: async (collection, field, value) => [...rows.entries()].filter(([path, row]) => path.startsWith(collection + '/') && row[field] === value).map(([, row]) => structuredClone(row)),
-    id: () => `m2-${Math.random().toString(36).slice(2, 8)}`,
+    id: () => `rollover-${++serial}`,
     commit: writes => { for (const [path, row] of writes) rows.set(path, structuredClone(row)); },
   };
-  rows.set('billingWallets/phoenix_low', { ...rows.get('billingWallets/phoenix_low'), balance: 120, aiCredits: 120 });
-  rows.set('billingWallets/phoenix_high', { ...rows.get('billingWallets/phoenix_high'), balance: 400, aiCredits: 400 });
+  const system = { uid: 'system', role: 'SYSTEM' };
 
-  const lowMonth2 = await executeBilling('refresh', {}, phxLow, storeAdapter, month2);
-  assert.equal(lowMonth2.subscription.status, 'trialing');
-  assert.equal(lowMonth2.wallet.balance, 1000);
+  // Create a 1,000-credit monthly platform plan for an Admin and a 250-credit monthly plan for a Regular User
+  const regularAdmin = { uid: 'regular-admin', role: 'ADMIN', name: 'Regular Admin', email: 'reg@agency.io' };
+  const regularUser = { uid: 'regular-user', role: 'USER', name: 'Regular User', email: 'user@client.io', supportParentId: 'regular-admin', status: 'Active' };
+  rows.set('users/regular-admin', regularAdmin);
+  rows.set('users/regular-user', regularUser);
 
-  const highMonth2 = await executeBilling('refresh', {}, phxHigh, storeAdapter, month2);
-  assert.equal(highMonth2.subscription.status, 'trialing');
-  assert.equal(highMonth2.wallet.balance, 2000);
+  await executeBilling('savePlan', {
+    plan: { id: 'admin-monthly-1000', kind: 'plan', name: { en: 'Admin Monthly 1000' }, price: 49, currency: 'USD', billingType: 'monthly', credits: 1000, channels: ['ai', 'whatsapp'] },
+  }, platform, storeAdapter, now);
+  await executeBilling('assignPlan', { subscriberId: 'regular-admin', planId: 'admin-monthly-1000' }, platform, storeAdapter, now);
+
+  await executeBilling('savePlan', {
+    plan: { id: 'user-monthly-250', kind: 'plan', name: { en: 'User Monthly 250' }, price: 19, currency: 'USD', billingType: 'monthly', credits: 250, tools: ['ai-copilot'] },
+  }, regularAdmin, storeAdapter, now);
+  await executeBilling('assignPlan', { subscriberId: 'regular-user', planId: 'user-monthly-250' }, regularAdmin, storeAdapter, now);
+
+  // Admin had 1,000 - 250 (user grant) = 750; consumes 250 -> 500 unused credits remain at end of month
+  await executeBilling('consume', { subscriberId: 'regular-admin', amount: 250, description: 'Admin AI usage', idempotencyKey: 'adm-use-1' }, system, storeAdapter, now);
+  assert.equal(rows.get('billingWallets/regular-admin').balance, 500);
+
+  // Regular User consumes 170 credits -> 80 unused credits remain at end of month
+  await executeBilling('consume', { subscriberId: 'regular-user', amount: 170, description: 'User AI usage', idempotencyKey: 'usr-use-1' }, system, storeAdapter, now);
+  assert.equal(rows.get('billingWallets/regular-user').balance, 80);
+
+  // Advance past end of Month 1 (before renewal)
+  const afterMonth1 = '2026-12-01T10:00:00.000Z';
+  const expiredAdminState = await executeBilling('refresh', {}, regularAdmin, storeAdapter, afterMonth1);
+  assert.equal(expiredAdminState.subscription.status, 'expired');
+  assert.equal(expiredAdminState.wallet.balance, 0);
+  assert.equal(expiredAdminState.wallet.aiCredits, 0);
+  assert.equal(expiredAdminState.wallet.lockedBalance, 500);
+  assert.equal(expiredAdminState.wallet.creditsLocked, true);
+
+  // While expired/unrenewed, Admin CANNOT spend or transfer any credits
+  await assert.rejects(
+    executeBilling('consume', { subscriberId: 'regular-admin', amount: 10, description: 'Blocked while expired', idempotencyKey: 'adm-blocked' }, system, storeAdapter, afterMonth1),
+    { code: 'failed-precondition' },
+  );
+
+  // Regular User expires -> 80 unused credits expire permanently (0 locked, 0 rollover)
+  const expiredUserState = await executeBilling('refresh', {}, regularUser, storeAdapter, afterMonth1);
+  assert.equal(expiredUserState.subscription.status, 'expired');
+  assert.equal(expiredUserState.wallet.balance, 0);
+  assert.equal(expiredUserState.wallet.lockedBalance ?? 0, 0);
+
+  // Admin renews subscription -> 500 locked credits unlock and add on top of new 1,000 plan credits = 1,500!
+  await executeBilling('assignPlan', { subscriberId: 'regular-admin', planId: 'admin-monthly-1000' }, platform, storeAdapter, afterMonth1);
+  const renewedAdminWallet = rows.get('billingWallets/regular-admin');
+  assert.equal(rows.get('billingSubscriptions/regular-admin').status, 'active');
+  assert.equal(rows.get('billingSubscriptions/regular-admin').renewals, 1);
+  assert.equal(renewedAdminWallet.balance, 1500);
+  assert.equal(renewedAdminWallet.aiCredits, 1500);
+  assert.equal(renewedAdminWallet.lockedBalance, 0);
+  assert.equal(renewedAdminWallet.creditsLocked, false);
+
+  // Admin can spend from the combined 1,500 credits immediately after renewal
+  const postRenewUse = await executeBilling('consume', { subscriberId: 'regular-admin', amount: 600, description: 'Post-renewal usage', idempotencyKey: 'adm-use-2' }, system, storeAdapter, afterMonth1);
+  assert.equal(postRenewUse.balance, 900);
+
+  // Regular User renews -> gets strictly 250 credits (0 rollover from previous month), deducted from renewed Admin's 900 balance -> 650
+  await executeBilling('assignPlan', { subscriberId: 'regular-user', planId: 'user-monthly-250' }, regularAdmin, storeAdapter, afterMonth1);
+  assert.equal(rows.get('billingWallets/regular-user').balance, 250);
+  assert.equal(rows.get('billingWallets/regular-admin').balance, 650);
 });
 
 

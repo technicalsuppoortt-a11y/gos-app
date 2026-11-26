@@ -1203,7 +1203,7 @@ export function SubscribersPanel({ subscribers, wallets, plans, isPlatform, titl
   );
 }
 
-const ledgerType = (entry: LedgerEntry, c: Copy) => ({ grant: c.t('Plan credits', 'رصيد الباقة'), topup: c.t('Top-up', 'شحن'), transfer_out: c.t('Sent to client', 'مرسل لعميل'), expire: c.t('Expired', 'منتهي'), adjustment: c.t('Adjustment', 'تعديل'), usage: c.t('Usage', 'استهلاك'), refund: c.t('Refund', 'استرداد') }[entry.type] ?? entry.type);
+const ledgerType = (entry: LedgerEntry, c: Copy) => ({ grant: c.t('Plan credits', 'رصيد الباقة'), topup: c.t('Top-up', 'شحن'), transfer_out: c.t('Sent to client', 'مرسل لعميل'), expire: c.t('Expired', 'منتهي'), lock: c.t('Locked', 'مقفل'), unlock: c.t('Unlocked', 'مفتوح'), adjustment: c.t('Adjustment', 'تعديل'), usage: c.t('Usage', 'استهلاك'), refund: c.t('Refund', 'استرداد') }[entry.type] ?? entry.type);
 
 export function LedgerTable({ entries, compact }: { entries: LedgerEntry[]; compact?: boolean }) {
   const c = useCopy();
@@ -1216,7 +1216,7 @@ export function LedgerTable({ entries, compact }: { entries: LedgerEntry[]; comp
           {entries.slice(0, 200).map(entry => (
             <tr key={entry.id}>
               <td style={{ whiteSpace: 'nowrap', color: 'var(--bl-muted)' }}>{c.dateTime(entry.createdAt)}</td>
-              <td><span className={`bl-pill plain ${entry.amount > 0 ? 'green' : entry.type === 'expire' ? 'amber' : 'red'}`}>{entry.amount > 0 ? <ArrowDownLeft size={12} /> : <ArrowUpRight size={12} />}{ledgerType(entry, c)}</span></td>
+              <td><span className={`bl-pill plain ${entry.amount > 0 ? 'green' : entry.type === 'expire' || entry.type === 'lock' ? 'amber' : 'red'}`}>{entry.amount > 0 ? <ArrowDownLeft size={12} /> : <ArrowUpRight size={12} />}{ledgerType(entry, c)}</span></td>
               <td style={{ color: 'var(--bl-muted)' }}>{entry.description}<br /><small>{entry.bucket === 'email' ? c.t('Email credits', 'رصيد البريد الإلكتروني') : c.t('AI credits', 'رصيد الذكاء الاصطناعي')}</small></td>
               <td className={`num ${entry.amount > 0 ? 'pos' : 'neg'}`} dir="ltr" style={{ textAlign: c.ar ? 'right' : 'left' }}>{entry.amount > 0 ? '+' : ''}{c.num(entry.amount)}</td>
               <td className="num">{c.num(entry.balanceAfter)}</td>
