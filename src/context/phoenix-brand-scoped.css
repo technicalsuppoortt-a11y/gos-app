@@ -5393,6 +5393,12 @@
 :scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .af-drawer-backdrop {
   background: color-mix(in srgb, var(--gp-surface, rgba(15, 23, 42, 0.68)) 68%, transparent) !important;
 }
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .af-tabs.af-tabs-grid{border:1px solid var(--gp-border, #EDECF3) !important;background:var(--gp-surface, #fff) !important}
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .af-tabs.af-tabs-grid button{color:var(--gp-text, #3F3E55) !important}
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .af-tabs.af-tabs-grid button:hover{background:var(--gp-surface, #FBFAFF) !important;color:var(--gp-accent-text, var(--gp-primary, #6D28D9)) !important}
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .af-tabs.af-tabs-grid button.active{background:var(--gp-surface, #F5F3FF) !important;border-color:var(--gp-border, #C4B5FD) !important;color:var(--gp-accent-text, var(--gp-primary, #6D28D9)) !important}
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .af-tabs.af-tabs-grid button:focus-visible{outline:3px solid var(--gp-primary, #A78BFA) !important}
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .af-tabs.af-tabs-grid button.active .af-tab-icon{background:var(--gp-action-bg, var(--gp-primary, #7C3AED)) !important;color:var(--gp-on-action, #ffffff) !important;box-shadow:0 4px 10px color-mix(in srgb, var(--gp-primary, #7C3AED40) 25%, transparent) !important}
 }
 @scope (html[data-gp-brand="true"]) to (.aw-live-preview, .aw-thumbnail, .fb-live-preview-frame, .fn-focused-canvas, .pf-page, .pf-thumb, .pf-renderer, .pf-canvas, .bk-public, .bk-preview-frame, .bk-live-preview, .lp-page, .product-live-preview, .pp-live-preview, .cw-live-preview, .checkout-screen, .landing-page, .lp, [data-form-theme], [data-public-asset]) {
 :scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .an-page{--an-ink:var(--gp-text, #141c3c) !important;--an-muted:var(--gp-muted-text, #7a8399) !important;--an-line:var(--gp-border, #e9ebf2) !important;--an-violet:var(--gp-primary, #7C3AED) !important}
@@ -9580,6 +9586,25 @@
 }
 :scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .fb-btn-primary { background: linear-gradient(115deg, var(--gp-action-bg, var(--gp-primary, #7C3AED)), var(--gp-action-bg, var(--gp-primary, #A78BFA))) !important; color: var(--gp-on-action, #ffffff) !important; box-shadow: 0 4px 10px color-mix(in srgb, var(--gp-primary, #7C3AED20) 13%, transparent) !important; }
 :scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .tone-amber, :scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .tone-orange, :scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .tone-slate, :scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .tone-note { background: var(--gp-background, #64748B) !important; }
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .fb-palette-item:hover { box-shadow: 0 4px 10px color-mix(in srgb, var(--gp-primary, #7C3AED14) 8%, transparent) !important; }
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .fb-node:hover { border-color: var(--gp-border, #C4B5FD) !important; }
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .fb-node.is-selected { box-shadow: 0 0 0 4px #EDE9FE, 0 6px 16px color-mix(in srgb, var(--gp-primary, #7C3AED1f) 12%, transparent) !important; }
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .fb-stat { background: var(--gp-background, #F1F0F6) !important; color: var(--gp-text, #3F3E55) !important; }
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .fb-out { background: var(--gp-surface, #F5F3FF) !important; color: var(--gp-accent-text, var(--gp-primary, #6D28D9)) !important; }
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .fb-node > .react-flow__handle-left { border: 2px solid var(--gp-border, #B9A6F5) !important; }
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .fb-comment { background: var(--gp-surface, #FFFBEB) !important; }
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .fb-canvas .react-flow__edge-path { stroke: var(--gp-accent-text, var(--gp-primary, #B9A6F5)) !important; }
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .fb-inspector label { color: var(--gp-text, #3F3E55) !important; }
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .fb-node.fb-start { border-color: var(--gp-border, #FED7AA) !important; }
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .fb-start .fb-node-head { background: var(--gp-surface, #FFF7ED) !important; border-bottom-color: var(--gp-border, #FED7AA) !important; }
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .fb-start .fb-stat { background: var(--gp-surface, #FFEDD5) !important; }
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .fb-trigger-empty { background: var(--gp-surface, #FFFBF5) !important; }
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .fb-start .fb-chip-row { background: var(--gp-surface, #fff) !important; }
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .fb-trigger-card { background: var(--gp-surface, #fff) !important; }
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .fb-choice button { background: var(--gp-surface, #fff) !important; color: var(--gp-text, #55546A) !important; }
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .fb-choice button.on { background: var(--gp-surface, #F5F3FF) !important; }
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .fb-seg button { color: var(--gp-text, #55546A) !important; }
+:scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] .fb-chip-input { background: var(--gp-surface, #fff) !important; }
 }
 @scope (html[data-gp-brand="true"]) to (.aw-live-preview, .aw-thumbnail, .fb-live-preview-frame, .fn-focused-canvas, .pf-page, .pf-thumb, .pf-renderer, .pf-canvas, .bk-public, .bk-preview-frame, .bk-live-preview, .lp-page, .product-live-preview, .pp-live-preview, .cw-live-preview, .checkout-screen, .landing-page, .lp, [data-form-theme], [data-public-asset]) {
 :scope:is(html)[data-gp-brand][data-gp-brand][data-gp-brand][data-gp-brand] {
