@@ -249,8 +249,6 @@ export function PlatformDeployment({ number = "04" }: { number?: string }) {
       ? Math.max(12, Math.round((completedDeploymentSteps / text.steps.length) * 100))
       : 100;
 
-  const openDashboard = () => window.location.assign("/dashboard");
-
   const deployPlatform = async () => {
     if (deploymentState === "deploying") return;
     setDeploymentAttempted(true);
@@ -313,6 +311,10 @@ export function PlatformDeployment({ number = "04" }: { number?: string }) {
       return;
     }
     void signInToPlatform();
+  };
+
+  const openDashboard = () => {
+    openPlatform();
   };
 
   useEffect(() => {

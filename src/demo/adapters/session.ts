@@ -107,8 +107,10 @@ export const activeDemoSession = (): StoredAuth => readDemoOverride() || demoSes
 export const login = async (): Promise<StoredAuth> => activeDemoSession();
 export const resolveSession = login;
 export const consumeAuthNotice = () => null;
+export const PHOENIX_HANDOFF_TOKEN_KEY = 'gos.phoenix.handoff_token';
+export const isPhoenixHandoffPending = () => false;
 export const beginActivation = () => {};
-export const endActivation = () => {};
+export const endActivation = async () => {};
 export const sessionErrorMessage = () => 'Demo session';
 
 export async function completeCustomerFirstLoginPasswordChange(newPassword: string): Promise<StoredAuth> {

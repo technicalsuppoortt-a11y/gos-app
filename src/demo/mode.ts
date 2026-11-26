@@ -43,6 +43,14 @@ export function isDemoSessionActive(): boolean {
   // The preview URL selects the local graph before any live auth modules load.
   // The frame name also keeps the demo active after navigating within it.
   const { pathname, search } = window.location;
+  // Real Phoenix / Launch Brand sign-in handoff must always boot the live platform.
+  if (pathname === '/auth/phoenix') {
+    const storage = nativeSession();
+    clearDemoNamespace(storage);
+    try { storage?.removeItem(FLAG); } catch { /* noop */ }
+    if (window.name === WINDOW_NAME_FLAG) window.name = '';
+    return false;
+  }
   if ((pathname === '/' || /^\/dashboard\/?$/i.test(pathname)) &&
       new URLSearchParams(search).get('launch-brand-preview') === '1') return true;
   try { if (nativeSession()?.getItem(FLAG) === '1') return true; } catch { /* Fall through to the window.name fallback. */ }

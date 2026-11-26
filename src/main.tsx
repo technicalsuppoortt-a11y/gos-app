@@ -3,11 +3,21 @@ import { isDemoSessionActive } from './demo/mode';
 
 installChunkRecovery();
 
+const PHOENIX_HANDOFF_KEY = 'gos.phoenix.handoff_token';
+if (location.pathname === '/auth/phoenix') {
+  const hashToken = new URLSearchParams(location.hash.slice(1)).get('token');
+  if (hashToken) {
+    try { window.sessionStorage.setItem(PHOENIX_HANDOFF_KEY, hashToken); } catch { /* ignore restricted storage */ }
+  }
+}
+
 function retainPlatformPreloader() {
   const root = document.getElementById('root');
   const splash = document.getElementById('app-preloader');
+  let storedToken = '';
+  try { storedToken = window.sessionStorage.getItem(PHOENIX_HANDOFF_KEY) || ''; } catch { /* noop */ }
   if (!root || !splash || location.pathname !== '/auth/phoenix' ||
-      !new URLSearchParams(location.hash.slice(1)).get('token')) return;
+      (!new URLSearchParams(location.hash.slice(1)).get('token') && !storedToken)) return;
 
   document.body.append(splash);
   splash.setAttribute('role', 'status');

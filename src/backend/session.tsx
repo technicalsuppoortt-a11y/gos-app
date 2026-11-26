@@ -109,6 +109,17 @@ export async function forceSignOut(reason: unknown) {
 /* for a moment. Session resolution is paused so they aren't signed    */
 /* out mid-activation; it resumes with a forced token refresh.         */
 /* ------------------------------------------------------------------ */
+export const PHOENIX_HANDOFF_TOKEN_KEY = 'gos.phoenix.handoff_token';
+export function isPhoenixHandoffPending(): boolean {
+  if (typeof window === 'undefined' || window.location.pathname !== '/auth/phoenix') return false;
+  if (new URLSearchParams(window.location.hash.slice(1)).get('token')) return true;
+  try {
+    return Boolean(window.sessionStorage.getItem(PHOENIX_HANDOFF_TOKEN_KEY));
+  } catch {
+    return false;
+  }
+}
+
 let activationInProgress = false;
 export function beginActivation() { activationInProgress = true; }
 export async function endActivation() {
@@ -533,9 +544,14 @@ export function FirebaseSession({ children }: { children: ReactNode }) {
       profileUnsubscribe();
       profileUnsubscribe = () => {};
       // Firebase is the source of truth: no Firebase user means no app session.
+      if (activationInProgress || isPhoenixHandoffPending()) { setReady(true); return; }
       if (!user) { clearImpersonationContext(); clearPhoenixBrand(); store.dispatch(logout()); setReady(true); return; }
-      if (activationInProgress) { setReady(true); return; }
       try {
+        const initialToken = await user.getIdTokenResult();
+        if (initialToken.claims.launchBrand === true && typeof window !== 'undefined' && window.location.pathname === '/auth/phoenix') {
+          setReady(true);
+          return;
+        }
         const session = await resolveSession(user);
         if (current !== generation) return;
         const original = store.getState().auth.impersonation;

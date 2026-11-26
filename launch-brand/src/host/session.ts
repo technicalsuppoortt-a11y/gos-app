@@ -4,7 +4,7 @@ import { auth, db } from '../lib/firebase';
 import { useStore } from '../store/useStore';
 import { normalizeRole } from '../shared/permissions';
 import { PLATFORM_ENDPOINT } from './config';
-import { requestGosPlatform } from '../services/gosPlatform';
+import { isTransitioningToPlatform, openGosPlatform, requestGosPlatform } from '../services/gosPlatform';
 import { serviceEntitlementFromClaims } from '../features/access/servicePeriod';
 
 // Launch Brand opens only from Joe Academy's "Build brand" button. Joe Academy
@@ -91,7 +91,13 @@ export function startLaunchBrandSession() {
   let leavingForPlatform = false;
   const leaveForPlatform = () => {
     leavingForPlatform = true;
-    window.location.replace('/dashboard');
+    if (auth.currentUser) {
+      void openGosPlatform().catch(() => {
+        window.location.replace('/admin');
+      });
+      return;
+    }
+    window.location.replace('/admin');
   };
   const signIn = (async () => {
     await setPersistence(auth, browserSessionPersistence);
@@ -111,6 +117,7 @@ export function startLaunchBrandSession() {
   }).finally(() => {
     if (leavingForPlatform) return;
     onAuthStateChanged(auth, async user => {
+      if (leavingForPlatform || isTransitioningToPlatform()) return;
       const state = useStore.getState();
       if (!user) {
         state.setUser(null);
