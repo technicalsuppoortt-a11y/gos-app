@@ -153,6 +153,8 @@ body:has(.launch-brand-page),
   .launch-brand-header { flex-wrap: wrap; gap: 8px 12px; }
   .launch-brand-toolbar-slot { order: 3; flex-basis: 100%; }
   .launch-brand-identity { margin-inline-start: auto; }
+  .launch-brand-header .service-countdown { margin-inline-start: auto; }
+  .launch-brand-header .service-countdown + .launch-brand-identity { margin-inline-start: 0; }
   @scope (.launch-brand-toolbar) {
     :scope .compact-phase-title { white-space: normal; }
   }

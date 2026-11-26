@@ -1,42 +1,121 @@
-.student-service-badge {
-  --service-start: var(--primary);
-  --service-end: var(--ember-2);
+/* Service period countdown in the Launch Brand header (ServiceCountdown.tsx). */
+.service-countdown {
+  --sc-tone: var(--lb-accent, #0e7490);
+  --sc-tone-text: var(--lb-accent-text, #0f6277);
+  --sc-surface: var(--lb-accent-surface, #ecfeff);
+  --sc-border: var(--lb-accent-border, #99e2ec);
+  --sc-track: color-mix(in srgb, var(--sc-tone) 16%, transparent);
   display: inline-flex;
   flex-shrink: 0;
   align-items: center;
-  gap: 8px;
-  min-height: 36px;
-  padding: 4px 12px 4px 5px;
-  padding-inline: 5px 12px;
-  border: 1px solid rgb(255 255 255 / 20%);
+  gap: 10px;
+  min-height: 40px;
+  padding-block: 4px;
+  padding-inline: 4px 14px;
+  border: 1px solid var(--sc-border);
   border-radius: 999px;
-  background: linear-gradient(120deg, var(--service-start), var(--service-end));
-  color: #fff;
-  box-shadow: 0 3px 10px color-mix(in srgb, var(--service-start) 20%, transparent), inset 0 1px 0 rgb(255 255 255 / 14%);
-  font-size: 11px;
-  font-weight: 700;
-  line-height: 1.4;
+  background: var(--sc-surface);
+  color: var(--lb-text, #0f172a);
   font-variant-numeric: tabular-nums;
+  line-height: 1.2;
   white-space: nowrap;
+  transition: background 200ms ease, border-color 200ms ease;
 }
 
-.student-service-badge__icon {
-  display: grid;
-  place-items: center;
-  width: 26px;
-  height: 26px;
+.service-countdown[data-state='ending-soon'] {
+  --sc-tone: var(--lb-warning, #b45309);
+  --sc-tone-text: #92400e;
+  --sc-surface: var(--lb-warning-surface, #fffbeb);
+  --sc-border: #fcd38d;
+}
+
+.service-countdown[data-state='expired'] {
+  --sc-tone: var(--lb-error, #be123c);
+  --sc-tone-text: #9f1239;
+  --sc-surface: var(--lb-error-surface, #fff1f2);
+  --sc-border: #fecdd3;
+}
+
+.dark .service-countdown[data-state='ending-soon'] {
+  --sc-tone: #f59e0b;
+  --sc-tone-text: #fcd34d;
+  --sc-surface: rgb(245 158 11 / 0.14);
+  --sc-border: rgb(245 158 11 / 0.36);
+}
+
+.dark .service-countdown[data-state='expired'] {
+  --sc-tone: #f43f5e;
+  --sc-tone-text: #fda4af;
+  --sc-surface: rgb(244 63 94 / 0.14);
+  --sc-border: rgb(244 63 94 / 0.38);
+}
+
+.service-countdown__ring {
+  width: 32px;
+  height: 32px;
   flex-shrink: 0;
-  border-radius: 50%;
-  background: rgb(255 255 255 / 16%);
-  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 18%);
+  /* Start the arc at 12 o'clock. */
+  transform: rotate(-90deg);
 }
 
-.student-service-badge[data-state='ending-soon'] {
-  --service-start: #92400e;
-  --service-end: #a34b0b;
+.service-countdown__ring circle {
+  fill: none;
+  stroke-width: 3;
 }
 
-.student-service-badge[data-state='expired'] {
-  --service-start: #b91c1c;
-  --service-end: #9f1239;
+.service-countdown__track { stroke: var(--sc-track); }
+
+.service-countdown__progress {
+  stroke: var(--sc-tone);
+  stroke-linecap: round;
+  transition: stroke-dashoffset 600ms ease;
+}
+
+.service-countdown__count {
+  fill: var(--sc-tone-text);
+  font-size: 10.5px;
+  font-weight: 700;
+  text-anchor: middle;
+  dominant-baseline: central;
+  transform: rotate(90deg);
+  transform-origin: 16px 16px;
+}
+
+.service-countdown__text {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.service-countdown__label {
+  color: var(--lb-text-hint, #64748b);
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.service-countdown__value {
+  color: var(--sc-tone-text);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.service-countdown__detail {
+  padding-inline-start: 10px;
+  border-inline-start: 1px solid var(--sc-border);
+  color: var(--lb-text-body, #334155);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+@media (max-width: 1180px) {
+  .service-countdown__detail { display: none; }
+}
+
+@media (max-width: 480px) {
+  .service-countdown { gap: 0; padding-inline: 4px; }
+  .service-countdown__text { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .service-countdown, .service-countdown__progress { transition: none; }
 }

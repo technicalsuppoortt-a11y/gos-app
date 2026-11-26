@@ -6,12 +6,13 @@ import { PAGE_IDS, WORKSPACE_PAGE_IDS, decodeFields, validateLaunch, collectAsse
 const documents = new Map();
 const source = new Map();
 const sourceReads = [];
+let tokenClaims = {};
 let validToken = true, verified = false, disabled = false, failWrite = false;
 let accounts = new Map(), signCount = 0, created = 0;
 let syncedPasswords = 0, sourcePasswordUid = 'owner', passwordValid = true;
 let serverTime = Date.parse('2026-10-18T00:01:00Z');
 const firestore = {
-  doc: path => ({ path, get: async () => ({ data: () => documents.get(path) }), collection: name => ({ doc: id => firestore.doc(`${path}/${name}/${id}`) }) }),
+  doc: path => ({ path, get: async () => ({ data: () => documents.get(path) }), set: async (data, options) => { documents.set(path, options?.merge ? { ...documents.get(path), ...data } : data); }, collection: name => ({ doc: id => firestore.doc(`${path}/${name}/${id}`) }) }),
   bulkWriter: () => ({ set: async (ref, data) => { if (failWrite) throw new Error('Write failed'); documents.set(ref.path, data); }, close: async () => {} }),
   runTransaction: async callback => callback({
     get: async ref => ref.get(),
@@ -30,7 +31,7 @@ const gosAuth = {
 };
 mock.module('firebase-admin/app', { namedExports: { initializeApp: (_, name) => ({ name }) } });
 mock.module('firebase-admin/auth', { namedExports: { getAuth: app => app.name === 'phoenix' ? {
-  verifyIdToken: async token => { if (!validToken || token !== 'phoenix-id-token') throw new Error('Invalid token'); return { uid: 'owner', email: 'owner@example.com', email_verified: verified }; },
+  verifyIdToken: async token => { if (!validToken || token !== 'phoenix-id-token') throw new Error('Invalid token'); return { uid: 'owner', email: 'owner@example.com', email_verified: verified, ...tokenClaims }; },
 } : gosAuth } });
 mock.module('firebase-admin/firestore', { namedExports: { getFirestore: () => firestore, FieldValue: { serverTimestamp: () => {
   const milliseconds = serverTime;
@@ -41,7 +42,7 @@ mock.module('firebase-functions/v2/https', { namedExports: { onRequest: (options
   assert(options.cors.includes('https://app.upklick.net'));
   return handler;
 } } });
-const { phoenixPlatform } = await import('../phoenix.js');
+const { phoenixPlatform, verifiedServiceEntitlement } = await import('../phoenix.js');
 const encode = value => value === null ? { nullValue: null } : typeof value === 'string' ? { stringValue: value } : typeof value === 'boolean' ? { booleanValue: value } : typeof value === 'number' ? { integerValue: String(value) } : Array.isArray(value) ? { arrayValue: { values: value.map(encode) } } : { mapValue: { fields: Object.fromEntries(Object.entries(value).map(([key, value]) => [key, encode(value)])) } };
 globalThis.fetch = async (url, options) => {
   if (url.startsWith('https://identitytoolkit.googleapis.com/')) {
@@ -56,7 +57,7 @@ globalThis.fetch = async (url, options) => {
   return { ok: !!data, json: async () => ({ fields: encode(data).mapValue.fields, updateTime: '2026-10-18T00:00:00.000000Z' }) };
 };
 function reset() {
-  documents.clear(); source.clear(); accounts.clear(); validToken = true; verified = false; disabled = false; failWrite = false; created = 0; signCount = 0;
+  documents.clear(); source.clear(); accounts.clear(); tokenClaims = {}; validToken = true; verified = false; disabled = false; failWrite = false; created = 0; signCount = 0;
   sourceReads.length = 0;
   syncedPasswords = 0; sourcePasswordUid = 'owner'; passwordValid = true;
   serverTime = Date.parse('2026-10-18T00:01:00Z');
@@ -308,4 +309,25 @@ test('page revision validation rejects mixed snapshots', () => {
   const pages = PAGE_IDS.map(pageId => ({ pageId, revision: 'current', schemaVersion: 1, parameters: {} }));
   pages[0].revision = 'other';
   assert.throws(() => validateLaunch({ revision: 'current' }, { state: 'prepared', snapshotId: 'current' }, pages));
+});
+
+test('service entitlement is read only from valid signed claims', () => {
+  assert.equal(verifiedServiceEntitlement({}), null);
+  assert.equal(verifiedServiceEntitlement({ phoenixTicket: 'vip', phoenixServiceDays: 30 }), null);
+  assert.deepEqual(verifiedServiceEntitlement({ phoenixTicket: 'low_ticket', phoenixServiceDays: 30, phoenixServiceExpiresAt: 1798675200000 }),
+    { ticketType: 'low_ticket', serviceDays: 30, serviceExpiresAt: 1798675200000 });
+  assert.deepEqual(verifiedServiceEntitlement({ phoenixTicket: 'high_ticket', phoenixServiceDays: -4, phoenixServiceExpiresAt: 'soon' }),
+    { ticketType: 'high_ticket', serviceDays: null, serviceExpiresAt: null });
+});
+test('deploy stores the token claims entitlement, never the request body', async () => {
+  reset();
+  tokenClaims = { phoenixTicket: 'low_ticket', phoenixServiceDays: 30, phoenixServiceExpiresAt: 1798675200000 };
+  const forged = { ticketType: 'high_ticket', serviceDays: 3650, serviceExpiresAt: '2099-01-01T00:00:00Z' };
+  assert.equal((await request('deploy', { entitlement: forged })).statusCode, 200);
+  for (const path of ['users/phoenix_owner', 'phoenixAccounts/owner']) {
+    const stored = documents.get(path).launchEntitlement;
+    assert.equal(stored.ticketType, 'low_ticket');
+    assert.equal(stored.serviceDays, 30);
+    assert.equal(stored.serviceExpiresAt.getTime(), 1798675200000);
+  }
 });

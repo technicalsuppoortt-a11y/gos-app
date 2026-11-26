@@ -35,6 +35,33 @@ const PLATFORM = 'platform';
 const LAUNCH_BRAND_PROFILE_FIELDS = ['isBrandEngineProvisioned', 'brandEngineProgress', 'brandMetadata'];
 const STAFF_ROLES = ['admin', 'superadmin', 'coach', 'support'];
 const ticketId = ticket => createHash('sha256').update(ticket).digest('hex');
+const MAX_SERVICE_DAYS = 3650;
+// The student's ticket type and service period, read only from signed token
+// claims. Joe Academy sets them (launchEntitlement) when the student first opens
+// Launch Brand, and the Launch Brand session token copies them unchanged. The
+// request body is never trusted for these values.
+export function verifiedServiceEntitlement(claims) {
+  const ticketType = ['low_ticket', 'high_ticket'].includes(claims?.phoenixTicket) ? claims.phoenixTicket : null;
+  if (!ticketType) return null;
+  const days = claims.phoenixServiceDays;
+  const expires = claims.phoenixServiceExpiresAt;
+  return {
+    ticketType,
+    serviceDays: Number.isInteger(days) && days > 0 && days <= MAX_SERVICE_DAYS ? days : null,
+    serviceExpiresAt: Number.isFinite(expires) && expires > 0 ? Math.trunc(expires) : null,
+  };
+}
+const entitlementClaims = entitlement => entitlement ? {
+  phoenixTicket: entitlement.ticketType, phoenixServiceDays: entitlement.serviceDays, phoenixServiceExpiresAt: entitlement.serviceExpiresAt,
+} : {};
+// Stored form on the student's records (Firestore timestamp for the expiry).
+const entitlementRecord = entitlement => ({
+  ticketType: entitlement.ticketType,
+  serviceDays: entitlement.serviceDays,
+  serviceExpiresAt: entitlement.serviceExpiresAt === null ? null : new Date(entitlement.serviceExpiresAt),
+  source: 'phoenix-token-claims',
+  syncedAt: FieldValue.serverTimestamp(),
+});
 const isSuspendedStatus = status => ['deactivated', 'inactive', 'suspended', 'deleted'].includes(String(status || '').toLowerCase());
 const allowedOrigins = [
   'https://academy.mohamedjoe.com',
@@ -104,7 +131,8 @@ export const phoenixPlatform = onRequest({ region: 'us-central1', serviceAccount
     try {
       const token = await getAuth(gos).verifyIdToken(bearer || '');
       if (token.launchBrand === true && token.phoenixUid === token.uid)
-        identity = { uid: token.uid, email: token.sourceEmail, email_verified: token.sourceEmailVerified === true, name: token.sourceName, launchBrand: true };
+        identity = { uid: token.uid, email: token.sourceEmail, email_verified: token.sourceEmailVerified === true, name: token.sourceName, launchBrand: true,
+          phoenixTicket: token.phoenixTicket, phoenixServiceDays: token.phoenixServiceDays, phoenixServiceExpiresAt: token.phoenixServiceExpiresAt };
     } catch { /* Reported below. */ }
     if (!identity) { res.status(401).json({ error: 'Sign in to Phoenix again.' }); return; }
   }
@@ -453,6 +481,16 @@ export const phoenixPlatform = onRequest({ region: 'us-central1', serviceAccount
       }
     });
 
+    // Keep the student's ticket type and service period on their platform records.
+    const entitlement = verifiedServiceEntitlement(identity);
+    if (entitlement) {
+      const launchEntitlement = entitlementRecord(entitlement);
+      await Promise.all([
+        linkRef.set({ launchEntitlement }, { merge: true }),
+        db.doc(`users/${link.gosUid}`).set({ launchEntitlement }, { merge: true }),
+      ]);
+    }
+
     if (action === 'deploy') { res.json({ status: 'prepared', revision: link.revision }); return; }
     if (action === 'login') {
       const policy = (await db.doc('users/' + link.gosUid + '/preferences/passwordPolicy').get()).data();
@@ -489,6 +527,8 @@ async function createLaunchBrandTicket(identity, bearer, body, db) {
     profile,
     language: body?.language === 'en' ? 'en' : body?.language === 'ar' ? 'ar' : null,
     theme: body?.theme === 'dark' ? 'dark' : body?.theme === 'light' ? 'light' : null,
+    // From the verified Joe Academy token, so the Launch Brand session can carry it.
+    entitlement: verifiedServiceEntitlement(identity),
     createdAt: FieldValue.serverTimestamp(),
     expiresAt: new Date(Date.now() + TICKET_SECONDS * 1000),
   });
@@ -513,10 +553,16 @@ async function exchangeLaunchBrandTicket(req, res, gos, db, launchBrandDb) {
     const mirror = { ...claim.profile };
     if (existing) for (const field of LAUNCH_BRAND_PROFILE_FIELDS) delete mirror[field];
     // Same profile document Launch Brand read on Joe Academy (role, plan, status).
-    await profileRef.set({ ...mirror, uid: claim.uid, email: claim.email, launchBrandOpenedAt: FieldValue.serverTimestamp() }, { merge: true });
+    // Re-check the stored value: only what verifiedServiceEntitlement accepts goes into the token.
+    const entitlement = claim.entitlement ? verifiedServiceEntitlement(entitlementClaims(claim.entitlement)) : null;
+    await profileRef.set({
+      ...mirror, uid: claim.uid, email: claim.email, launchBrandOpenedAt: FieldValue.serverTimestamp(),
+      ...(entitlement ? { launchEntitlement: entitlementRecord(entitlement) } : {}),
+    }, { merge: true });
     const customToken = await getAuth(gos).createCustomToken(claim.uid, {
       launchBrand: true, phoenixUid: claim.uid, sourceEmail: claim.email, sourceEmailVerified: claim.emailVerified === true,
       sourceName: String(claim.name || '').slice(0, 120),
+      ...entitlementClaims(entitlement),
     });
     res.json({ customToken, language: claim.language, theme: claim.theme });
   } catch (error) {
